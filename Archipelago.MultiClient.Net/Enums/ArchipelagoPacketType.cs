@@ -1,4 +1,4 @@
-﻿namespace MultiClient.Net.Enums
+﻿namespace Archipelago.MultiClient.Net.Enums
 {
     public enum ArchipelagoPacketType
     {

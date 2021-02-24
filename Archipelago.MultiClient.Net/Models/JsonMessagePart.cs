@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace MultiClient.Net.Models
+namespace Archipelago.MultiClient.Net.Models
 {
     public class JsonMessagePart
     {

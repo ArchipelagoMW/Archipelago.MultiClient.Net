@@ -1,6 +1,6 @@
-﻿namespace MultiClient.Net.Enums
+﻿namespace Archipelago.MultiClient.Net.Enums
 {
-    public enum ArchipelagoClientState: int
+    public enum ArchipelagoClientState : int
     {
         ClientUnknown = 0,
         ClientReady = 10,
