@@ -1,13 +1,14 @@
 ﻿using Archipelago.MultiClient.Net.Models;
 using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 
 namespace Archipelago.MultiClient.Net.Packets
 {
-    public class RoomInfoPacket : ArchipelagoPacketBase
+    public class RoomInfoPacket: ArchipelagoPacketBase
     {
         [JsonProperty("version")]
-        public List<int> Version { get; set; }
+        public Version Version { get; set; }
 
         [JsonProperty("tags")]
         public List<string> Tags { get; set; }
@@ -29,5 +30,8 @@ namespace Archipelago.MultiClient.Net.Packets
 
         [JsonProperty("players")]
         public List<NetworkPlayer> Players { get; set; }
+
+        [JsonProperty("datapackage_version")]
+        public int DataPackageVersion { get; set; }
     }
 }

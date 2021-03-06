@@ -31,8 +31,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.12.0.3\lib\net35\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\net35\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -46,15 +46,20 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ArchipelagoPacketBase.cs" />
+    <Compile Include="Converters\ArchipelagoPacketConverter.cs" />
     <Compile Include="ArchipelagoSession.cs" />
+    <Compile Include="Converters\NamedTupleInterchangeConverter.cs" />
     <Compile Include="Enums\ArchipelagoPacketType.cs" />
+    <Compile Include="Models\DataPackage.cs" />
     <Compile Include="Models\NetworkItem.cs" />
     <Compile Include="Models\NetworkPlayer.cs" />
     <Compile Include="Enums\ArchipelagoClientState.cs" />
     <Compile Include="Packets\ConnectedPacket.cs" />
     <Compile Include="Packets\ConnectionRefusedPacket.cs" />
     <Compile Include="Models\JsonMessagePart.cs" />
+    <Compile Include="Packets\DataPackagePacket.cs" />
     <Compile Include="Packets\ConnectPacket.cs" />
+    <Compile Include="Packets\GetDataPackagePacket.cs" />
     <Compile Include="Packets\LocationChecksPacket.cs" />
     <Compile Include="Packets\LocationInfoPacket.cs" />
     <Compile Include="Packets\LocationScouts.cs" />

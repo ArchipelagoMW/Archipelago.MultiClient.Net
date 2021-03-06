@@ -14,6 +14,8 @@
         LocationChecks,
         LocationScouts,
         StatusUpdate,
-        Say
+        Say,
+        GetDataPackage,
+        DataPackage
     }
 }

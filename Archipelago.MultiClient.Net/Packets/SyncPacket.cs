@@ -1,6 +1,6 @@
 ﻿namespace Archipelago.MultiClient.Net.Packets
 {
-    public class SyncPacket : ArchipelagoPacketBase
+    public class SyncPacket: ArchipelagoPacketBase
     {
     }
 }

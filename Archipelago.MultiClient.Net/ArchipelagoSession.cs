@@ -1,5 +1,10 @@
-﻿using Newtonsoft.Json;
+﻿using Archipelago.MultiClient.Net.Converters;
+using Archipelago.MultiClient.Net.Enums;
+using Archipelago.MultiClient.Net.Packets;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using WebSocketSharp;
 
 namespace Archipelago.MultiClient.Net
@@ -33,7 +38,10 @@ namespace Archipelago.MultiClient.Net
         {
             if (e.IsText)
             {
-                var packets = JsonConvert.DeserializeObject<List<ArchipelagoPacketBase>>(e.Data);
+                Debug.WriteLine("======Incoming Packet below.=======");
+                Debug.WriteLine(e.Data);
+                Debug.WriteLine("======End packet.=======");
+                var packets = JsonConvert.DeserializeObject<List<ArchipelagoPacketBase>>(e.Data, new ArchipelagoPacketConverter());
                 foreach (var packet in packets)
                 {
                     PacketReceived(packet);
