@@ -22,7 +22,7 @@ namespace Archipelago.MultiClient.Net.Converters
             switch (packetType)
             {
                 case ArchipelagoPacketType.RoomInfo:
-                    ret = token.ToObject<RoomInfoPacket>(); ;
+                    ret = token.ToObject<RoomInfoPacket>();
                     break;
                 case ArchipelagoPacketType.ConnectionRefused:
                     ret = token.ToObject<ConnectionRefusedPacket>();
