@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Archipelago.MultiClient.Net.Packets
 {
-    public class PrintJsonPacket: ArchipelagoPacketBase
+    public class PrintJsonPacket : ArchipelagoPacketBase
     {
         [JsonProperty("data")]
         public List<JsonMessagePart> Data { get; set; }

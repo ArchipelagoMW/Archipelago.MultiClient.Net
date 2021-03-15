@@ -34,13 +34,18 @@ namespace Archipelago.MultiClient.Net
             }
         }
 
+        public void Disconnect()
+        {
+            if (Socket.IsAlive)
+            {
+                Socket.Close();
+            }
+        }
+
         private void OnMessageReceived(object sender, MessageEventArgs e)
         {
             if (e.IsText)
             {
-                Debug.WriteLine("======Incoming Packet below.=======");
-                Debug.WriteLine(e.Data);
-                Debug.WriteLine("======End packet.=======");
                 var packets = JsonConvert.DeserializeObject<List<ArchipelagoPacketBase>>(e.Data, new ArchipelagoPacketConverter());
                 foreach (var packet in packets)
                 {

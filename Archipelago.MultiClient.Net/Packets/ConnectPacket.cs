@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace Archipelago.MultiClient.Net.Packets
 {
-    public class ConnectPacket: ArchipelagoPacketBase
+    public class ConnectPacket : ArchipelagoPacketBase
     {
         [JsonProperty("password")]
         public string Password { get; set; }

@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace Archipelago.MultiClient.Net.Packets
 {
-    public class RoomInfoPacket: ArchipelagoPacketBase
+    public class RoomInfoPacket : ArchipelagoPacketBase
     {
         [JsonProperty("version")]
         public Version Version { get; set; }

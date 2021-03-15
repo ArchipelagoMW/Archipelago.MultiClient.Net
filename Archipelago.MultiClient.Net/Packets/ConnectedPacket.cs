@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Archipelago.MultiClient.Net.Packets
 {
-    public class ConnectedPacket: ArchipelagoPacketBase
+    public class ConnectedPacket : ArchipelagoPacketBase
     {
         [JsonProperty("team")]
         public int Team { get; set; }
