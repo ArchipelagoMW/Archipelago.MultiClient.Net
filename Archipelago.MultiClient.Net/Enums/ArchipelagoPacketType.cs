@@ -16,6 +16,7 @@
         StatusUpdate,
         Say,
         GetDataPackage,
-        DataPackage
+        DataPackage,
+        Sync
     }
 }

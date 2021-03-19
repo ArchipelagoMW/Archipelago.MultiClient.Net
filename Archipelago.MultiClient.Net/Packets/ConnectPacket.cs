@@ -1,4 +1,5 @@
 ﻿using Archipelago.MultiClient.Net.Converters;
+using Archipelago.MultiClient.Net.Enums;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -7,6 +8,8 @@ namespace Archipelago.MultiClient.Net.Packets
 {
     public class ConnectPacket : ArchipelagoPacketBase
     {
+        public override ArchipelagoPacketType PacketType => ArchipelagoPacketType.Connect;
+
         [JsonProperty("password")]
         public string Password { get; set; }
 

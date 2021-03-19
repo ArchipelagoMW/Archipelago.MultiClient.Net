@@ -11,6 +11,6 @@ namespace Archipelago.MultiClient.Net
     {
         [JsonProperty("cmd")]
         [JsonConverter(typeof(StringEnumConverter))]
-        public ArchipelagoPacketType PacketType { get; set; }
+        public virtual ArchipelagoPacketType PacketType { get; set; }
     }
 }
