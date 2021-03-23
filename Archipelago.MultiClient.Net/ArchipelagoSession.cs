@@ -14,6 +14,9 @@ namespace Archipelago.MultiClient.Net
         public delegate void PacketReceivedHandler(ArchipelagoPacketBase packet);
         public event PacketReceivedHandler PacketReceived;
 
+        public delegate void ErrorReceivedHandler(Exception e, string message);
+        public event ErrorReceivedHandler ErrorReceived;
+
         public string Url { get; private set; }
         public bool Connected { get => Socket.IsAlive; }
 
@@ -24,6 +27,7 @@ namespace Archipelago.MultiClient.Net
             this.Url = urlToHost;
             this.Socket = new WebSocket(urlToHost);
             this.Socket.OnMessage += OnMessageReceived;
+            this.Socket.OnError += OnError;
         }
 
         public void Connect()
@@ -51,6 +55,14 @@ namespace Archipelago.MultiClient.Net
                 {
                     PacketReceived(packet);
                 }
+            }
+        }
+
+        private void OnError(object sender, ErrorEventArgs e)
+        {
+            if (ErrorReceived != null)
+            {
+                ErrorReceived(e.Exception, e.Message);
             }
         }
 
