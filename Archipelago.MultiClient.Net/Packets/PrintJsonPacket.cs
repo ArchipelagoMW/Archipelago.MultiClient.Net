@@ -1,6 +1,7 @@
 ﻿using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Models;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using System.Collections.Generic;
 
 namespace Archipelago.MultiClient.Net.Packets
@@ -13,7 +14,8 @@ namespace Archipelago.MultiClient.Net.Packets
         public List<JsonMessagePart> Data { get; set; }
 
         [JsonProperty("type")]
-        public string MessageType { get; set; }
+        [JsonConverter(typeof(StringEnumConverter))]
+        public JsonMessageType? MessageType { get; set; }
 
         [JsonProperty("receiving")]
         public int ReceivingPlayer { get; set; }

@@ -1,6 +1,8 @@
-﻿using Archipelago.MultiClient.Net.Enums;
+﻿using Archipelago.MultiClient.Net.Converters;
+using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Models;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
 
@@ -11,6 +13,7 @@ namespace Archipelago.MultiClient.Net.Packets
         public override ArchipelagoPacketType PacketType => ArchipelagoPacketType.RoomInfo;
 
         [JsonProperty("version")]
+        [JsonConverter(typeof(NamedTupleInterchangeConverter))]
         public Version Version { get; set; }
 
         [JsonProperty("tags")]
@@ -20,10 +23,12 @@ namespace Archipelago.MultiClient.Net.Packets
         public bool Password { get; set; }
 
         [JsonProperty("forfeit_mode")]
-        public string ForfeitMode { get; set; }
+        [JsonConverter(typeof(StringEnumConverter))]
+        public ForfeitModeType ForfeitMode { get; set; }
 
         [JsonProperty("remaining_mode")]
-        public string RemainingMode { get; set; }
+        [JsonConverter(typeof(StringEnumConverter))]
+        public RemainingModeType RemainingMode { get; set; }
 
         [JsonProperty("hint_cost")]
         public int HintCost { get; set; }
