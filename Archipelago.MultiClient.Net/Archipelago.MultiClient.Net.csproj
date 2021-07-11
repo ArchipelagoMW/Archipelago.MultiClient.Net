@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>net35;net472</TargetFrameworks>
-    <AssemblyTitle>MultiClient.Net</AssemblyTitle>
-    <Product>MultiClient.Net</Product>
+    <AssemblyTitle>Archipelago.MultiClient.Net</AssemblyTitle>
+    <Product>Archipelago.MultiClient.Net</Product>
     <Copyright>Copyright ©  2021</Copyright>
     <OutputPath>bin\$(Configuration)\</OutputPath>
   </PropertyGroup>
@@ -16,7 +16,6 @@
     <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="websocket-sharp">
       <HintPath>..\DLLs\websocket-sharp.dll</HintPath>
     </Reference>

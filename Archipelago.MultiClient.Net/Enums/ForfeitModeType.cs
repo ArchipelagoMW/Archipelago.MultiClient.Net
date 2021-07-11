@@ -10,6 +10,7 @@ namespace Archipelago.MultiClient.Net.Enums
         Auto,
         Enabled,
         Disabled,
-        AutoEnabled
+        AutoEnabled,
+        Goal
     }
 }
