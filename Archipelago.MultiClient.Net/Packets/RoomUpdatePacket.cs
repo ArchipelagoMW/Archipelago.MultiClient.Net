@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 
 namespace Archipelago.MultiClient.Net.Packets
 {
-    public class RoomUpdatePacket : ArchipelagoPacketBase
+    public class RoomUpdatePacket : RoomInfoPacket
     {
         public override ArchipelagoPacketType PacketType => ArchipelagoPacketType.RoomUpdate;
 

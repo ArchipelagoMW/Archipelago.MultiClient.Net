@@ -23,5 +23,8 @@ namespace Archipelago.MultiClient.Net.Packets
 
         [JsonProperty("items_checked")]
         public List<int> ItemsChecked { get; set; }
+
+        [JsonProperty("slot_data")]
+        public Dictionary<string, object> SlotData { get; set; }
     }
 }

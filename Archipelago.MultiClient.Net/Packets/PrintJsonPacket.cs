@@ -11,5 +11,14 @@ namespace Archipelago.MultiClient.Net.Packets
 
         [JsonProperty("data")]
         public List<JsonMessagePart> Data { get; set; }
+
+        [JsonProperty("type")]
+        public string MessageType { get; set; }
+
+        [JsonProperty("receiving")]
+        public int ReceivingPlayer { get; set; }
+
+        [JsonProperty("item")]
+        public NetworkItem Item { get; set; }
     }
 }
