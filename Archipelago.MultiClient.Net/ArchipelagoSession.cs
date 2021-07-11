@@ -73,6 +73,11 @@ namespace Archipelago.MultiClient.Net
 
         public void SendMultiplePackets(List<ArchipelagoPacketBase> packets)
         {
+            SendMultiplePackets(packets.ToArray());
+        }
+
+        public void SendMultiplePackets(params ArchipelagoPacketBase[] packets)
+        {
             if (Socket.IsAlive)
             {
                 var packetAsJson = JsonConvert.SerializeObject(packets);
