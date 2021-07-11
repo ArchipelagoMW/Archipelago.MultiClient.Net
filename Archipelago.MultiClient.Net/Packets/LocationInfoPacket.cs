@@ -1,14 +1,14 @@
-﻿using MultiClient.Net.Models;
+﻿using Archipelago.MultiClient.Net.Enums;
+using Archipelago.MultiClient.Net.Models;
 using Newtonsoft.Json;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
-namespace MultiClient.Net.Packets
+namespace Archipelago.MultiClient.Net.Packets
 {
-    public class LocationInfoPacket: ArchipelagoPacketBase
+    public class LocationInfoPacket : ArchipelagoPacketBase
     {
+        public override ArchipelagoPacketType PacketType => ArchipelagoPacketType.LocationInfo;
+
         [JsonProperty("locations")]
         public List<NetworkItem> Locations { get; set; }
     }

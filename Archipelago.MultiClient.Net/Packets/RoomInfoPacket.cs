@@ -1,16 +1,20 @@
-﻿using MultiClient.Net.Models;
+﻿using Archipelago.MultiClient.Net.Converters;
+using Archipelago.MultiClient.Net.Enums;
+using Archipelago.MultiClient.Net.Models;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
-namespace MultiClient.Net.Packets
+namespace Archipelago.MultiClient.Net.Packets
 {
     public class RoomInfoPacket : ArchipelagoPacketBase
     {
+        public override ArchipelagoPacketType PacketType => ArchipelagoPacketType.RoomInfo;
+
         [JsonProperty("version")]
-        public List<int> Version { get; set; }
+        [JsonConverter(typeof(NamedTupleInterchangeConverter))]
+        public Version Version { get; set; }
 
         [JsonProperty("tags")]
         public List<string> Tags { get; set; }
@@ -19,10 +23,12 @@ namespace MultiClient.Net.Packets
         public bool Password { get; set; }
 
         [JsonProperty("forfeit_mode")]
-        public string ForfeitMode { get; set; }
+        [JsonConverter(typeof(StringEnumConverter))]
+        public ForfeitModeType ForfeitMode { get; set; }
 
         [JsonProperty("remaining_mode")]
-        public string RemainingMode { get; set; }
+        [JsonConverter(typeof(StringEnumConverter))]
+        public RemainingModeType RemainingMode { get; set; }
 
         [JsonProperty("hint_cost")]
         public int HintCost { get; set; }
@@ -32,5 +38,11 @@ namespace MultiClient.Net.Packets
 
         [JsonProperty("players")]
         public List<NetworkPlayer> Players { get; set; }
+
+        [JsonProperty("datapackage_version")]
+        public int DataPackageVersion { get; set; }
+
+        [JsonProperty("seed_name")]
+        public string SeedName { get; set; }
     }
 }

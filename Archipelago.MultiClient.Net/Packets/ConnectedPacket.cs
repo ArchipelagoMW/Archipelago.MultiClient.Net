@@ -1,14 +1,14 @@
-﻿using MultiClient.Net.Models;
+﻿using Archipelago.MultiClient.Net.Enums;
+using Archipelago.MultiClient.Net.Models;
 using Newtonsoft.Json;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
-namespace MultiClient.Net.Packets
+namespace Archipelago.MultiClient.Net.Packets
 {
-    public class ConnectedPacket: ArchipelagoPacketBase
+    public class ConnectedPacket : ArchipelagoPacketBase
     {
+        public override ArchipelagoPacketType PacketType => ArchipelagoPacketType.Connected;
+
         [JsonProperty("team")]
         public int Team { get; set; }
 
@@ -23,5 +23,8 @@ namespace MultiClient.Net.Packets
 
         [JsonProperty("items_checked")]
         public List<int> ItemsChecked { get; set; }
+
+        [JsonProperty("slot_data")]
+        public Dictionary<string, object> SlotData { get; set; }
     }
 }

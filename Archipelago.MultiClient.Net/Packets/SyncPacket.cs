@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using Archipelago.MultiClient.Net.Enums;
 
-namespace MultiClient.Net.Packets
+namespace Archipelago.MultiClient.Net.Packets
 {
-    public class SyncPacket: ArchipelagoPacketBase
+    public class SyncPacket : ArchipelagoPacketBase
     {
+        public override ArchipelagoPacketType PacketType => ArchipelagoPacketType.Sync;
     }
 }

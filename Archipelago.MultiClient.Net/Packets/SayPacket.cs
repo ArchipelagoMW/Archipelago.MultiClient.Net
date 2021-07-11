@@ -1,13 +1,12 @@
-﻿using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using Archipelago.MultiClient.Net.Enums;
+using Newtonsoft.Json;
 
-namespace MultiClient.Net.Packets
+namespace Archipelago.MultiClient.Net.Packets
 {
-    public class SayPacket: ArchipelagoPacketBase
+    public class SayPacket : ArchipelagoPacketBase
     {
+        public override ArchipelagoPacketType PacketType => ArchipelagoPacketType.Say;
+
         [JsonProperty("text")]
         public string Text { get; set; }
     }

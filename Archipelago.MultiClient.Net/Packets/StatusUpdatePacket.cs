@@ -1,14 +1,12 @@
-﻿using MultiClient.Net.Enums;
+﻿using Archipelago.MultiClient.Net.Enums;
 using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
-namespace MultiClient.Net.Packets
+namespace Archipelago.MultiClient.Net.Packets
 {
-    public class StatusUpdatePacket: ArchipelagoPacketBase
+    public class StatusUpdatePacket : ArchipelagoPacketBase
     {
+        public override ArchipelagoPacketType PacketType => ArchipelagoPacketType.StatusUpdate;
+
         [JsonProperty("status")]
         public ArchipelagoClientState Status { get; set; }
     }

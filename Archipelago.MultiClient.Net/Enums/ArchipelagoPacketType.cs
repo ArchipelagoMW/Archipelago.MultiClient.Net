@@ -1,4 +1,4 @@
-﻿namespace MultiClient.Net.Enums
+﻿namespace Archipelago.MultiClient.Net.Enums
 {
     public enum ArchipelagoPacketType
     {
@@ -14,6 +14,9 @@
         LocationChecks,
         LocationScouts,
         StatusUpdate,
-        Say
+        Say,
+        GetDataPackage,
+        DataPackage,
+        Sync
     }
 }

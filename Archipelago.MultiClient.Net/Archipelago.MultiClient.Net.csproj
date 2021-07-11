@@ -1,75 +1,24 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{35A803AD-85ED-42E9-B1E3-C6B72096F0C1}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Archipelago.MultiClient.Net</RootNamespace>
-    <AssemblyName>Archipelago.MultiClient.Net</AssemblyName>
-    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <Deterministic>true</Deterministic>
+    <TargetFrameworks>net35;net472</TargetFrameworks>
+    <AssemblyTitle>MultiClient.Net</AssemblyTitle>
+    <Product>MultiClient.Net</Product>
+    <Copyright>Copyright ©  2021</Copyright>
+    <OutputPath>bin\$(Configuration)\</OutputPath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.12.0.3\lib\net35\Newtonsoft.Json.dll</HintPath>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
+    <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
+  </ItemGroup>
+  <ItemGroup>
     <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
-    <Reference Include="websocket-sharp, Version=1.0.2.59611, Culture=neutral, PublicKeyToken=5660b08a1845a91e, processorArchitecture=MSIL">
-      <HintPath>..\packages\WebSocketSharp.1.0.3-rc11\lib\websocket-sharp.dll</HintPath>
+    <Reference Include="websocket-sharp">
+      <HintPath>..\DLLs\websocket-sharp.dll</HintPath>
     </Reference>
   </ItemGroup>
-  <ItemGroup>
-    <Compile Include="ArchipelagoPacketBase.cs" />
-    <Compile Include="ArchipelagoSession.cs" />
-    <Compile Include="Enums\ArchipelagoPacketType.cs" />
-    <Compile Include="Models\NetworkItem.cs" />
-    <Compile Include="Models\NetworkPlayer.cs" />
-    <Compile Include="Enums\ArchipelagoClientState.cs" />
-    <Compile Include="Packets\ConnectedPacket.cs" />
-    <Compile Include="Packets\ConnectionRefusedPacket.cs" />
-    <Compile Include="Models\JsonMessagePart.cs" />
-    <Compile Include="Packets\ConnectPacket.cs" />
-    <Compile Include="Packets\LocationChecksPacket.cs" />
-    <Compile Include="Packets\LocationInfoPacket.cs" />
-    <Compile Include="Packets\LocationScouts.cs" />
-    <Compile Include="Packets\PrintJsonPacket.cs" />
-    <Compile Include="Packets\PrintPacket.cs" />
-    <Compile Include="Packets\ReceivedItemsPacket.cs" />
-    <Compile Include="Packets\RoomInfoPacket.cs" />
-    <Compile Include="Packets\RoomUpdatePacket.cs" />
-    <Compile Include="Packets\SayPacket.cs" />
-    <Compile Include="Packets\StatusUpdatePacket.cs" />
-    <Compile Include="Packets\SyncPacket.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

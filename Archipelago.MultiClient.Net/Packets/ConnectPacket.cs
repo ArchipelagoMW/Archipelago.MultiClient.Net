@@ -1,13 +1,15 @@
-﻿using Newtonsoft.Json;
+﻿using Archipelago.MultiClient.Net.Converters;
+using Archipelago.MultiClient.Net.Enums;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
-namespace MultiClient.Net.Packets
+namespace Archipelago.MultiClient.Net.Packets
 {
-    public class ConnectPacket: ArchipelagoPacketBase
+    public class ConnectPacket : ArchipelagoPacketBase
     {
+        public override ArchipelagoPacketType PacketType => ArchipelagoPacketType.Connect;
+
         [JsonProperty("password")]
         public string Password { get; set; }
 
@@ -21,6 +23,7 @@ namespace MultiClient.Net.Packets
         public string Uuid { get; set; }
 
         [JsonProperty("version")]
+        [JsonConverter(typeof(NamedTupleInterchangeConverter))]
         public Version Version { get; set; }
 
         [JsonProperty("tags")]
