@@ -17,6 +17,8 @@
         Say,
         GetDataPackage,
         DataPackage,
-        Sync
+        Sync,
+        Bounced,
+        Bounce
     }
 }
