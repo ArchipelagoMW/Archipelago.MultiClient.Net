@@ -5,11 +5,8 @@ using Newtonsoft.Json.Linq;
 
 namespace Archipelago.MultiClient.Net.Packets
 {
-    public class BouncedPacket : ArchipelagoPacketBase
+    public class BouncedPacket : BouncePacket
     {
         public override ArchipelagoPacketType PacketType => ArchipelagoPacketType.Bounced;
-
-        [JsonProperty("data")]
-        public Dictionary<string, object> Data { get; set; }
     }
 }
