@@ -3,11 +3,33 @@ using Archipelago.MultiClient.Net.Packets;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Generic;
 
 namespace Archipelago.MultiClient.Net.Converters
 {
     public class ArchipelagoPacketConverter : JsonConverter
     {
+        public static Dictionary<ArchipelagoPacketType, Func<JObject, ArchipelagoPacketBase>> PacketDeserializationMap = new Dictionary<ArchipelagoPacketType, Func<JObject, ArchipelagoPacketBase>>()
+        {
+            [ArchipelagoPacketType.RoomInfo]          = (JObject obj) => obj.ToObject<RoomInfoPacket>(),
+            [ArchipelagoPacketType.ConnectionRefused] = (JObject obj) => obj.ToObject<ConnectionRefusedPacket>(),
+            [ArchipelagoPacketType.Connected]         = (JObject obj) => obj.ToObject<ConnectedPacket>(),
+            [ArchipelagoPacketType.ReceivedItems]     = (JObject obj) => obj.ToObject<ReceivedItemsPacket>(),
+            [ArchipelagoPacketType.LocationInfo]      = (JObject obj) => obj.ToObject<LocationInfoPacket>(),
+            [ArchipelagoPacketType.RoomUpdate]        = (JObject obj) => obj.ToObject<RoomUpdatePacket>(),
+            [ArchipelagoPacketType.Print]             = (JObject obj) => obj.ToObject<PrintPacket>(),
+            [ArchipelagoPacketType.PrintJSON]         = (JObject obj) => obj.ToObject<PrintJsonPacket>(),
+            [ArchipelagoPacketType.Connect]           = (JObject obj) => obj.ToObject<ConnectPacket>(),
+            [ArchipelagoPacketType.LocationChecks]    = (JObject obj) => obj.ToObject<LocationChecksPacket>(),
+            [ArchipelagoPacketType.LocationScouts]    = (JObject obj) => obj.ToObject<LocationScoutsPacket>(),
+            [ArchipelagoPacketType.StatusUpdate]      = (JObject obj) => obj.ToObject<StatusUpdatePacket>(),
+            [ArchipelagoPacketType.Say]               = (JObject obj) => obj.ToObject<SayPacket>(),
+            [ArchipelagoPacketType.GetDataPackage]    = (JObject obj) => obj.ToObject<GetDataPackagePacket>(),
+            [ArchipelagoPacketType.DataPackage]       = (JObject obj) => obj.ToObject<DataPackagePacket>(),
+            [ArchipelagoPacketType.Bounce]            = (JObject obj) => obj.ToObject<BouncePacket>(),
+            [ArchipelagoPacketType.Bounced]           = (JObject obj) => obj.ToObject<BouncedPacket>(),
+        };
+
         public override bool CanWrite => false;
 
         public override bool CanConvert(Type objectType) => objectType.IsAssignableFrom(typeof(ArchipelagoPacketBase));
@@ -18,57 +40,17 @@ namespace Archipelago.MultiClient.Net.Converters
 
             var commandType = token["cmd"].ToString();
             ArchipelagoPacketType packetType = (ArchipelagoPacketType)Enum.Parse(typeof(ArchipelagoPacketType), commandType);
-            ArchipelagoPacketBase ret;
-            switch (packetType)
+            
+            ArchipelagoPacketBase ret = null;
+            if (PacketDeserializationMap.ContainsKey(packetType))
             {
-                case ArchipelagoPacketType.RoomInfo:
-                    ret = token.ToObject<RoomInfoPacket>();
-                    break;
-                case ArchipelagoPacketType.ConnectionRefused:
-                    ret = token.ToObject<ConnectionRefusedPacket>();
-                    break;
-                case ArchipelagoPacketType.Connected:
-                    ret = token.ToObject<ConnectedPacket>();
-                    break;
-                case ArchipelagoPacketType.ReceivedItems:
-                    ret = token.ToObject<ReceivedItemsPacket>();
-                    break;
-                case ArchipelagoPacketType.LocationInfo:
-                    ret = token.ToObject<LocationInfoPacket>();
-                    break;
-                case ArchipelagoPacketType.RoomUpdate:
-                    ret = token.ToObject<RoomUpdatePacket>();
-                    break;
-                case ArchipelagoPacketType.Print:
-                    ret = token.ToObject<PrintPacket>();
-                    break;
-                case ArchipelagoPacketType.PrintJSON:
-                    ret = token.ToObject<PrintJsonPacket>();
-                    break;
-                case ArchipelagoPacketType.Connect:
-                    ret = token.ToObject<ConnectPacket>();
-                    break;
-                case ArchipelagoPacketType.LocationChecks:
-                    ret = token.ToObject<LocationChecksPacket>();
-                    break;
-                case ArchipelagoPacketType.LocationScouts:
-                    ret = token.ToObject<LocationScoutsPacket>();
-                    break;
-                case ArchipelagoPacketType.StatusUpdate:
-                    ret = token.ToObject<StatusUpdatePacket>();
-                    break;
-                case ArchipelagoPacketType.Say:
-                    ret = token.ToObject<SayPacket>();
-                    break;
-                case ArchipelagoPacketType.GetDataPackage:
-                    ret = token.ToObject<GetDataPackagePacket>();
-                    break;
-                case ArchipelagoPacketType.DataPackage:
-                    ret = token.ToObject<DataPackagePacket>();
-                    break;
-                default:
-                    throw new NotImplementedException("Received an unknown packet.");
+                ret = PacketDeserializationMap[packetType](token);
             }
+            else
+            {
+                throw new InvalidOperationException("Received an unknown packet.");
+            }
+
             return ret;
         }
 

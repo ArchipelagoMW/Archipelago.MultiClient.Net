@@ -16,5 +16,8 @@ namespace Archipelago.MultiClient.Net.Models
 
         [JsonProperty("version")]
         public int Version { get; set; }
+
+        [JsonProperty("games")]
+        public Dictionary<string, GameData> Games { get; set; }
     }
 }
