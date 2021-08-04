@@ -42,7 +42,14 @@ namespace Archipelago.MultiClient.Net.Converters
             ArchipelagoPacketType packetType = (ArchipelagoPacketType)Enum.Parse(typeof(ArchipelagoPacketType), commandType);
             
             ArchipelagoPacketBase ret = null;
-            ret = PacketDeserializationMap[packetType](token);
+            if (PacketDeserializationMap.ContainsKey(packetType))
+            {
+                ret = PacketDeserializationMap[packetType](token);
+            }
+            else
+            {
+                throw new InvalidOperationException("Received an unknown packet.");
+            }
 
             return ret;
         }
