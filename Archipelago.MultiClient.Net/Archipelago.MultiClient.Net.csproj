@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net35;net472</TargetFrameworks>
+    <TargetFrameworks>net35</TargetFrameworks>
     <AssemblyTitle>Archipelago.MultiClient.Net</AssemblyTitle>
     <Product>Archipelago.MultiClient.Net</Product>
     <Copyright>Copyright ©  2021</Copyright>
@@ -13,9 +13,9 @@
     <DebugType>pdbonly</DebugType>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
-  </ItemGroup>
-  <ItemGroup>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\DLLs\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="websocket-sharp">
       <HintPath>..\DLLs\websocket-sharp.dll</HintPath>
     </Reference>
