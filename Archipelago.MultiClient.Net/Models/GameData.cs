@@ -8,10 +8,10 @@ namespace Archipelago.MultiClient.Net.Models
 {
     public class GameData
     {
-        [JsonProperty("item_name_to_id")]
+        [JsonProperty("location_name_to_id")]
         public Dictionary<string, int> LocationLookup { get; set; }
 
-        [JsonProperty("location_name_to_id")]
+        [JsonProperty("item_name_to_id")]
         public Dictionary<string, int> ItemLookup { get; set; }
 
         [JsonProperty("version")]
