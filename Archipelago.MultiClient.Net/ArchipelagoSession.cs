@@ -50,11 +50,27 @@ namespace Archipelago.MultiClient.Net
             }
         }
 
+        public void ConnectAsync()
+        {
+            if (!Socket.IsAlive)
+            {
+                Socket.Connect();
+            }
+        }
+
         public void Disconnect()
         {
             if (Socket.IsAlive)
             {
                 Socket.Close();
+            }
+        }
+
+        public void DisconnectAsync()
+        {
+            if (Socket.IsAlive)
+            {
+                Socket.CloseAsync();
             }
         }
 
