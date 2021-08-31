@@ -54,7 +54,7 @@ namespace Archipelago.MultiClient.Net
         {
             if (!Socket.IsAlive)
             {
-                Socket.Connect();
+                Socket.ConnectAsync();
             }
         }
 
