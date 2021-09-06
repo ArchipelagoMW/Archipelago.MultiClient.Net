@@ -42,6 +42,9 @@ namespace Archipelago.MultiClient.Net.Packets
         [JsonProperty("datapackage_version")]
         public int DataPackageVersion { get; set; }
 
+        [JsonProperty("datapackage_versions")]
+        public Dictionary<string, int> DataPackageVersions { get; set; }
+
         [JsonProperty("seed_name")]
         public string SeedName { get; set; }
     }
