@@ -22,7 +22,7 @@ namespace Archipelago.MultiClient.Net.Packets
         public List<int> MissingChecks { get; set; }
 
         [JsonProperty("checked_locations")]
-        public List<int> ItemsChecked { get; set; }
+        public List<int> LocationsChecked { get; set; }
 
         [JsonProperty("slot_data")]
         public Dictionary<string, object> SlotData { get; set; }
