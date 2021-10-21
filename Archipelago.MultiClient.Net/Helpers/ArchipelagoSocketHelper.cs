@@ -1,15 +1,13 @@
 ﻿using Archipelago.MultiClient.Net.Converters;
-using Archipelago.MultiClient.Net.Enums;
-using Archipelago.MultiClient.Net.Packets;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using WebSocketSharp;
 
-namespace Archipelago.MultiClient.Net
+namespace Archipelago.MultiClient.Net.Helpers
 {
-    public class ArchipelagoSession
+    public class ArchipelagoSocketHelper
+
     {
         public delegate void PacketReceivedHandler(ArchipelagoPacketBase packet);
         public event PacketReceivedHandler PacketReceived;
@@ -25,13 +23,13 @@ namespace Archipelago.MultiClient.Net
 
         private WebSocket Socket;
 
-        public ArchipelagoSession(string urlToHost)
+        public ArchipelagoSocketHelper(string hostUrl)
         {
-            this.Url = urlToHost;
-            this.Socket = new WebSocket(urlToHost);
-            this.Socket.OnMessage += OnMessageReceived;
-            this.Socket.OnError += OnError;
-            this.Socket.OnClose += OnClose;
+            Url = hostUrl;
+            Socket = new WebSocket(hostUrl);
+            Socket.OnMessage += OnMessageReceived;
+            Socket.OnError += OnError;
+            Socket.OnClose += OnClose;
         }
 
         private void OnClose(object sender, CloseEventArgs e)
@@ -110,6 +108,25 @@ namespace Archipelago.MultiClient.Net
             {
                 var packetAsJson = JsonConvert.SerializeObject(packets);
                 Socket.Send(packetAsJson);
+            }
+        }
+
+        public void SendPacketAsync(Action<bool> onComplete, ArchipelagoPacketBase packet)
+        {
+            SendMultiplePacketsAsync(onComplete, new List<ArchipelagoPacketBase> { packet });
+        }
+
+        public void SendMultiplePacketsAsync(Action<bool> onComplete, List<ArchipelagoPacketBase> packets)
+        {
+            SendMultiplePacketsAsync(onComplete, packets.ToArray());
+        }
+
+        public void SendMultiplePacketsAsync(Action<bool> onComplete, params ArchipelagoPacketBase[] packets)
+        {
+            if (Socket.IsAlive)
+            {
+                var packetAsJson = JsonConvert.SerializeObject(packets);
+                Socket.SendAsync(packetAsJson, onComplete);
             }
         }
     }
