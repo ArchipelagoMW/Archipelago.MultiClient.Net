@@ -1,26 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Exceptions;
 using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
 
-namespace Archipelago.MultiClient.Net.Handlers
+namespace Archipelago.MultiClient.Net.Helpers
 {
     public class ReceivedItemsHelper
     {
-        private readonly ArchipelagoSession session;
+        private readonly ArchipelagoSocketHelper session;
         private DataPackage dataPackage;
         private int itemsReceivedIndex = 0;
         private Queue<NetworkItem> itemQueue = new Queue<NetworkItem>();
-
         private Dictionary<string, Dictionary<int, string>> itemLookupCache = new Dictionary<string, Dictionary<int, string>>();
 
         public int Index => itemsReceivedIndex;
 
-        public ReceivedItemsHelper(ArchipelagoSession session)
+        public ReceivedItemsHelper(ArchipelagoSocketHelper session)
         {
             this.session = session;
 
@@ -28,20 +29,26 @@ namespace Archipelago.MultiClient.Net.Handlers
         }
 
         /// <summary>
-        /// Peek the next item on the queue to be handled. 
-        /// The item will remain on the queue until dequeued with <see cref="DequeueItem"/>.
+        ///     Peek the next item on the queue to be handled. 
+        ///     The item will remain on the queue until dequeued with <see cref="DequeueItem"/>.
         /// </summary>
-        /// <returns>The next item to be handled as a <see cref="NetworkItem"/>.</returns>
+        /// <returns>
+        ///     The next item to be handled as a <see cref="NetworkItem"/>.
+        /// </returns>
         public NetworkItem PeekItem()
         {
             return itemQueue.Peek();
         }
 
         /// <summary>
-        /// Peek the name of next item on the queue to be handled.
+        ///     Peek the name of next item on the queue to be handled.
         /// </summary>
-        /// <param name="game">The game for which to look up the item id. This lookup is derived from the DataPackage packet.</param>
-        /// <returns>The name of the item.</returns>
+        /// <param name="game">
+        ///     The game for which to look up the item id. This lookup is derived from the DataPackage packet.
+        /// </param>
+        /// <returns>
+        ///     The name of the item.
+        /// </returns>
         public string PeekItemName(string game)
         {
             var item = itemQueue.Peek();
@@ -50,20 +57,29 @@ namespace Archipelago.MultiClient.Net.Handlers
         }
 
         /// <summary>
-        /// Dequeues and returns the next item on the queue to be handled.
+        ///     Dequeues and returns the next item on the queue to be handled.
         /// </summary>
-        /// <returns>The next item to be handled as a <see cref="NetworkItem"/>.</returns>
+        /// <returns>
+        ///     The next item to be handled as a <see cref="NetworkItem"/>.
+        /// </returns>
         public NetworkItem DequeueItem()
         {
+            itemsReceivedIndex++;
             return itemQueue.Dequeue();
         }
 
         /// <summary>
-        /// Perform a lookup using the DataPackage sent as a source of truth to lookup a particular item id for a particular game.
+        ///     Perform a lookup using the DataPackage sent as a source of truth to lookup a particular item id for a particular game.
         /// </summary>
-        /// <param name="id">Id of the item to lookup.</param>
-        /// <param name="game">Name of the game to lookup the item for.</param>
-        /// <returns>The name of the item as a string.</returns>
+        /// <param name="id">
+        ///     Id of the item to lookup.
+        /// </param>
+        /// <param name="game">
+        ///     Name of the game to lookup the item for.
+        /// </param>
+        /// <returns>
+        ///     The name of the item as a string.
+        /// </returns>
         public string GetItemName(int id, string game)
         {
             if (!VerifyDataPackageReceived())
@@ -92,12 +108,14 @@ namespace Archipelago.MultiClient.Net.Handlers
         }
 
         /// <remarks>
-        /// I don't really have an asynchronous choice here.
+        ///     I don't really have an asynchronous choice here so this is what we get.
+        ///     I'm open to ideas/advice.
         /// </remarks>
         private void AwaitDataPackage()
         {
-            while (dataPackage == null)
-            { 
+            while(dataPackage == null)
+            {
+
             }
         }
 
