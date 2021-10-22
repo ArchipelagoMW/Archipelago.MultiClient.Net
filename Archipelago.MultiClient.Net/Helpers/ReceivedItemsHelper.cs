@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
+﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
-using System.Threading;
 using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Exceptions;
 using Archipelago.MultiClient.Net.Models;
@@ -17,9 +14,11 @@ namespace Archipelago.MultiClient.Net.Helpers
         private DataPackage dataPackage;
         private int itemsReceivedIndex = 0;
         private Queue<NetworkItem> itemQueue = new Queue<NetworkItem>();
+        private List<NetworkItem> allItemsReceived = new List<NetworkItem>();
         private Dictionary<string, Dictionary<int, string>> itemLookupCache = new Dictionary<string, Dictionary<int, string>>();
 
         public int Index => itemsReceivedIndex;
+        public ReadOnlyCollection<NetworkItem> AllItemsReceived => new ReadOnlyCollection<NetworkItem>(allItemsReceived);
 
         public ReceivedItemsHelper(ArchipelagoSocketHelper session)
         {
@@ -158,12 +157,39 @@ namespace Archipelago.MultiClient.Net.Helpers
                     {
                         var receivedItemsPacket = (ReceivedItemsPacket)packet;
 
+                        if (itemsReceivedIndex != receivedItemsPacket.Index)
+                        {
+                            session.SendPacket(new SyncPacket());
+                            break;
+                        }
+
+                        if (receivedItemsPacket.Index == 0)
+                        {
+                            PerformResynchronization(receivedItemsPacket);
+                            break;
+                        }
+
                         foreach (var item in receivedItemsPacket.Items)
                         {
+                            allItemsReceived.Add(item);
                             itemQueue.Enqueue(item);
+                            itemsReceivedIndex++;
                         }
                         break;
                     }
+            }
+        }
+
+        private void PerformResynchronization(ReceivedItemsPacket receivedItemsPacket)
+        {
+            itemQueue.Clear();
+            allItemsReceived.Clear();
+            itemsReceivedIndex = 0;
+            foreach (var item in receivedItemsPacket.Items)
+            {
+                itemQueue.Enqueue(item);
+                allItemsReceived.Add(item);
+                itemsReceivedIndex++;
             }
         }
     }
