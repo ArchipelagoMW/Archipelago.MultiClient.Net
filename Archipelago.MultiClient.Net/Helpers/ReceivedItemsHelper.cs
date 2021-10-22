@@ -83,6 +83,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         {
             if (!VerifyDataPackageReceived())
             {
+                // Need to wait until the DataPackage comes back.
                 AwaitDataPackage();
             }
 
