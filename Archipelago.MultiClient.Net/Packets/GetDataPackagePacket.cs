@@ -9,6 +9,6 @@ namespace Archipelago.MultiClient.Net.Packets
         public override ArchipelagoPacketType PacketType => ArchipelagoPacketType.GetDataPackage;
 
         [JsonProperty("exclusions")]
-        public List<string> Exclusions { get; set; }
+        public List<string> Exclusions { get; set; } = new List<string>();
     }
 }

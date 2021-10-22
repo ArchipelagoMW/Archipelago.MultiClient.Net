@@ -22,7 +22,7 @@ namespace Archipelago.MultiClient.Net.Packets
 		public bool Password { get; set; }
 
 		[JsonProperty("permissions")]
-		public Dictionary<string, Permissions> Permissions { get; set; }
+		public Dictionary<string, Permissions> Permissions { get; set; } = new Dictionary<string, Permissions>();
 
 		[JsonProperty("hint_cost")]
 		public int HintCost { get; set; }
@@ -31,13 +31,13 @@ namespace Archipelago.MultiClient.Net.Packets
 		public int LocationCheckPoints { get; set; }
 
 		[JsonProperty("players")]
-		public List<NetworkPlayer> Players { get; set; }
+		public List<NetworkPlayer> Players { get; set; } = new List<NetworkPlayer>();
 
 		[JsonProperty("datapackage_version")]
 		public int DataPackageVersion { get; set; }
 
 		[JsonProperty("datapackage_versions")]
-		public Dictionary<string, int> DataPackageVersions { get; set; }
+		public Dictionary<string, int> DataPackageVersions { get; set; } = new Dictionary<string, int>();
 
 		[JsonProperty("seed_name")]
 		public string SeedName { get; set; }

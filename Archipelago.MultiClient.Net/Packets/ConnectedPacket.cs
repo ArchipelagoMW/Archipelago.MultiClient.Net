@@ -16,15 +16,15 @@ namespace Archipelago.MultiClient.Net.Packets
         public int Slot { get; set; }
 
         [JsonProperty("players")]
-        public List<NetworkPlayer> Players { get; set; }
+        public List<NetworkPlayer> Players { get; set; } = new List<NetworkPlayer>();
 
         [JsonProperty("missing_locations")]
-        public List<int> MissingChecks { get; set; }
+        public List<int> MissingChecks { get; set; } = new List<int>();
 
         [JsonProperty("checked_locations")]
-        public List<int> LocationsChecked { get; set; }
+        public List<int> LocationsChecked { get; set; } = new List<int>();
 
         [JsonProperty("slot_data")]
-        public Dictionary<string, object> SlotData { get; set; }
+        public Dictionary<string, object> SlotData { get; set; } = new Dictionary<string, object>();
     }
 }

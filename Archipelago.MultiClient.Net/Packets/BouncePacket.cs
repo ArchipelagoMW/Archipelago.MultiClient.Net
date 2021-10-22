@@ -9,15 +9,15 @@ namespace Archipelago.MultiClient.Net.Packets
         public override ArchipelagoPacketType PacketType => ArchipelagoPacketType.Bounce;
 
         [JsonProperty("games")]
-        public List<string> Games { get; set; }
+        public List<string> Games { get; set; } = new List<string>();
 
         [JsonProperty("slots")]
-        public List<int> Slots { get; set; }
+        public List<int> Slots { get; set; } = new List<int>();
 
         [JsonProperty("tags")]
-        public List<string> Tags { get; set; }
+        public List<string> Tags { get; set; } = new List<string>();
 
         [JsonProperty("data")]
-        public Dictionary<string, object> Data { get; set; }
+        public Dictionary<string, object> Data { get; set; } = new Dictionary<string, object>();
     }
 }
