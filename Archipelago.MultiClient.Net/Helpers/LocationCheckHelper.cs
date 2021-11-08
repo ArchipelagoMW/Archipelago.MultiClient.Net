@@ -72,6 +72,9 @@ namespace Archipelago.MultiClient.Net.Helpers
                         {
                             var infoPacket = (LocationInfoPacket)packet;
                             locationInfoPacketCallback(infoPacket);
+
+                            awaitingLocationInfoPacket = false;
+                            locationInfoPacketCallback = null;
                         }
                         break;
                     }
