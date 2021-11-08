@@ -18,6 +18,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         private Queue<NetworkItem> itemQueue = new Queue<NetworkItem>();
         private List<NetworkItem> allItemsReceived = new List<NetworkItem>();
         private Dictionary<int, string> itemLookupCache = new Dictionary<int, string>();
+        private object itemQueueLockObject;
 
         public int Index => itemsReceivedIndex;
         public ReadOnlyCollection<NetworkItem> AllItemsReceived => new ReadOnlyCollection<NetworkItem>(allItemsReceived);
@@ -41,7 +42,10 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// </returns>
         public NetworkItem PeekItem()
         {
-            return itemQueue.Peek();
+            lock (itemQueueLockObject)
+            {
+                return itemQueue.Peek();
+            }
         }
 
         /// <summary>
@@ -55,9 +59,11 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// </returns>
         public string PeekItemName()
         {
-            var item = itemQueue.Peek();
-
-            return GetItemName(item.Item);
+            lock (itemQueueLockObject)
+            {
+                var item = itemQueue.Peek();
+                return GetItemName(item.Item);
+            }
         }
 
         /// <summary>
@@ -68,8 +74,11 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// </returns>
         public NetworkItem DequeueItem()
         {
-            itemsReceivedIndex++;
-            return itemQueue.Dequeue();
+            lock (itemQueueLockObject)
+            {
+                itemsReceivedIndex++;
+                return itemQueue.Dequeue();
+            }
         }
 
         /// <summary>
@@ -157,15 +166,18 @@ namespace Archipelago.MultiClient.Net.Helpers
                             break;
                         }
 
-                        foreach (var item in receivedItemsPacket.Items)
+                        lock (itemQueueLockObject)
                         {
-                            allItemsReceived.Add(item);
-                            itemQueue.Enqueue(item);
-                            itemsReceivedIndex++;
-
-                            if (ItemReceived != null)
+                            foreach (var item in receivedItemsPacket.Items)
                             {
-                                ItemReceived();
+                                allItemsReceived.Add(item);
+                                itemQueue.Enqueue(item);
+                                itemsReceivedIndex++;
+
+                                if (ItemReceived != null)
+                                {
+                                    ItemReceived();
+                                }
                             }
                         }
                         break;
@@ -175,14 +187,17 @@ namespace Archipelago.MultiClient.Net.Helpers
 
         private void PerformResynchronization(ReceivedItemsPacket receivedItemsPacket)
         {
-            itemQueue.Clear();
-            allItemsReceived.Clear();
-            itemsReceivedIndex = 0;
-            foreach (var item in receivedItemsPacket.Items)
+            lock (itemQueueLockObject)
             {
-                itemQueue.Enqueue(item);
-                allItemsReceived.Add(item);
-                itemsReceivedIndex++;
+                itemQueue.Clear();
+                allItemsReceived.Clear();
+                itemsReceivedIndex = 0;
+                foreach (var item in receivedItemsPacket.Items)
+                {
+                    itemQueue.Enqueue(item);
+                    allItemsReceived.Add(item);
+                    itemsReceivedIndex++;
+                }
             }
         }
     }
