@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using Archipelago.MultiClient.Net.Cache;
 using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Exceptions;
 using Archipelago.MultiClient.Net.Models;
@@ -11,11 +12,12 @@ namespace Archipelago.MultiClient.Net.Helpers
     public class ReceivedItemsHelper
     {
         private readonly ArchipelagoSocketHelper session;
+        private readonly IDataPackageCache dataPackageCache;
         private DataPackage dataPackage;
         private int itemsReceivedIndex = 0;
         private Queue<NetworkItem> itemQueue = new Queue<NetworkItem>();
         private List<NetworkItem> allItemsReceived = new List<NetworkItem>();
-        private Dictionary<string, Dictionary<int, string>> itemLookupCache = new Dictionary<string, Dictionary<int, string>>();
+        private Dictionary<int, string> itemLookupCache = new Dictionary<int, string>();
 
         public int Index => itemsReceivedIndex;
         public ReadOnlyCollection<NetworkItem> AllItemsReceived => new ReadOnlyCollection<NetworkItem>(allItemsReceived);
@@ -23,10 +25,10 @@ namespace Archipelago.MultiClient.Net.Helpers
         public delegate void ItemReceivedHandler();
         public event ItemReceivedHandler ItemReceived;
 
-        public ReceivedItemsHelper(ArchipelagoSocketHelper session)
+        internal ReceivedItemsHelper(ArchipelagoSocketHelper session, IDataPackageCache dataPackageCache)
         {
             this.session = session;
-
+            this.dataPackageCache = dataPackageCache;
             session.PacketReceived += Session_PacketReceived;
         }
 
@@ -51,11 +53,11 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// <returns>
         ///     The name of the item.
         /// </returns>
-        public string PeekItemName(string game)
+        public string PeekItemName()
         {
             var item = itemQueue.Peek();
 
-            return GetItemName(item.Item, game);
+            return GetItemName(item.Item);
         }
 
         /// <summary>
@@ -76,13 +78,10 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// <param name="id">
         ///     Id of the item to lookup.
         /// </param>
-        /// <param name="game">
-        ///     Name of the game to lookup the item for.
-        /// </param>
         /// <returns>
         ///     The name of the item as a string.
         /// </returns>
-        public string GetItemName(int id, string game)
+        public string GetItemName(int id)
         {
             if (!VerifyDataPackageReceived())
             {
@@ -90,23 +89,27 @@ namespace Archipelago.MultiClient.Net.Helpers
                 AwaitDataPackage();
             }
 
-            if (dataPackage.Games.TryGetValue(game, out var gameData))
+            if (itemLookupCache.TryGetValue(id, out var name))
             {
-                if (itemLookupCache.TryGetValue(game, out var cachedLookup))
-                {
-                    return PerformItemIdLookup(cachedLookup, id, game);
-                }
-                else
-                {
-                    var itemLookupTransposed = dataPackage.Games[game].ItemLookup.ToDictionary(x => x.Value, x => x.Key);
-                    itemLookupCache.Add(game, itemLookupTransposed);
-
-                    return PerformItemIdLookup(itemLookupTransposed, id, game);
-                }
+                return name;
             }
             else
             {
-                throw new UnknownGameException($"Attempt to look up GameData for game `{game}` failed. `{game}` was not present in data package.");
+                var gameDataContainingId = dataPackage.Games.Where(x => x.Value.ItemLookup.ContainsValue(id)).Single();
+                var gameDataItemLookup = gameDataContainingId.Value.ItemLookup.ToDictionary(x => x.Value, x => x.Key);
+                foreach (var kvp in gameDataItemLookup)
+                {
+                    itemLookupCache.Add(kvp.Key, kvp.Value);
+                }
+                
+                try
+                {
+                    return itemLookupCache[id];
+                }
+                catch (KeyNotFoundException e)
+                {
+                    throw new UnknownItemIdException($"Attempt to look up item id `{id}` failed.", e);
+                }
             }
         }
 
@@ -116,47 +119,28 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// </remarks>
         private void AwaitDataPackage()
         {
-            while(dataPackage == null)
+            while(!dataPackageCache.TryGetDataPackageFromCache(out var _))
             {
 
             }
+            dataPackageCache.TryGetDataPackageFromCache(out dataPackage);
         }
 
         private bool VerifyDataPackageReceived()
         {
-            bool isNull;
-            if (isNull = dataPackage == null)
+            if (!dataPackageCache.TryGetDataPackageFromCache(out var _))
             {
                 session.SendPacket(new GetDataPackagePacket());
+                return false;
             }
 
-            return !isNull;
-        }
-
-        private string PerformItemIdLookup(Dictionary<int, string> lookup, int id, string game)
-        {
-            if (lookup.TryGetValue(id, out var name))
-            {
-                return name;
-            }
-            else
-            {
-                throw new UnknownItemIdException($"Attempt to look up item id `{id}` for game `{game}` failed.");
-            }
+            return true;
         }
 
         private void Session_PacketReceived(ArchipelagoPacketBase packet)
         {
             switch (packet.PacketType)
             {
-                case ArchipelagoPacketType.DataPackage:
-                    {
-                        var dataPackagePacket = (DataPackagePacket)packet;
-
-                        dataPackage = dataPackagePacket.DataPackage;
-                        break;
-                    }
-
                 case ArchipelagoPacketType.ReceivedItems:
                     {
                         var receivedItemsPacket = (ReceivedItemsPacket)packet;
