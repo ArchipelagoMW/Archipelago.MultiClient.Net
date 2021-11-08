@@ -78,6 +78,21 @@ namespace Archipelago.MultiClient.Net.Helpers
                         }
                         break;
                     }
+                case ArchipelagoPacketType.InvalidPacket:
+                    {
+                        if (awaitingLocationInfoPacket)
+                        {
+                            var invalidPacket = (InvalidPacketPacket)packet;
+                            if (invalidPacket.OriginalCmd == ArchipelagoPacketType.LocationScouts)
+                            {
+                                locationInfoPacketCallback(null);
+
+                                awaitingLocationInfoPacket = false;
+                                locationInfoPacketCallback = null;
+                            }
+                        }
+                        break;
+                    }
             }
         }
     }

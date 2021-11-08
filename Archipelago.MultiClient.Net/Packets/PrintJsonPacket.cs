@@ -22,5 +22,8 @@ namespace Archipelago.MultiClient.Net.Packets
 
         [JsonProperty("item")]
         public NetworkItem Item { get; set; }
+
+        [JsonProperty("found")]
+        public bool? Found { get; set; }
     }
 }

@@ -19,6 +19,7 @@
         DataPackage,
         Sync,
         Bounced,
-        Bounce
+        Bounce,
+        InvalidPacket
     }
 }
