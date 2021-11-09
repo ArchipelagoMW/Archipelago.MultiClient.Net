@@ -61,6 +61,8 @@ namespace Archipelago.MultiClient.Net
         /// <summary>
         ///     Attempts to retrieve the datapackage from cache or from the server, if there is no cached version.
         ///     Calls a callback method when retrieval is successful.
+        ///     If the socket is not open AND there is no file cache when this method is called, then a GetDataPackage packet
+        ///     will be queued up to be sent to the server as soon as a connection is made.
         /// </summary>
         /// <param name="callback">
         ///     Action to call when the datapackage is received or retrieved from cache.
@@ -76,14 +78,30 @@ namespace Archipelago.MultiClient.Net
             }
             else
             {
-                Socket.SendPacket(new GetDataPackagePacket());
-                expectingDataPackage = true;
-                dataPackageCallback = callback;
+                if (!Socket.Connected)
+                {
+                    Action socketOpenCallback = null;
+                    socketOpenCallback = () =>
+                    {
+                        Socket.SendPacket(new GetDataPackagePacket());
+                        Socket.SocketOpened -= socketOpenCallback;
+                    };
+                    Socket.SocketOpened += socketOpenCallback;
+                    expectingDataPackage = true;
+                    dataPackageCallback = callback;
+                }
+                else
+                {
+                    Socket.SendPacket(new GetDataPackagePacket());
+                    expectingDataPackage = true;
+                    dataPackageCallback = callback;
+                }
             }
         }
 
         /// <summary>
         ///     Attempt to log in to the Archipelago server by opening a websocket connection and sending a Connect packet.
+        ///     Determining success for this attempt is done by attaching a listener to Socket.PacketReceived and listening for a Connected packet.
         /// </summary>
         /// <param name="game">The game this client is playing.</param>
         /// <param name="name">The slot name of this client.</param>

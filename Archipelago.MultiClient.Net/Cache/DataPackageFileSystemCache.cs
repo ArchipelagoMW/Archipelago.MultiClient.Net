@@ -30,7 +30,6 @@ namespace Archipelago.MultiClient.Net.Cache
 
         private void Socket_PacketReceived(ArchipelagoPacketBase packet)
         {
-            // TODO: don't download datapackage for games that aren't played at all in the session
             if (packet.PacketType == ArchipelagoPacketType.RoomInfo)
             {
                 roomInfoPacket = (RoomInfoPacket)packet;

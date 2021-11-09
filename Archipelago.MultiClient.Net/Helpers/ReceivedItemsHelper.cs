@@ -11,7 +11,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 {
     public class ReceivedItemsHelper
     {
-        private readonly ArchipelagoSocketHelper session;
+        private readonly ArchipelagoSocketHelper socket;
         private readonly IDataPackageCache dataPackageCache;
         private DataPackage dataPackage;
         private int itemsReceivedIndex = 0;
@@ -26,11 +26,13 @@ namespace Archipelago.MultiClient.Net.Helpers
         public delegate void ItemReceivedHandler();
         public event ItemReceivedHandler ItemReceived;
 
-        internal ReceivedItemsHelper(ArchipelagoSocketHelper session, IDataPackageCache dataPackageCache)
+        internal ReceivedItemsHelper(ArchipelagoSocketHelper socket, IDataPackageCache dataPackageCache)
         {
-            this.session = session;
+            this.socket = socket;
             this.dataPackageCache = dataPackageCache;
-            session.PacketReceived += Session_PacketReceived;
+            socket.PacketReceived += Socket_PacketReceived;
+
+            dataPackageCache.TryGetDataPackageFromCache(out var dataPackage);
         }
 
         /// <summary>
@@ -92,12 +94,6 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// </returns>
         public string GetItemName(int id)
         {
-            if (!VerifyDataPackageReceived())
-            {
-                // Need to wait until the DataPackage comes back.
-                AwaitDataPackage();
-            }
-
             if (itemLookupCache.TryGetValue(id, out var name))
             {
                 return name;
@@ -122,31 +118,7 @@ namespace Archipelago.MultiClient.Net.Helpers
             }
         }
 
-        /// <remarks>
-        ///     I don't really have an asynchronous choice here so this is what we get.
-        ///     I'm open to ideas/advice.
-        /// </remarks>
-        private void AwaitDataPackage()
-        {
-            while(!dataPackageCache.TryGetDataPackageFromCache(out var _))
-            {
-
-            }
-            dataPackageCache.TryGetDataPackageFromCache(out dataPackage);
-        }
-
-        private bool VerifyDataPackageReceived()
-        {
-            if (!dataPackageCache.TryGetDataPackageFromCache(out var _))
-            {
-                session.SendPacket(new GetDataPackagePacket());
-                return false;
-            }
-
-            return true;
-        }
-
-        private void Session_PacketReceived(ArchipelagoPacketBase packet)
+        private void Socket_PacketReceived(ArchipelagoPacketBase packet)
         {
             switch (packet.PacketType)
             {
@@ -156,7 +128,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 
                         if (itemsReceivedIndex != receivedItemsPacket.Index)
                         {
-                            session.SendPacket(new SyncPacket());
+                            socket.SendPacket(new SyncPacket());
                             break;
                         }
 
