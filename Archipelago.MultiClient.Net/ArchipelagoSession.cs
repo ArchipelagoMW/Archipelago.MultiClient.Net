@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Archipelago.MultiClient.Net.Cache;
 using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Helpers;
@@ -58,28 +59,60 @@ namespace Archipelago.MultiClient.Net
         }
 
         /// <summary>
-        ///     Attempts to retrieve the datapackage from the cache. If there is no package in the cache
-        ///     then this method will initiate a GetDataPackage and then call your callback when the packet is received.
-        /// 
-        ///     Generally, it should not be the case that this method returns null due to all of the automated datapackage
-        ///     retrieval that goes on within the library.
+        ///     Attempts to retrieve the datapackage from cache or from the server, if there is no cached version.
+        ///     Calls a callback method when retrieval is successful.
         /// </summary>
         /// <param name="callback">
-        ///     Action to call when the datapackage is received, should it be null or otherwise unretrieved.
+        ///     Action to call when the datapackage is received or retrieved from cache.
         /// </param>
-        public DataPackage GetDataPackage(Action<DataPackage> callback = null)
+        public void GetDataPackageAsync(Action<DataPackage> callback)
         {
             if (DataPackageCache.TryGetDataPackageFromCache(out var package))
             {
-                return package;
+                if (callback != null)
+                {
+                    callback(package);
+                }
             }
             else
             {
                 Socket.SendPacket(new GetDataPackagePacket());
                 expectingDataPackage = true;
                 dataPackageCallback = callback;
-                return null;
             }
+        }
+
+        /// <summary>
+        ///     Attempt to log in to the Archipelago server by opening a websocket connection and sending a Connect packet.
+        /// </summary>
+        /// <param name="game">The game this client is playing.</param>
+        /// <param name="name">The slot name of this client.</param>
+        /// <param name="version">The minimum AP protocol version this client supports.</param>
+        /// <param name="tags">The tags this client supports.</param>
+        /// <param name="uuid">The uuid of this client.</param>
+        /// <param name="password">The password to connect to this AP room.</param>
+        public void AttemptConnectAndLogin(string game, string name, Version version, List<string> tags = null, string uuid = null, string password = null)
+        {
+            if (uuid == null)
+            {
+                uuid = Guid.NewGuid().ToString();
+            }
+
+            if (tags == null)
+            {
+                tags = new List<string>();
+            }
+
+            Socket.Connect();
+            Socket.SendPacket(new ConnectPacket()
+            {
+                Game = game,
+                Name = name,
+                Password = password,
+                Tags = tags,
+                Uuid = uuid,
+                Version = version
+            });
         }
     }
 }
