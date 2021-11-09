@@ -16,7 +16,7 @@ namespace Archipelago.MultiClient.Net.Cache
     /// </summary>
     internal class DataPackageFileSystemCache : IDataPackageCache
     {
-        private const string DataPackageFileName = "datapackagecache.archipelago";
+        private const string DataPackageFileName = "datapackagecache.archipelagocache";
         private readonly ArchipelagoSocketHelper socket;
         private string CacheFolder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
         private RoomInfoPacket roomInfoPacket;
