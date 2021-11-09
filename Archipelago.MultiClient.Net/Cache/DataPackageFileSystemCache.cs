@@ -11,9 +11,6 @@ using Newtonsoft.Json;
 
 namespace Archipelago.MultiClient.Net.Cache
 {
-    /// <summary>
-    /// I already don't like this class. I think it needs re-working when I'm not coding tired.
-    /// </summary>
     internal class DataPackageFileSystemCache : IDataPackageCache
     {
         private const string DataPackageFileName = "datapackagecache.archipelagocache";
