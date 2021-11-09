@@ -30,6 +30,7 @@ namespace Archipelago.MultiClient.Net.Cache
 
         private void Socket_PacketReceived(ArchipelagoPacketBase packet)
         {
+            // TODO: don't download datapackage for games that aren't played at all in the session
             if (packet.PacketType == ArchipelagoPacketType.RoomInfo)
             {
                 roomInfoPacket = (RoomInfoPacket)packet;
@@ -77,11 +78,14 @@ namespace Archipelago.MultiClient.Net.Cache
             {
                 if (TryGetDataPackageFromCache(out var cachedPackage))
                 {
-                    foreach (var item in cachedPackage.Games)
+                    foreach (var item in cachedPackage.Games.Keys.ToList())
                     {
-                        if (package.Games[item.Key].Version != cachedPackage.Games[item.Key].Version)
+                        if (package.Games.ContainsKey(item))
                         {
-                            cachedPackage.Games[item.Key] = package.Games[item.Key];
+                            if (cachedPackage.Games[item].Version != package.Games[item].Version)
+                            {
+                                cachedPackage.Games[item] = package.Games[item];
+                            }
                         }
                     }
                     SaveDataPackageToFile(cachedPackage);

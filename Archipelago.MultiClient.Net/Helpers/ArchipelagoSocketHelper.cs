@@ -1,4 +1,5 @@
 ﻿using Archipelago.MultiClient.Net.Converters;
+using Archipelago.MultiClient.Net.Exceptions;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -124,6 +125,10 @@ namespace Archipelago.MultiClient.Net.Helpers
                 var packetAsJson = JsonConvert.SerializeObject(packets);
                 webSocket.Send(packetAsJson);
             }
+            else
+            {
+                throw new ArchipelagoSocketClosedException();
+            }
         }
 
         /// <summary>
@@ -178,6 +183,10 @@ namespace Archipelago.MultiClient.Net.Helpers
             {
                 var packetAsJson = JsonConvert.SerializeObject(packets);
                 webSocket.SendAsync(packetAsJson, onComplete);
+            }
+            else
+            {
+                throw new ArchipelagoSocketClosedException();
             }
         }
 

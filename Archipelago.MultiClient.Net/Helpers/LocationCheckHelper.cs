@@ -29,9 +29,11 @@ namespace Archipelago.MultiClient.Net.Helpers
         }
 
         /// <summary>
-        /// Submit the provided location ids as checked locations.
+        ///     Submit the provided location ids as checked locations.
         /// </summary>
-        /// <param name="ids">Location ids which have been checked.</param>
+        /// <param name="ids">
+        ///     Location ids which have been checked.
+        /// </param>
         public void CompleteLocationCheck(params int[] ids)
         {
             lock (locationsCheckedLockObject)
@@ -45,14 +47,16 @@ namespace Archipelago.MultiClient.Net.Helpers
         }
 
         /// <summary>
-        /// Ask the server for the items which are present in the provided location ids.
+        ///     Ask the server for the items which are present in the provided location ids.
         /// </summary>
         /// <param name="callback">
         ///     An action to run once the server responds to the scout packet.
         ///     If the argument to the action is null then the server responded with an InvalidPacket response.
         /// </param>
-        /// <param name="ids">The locations ids which are to be scouted.</param>
-        public void ScoutLocations(Action<LocationInfoPacket> callback, params int[] ids)
+        /// <param name="ids">
+        ///     The locations ids which are to be scouted.
+        /// </param>
+        public void ScoutLocations(Action<LocationInfoPacket> callback = null, params int[] ids)
         {
             socket.SendPacket(new LocationScoutsPacket()
             {
@@ -71,7 +75,11 @@ namespace Archipelago.MultiClient.Net.Helpers
                         if (awaitingLocationInfoPacket)
                         {
                             var infoPacket = (LocationInfoPacket)packet;
-                            locationInfoPacketCallback(infoPacket);
+
+                            if (locationInfoPacketCallback != null)
+                            {
+                                locationInfoPacketCallback(infoPacket);
+                            }
 
                             awaitingLocationInfoPacket = false;
                             locationInfoPacketCallback = null;
