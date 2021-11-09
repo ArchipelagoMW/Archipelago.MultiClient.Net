@@ -8,10 +8,12 @@ using WebSocketSharp;
 namespace Archipelago.MultiClient.Net.Helpers
 {
     public class ArchipelagoSocketHelper
-
     {
         public delegate void PacketReceivedHandler(ArchipelagoPacketBase packet);
         public event PacketReceivedHandler PacketReceived;
+
+        public delegate void PacketsSentHandler(ArchipelagoPacketBase[] packets);
+        public event PacketsSentHandler PacketsSent;
 
         public delegate void ErrorReceivedHandler(Exception e, string message);
         public event ErrorReceivedHandler ErrorReceived;
@@ -124,6 +126,11 @@ namespace Archipelago.MultiClient.Net.Helpers
             {
                 var packetAsJson = JsonConvert.SerializeObject(packets);
                 webSocket.Send(packetAsJson);
+
+                if (PacketsSent != null)
+                {
+                    PacketsSent(packets);
+                }
             }
             else
             {
@@ -183,6 +190,11 @@ namespace Archipelago.MultiClient.Net.Helpers
             {
                 var packetAsJson = JsonConvert.SerializeObject(packets);
                 webSocket.SendAsync(packetAsJson, onComplete);
+
+                if (PacketsSent != null)
+                {
+                    PacketsSent(packets);
+                }
             }
             else
             {
