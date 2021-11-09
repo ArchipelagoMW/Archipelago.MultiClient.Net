@@ -34,12 +34,16 @@ namespace Archipelago.MultiClient.Net.Cache
             {
                 roomInfoPacket = (RoomInfoPacket)packet;
                 var invalidated = GetCacheInvalidatedGames(roomInfoPacket);
-                var exclusions = roomInfoPacket.DataPackageVersions.Select(x => x.Key).Except(invalidated);
-
-                socket.SendPacket(new GetDataPackagePacket()
+                
+                if (invalidated.Any())
                 {
-                    Exclusions = exclusions.ToList()
-                });
+                    var exclusions = roomInfoPacket.DataPackageVersions.Select(x => x.Key).Except(invalidated);
+
+                    socket.SendPacket(new GetDataPackagePacket()
+                    {
+                        Exclusions = exclusions.ToList()
+                    });
+                }
             }
             else if (packet.PacketType == ArchipelagoPacketType.DataPackage)
             {
@@ -118,8 +122,15 @@ namespace Archipelago.MultiClient.Net.Cache
                 {
                     foreach (var item in packet.DataPackageVersions)
                     {
-                        GameData gameDataFromCache = cachedPackage.Games[item.Key];
-                        if (item.Value != gameDataFromCache.Version)
+                        if (cachedPackage.Games.ContainsKey(item.Key))
+                        {
+                            GameData gameDataFromCache = cachedPackage.Games[item.Key];
+                            if (item.Value != gameDataFromCache.Version)
+                            {
+                                gamesNeedingUpdating.Add(item.Key);
+                            }
+                        }
+                        else
                         {
                             gamesNeedingUpdating.Add(item.Key);
                         }
