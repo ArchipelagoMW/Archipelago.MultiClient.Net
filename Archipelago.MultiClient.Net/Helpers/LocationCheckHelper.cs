@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using Archipelago.MultiClient.Net.Cache;
@@ -11,19 +12,18 @@ namespace Archipelago.MultiClient.Net.Helpers
 {
     public class LocationCheckHelper
     {
-        private List<int> locationsChecked;
+        private readonly List<int> locationsChecked = new List<int>();
         private readonly ArchipelagoSocketHelper socket;
-        private readonly IDataPackageCache dataPackageCache;
-        private DataPackage dataPackage;
         private object locationsCheckedLockObject = new object();
         
         private bool awaitingLocationInfoPacket;
         private Action<LocationInfoPacket> locationInfoPacketCallback;
 
-        internal LocationCheckHelper(ArchipelagoSocketHelper socket, IDataPackageCache dataPackageCache)
+        public ReadOnlyCollection<int> AllLocationsChecked => new ReadOnlyCollection<int>(locationsChecked);
+
+        internal LocationCheckHelper(ArchipelagoSocketHelper socket)
         {
             this.socket = socket;
-            this.dataPackageCache = dataPackageCache;
 
             socket.PacketReceived += Socket_PacketReceived;
         }
