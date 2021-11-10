@@ -11,6 +11,7 @@
         Print,
         PrintJSON,
         Connect,
+        ConnectUpdate,
         LocationChecks,
         LocationScouts,
         StatusUpdate,
