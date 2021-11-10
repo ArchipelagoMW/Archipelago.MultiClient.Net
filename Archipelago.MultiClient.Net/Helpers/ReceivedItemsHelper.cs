@@ -13,25 +13,25 @@ namespace Archipelago.MultiClient.Net.Helpers
     {
         private readonly ArchipelagoSocketHelper socket;
         private readonly IDataPackageCache dataPackageCache;
-        private readonly DataPackage dataPackage;
+        private DataPackage dataPackage;
         private int itemsReceivedIndex = 0;
-        private readonly Queue<NetworkItem> itemQueue = new Queue<NetworkItem>();
-        private readonly List<NetworkItem> allItemsReceived = new List<NetworkItem>();
-        private readonly Dictionary<int, string> itemLookupCache = new Dictionary<int, string>();
-        private readonly object itemQueueLockObject = new object();
+        private Queue<NetworkItem> itemQueue = new Queue<NetworkItem>();
+        private List<NetworkItem> allItemsReceived = new List<NetworkItem>();
+        private Dictionary<int, string> itemLookupCache = new Dictionary<int, string>();
+        private object itemQueueLockObject = new object();
 
         public int Index => itemsReceivedIndex;
         public ReadOnlyCollection<NetworkItem> AllItemsReceived => GetReceivedItems();
 
         ReadOnlyCollection<NetworkItem> GetReceivedItems()
         {
-            lock (itemQueueLockObject)
-            {
-                return new ReadOnlyCollection<NetworkItem>(allItemsReceived);
+	        lock (itemQueueLockObject)
+	        {
+		        return new ReadOnlyCollection<NetworkItem>(allItemsReceived);
             }
-        }
+        }      
 
-        public delegate void ItemReceivedHandler();
+        public delegate void ItemReceivedHandler(ReceivedItemsHelper helper);
         public event ItemReceivedHandler ItemReceived;
 
         internal ReceivedItemsHelper(ArchipelagoSocketHelper socket, IDataPackageCache dataPackageCache)
@@ -61,6 +61,9 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// <summary>
         ///     Peek the name of next item on the queue to be handled.
         /// </summary>
+        /// <param name="game">
+        ///     The game for which to look up the item id. This lookup is derived from the DataPackage packet.
+        /// </param>
         /// <returns>
         ///     The name of the item.
         /// </returns>
@@ -103,21 +106,23 @@ namespace Archipelago.MultiClient.Net.Helpers
             {
                 return name;
             }
-
-            var gameDataContainingId = dataPackage.Games.Single(x => x.Value.ItemLookup.ContainsValue(id));
-            var gameDataItemLookup = gameDataContainingId.Value.ItemLookup.ToDictionary(x => x.Value, x => x.Key);
-            foreach (var kvp in gameDataItemLookup)
+            else
             {
-                itemLookupCache.Add(kvp.Key, kvp.Value);
-            }
-
-            try
-            {
-                return itemLookupCache[id];
-            }
-            catch (KeyNotFoundException e)
-            {
-                throw new UnknownItemIdException($"Attempt to look up item id `{id}` failed.", e);
+                var gameDataContainingId = dataPackage.Games.Where(x => x.Value.ItemLookup.ContainsValue(id)).Single();
+                var gameDataItemLookup = gameDataContainingId.Value.ItemLookup.ToDictionary(x => x.Value, x => x.Key);
+                foreach (var kvp in gameDataItemLookup)
+                {
+                    itemLookupCache.Add(kvp.Key, kvp.Value);
+                }
+                
+                try
+                {
+                    return itemLookupCache[id];
+                }
+                catch (KeyNotFoundException e)
+                {
+                    throw new UnknownItemIdException($"Attempt to look up item id `{id}` failed.", e);
+                }
             }
         }
 
@@ -126,37 +131,37 @@ namespace Archipelago.MultiClient.Net.Helpers
             switch (packet.PacketType)
             {
                 case ArchipelagoPacketType.ReceivedItems:
-                {
-                    var receivedItemsPacket = (ReceivedItemsPacket)packet;
-
-                    if (itemsReceivedIndex != receivedItemsPacket.Index)
                     {
-                        socket.SendPacket(new SyncPacket());
-                        break;
-                    }
+                        var receivedItemsPacket = (ReceivedItemsPacket)packet;
 
-                    if (receivedItemsPacket.Index == 0)
-                    {
-                        PerformResynchronization(receivedItemsPacket);
-                        break;
-                    }
-
-                    lock (itemQueueLockObject)
-                    {
-                        foreach (var item in receivedItemsPacket.Items)
+                        if (itemsReceivedIndex != receivedItemsPacket.Index)
                         {
-                            allItemsReceived.Add(item);
-                            itemQueue.Enqueue(item);
-                            itemsReceivedIndex++;
+                            socket.SendPacket(new SyncPacket());
+                            break;
+                        }
 
-                            if (ItemReceived != null)
+                        if (receivedItemsPacket.Index == 0)
+                        {
+                            PerformResynchronization(receivedItemsPacket);
+                            break;
+                        }
+
+                        lock (itemQueueLockObject)
+                        {
+                            foreach (var item in receivedItemsPacket.Items)
                             {
-                                ItemReceived();
+                                allItemsReceived.Add(item);
+                                itemQueue.Enqueue(item);
+                                itemsReceivedIndex++;
+
+                                if (ItemReceived != null)
+                                {
+                                    ItemReceived(this);
+                                }
                             }
                         }
+                        break;
                     }
-                    break;
-                }
             }
         }
 
