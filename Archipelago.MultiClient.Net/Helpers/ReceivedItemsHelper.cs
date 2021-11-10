@@ -32,7 +32,7 @@ namespace Archipelago.MultiClient.Net.Helpers
             this.dataPackageCache = dataPackageCache;
             socket.PacketReceived += Socket_PacketReceived;
 
-            dataPackageCache.TryGetDataPackageFromCache(out var dataPackage);
+            dataPackageCache.TryGetDataPackageFromCache(out dataPackage);
         }
 
         /// <summary>

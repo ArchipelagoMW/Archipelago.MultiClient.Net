@@ -41,8 +41,32 @@ namespace Archipelago.MultiClient.Net.Helpers
                 locationsChecked.AddRange(ids);
                 socket.SendPacket(new LocationChecksPacket()
                 {
-                    Locations = ids.ToList()
+                    Locations = locationsChecked
                 });
+            }
+        }
+
+        /// <summary>
+        ///     Submit the provided location ids as checked locations.
+        /// </summary>
+        /// <param name="onComplete">
+        ///     Action to be called when the async send is completed.
+        /// </param>
+        /// <param name="ids">
+        ///     Location ids which have been checked.
+        /// </param>
+        public void CompleteLocationChecksAsync(Action<bool> onComplete, params int[] ids)
+        {
+            lock (locationsCheckedLockObject)
+            {
+                locationsChecked.AddRange(ids);
+                socket.SendPacketAsync(
+                    new LocationChecksPacket()
+                    {
+                        Locations = locationsChecked
+                    },
+                    onComplete
+                );
             }
         }
 
@@ -61,9 +85,9 @@ namespace Archipelago.MultiClient.Net.Helpers
         ///     callback to be overwritten with the most recent call. It is recommended you chain calls to this method
         ///     within the callbacks themselves or call this only once.
         /// </remarks>
-        public void ScoutLocations(Action<LocationInfoPacket> callback = null, params int[] ids)
+        public void ScoutLocationsAsync(Action<LocationInfoPacket> callback = null, params int[] ids)
         {
-            socket.SendPacket(new LocationScoutsPacket()
+            socket.SendPacketAsync(new LocationScoutsPacket()
             {
                 Locations = ids.ToList()
             });

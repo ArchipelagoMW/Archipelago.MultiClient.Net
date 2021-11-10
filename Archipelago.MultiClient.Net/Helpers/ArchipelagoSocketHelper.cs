@@ -148,9 +148,9 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// <param name="packet">
         ///     The packet to send to the server.
         /// </param>
-        public void SendPacketAsync(Action<bool> onComplete, ArchipelagoPacketBase packet)
+        public void SendPacketAsync(ArchipelagoPacketBase packet, Action<bool> onComplete = null)
         {
-            SendMultiplePacketsAsync(onComplete, new List<ArchipelagoPacketBase> { packet });
+            SendMultiplePacketsAsync(new List<ArchipelagoPacketBase> { packet }, onComplete);
         }
 
         /// <summary>
@@ -166,7 +166,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// <remarks>
         ///     The packets will be sent in the order they are provided in the list.
         /// </remarks>
-        public void SendMultiplePacketsAsync(Action<bool> onComplete, List<ArchipelagoPacketBase> packets)
+        public void SendMultiplePacketsAsync(List<ArchipelagoPacketBase> packets, Action<bool> onComplete = null)
         {
             SendMultiplePacketsAsync(onComplete, packets.ToArray());
         }
@@ -184,7 +184,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// <remarks>
         ///     The packets will be sent in the order they are provided as arguments.
         /// </remarks>
-        public void SendMultiplePacketsAsync(Action<bool> onComplete, params ArchipelagoPacketBase[] packets)
+        public void SendMultiplePacketsAsync(Action<bool> onComplete = null, params ArchipelagoPacketBase[] packets)
         {
             if (webSocket.IsAlive)
             {

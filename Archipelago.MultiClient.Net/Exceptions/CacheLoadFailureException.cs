@@ -3,7 +3,6 @@ using System.Runtime.Serialization;
 
 namespace Archipelago.MultiClient.Net
 {
-    [Serializable]
     class CacheLoadFailureException : Exception
     {
         public CacheLoadFailureException()
