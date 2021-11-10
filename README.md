@@ -4,8 +4,7 @@ A client library for use with .NET based prog-langs for interfacing with Archipe
 ## Getting Started
 
 ```csharp
-var hostUrl = "ws://localhost:38281";
-var session = ArchipelagoSessionFactory.CreateSession(hostUrl);
+var session = ArchipelagoSessionFactory.CreateSession("localhost", 38281);
 
 session.Socket.Connect();
 session.Locations.CompleteLocationChecks(42);
