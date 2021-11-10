@@ -17,6 +17,9 @@ namespace Archipelago.MultiClient.Net.Cache
         private readonly ArchipelagoSocketHelper socket;
         private string CacheFolder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
         private RoomInfoPacket roomInfoPacket;
+        private DataPackage dataPackage;
+
+        private object fileAccessLockObject = new object();
 
         public DataPackageFileSystemCache(ArchipelagoSocketHelper socket)
         {
@@ -51,24 +54,33 @@ namespace Archipelago.MultiClient.Net.Cache
 
         public bool TryGetDataPackageFromCache(out DataPackage package)
         {
-            var dataPackagePath = Path.Combine(CacheFolder, DataPackageFileName);
-            if (File.Exists(dataPackagePath))
+            if (dataPackage != null)
             {
-                try
-                {
-                    string fileText = File.ReadAllText(dataPackagePath);
-                    package = JsonConvert.DeserializeObject<DataPackage>(fileText);
-                    return true;
-                }
-                catch (Exception e)
-                {
-                    throw new CacheLoadFailureException("Could not load data package cache from file system.", e);
-                }
+                package = dataPackage;
+                return true;
             }
-            else
-            {
-                package = null;
-                return false;
+            lock (fileAccessLockObject)
+            { 
+                var dataPackagePath = Path.Combine(CacheFolder, DataPackageFileName);
+                if (File.Exists(dataPackagePath))
+                {
+                    try
+                    {
+                        string fileText = File.ReadAllText(dataPackagePath);
+                        package = JsonConvert.DeserializeObject<DataPackage>(fileText);
+                        dataPackage = package;
+                        return true;
+                    }
+                    catch (Exception e)
+                    {
+                        throw new CacheLoadFailureException("Could not load data package cache from file system.", e);
+                    }
+                }
+                else
+                {
+                    package = null;
+                    return false;
+                }
             }
         }
 
@@ -88,6 +100,15 @@ namespace Archipelago.MultiClient.Net.Cache
                             }
                         }
                     }
+
+                    foreach (var item in package.Games.Keys.ToList())
+                    {
+                        if (!cachedPackage.Games.ContainsKey(item))
+                        {
+                            cachedPackage.Games.Add(item, package.Games[item]);
+                        }
+                    }
+
                     SaveDataPackageToFile(cachedPackage);
                     return true;
                 }
@@ -105,9 +126,13 @@ namespace Archipelago.MultiClient.Net.Cache
 
         private void SaveDataPackageToFile(DataPackage package)
         {
-            var dataPackagePath = Path.Combine(CacheFolder, DataPackageFileName);
-            string contents = JsonConvert.SerializeObject(package);
-            File.WriteAllText(dataPackagePath, contents);
+            lock (fileAccessLockObject)
+            { 
+                var dataPackagePath = Path.Combine(CacheFolder, DataPackageFileName);
+                string contents = JsonConvert.SerializeObject(package);
+                File.WriteAllText(dataPackagePath, contents);
+                dataPackage = package;
+            }
         }
 
         private List<string> GetCacheInvalidatedGames(RoomInfoPacket packet)

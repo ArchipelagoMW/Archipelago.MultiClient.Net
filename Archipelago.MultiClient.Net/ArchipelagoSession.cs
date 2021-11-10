@@ -16,19 +16,20 @@ namespace Archipelago.MultiClient.Net
 
         public LocationCheckHelper Locations { get; }
 
-        private DataPackageFileSystemCache DataPackageCache { get; }
+        private IDataPackageCache DataPackageCache { get; }
         
         private bool expectingDataPackage = false;
         private Action<DataPackage> dataPackageCallback;
 
         internal ArchipelagoSession(ArchipelagoSocketHelper socket,
                                     ReceivedItemsHelper items,
-                                    LocationCheckHelper locations)
+                                    LocationCheckHelper locations,
+                                    IDataPackageCache cache)
         {
             Socket = socket;
             Items = items;
             Locations = locations;
-            DataPackageCache = new DataPackageFileSystemCache(socket);
+            DataPackageCache = cache;
 
             socket.PacketReceived += Socket_PacketReceived;
         }
@@ -78,7 +79,13 @@ namespace Archipelago.MultiClient.Net
             }
             else
             {
-                if (!Socket.Connected)
+                if (Socket.Connected)
+                {
+                    Socket.SendPacket(new GetDataPackagePacket());
+                    expectingDataPackage = true;
+                    dataPackageCallback = callback;
+                }
+                else
                 {
                     Action socketOpenCallback = null;
                     socketOpenCallback = () =>
@@ -87,12 +94,6 @@ namespace Archipelago.MultiClient.Net
                         Socket.SocketOpened -= socketOpenCallback;
                     };
                     Socket.SocketOpened += socketOpenCallback;
-                    expectingDataPackage = true;
-                    dataPackageCallback = callback;
-                }
-                else
-                {
-                    Socket.SendPacket(new GetDataPackagePacket());
                     expectingDataPackage = true;
                     dataPackageCallback = callback;
                 }
