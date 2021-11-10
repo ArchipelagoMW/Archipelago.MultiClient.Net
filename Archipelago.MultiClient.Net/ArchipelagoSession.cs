@@ -41,23 +41,23 @@ namespace Archipelago.MultiClient.Net
             switch (packet.PacketType)
             {
                 case ArchipelagoPacketType.DataPackage:
+                {
+                    if (expectingDataPackage)
                     {
-                        if (expectingDataPackage)
+                        var dataPackagePacket = (DataPackagePacket)packet;
+
+                        DataPackageCache.SaveDataPackageToCache(dataPackagePacket.DataPackage);
+
+                        if (dataPackageCallback != null)
                         {
-                            var dataPackagePacket = (DataPackagePacket)packet;
-
-                            DataPackageCache.SaveDataPackageToCache(dataPackagePacket.DataPackage);
-
-                            if (dataPackageCallback != null)
-                            {
-                                dataPackageCallback(dataPackagePacket.DataPackage);
-                            }
-
-                            expectingDataPackage = false;
-                            dataPackageCallback = null;
+                            dataPackageCallback(dataPackagePacket.DataPackage);
                         }
-                        break;
+
+                        expectingDataPackage = false;
+                        dataPackageCallback = null;
                     }
+                    break;
+                }
             }
         }
 
@@ -133,6 +133,12 @@ namespace Archipelago.MultiClient.Net
             });
         }
 
+        /// <summary>
+        ///     Send a ConnectUpdate packet and set the tags for the current connection to the provided <paramref name="tags"/>.
+        /// </summary>
+        /// <param name="tags">
+        ///     The tags with which to overwrite the current slot's tags.
+        /// </param>
         public void UpdateTags(List<string> tags)
         {
             Tags = tags ?? new List<string>();

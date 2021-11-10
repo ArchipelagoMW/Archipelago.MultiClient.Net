@@ -17,7 +17,9 @@ namespace Archipelago.MultiClient.Net.Converters
             var isInt = int.TryParse(value, out var intValue);
 
             if (isInt)
+            {
                 return (Permissions)intValue;
+            }
 
             var returnValue = Permissions.Disabled;
 

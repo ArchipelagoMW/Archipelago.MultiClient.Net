@@ -26,7 +26,9 @@ namespace Archipelago.MultiClient.Net.BounceFeatures.DeathLink
 
             string cause = null;
             if (data.TryGetValue("cause", out object causeObject))
-                cause = (string)causeObject;
+            {
+                cause = causeObject.ToString();
+            }
 
             deathLink = new DeathLink((string)source, cause)
             {

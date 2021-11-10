@@ -105,36 +105,36 @@ namespace Archipelago.MultiClient.Net.Helpers
             switch (packet.PacketType)
             {
                 case ArchipelagoPacketType.LocationInfo:
+                {
+                    if (awaitingLocationInfoPacket)
                     {
-                        if (awaitingLocationInfoPacket)
-                        {
-                            var infoPacket = (LocationInfoPacket)packet;
+                        var infoPacket = (LocationInfoPacket)packet;
 
-                            if (locationInfoPacketCallback != null)
-                            {
-                                locationInfoPacketCallback(infoPacket);
-                            }
+                        if (locationInfoPacketCallback != null)
+                        {
+                            locationInfoPacketCallback(infoPacket);
+                        }
+
+                        awaitingLocationInfoPacket = false;
+                        locationInfoPacketCallback = null;
+                    }
+                    break;
+                }
+                case ArchipelagoPacketType.InvalidPacket:
+                {
+                    if (awaitingLocationInfoPacket)
+                    {
+                        var invalidPacket = (InvalidPacketPacket)packet;
+                        if (invalidPacket.OriginalCmd == ArchipelagoPacketType.LocationScouts)
+                        {
+                            locationInfoPacketCallback(null);
 
                             awaitingLocationInfoPacket = false;
                             locationInfoPacketCallback = null;
                         }
-                        break;
                     }
-                case ArchipelagoPacketType.InvalidPacket:
-                    {
-                        if (awaitingLocationInfoPacket)
-                        {
-                            var invalidPacket = (InvalidPacketPacket)packet;
-                            if (invalidPacket.OriginalCmd == ArchipelagoPacketType.LocationScouts)
-                            {
-                                locationInfoPacketCallback(null);
-
-                                awaitingLocationInfoPacket = false;
-                                locationInfoPacketCallback = null;
-                            }
-                        }
-                        break;
-                    }
+                    break;
+                }
             }
         }
     }

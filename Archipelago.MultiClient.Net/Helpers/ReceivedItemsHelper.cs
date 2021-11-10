@@ -100,7 +100,9 @@ namespace Archipelago.MultiClient.Net.Helpers
         public string GetItemName(int id)
         {
             if (itemLookupCache.TryGetValue(id, out var name))
+            {
                 return name;
+            }
 
             var gameDataContainingId = dataPackage.Games.Single(x => x.Value.ItemLookup.ContainsValue(id));
             var gameDataItemLookup = gameDataContainingId.Value.ItemLookup.ToDictionary(x => x.Value, x => x.Key);
@@ -124,37 +126,37 @@ namespace Archipelago.MultiClient.Net.Helpers
             switch (packet.PacketType)
             {
                 case ArchipelagoPacketType.ReceivedItems:
+                {
+                    var receivedItemsPacket = (ReceivedItemsPacket)packet;
+
+                    if (itemsReceivedIndex != receivedItemsPacket.Index)
                     {
-                        var receivedItemsPacket = (ReceivedItemsPacket)packet;
-
-                        if (itemsReceivedIndex != receivedItemsPacket.Index)
-                        {
-                            socket.SendPacket(new SyncPacket());
-                            break;
-                        }
-
-                        if (receivedItemsPacket.Index == 0)
-                        {
-                            PerformResynchronization(receivedItemsPacket);
-                            break;
-                        }
-
-                        lock (itemQueueLockObject)
-                        {
-                            foreach (var item in receivedItemsPacket.Items)
-                            {
-                                allItemsReceived.Add(item);
-                                itemQueue.Enqueue(item);
-                                itemsReceivedIndex++;
-
-                                if (ItemReceived != null)
-                                {
-                                    ItemReceived();
-                                }
-                            }
-                        }
+                        socket.SendPacket(new SyncPacket());
                         break;
                     }
+
+                    if (receivedItemsPacket.Index == 0)
+                    {
+                        PerformResynchronization(receivedItemsPacket);
+                        break;
+                    }
+
+                    lock (itemQueueLockObject)
+                    {
+                        foreach (var item in receivedItemsPacket.Items)
+                        {
+                            allItemsReceived.Add(item);
+                            itemQueue.Enqueue(item);
+                            itemsReceivedIndex++;
+
+                            if (ItemReceived != null)
+                            {
+                                ItemReceived();
+                            }
+                        }
+                    }
+                    break;
+                }
             }
         }
 

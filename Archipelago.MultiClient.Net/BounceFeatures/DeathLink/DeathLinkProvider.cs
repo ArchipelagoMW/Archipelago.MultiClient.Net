@@ -4,7 +4,7 @@ namespace Archipelago.MultiClient.Net.BounceFeatures.DeathLink
 {
     public static class DeathLinkProvider
     {
-        public static DeathLinkService EnableDeathLink(this ArchipelagoSession session)
+        public static DeathLinkService CreateDeathLinkServiceAndEnable(this ArchipelagoSession session)
         {
             EnsureDeathLinkTagIsSet(session);
 
