@@ -34,7 +34,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// <param name="ids">
         ///     Location ids which have been checked.
         /// </param>
-        public void CompleteLocationCheck(params int[] ids)
+        public void CompleteLocationChecks(params int[] ids)
         {
             lock (locationsCheckedLockObject)
             {
@@ -56,6 +56,11 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// <param name="ids">
         ///     The locations ids which are to be scouted.
         /// </param>
+        /// <remarks>
+        ///     Repeated calls of this method before a LocationInfo packet is received will cause the stored
+        ///     callback to be overwritten with the most recent call. It is recommended you chain calls to this method
+        ///     within the callbacks themselves or call this only once.
+        /// </remarks>
         public void ScoutLocations(Action<LocationInfoPacket> callback = null, params int[] ids)
         {
             socket.SendPacket(new LocationScoutsPacket()

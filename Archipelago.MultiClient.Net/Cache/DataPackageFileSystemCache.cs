@@ -93,9 +93,14 @@ namespace Archipelago.MultiClient.Net.Cache
                     foreach (var item in cachedPackage.Games.Keys.ToList())
                     {
                         if (package.Games.ContainsKey(item))
-                        {
+                        { 
                             if (cachedPackage.Games[item].Version != package.Games[item].Version)
                             {
+                                if (package.Games[item].Version == 0)
+                                {
+                                    continue;
+                                }
+
                                 cachedPackage.Games[item] = package.Games[item];
                             }
                         }
@@ -103,17 +108,24 @@ namespace Archipelago.MultiClient.Net.Cache
 
                     foreach (var item in package.Games.Keys.ToList())
                     {
+                        if (package.Games[item].Version == 0)
+                        {
+                            continue;
+                        }
+
                         if (!cachedPackage.Games.ContainsKey(item))
                         {
                             cachedPackage.Games.Add(item, package.Games[item]);
                         }
                     }
 
+                    dataPackage = package;
                     SaveDataPackageToFile(cachedPackage);
                     return true;
                 }
                 else
                 {
+                    dataPackage = package;
                     SaveDataPackageToFile(package);
                     return true;
                 }
@@ -131,7 +143,6 @@ namespace Archipelago.MultiClient.Net.Cache
                 var dataPackagePath = Path.Combine(CacheFolder, DataPackageFileName);
                 string contents = JsonConvert.SerializeObject(package);
                 File.WriteAllText(dataPackagePath, contents);
-                dataPackage = package;
             }
         }
 

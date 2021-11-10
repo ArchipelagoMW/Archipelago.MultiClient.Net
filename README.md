@@ -8,9 +8,5 @@ var hostUrl = "ws://localhost:38281";
 var session = ArchipelagoSessionFactory.CreateSession(hostUrl);
 
 session.Socket.Connect();
-
-var locationChecksPacket = new LocationChecksPacket();
-locationChecksPacket.Locations.Add(42);
-
-session.Socket.SendPacket(locationChecksPacket);
+session.Locations.CompleteLocationChecks(42);
 ```

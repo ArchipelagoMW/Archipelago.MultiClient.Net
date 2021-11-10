@@ -9,17 +9,34 @@ namespace Archipelago.MultiClient.Net
 {
     public static class ArchipelagoSessionFactory
     {
+        /// <summary>
+        ///     Creates an <see cref="ArchipelagoSession"/> object which facilitates all communication to the Archipelago server.
+        /// </summary>
+        /// <param name="hostUrl">
+        ///     The full URL to the Archipelago server, including scheme, hostname, and port.
+        /// </param>
         public static ArchipelagoSession CreateSession(string hostUrl)
         {
             var socket = new ArchipelagoSocketHelper(hostUrl);
             var dataPackageCache = new DataPackageFileSystemCache(socket);
-            
-            // Try to get datapackage just to send the GetDataPackage packet in case the cache is empty.
-            dataPackageCache.TryGetDataPackageFromCache(out var _);
-
             var items = new ReceivedItemsHelper(socket, dataPackageCache);
             var locations = new LocationCheckHelper(socket);
             return new ArchipelagoSession(socket, items, locations, dataPackageCache);
+        }
+
+        /// <summary>
+        ///     Creates an <see cref="ArchipelagoSession"/> object which facilitates all communication to the Archipelago server.            
+        /// </summary>
+        /// <param name="hostname">
+        ///     The hostname of the Archipelago server. Ex: `archipelago.gg` or `localhost`
+        /// </param>
+        /// <param name="port">
+        ///     The port number which the Archipelago server is hosted on. Defaults to: 38281
+        /// </param>
+        public static ArchipelagoSession CreateSession(string hostname, int port = 38281)
+        {
+            var uriBuilder = new UriBuilder("ws", hostname, port);
+            return CreateSession(uriBuilder.ToString());
         }
     }
 }
