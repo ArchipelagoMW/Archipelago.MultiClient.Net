@@ -17,9 +17,11 @@ namespace Archipelago.MultiClient.Net
         public LocationCheckHelper Locations { get; }
 
         private IDataPackageCache DataPackageCache { get; }
-        
+
         private bool expectingDataPackage = false;
         private Action<DataPackage> dataPackageCallback;
+
+        public List<string> Tags = new List<string>();
 
         internal ArchipelagoSession(ArchipelagoSocketHelper socket,
                                     ReceivedItemsHelper items,
@@ -39,23 +41,23 @@ namespace Archipelago.MultiClient.Net
             switch (packet.PacketType)
             {
                 case ArchipelagoPacketType.DataPackage:
+                {
+                    if (expectingDataPackage)
                     {
-                        if (expectingDataPackage)
+                        var dataPackagePacket = (DataPackagePacket)packet;
+
+                        DataPackageCache.SaveDataPackageToCache(dataPackagePacket.DataPackage);
+
+                        if (dataPackageCallback != null)
                         {
-                            var dataPackagePacket = (DataPackagePacket)packet;
-
-                            DataPackageCache.SaveDataPackageToCache(dataPackagePacket.DataPackage);
-
-                            if (dataPackageCallback != null)
-                            {
-                                dataPackageCallback(dataPackagePacket.DataPackage);
-                            }
-
-                            expectingDataPackage = false;
-                            dataPackageCallback = null;
+                            dataPackageCallback(dataPackagePacket.DataPackage);
                         }
-                        break;
+
+                        expectingDataPackage = false;
+                        dataPackageCallback = null;
                     }
+                    break;
+                }
             }
         }
 
@@ -117,10 +119,7 @@ namespace Archipelago.MultiClient.Net
                 uuid = Guid.NewGuid().ToString();
             }
 
-            if (tags == null)
-            {
-                tags = new List<string>();
-            }
+            Tags = tags ?? new List<string>();
 
             Socket.Connect();
             Socket.SendPacket(new ConnectPacket()
@@ -128,9 +127,25 @@ namespace Archipelago.MultiClient.Net
                 Game = game,
                 Name = name,
                 Password = password,
-                Tags = tags,
+                Tags = Tags,
                 Uuid = uuid,
                 Version = version
+            });
+        }
+
+        /// <summary>
+        ///     Send a ConnectUpdate packet and set the tags for the current connection to the provided <paramref name="tags"/>.
+        /// </summary>
+        /// <param name="tags">
+        ///     The tags with which to overwrite the current slot's tags.
+        /// </param>
+        public void UpdateTags(List<string> tags)
+        {
+            Tags = tags ?? new List<string>();
+
+            Socket.SendPacket(new ConnectUpdatePacket
+            {
+                Tags = Tags
             });
         }
     }

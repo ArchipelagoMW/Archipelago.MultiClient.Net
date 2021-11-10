@@ -21,7 +21,15 @@ namespace Archipelago.MultiClient.Net.Helpers
         private object itemQueueLockObject = new object();
 
         public int Index => itemsReceivedIndex;
-        public ReadOnlyCollection<NetworkItem> AllItemsReceived => new ReadOnlyCollection<NetworkItem>(allItemsReceived);
+        public ReadOnlyCollection<NetworkItem> AllItemsReceived => GetReceivedItems();
+
+        ReadOnlyCollection<NetworkItem> GetReceivedItems()
+        {
+	        lock (itemQueueLockObject)
+	        {
+		        return new ReadOnlyCollection<NetworkItem>(allItemsReceived);
+            }
+        }      
 
         public delegate void ItemReceivedHandler(ReceivedItemsHelper helper);
         public event ItemReceivedHandler ItemReceived;

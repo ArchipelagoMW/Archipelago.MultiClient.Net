@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using Archipelago.MultiClient.Net.Enums;
+using Archipelago.MultiClient.Net.Exceptions;
 using Archipelago.MultiClient.Net.Helpers;
 using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
@@ -15,11 +15,11 @@ namespace Archipelago.MultiClient.Net.Cache
     {
         private const string DataPackageFileName = "datapackagecache.archipelagocache";
         private readonly ArchipelagoSocketHelper socket;
-        private string CacheFolder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+        private readonly string CacheFolder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
         private RoomInfoPacket roomInfoPacket;
         private DataPackage dataPackage;
 
-        private object fileAccessLockObject = new object();
+        private readonly object fileAccessLockObject = new object();
 
         public DataPackageFileSystemCache(ArchipelagoSocketHelper socket)
         {
@@ -34,7 +34,7 @@ namespace Archipelago.MultiClient.Net.Cache
             {
                 roomInfoPacket = (RoomInfoPacket)packet;
                 var invalidated = GetCacheInvalidatedGames(roomInfoPacket);
-                
+
                 if (invalidated.Any())
                 {
                     var exclusions = roomInfoPacket.DataPackageVersions.Select(x => x.Key).Except(invalidated);
@@ -60,7 +60,7 @@ namespace Archipelago.MultiClient.Net.Cache
                 return true;
             }
             lock (fileAccessLockObject)
-            { 
+            {
                 var dataPackagePath = Path.Combine(CacheFolder, DataPackageFileName);
                 if (File.Exists(dataPackagePath))
                 {
@@ -93,7 +93,7 @@ namespace Archipelago.MultiClient.Net.Cache
                     foreach (var item in cachedPackage.Games.Keys.ToList())
                     {
                         if (package.Games.ContainsKey(item))
-                        { 
+                        {
                             if (cachedPackage.Games[item].Version != package.Games[item].Version)
                             {
                                 if (package.Games[item].Version == 0)
@@ -139,7 +139,7 @@ namespace Archipelago.MultiClient.Net.Cache
         private void SaveDataPackageToFile(DataPackage package)
         {
             lock (fileAccessLockObject)
-            { 
+            {
                 var dataPackagePath = Path.Combine(CacheFolder, DataPackageFileName);
                 string contents = JsonConvert.SerializeObject(package);
                 File.WriteAllText(dataPackagePath, contents);

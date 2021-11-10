@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.Serialization;
 
-namespace Archipelago.MultiClient.Net
+namespace Archipelago.MultiClient.Net.Exceptions
 {
     class CacheLoadFailureException : Exception
     {

@@ -26,7 +26,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// <summary>
         ///     The URL of the host that the socket is connected to.
         /// </summary>
-        public string Url { get; private set; }
+        public string Url { get; }
 
         /// <summary>
         ///     Returns true if the socket believes it is connected to the host.
@@ -34,7 +34,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// </summary>
         public bool Connected { get => webSocket.ReadyState == WebSocketState.Open || webSocket.ReadyState == WebSocketState.Closing; }
 
-        private WebSocket webSocket;
+        private readonly WebSocket webSocket;
 
         internal ArchipelagoSocketHelper(string hostUrl)
         {

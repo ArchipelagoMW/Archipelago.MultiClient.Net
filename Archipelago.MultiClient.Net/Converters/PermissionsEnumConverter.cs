@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
 using Archipelago.MultiClient.Net.Enums;
 using Newtonsoft.Json;
 
@@ -24,29 +20,25 @@ namespace Archipelago.MultiClient.Net.Converters
             {
                 return (Permissions)intValue;
             }
-            else
+
+            var returnValue = Permissions.Disabled;
+
+            if (value.Contains("enabled"))
             {
-                var returnValue = Permissions.Disabled;
-
-                if (value.Contains("enabled"))
-                {
-                    returnValue |= Permissions.Enabled;
-                }
-
-                if (value.Contains("auto"))
-                {
-                    returnValue |= Permissions.Auto;
-                }
-
-                if (value.Contains("goal"))
-                {
-                    returnValue |= Permissions.Goal;
-                }
-
-                return returnValue;
+                returnValue |= Permissions.Enabled;
             }
 
-            throw new JsonSerializationException($"Could not convert Permissions enum value for value `{value}`.");
+            if (value.Contains("auto"))
+            {
+                returnValue |= Permissions.Auto;
+            }
+
+            if (value.Contains("goal"))
+            {
+                returnValue |= Permissions.Goal;
+            }
+
+            return returnValue;
         }
 
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
