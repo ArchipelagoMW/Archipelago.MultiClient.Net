@@ -13,15 +13,23 @@ namespace Archipelago.MultiClient.Net.Helpers
     {
         private readonly ArchipelagoSocketHelper socket;
         private readonly IDataPackageCache dataPackageCache;
-        private DataPackage dataPackage;
+        private readonly DataPackage dataPackage;
         private int itemsReceivedIndex = 0;
-        private Queue<NetworkItem> itemQueue = new Queue<NetworkItem>();
-        private List<NetworkItem> allItemsReceived = new List<NetworkItem>();
-        private Dictionary<int, string> itemLookupCache = new Dictionary<int, string>();
-        private object itemQueueLockObject = new object();
+        private readonly Queue<NetworkItem> itemQueue = new Queue<NetworkItem>();
+        private readonly List<NetworkItem> allItemsReceived = new List<NetworkItem>();
+        private readonly Dictionary<int, string> itemLookupCache = new Dictionary<int, string>();
+        private readonly object itemQueueLockObject = new object();
 
         public int Index => itemsReceivedIndex;
-        public ReadOnlyCollection<NetworkItem> AllItemsReceived => new ReadOnlyCollection<NetworkItem>(allItemsReceived);
+        public ReadOnlyCollection<NetworkItem> AllItemsReceived => GetReceivedItems();
+
+        ReadOnlyCollection<NetworkItem> GetReceivedItems()
+        {
+	        lock (itemQueueLockObject)
+	        {
+		        return new ReadOnlyCollection<NetworkItem>(allItemsReceived);
+            }
+        }
 
         public delegate void ItemReceivedHandler();
         public event ItemReceivedHandler ItemReceived;
@@ -53,9 +61,6 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// <summary>
         ///     Peek the name of next item on the queue to be handled.
         /// </summary>
-        /// <param name="game">
-        ///     The game for which to look up the item id. This lookup is derived from the DataPackage packet.
-        /// </param>
         /// <returns>
         ///     The name of the item.
         /// </returns>
@@ -94,28 +99,24 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// </returns>
         public string GetItemName(int id)
         {
-            if (itemLookupCache.TryGetValue(id, out var name))
-            {
+	        if (itemLookupCache.TryGetValue(id, out var name))
                 return name;
-            }
-            else
-            {
-                var gameDataContainingId = dataPackage.Games.Where(x => x.Value.ItemLookup.ContainsValue(id)).Single();
-                var gameDataItemLookup = gameDataContainingId.Value.ItemLookup.ToDictionary(x => x.Value, x => x.Key);
-                foreach (var kvp in gameDataItemLookup)
-                {
-                    itemLookupCache.Add(kvp.Key, kvp.Value);
-                }
+
+	        var gameDataContainingId = dataPackage.Games.Single(x => x.Value.ItemLookup.ContainsValue(id));
+	        var gameDataItemLookup = gameDataContainingId.Value.ItemLookup.ToDictionary(x => x.Value, x => x.Key);
+	        foreach (var kvp in gameDataItemLookup)
+	        {
+		        itemLookupCache.Add(kvp.Key, kvp.Value);
+	        }
                 
-                try
-                {
-                    return itemLookupCache[id];
-                }
-                catch (KeyNotFoundException e)
-                {
-                    throw new UnknownItemIdException($"Attempt to look up item id `{id}` failed.", e);
-                }
-            }
+	        try
+	        {
+		        return itemLookupCache[id];
+	        }
+	        catch (KeyNotFoundException e)
+	        {
+		        throw new UnknownItemIdException($"Attempt to look up item id `{id}` failed.", e);
+	        }
         }
 
         private void Socket_PacketReceived(ArchipelagoPacketBase packet)

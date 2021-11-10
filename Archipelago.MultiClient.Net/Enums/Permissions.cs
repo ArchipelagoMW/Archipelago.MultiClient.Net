@@ -1,7 +1,6 @@
 ﻿using System;
 using Archipelago.MultiClient.Net.Converters;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 
 namespace Archipelago.MultiClient.Net.Enums
 {

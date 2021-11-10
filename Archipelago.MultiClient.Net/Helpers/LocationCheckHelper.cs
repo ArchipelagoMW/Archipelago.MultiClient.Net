@@ -2,10 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
-using Archipelago.MultiClient.Net.Cache;
 using Archipelago.MultiClient.Net.Enums;
-using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
 
 namespace Archipelago.MultiClient.Net.Helpers
@@ -14,12 +11,20 @@ namespace Archipelago.MultiClient.Net.Helpers
     {
         private readonly List<int> locationsChecked = new List<int>();
         private readonly ArchipelagoSocketHelper socket;
-        private object locationsCheckedLockObject = new object();
+        private readonly object locationsCheckedLockObject = new object();
         
         private bool awaitingLocationInfoPacket;
         private Action<LocationInfoPacket> locationInfoPacketCallback;
 
-        public ReadOnlyCollection<int> AllLocationsChecked => new ReadOnlyCollection<int>(locationsChecked);
+        public ReadOnlyCollection<int> AllLocationsChecked => GetCheckedLocations();
+
+        ReadOnlyCollection<int> GetCheckedLocations()
+        {
+            lock (locationsCheckedLockObject)
+	        {
+                return new ReadOnlyCollection<int>(locationsChecked);
+	        }
+        }
 
         internal LocationCheckHelper(ArchipelagoSocketHelper socket)
         {

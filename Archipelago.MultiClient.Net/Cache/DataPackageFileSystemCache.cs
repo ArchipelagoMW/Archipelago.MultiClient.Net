@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using Archipelago.MultiClient.Net.Enums;
+using Archipelago.MultiClient.Net.Exceptions;
 using Archipelago.MultiClient.Net.Helpers;
 using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
@@ -15,11 +15,11 @@ namespace Archipelago.MultiClient.Net.Cache
     {
         private const string DataPackageFileName = "datapackagecache.archipelagocache";
         private readonly ArchipelagoSocketHelper socket;
-        private string CacheFolder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+        private readonly string CacheFolder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
         private RoomInfoPacket roomInfoPacket;
         private DataPackage dataPackage;
 
-        private object fileAccessLockObject = new object();
+        private readonly object fileAccessLockObject = new object();
 
         public DataPackageFileSystemCache(ArchipelagoSocketHelper socket)
         {
