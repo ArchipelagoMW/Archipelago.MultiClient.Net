@@ -12,7 +12,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         private readonly List<int> locationsChecked = new List<int>();
         private readonly ArchipelagoSocketHelper socket;
         private readonly object locationsCheckedLockObject = new object();
-        
+
         private bool awaitingLocationInfoPacket;
         private Action<LocationInfoPacket> locationInfoPacketCallback;
 
@@ -21,9 +21,9 @@ namespace Archipelago.MultiClient.Net.Helpers
         ReadOnlyCollection<int> GetCheckedLocations()
         {
             lock (locationsCheckedLockObject)
-	        {
+            {
                 return new ReadOnlyCollection<int>(locationsChecked);
-	        }
+            }
         }
 
         internal LocationCheckHelper(ArchipelagoSocketHelper socket)

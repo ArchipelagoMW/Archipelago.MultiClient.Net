@@ -19,24 +19,24 @@ namespace Archipelago.MultiClient.Net.Converters
             if (isInt)
                 return (Permissions)intValue;
 
-	        var returnValue = Permissions.Disabled;
+            var returnValue = Permissions.Disabled;
 
-	        if (value.Contains("enabled"))
-	        {
-		        returnValue |= Permissions.Enabled;
-	        }
+            if (value.Contains("enabled"))
+            {
+                returnValue |= Permissions.Enabled;
+            }
 
-	        if (value.Contains("auto"))
-	        {
-		        returnValue |= Permissions.Auto;
-	        }
+            if (value.Contains("auto"))
+            {
+                returnValue |= Permissions.Auto;
+            }
 
-	        if (value.Contains("goal"))
-	        {
-		        returnValue |= Permissions.Goal;
-	        }
+            if (value.Contains("goal"))
+            {
+                returnValue |= Permissions.Goal;
+            }
 
-	        return returnValue;
+            return returnValue;
         }
 
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)

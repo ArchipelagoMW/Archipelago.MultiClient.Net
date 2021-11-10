@@ -17,7 +17,7 @@ namespace Archipelago.MultiClient.Net
         public LocationCheckHelper Locations { get; }
 
         private IDataPackageCache DataPackageCache { get; }
-        
+
         private bool expectingDataPackage = false;
         private Action<DataPackage> dataPackageCallback;
 
@@ -119,7 +119,7 @@ namespace Archipelago.MultiClient.Net
                 uuid = Guid.NewGuid().ToString();
             }
 
-	        Tags = tags ?? new List<string>();
+            Tags = tags ?? new List<string>();
 
             Socket.Connect();
             Socket.SendPacket(new ConnectPacket()
@@ -135,12 +135,12 @@ namespace Archipelago.MultiClient.Net
 
         public void UpdateTags(List<string> tags)
         {
-	        Tags = tags ?? new List<string>();
+            Tags = tags ?? new List<string>();
 
-			Socket.SendPacket(new ConnectUpdatePacket
-	        {
-		        Tags = Tags
-	        });
+            Socket.SendPacket(new ConnectUpdatePacket
+            {
+                Tags = Tags
+            });
         }
     }
 }

@@ -25,9 +25,9 @@ namespace Archipelago.MultiClient.Net.Helpers
 
         ReadOnlyCollection<NetworkItem> GetReceivedItems()
         {
-	        lock (itemQueueLockObject)
-	        {
-		        return new ReadOnlyCollection<NetworkItem>(allItemsReceived);
+            lock (itemQueueLockObject)
+            {
+                return new ReadOnlyCollection<NetworkItem>(allItemsReceived);
             }
         }
 
@@ -99,24 +99,24 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// </returns>
         public string GetItemName(int id)
         {
-	        if (itemLookupCache.TryGetValue(id, out var name))
+            if (itemLookupCache.TryGetValue(id, out var name))
                 return name;
 
-	        var gameDataContainingId = dataPackage.Games.Single(x => x.Value.ItemLookup.ContainsValue(id));
-	        var gameDataItemLookup = gameDataContainingId.Value.ItemLookup.ToDictionary(x => x.Value, x => x.Key);
-	        foreach (var kvp in gameDataItemLookup)
-	        {
-		        itemLookupCache.Add(kvp.Key, kvp.Value);
-	        }
-                
-	        try
-	        {
-		        return itemLookupCache[id];
-	        }
-	        catch (KeyNotFoundException e)
-	        {
-		        throw new UnknownItemIdException($"Attempt to look up item id `{id}` failed.", e);
-	        }
+            var gameDataContainingId = dataPackage.Games.Single(x => x.Value.ItemLookup.ContainsValue(id));
+            var gameDataItemLookup = gameDataContainingId.Value.ItemLookup.ToDictionary(x => x.Value, x => x.Key);
+            foreach (var kvp in gameDataItemLookup)
+            {
+                itemLookupCache.Add(kvp.Key, kvp.Value);
+            }
+
+            try
+            {
+                return itemLookupCache[id];
+            }
+            catch (KeyNotFoundException e)
+            {
+                throw new UnknownItemIdException($"Attempt to look up item id `{id}` failed.", e);
+            }
         }
 
         private void Socket_PacketReceived(ArchipelagoPacketBase packet)
