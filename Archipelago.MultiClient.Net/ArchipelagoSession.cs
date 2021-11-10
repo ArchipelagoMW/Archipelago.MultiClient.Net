@@ -21,6 +21,8 @@ namespace Archipelago.MultiClient.Net
         private bool expectingDataPackage = false;
         private Action<DataPackage> dataPackageCallback;
 
+        public List<string> Tags = new List<string>();
+
         internal ArchipelagoSession(ArchipelagoSocketHelper socket,
                                     ReceivedItemsHelper items,
                                     LocationCheckHelper locations,
@@ -117,10 +119,7 @@ namespace Archipelago.MultiClient.Net
                 uuid = Guid.NewGuid().ToString();
             }
 
-            if (tags == null)
-            {
-                tags = new List<string>();
-            }
+	        Tags = tags ?? new List<string>();
 
             Socket.Connect();
             Socket.SendPacket(new ConnectPacket()
@@ -128,10 +127,20 @@ namespace Archipelago.MultiClient.Net
                 Game = game,
                 Name = name,
                 Password = password,
-                Tags = tags,
+                Tags = Tags,
                 Uuid = uuid,
                 Version = version
             });
+        }
+
+        public void UpdateTags(List<string> tags)
+        {
+	        Tags = tags ?? new List<string>();
+
+			Socket.SendPacket(new ConnectUpdatePacket
+	        {
+		        Tags = Tags
+	        });
         }
     }
 }

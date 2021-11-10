@@ -41,5 +41,8 @@ namespace Archipelago.MultiClient.Net.Packets
 
 		[JsonProperty("seed_name")]
 		public string SeedName { get; set; }
+
+		[JsonProperty("time")]
+		public double Timestamp { get; set; }
 	}
 }
