@@ -23,7 +23,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         public int Index => itemsReceivedIndex;
         public ReadOnlyCollection<NetworkItem> AllItemsReceived => new ReadOnlyCollection<NetworkItem>(allItemsReceived);
 
-        public delegate void ItemReceivedHandler();
+        public delegate void ItemReceivedHandler(ReceivedItemsHelper helper);
         public event ItemReceivedHandler ItemReceived;
 
         internal ReceivedItemsHelper(ArchipelagoSocketHelper socket, IDataPackageCache dataPackageCache)
@@ -148,7 +148,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 
                                 if (ItemReceived != null)
                                 {
-                                    ItemReceived();
+                                    ItemReceived(this);
                                 }
                             }
                         }
