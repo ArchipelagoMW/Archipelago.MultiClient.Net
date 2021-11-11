@@ -36,7 +36,6 @@ namespace Archipelago.MultiClient.Net.Helpers
         internal ReceivedItemsHelper(ArchipelagoSocketHelper socket, IDataPackageCache dataPackageCache)
         {
             this.socket = socket;
-            this.dataPackageCache = dataPackageCache;
             socket.PacketReceived += Socket_PacketReceived;
 
             dataPackageCache.TryGetDataPackageFromCache(out dataPackage);
