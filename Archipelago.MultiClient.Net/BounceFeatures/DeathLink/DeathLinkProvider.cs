@@ -4,6 +4,9 @@ namespace Archipelago.MultiClient.Net.BounceFeatures.DeathLink
 {
     public static class DeathLinkProvider
     {
+        /// <summary>
+        ///     Ensures the DeathLink tag is set with the session and then creates and returns a <see cref="DeathLinkService"/> for this <paramref name="session"/>.
+        /// </summary>
         public static DeathLinkService CreateDeathLinkServiceAndEnable(this ArchipelagoSession session)
         {
             EnsureDeathLinkTagIsSet(session);
@@ -11,7 +14,7 @@ namespace Archipelago.MultiClient.Net.BounceFeatures.DeathLink
             return new DeathLinkService(session);
         }
 
-        static void EnsureDeathLinkTagIsSet(ArchipelagoSession session)
+        private static void EnsureDeathLinkTagIsSet(ArchipelagoSession session)
         {
             if (!session.Tags.Contains("DeathLink"))
             {

@@ -63,47 +63,6 @@ namespace Archipelago.MultiClient.Net
         }
 
         /// <summary>
-        ///     Attempts to retrieve the datapackage from cache or from the server, if there is no cached version.
-        ///     Calls a callback method when retrieval is successful.
-        ///     If the socket is not open AND there is no file cache when this method is called, then a GetDataPackage packet
-        ///     will be queued up to be sent to the server as soon as a connection is made.
-        /// </summary>
-        /// <param name="callback">
-        ///     Action to call when the datapackage is received or retrieved from cache.
-        /// </param>
-        public void GetDataPackageAsync(Action<DataPackage> callback)
-        {
-            if (DataPackageCache.TryGetDataPackageFromCache(out var package))
-            {
-                if (callback != null)
-                {
-                    callback(package);
-                }
-            }
-            else
-            {
-                if (Socket.Connected)
-                {
-                    Socket.SendPacket(new GetDataPackagePacket());
-                    expectingDataPackage = true;
-                    dataPackageCallback = callback;
-                }
-                else
-                {
-                    Action socketOpenCallback = null;
-                    socketOpenCallback = () =>
-                    {
-                        Socket.SendPacket(new GetDataPackagePacket());
-                        Socket.SocketOpened -= socketOpenCallback;
-                    };
-                    Socket.SocketOpened += socketOpenCallback;
-                    expectingDataPackage = true;
-                    dataPackageCallback = callback;
-                }
-            }
-        }
-
-        /// <summary>
         ///     Attempt to log in to the Archipelago server by opening a websocket connection and sending a Connect packet.
         ///     Determining success for this attempt is done by attaching a listener to Socket.PacketReceived and listening for a Connected packet.
         /// </summary>
@@ -113,6 +72,14 @@ namespace Archipelago.MultiClient.Net
         /// <param name="tags">The tags this client supports.</param>
         /// <param name="uuid">The uuid of this client.</param>
         /// <param name="password">The password to connect to this AP room.</param>
+        /// <returns>
+        ///     <see cref="true"/> if the connection seems to have succeeded and the server socket is reached.
+        ///     <see cref="false"/> if the connection to the server socket failed in some way.
+        /// </returns>
+        /// <remarks>
+        ///     The connect attempt is synchronous and will lock for up to 5 seconds as it attempts to connect to the server. 
+        ///     Most connections are instantaneous however the timeout is 5 seconds before it returns <see cref="false"/>.
+        /// </remarks>
         public bool TryConnectAndLogin(string game, string name, Version version, List<string> tags = null, string uuid = null, string password = null)
         {
             if (uuid == null)
