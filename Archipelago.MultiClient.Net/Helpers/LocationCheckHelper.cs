@@ -18,7 +18,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         private DataPackage dataPackage;
         private bool awaitingLocationInfoPacket;
         private Action<LocationInfoPacket> locationInfoPacketCallback;
-        private Dictionary<string, int> locationNameToIdMapping;
+        private Dictionary<string, Dictionary<string, int>> gameLocationNameToIdMapping;
         private Dictionary<int, string> locationIdToNameMapping;
 
         public ReadOnlyCollection<int> AllLocationsChecked => GetCheckedLocations();
@@ -111,19 +111,19 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// <param name="locationName">
         ///     The name of the location to check the Id for. Must match the contents of the datapackage.
         /// </param>
-        public int GetLocationIdFromName(string locationName)
+        public int GetLocationIdFromName(string game, string locationName)
         {
             if (dataPackage == null)
             {
                 cache.TryGetDataPackageFromCache(out dataPackage);
             }
 
-            if (locationNameToIdMapping == null)
+            if (gameLocationNameToIdMapping == null)
             {
-                locationNameToIdMapping = dataPackage.Games.Select(x => x.Value).SelectMany(x => x.LocationLookup).ToDictionary(x => x.Key, x => x.Value);
+                gameLocationNameToIdMapping = dataPackage.Games.ToDictionary(x => x.Key, x => x.Value.LocationLookup.ToDictionary(y => y.Key, y => y.Value));
             }
 
-            return locationNameToIdMapping[locationName];
+            return gameLocationNameToIdMapping[game][locationName];
         }
 
         /// <summary>
