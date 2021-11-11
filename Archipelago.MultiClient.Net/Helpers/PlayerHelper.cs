@@ -10,6 +10,9 @@ namespace Archipelago.MultiClient.Net.Helpers
     {
         private PlayerInfo[] players;
 
+        /// <summary>
+        /// A collection of PlayerInfo's where the index is the player their slot
+        /// </summary>
         public ReadOnlyCollection<PlayerInfo> AllPlayers => new ReadOnlyCollection<PlayerInfo>(players);
 
         public PlayerHelper(ArchipelagoSocketHelper socket)
@@ -17,6 +20,27 @@ namespace Archipelago.MultiClient.Net.Helpers
             socket.PacketReceived += PacketReceived;
         }
 
+        /// <summary>
+        /// Returns the Alias corresponding to the provided player slot
+        /// Alias defaults to the player's name until a different alias is specifically set
+        /// </summary>
+        /// <param name="slot">The slot of which to retrieve the alias</param>
+        /// <returns>The player's alias</returns>
+        public string GetPlayerAlias(int slot)
+        {
+            if (players == null || slot >= players.Length || players[slot].Alias == null)
+            {
+                return $"Slot: {slot}";
+            }
+
+            return players[slot].Alias;
+        }
+
+        /// <summary>
+        /// Returns the Name corresponding to the provided player slot
+        /// </summary>
+        /// <param name="slot">The slot of which to retrieve the name</param>
+        /// <returns>The player's name</returns>
         public string GetPlayerName(int slot)
         {
             if (players == null || slot >= players.Length || players[slot].Name == null)
@@ -24,11 +48,25 @@ namespace Archipelago.MultiClient.Net.Helpers
                 return $"Slot: {slot}";
             }
 
-            return string.IsNullOrEmpty(players[slot].Alias)
-                ? players[slot].Name
-                : $"{players[slot].Alias} ({players[slot].Name})";
+            return players[slot].Name;
         }
 
+        /// <summary>
+        /// Returns the Alias and Name corresponding to the provided player slot
+        /// Alias defaults to the player's name until a different alias is specifically set
+        /// The result is returned in the format of "Alias (Name)"
+        /// </summary>
+        /// <param name="slot">The slot of which to retrieve the alias</param>
+        /// <returns>The player's alias and name in the following format of "Alias (Name)"</returns>
+        public string GetPlayerAliasAndName(int slot)
+        {
+            if (players == null || slot >= players.Length || players[slot].Name == null)
+            {
+                return $"Slot: {slot}";
+            }
+
+            return $"{players[slot].Alias} ({players[slot].Name})";
+        }
 
         private void PacketReceived(ArchipelagoPacketBase packet)
         {
