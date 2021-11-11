@@ -23,7 +23,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 
         public ReadOnlyCollection<int> AllLocationsChecked => GetCheckedLocations();
 
-        ReadOnlyCollection<int> GetCheckedLocations()
+        private ReadOnlyCollection<int> GetCheckedLocations()
         {
             lock (locationsCheckedLockObject)
             {
