@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Archipelago.MultiClient.Net.Cache;
 using Archipelago.MultiClient.Net.Enums;
+using Archipelago.MultiClient.Net.Exceptions;
 using Archipelago.MultiClient.Net.Helpers;
 using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
@@ -112,7 +113,7 @@ namespace Archipelago.MultiClient.Net
         /// <param name="tags">The tags this client supports.</param>
         /// <param name="uuid">The uuid of this client.</param>
         /// <param name="password">The password to connect to this AP room.</param>
-        public void AttemptConnectAndLogin(string game, string name, Version version, List<string> tags = null, string uuid = null, string password = null)
+        public bool TryConnectAndLogin(string game, string name, Version version, List<string> tags = null, string uuid = null, string password = null)
         {
             if (uuid == null)
             {
@@ -120,17 +121,25 @@ namespace Archipelago.MultiClient.Net
             }
 
             Tags = tags ?? new List<string>();
-
-            Socket.Connect();
-            Socket.SendPacket(new ConnectPacket()
+            
+            try
+            { 
+                Socket.Connect();
+                Socket.SendPacket(new ConnectPacket()
+                {
+                    Game = game,
+                    Name = name,
+                    Password = password,
+                    Tags = Tags,
+                    Uuid = uuid,
+                    Version = version
+                });
+                return true;
+            }
+            catch (ArchipelagoSocketClosedException)
             {
-                Game = game,
-                Name = name,
-                Password = password,
-                Tags = Tags,
-                Uuid = uuid,
-                Version = version
-            });
+                return false;
+            }
         }
 
         /// <summary>
