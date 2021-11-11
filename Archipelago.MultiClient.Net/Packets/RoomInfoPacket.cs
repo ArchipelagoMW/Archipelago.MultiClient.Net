@@ -33,7 +33,10 @@ namespace Archipelago.MultiClient.Net.Packets
 		[JsonProperty("players")]
 		public List<NetworkPlayer> Players { get; set; } = new List<NetworkPlayer>();
 
-		[JsonProperty("datapackage_version")]
+        [JsonProperty("games")]
+        public List<string> Games { get; set; } = new List<string>();
+
+        [JsonProperty("datapackage_version")]
 		public int DataPackageVersion { get; set; }
 
 		[JsonProperty("datapackage_versions")]
