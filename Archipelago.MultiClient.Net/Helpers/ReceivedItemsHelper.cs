@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using Archipelago.MultiClient.Net.Cache;
@@ -14,13 +15,12 @@ namespace Archipelago.MultiClient.Net.Helpers
         private readonly ArchipelagoSocketHelper socket;
         private readonly IDataPackageCache dataPackageCache;
         private DataPackage dataPackage;
-        private int itemsReceivedIndex = 0;
         private Queue<NetworkItem> itemQueue = new Queue<NetworkItem>();
         private List<NetworkItem> allItemsReceived = new List<NetworkItem>();
         private Dictionary<int, string> itemLookupCache = new Dictionary<int, string>();
         private object itemQueueLockObject = new object();
 
-        public int Index => itemsReceivedIndex;
+        public int Index => allItemsReceived.Count;
         public ReadOnlyCollection<NetworkItem> AllItemsReceived => GetReceivedItems();
 
         ReadOnlyCollection<NetworkItem> GetReceivedItems()
@@ -86,7 +86,6 @@ namespace Archipelago.MultiClient.Net.Helpers
         {
             lock (itemQueueLockObject)
             {
-                itemsReceivedIndex++;
                 return itemQueue.Dequeue();
             }
         }
@@ -131,28 +130,29 @@ namespace Archipelago.MultiClient.Net.Helpers
             switch (packet.PacketType)
             {
                 case ArchipelagoPacketType.ReceivedItems:
+                {
+                    var receivedItemsPacket = (ReceivedItemsPacket)packet;
+
+                    if (receivedItemsPacket.Index == 0)
                     {
-                        var receivedItemsPacket = (ReceivedItemsPacket)packet;
+                        PerformResynchronization(receivedItemsPacket);
+                        break;
+                    }
 
-                        if (itemsReceivedIndex != receivedItemsPacket.Index)
-                        {
-                            socket.SendPacket(new SyncPacket());
-                            break;
-                        }
+                    if (allItemsReceived.Count != receivedItemsPacket.Index)
+                    {
+                        socket.SendPacket(new SyncPacket());
+                        break;
+                    }
 
-                        if (receivedItemsPacket.Index == 0)
+                    lock (itemQueueLockObject)
+                    {
+                        foreach (var item in receivedItemsPacket.Items)
                         {
-                            PerformResynchronization(receivedItemsPacket);
-                            break;
-                        }
-
-                        lock (itemQueueLockObject)
-                        {
-                            foreach (var item in receivedItemsPacket.Items)
+                            if (!allItemsReceived.Contains(item))
                             {
                                 allItemsReceived.Add(item);
                                 itemQueue.Enqueue(item);
-                                itemsReceivedIndex++;
 
                                 if (ItemReceived != null)
                                 {
@@ -160,8 +160,9 @@ namespace Archipelago.MultiClient.Net.Helpers
                                 }
                             }
                         }
-                        break;
                     }
+                    break;
+                }
             }
         }
 
@@ -171,12 +172,10 @@ namespace Archipelago.MultiClient.Net.Helpers
             {
                 itemQueue.Clear();
                 allItemsReceived.Clear();
-                itemsReceivedIndex = 0;
                 foreach (var item in receivedItemsPacket.Items)
                 {
                     itemQueue.Enqueue(item);
                     allItemsReceived.Add(item);
-                    itemsReceivedIndex++;
                 }
             }
         }
