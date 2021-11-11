@@ -13,7 +13,6 @@ namespace Archipelago.MultiClient.Net.Helpers
     public class ReceivedItemsHelper
     {
         private readonly ArchipelagoSocketHelper socket;
-        private readonly IDataPackageCache dataPackageCache;
         private DataPackage dataPackage;
         private Queue<NetworkItem> itemQueue = new Queue<NetworkItem>();
         private List<NetworkItem> allItemsReceived = new List<NetworkItem>();
