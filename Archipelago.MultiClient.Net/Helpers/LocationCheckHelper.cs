@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using Archipelago.MultiClient.Net.Cache;
 using Archipelago.MultiClient.Net.Enums;
+using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
 
 namespace Archipelago.MultiClient.Net.Helpers
@@ -11,10 +13,13 @@ namespace Archipelago.MultiClient.Net.Helpers
     {
         private readonly List<int> locationsChecked = new List<int>();
         private readonly ArchipelagoSocketHelper socket;
+        private readonly IDataPackageCache cache;
         private readonly object locationsCheckedLockObject = new object();
-
+        private DataPackage dataPackage;
         private bool awaitingLocationInfoPacket;
         private Action<LocationInfoPacket> locationInfoPacketCallback;
+        private Dictionary<string, int> locationNameToIdMapping;
+        private Dictionary<int, string> locationIdToNameMapping;
 
         public ReadOnlyCollection<int> AllLocationsChecked => GetCheckedLocations();
 
@@ -26,10 +31,10 @@ namespace Archipelago.MultiClient.Net.Helpers
             }
         }
 
-        internal LocationCheckHelper(ArchipelagoSocketHelper socket)
+        internal LocationCheckHelper(ArchipelagoSocketHelper socket, IDataPackageCache cache)
         {
             this.socket = socket;
-
+            this.cache = cache;
             socket.PacketReceived += Socket_PacketReceived;
         }
 
@@ -98,6 +103,48 @@ namespace Archipelago.MultiClient.Net.Helpers
             });
             awaitingLocationInfoPacket = true;
             locationInfoPacketCallback = callback;
+        }
+
+        /// <summary>
+        ///     Get the Id of a location from its name. Useful when a game knows its locations by name but not by Archipelago Id.
+        /// </summary>
+        /// <param name="locationName">
+        ///     The name of the location to check the Id for. Must match the contents of the datapackage.
+        /// </param>
+        public int GetLocationIdFromName(string locationName)
+        {
+            if (dataPackage == null)
+            {
+                cache.TryGetDataPackageFromCache(out dataPackage);
+            }
+
+            if (locationNameToIdMapping == null)
+            {
+                locationNameToIdMapping = dataPackage.Games.Select(x => x.Value).SelectMany(x => x.LocationLookup).ToDictionary(x => x.Key, x => x.Value);
+            }
+
+            return locationNameToIdMapping[locationName];
+        }
+
+        /// <summary>
+        ///     Get the name of a location from its id. Useful when receiving a packet and it is necessary to find the name of the location.
+        /// </summary>
+        /// <param name="locationId">
+        ///     The Id of the location to look up the name for. Must match the contents of the datapackage.
+        /// </param>
+        public string GetLocationNameFromId(int locationId)
+        {
+            if (dataPackage == null)
+            {
+                cache.TryGetDataPackageFromCache(out dataPackage);
+            }
+
+            if (locationIdToNameMapping == null)
+            {
+                locationIdToNameMapping = dataPackage.Games.Select(x => x.Value).SelectMany(x => x.LocationLookup).ToDictionary(x => x.Value, x => x.Key);
+            }
+
+            return locationIdToNameMapping[locationId];
         }
 
         private void Socket_PacketReceived(ArchipelagoPacketBase packet)
