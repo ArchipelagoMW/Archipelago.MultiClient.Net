@@ -120,6 +120,9 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// <remarks>
         ///     The packets will be sent in the order they are provided as arguments.
         /// </remarks>
+        /// <exception cref="T:Archipelago.MultiClient.Net.Exceptions.ArchipelagoSocketClosedException">
+        ///     The websocket connection is not alive
+        /// </exception>
         public void SendMultiplePackets(params ArchipelagoPacketBase[] packets)
         {
             if (webSocket.IsAlive)
