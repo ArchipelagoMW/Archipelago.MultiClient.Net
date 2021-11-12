@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 using Archipelago.MultiClient.Net.Cache;
 using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Exceptions;
@@ -11,6 +13,8 @@ namespace Archipelago.MultiClient.Net
 {
     public class ArchipelagoSession
     {
+        const int ApConnectionTimeoutInSeconds = 5;
+
         public ArchipelagoSocketHelper Socket { get; }
 
         public ReceivedItemsHelper Items { get; }
@@ -21,6 +25,9 @@ namespace Archipelago.MultiClient.Net
 
         private bool expectingDataPackage = false;
         private Action<DataPackage> dataPackageCallback;
+
+        volatile bool expectingLoginResult = false;
+        private LoginResult loginResult = null;
 
         public List<string> Tags = new List<string>();
 
@@ -39,26 +46,43 @@ namespace Archipelago.MultiClient.Net
 
         private void Socket_PacketReceived(ArchipelagoPacketBase packet)
         {
-            switch (packet.PacketType)
+            switch (packet)
             {
-                case ArchipelagoPacketType.DataPackage:
+                case DataPackagePacket dataPackagePacket:
                 {
                     if (expectingDataPackage)
                     {
-                        var dataPackagePacket = (DataPackagePacket)packet;
-
                         DataPackageCache.SaveDataPackageToCache(dataPackagePacket.DataPackage);
 
-                        if (dataPackageCallback != null)
-                        {
-                            dataPackageCallback(dataPackagePacket.DataPackage);
-                        }
+                        dataPackageCallback?.Invoke(dataPackagePacket.DataPackage);
 
                         expectingDataPackage = false;
                         dataPackageCallback = null;
                     }
                     break;
                 }
+            }
+
+            switch (packet)
+            {
+                case ConnectedPacket connectedPacket:
+                    {
+                        if (expectingLoginResult)
+                        {
+                            expectingLoginResult = false;
+                            loginResult = new LoginSuccessful(connectedPacket);
+                        }
+                    }
+                    break;
+                case ConnectionRefusedPacket connectionRefusedPacket:
+                    {
+                        if (expectingLoginResult)
+                        {
+                            expectingLoginResult = false;
+                            loginResult = new LoginFailure(connectionRefusedPacket);
+                        }
+                    }
+                    break;
             }
         }
 
@@ -80,19 +104,19 @@ namespace Archipelago.MultiClient.Net
         ///     The connect attempt is synchronous and will lock for up to 5 seconds as it attempts to connect to the server. 
         ///     Most connections are instantaneous however the timeout is 5 seconds before it returns <see cref="false"/>.
         /// </remarks>
-        public bool TryConnectAndLogin(string game, string name, Version version, List<string> tags = null, string uuid = null, string password = null)
+        public LoginResult TryConnectAndLogin(string game, string name, Version version, List<string> tags = null, string uuid = null, string password = null)
         {
-            if (uuid == null)
-            {
-                uuid = Guid.NewGuid().ToString();
-            }
-
+            uuid = uuid ?? Guid.NewGuid().ToString();
             Tags = tags ?? new List<string>();
             
             try
             { 
                 Socket.Connect();
-                Socket.SendPacket(new ConnectPacket()
+
+                expectingLoginResult = true;
+                loginResult = null;
+
+                Socket.SendPacket(new ConnectPacket
                 {
                     Game = game,
                     Name = name,
@@ -101,11 +125,25 @@ namespace Archipelago.MultiClient.Net
                     Uuid = uuid,
                     Version = version
                 });
-                return true;
+
+                var connectedStartedTime = DateTime.UtcNow;
+                while (expectingLoginResult)
+                {
+                    if (DateTime.UtcNow - connectedStartedTime > TimeSpan.FromSeconds(ApConnectionTimeoutInSeconds))
+                    {
+                        Socket.DisconnectAsync();
+
+                        return new LoginFailure("Connection Timedout.");
+                    }
+
+                    Thread.Sleep(100);
+                }
+
+                return loginResult;
             }
             catch (ArchipelagoSocketClosedException)
             {
-                return false;
+                return new LoginFailure("Socket closed unexpectedly.");
             }
         }
 
@@ -123,6 +161,70 @@ namespace Archipelago.MultiClient.Net
             {
                 Tags = Tags
             });
+        }
+
+        public abstract class LoginResult
+        {
+            public abstract bool Successful { get; }
+        }
+
+        public class LoginSuccessful : LoginResult
+        {
+            public override bool Successful => true;
+
+            public int Team { get; }
+            public int Slot { get; }
+            public int[] MissingChecks { get; }
+            public int[] LocationsChecked { get; }
+            public Dictionary<string, object> SlotData { get; }
+
+            public LoginSuccessful(ConnectedPacket connectedPacket)
+            {
+                Team = connectedPacket.Team;
+                Slot = connectedPacket.Slot;
+                MissingChecks = connectedPacket.MissingChecks.ToArray();
+                LocationsChecked = connectedPacket.LocationsChecked.ToArray();
+                SlotData = connectedPacket.SlotData;
+            }
+        }
+
+        public class LoginFailure : LoginResult
+        {
+            public override bool Successful => false;
+
+            public ConnectionRefusedError[] ErrorCodes { get; }
+            public string[] Errors { get; }
+
+            public LoginFailure(ConnectionRefusedPacket connectionRefusedPacket)
+            {
+                ErrorCodes = connectionRefusedPacket.Errors.ToArray();
+                Errors = ErrorCodes.Select(GetErrorMessage).ToArray();
+            }
+
+            public LoginFailure(string message)
+            {
+                ErrorCodes = new ConnectionRefusedError[0];
+                Errors = new[] {message};
+            }
+
+            static string GetErrorMessage(ConnectionRefusedError errorCode)
+            {
+                switch (errorCode)
+                {
+                    case ConnectionRefusedError.InvalidSlot:
+                        return "The slot name did not match any slot name entry on the server.";
+                    case ConnectionRefusedError.InvalidGame:
+                        return "The slot name is set to a different game on the server.";
+                    case ConnectionRefusedError.SlotAlreadyTaken:
+                        return "The slot name already has a connection with a different uuid established.";
+                    case ConnectionRefusedError.IncompatibleVersion:
+                        return "The client and server version mismatch.";
+                    case ConnectionRefusedError.InvalidPassword:
+                        return "The password is invalid.";
+                    default:
+                        return $"Unknown error: {errorCode}.";
+                }
+            }
         }
     }
 }
