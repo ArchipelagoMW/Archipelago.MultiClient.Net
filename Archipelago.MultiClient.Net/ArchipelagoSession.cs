@@ -97,12 +97,12 @@ namespace Archipelago.MultiClient.Net
         /// <param name="uuid">The uuid of this client.</param>
         /// <param name="password">The password to connect to this AP room.</param>
         /// <returns>
-        ///     <see cref="true"/> if the connection seems to have succeeded and the server socket is reached.
-        ///     <see cref="false"/> if the connection to the server socket failed in some way.
+        ///     <see cref="T:Archipelago.MultiClient.Net.LoginSuccessful"/> if the connection is succeeded and the server accepted the login attempt.
+        ///     <see cref="T:Archipelago.MultiClient.Net.LoginFailure"/> if the connection to the server failed in some way.
         /// </returns>
         /// <remarks>
         ///     The connect attempt is synchronous and will lock for up to 5 seconds as it attempts to connect to the server. 
-        ///     Most connections are instantaneous however the timeout is 5 seconds before it returns <see cref="false"/>.
+        ///     Most connections are instantaneous however the timeout is 5 seconds before it returns <see cref="T:Archipelago.MultiClient.Net.LoginFailure"/>.
         /// </remarks>
         public LoginResult TryConnectAndLogin(string game, string name, Version version, List<string> tags = null, string uuid = null, string password = null)
         {
@@ -162,68 +162,68 @@ namespace Archipelago.MultiClient.Net
                 Tags = Tags
             });
         }
+    }
 
-        public abstract class LoginResult
+    public abstract class LoginResult
+    {
+        public abstract bool Successful { get; }
+    }
+
+    public class LoginSuccessful : LoginResult
+    {
+        public override bool Successful => true;
+
+        public int Team { get; }
+        public int Slot { get; }
+        public int[] MissingChecks { get; }
+        public int[] LocationsChecked { get; }
+        public Dictionary<string, object> SlotData { get; }
+
+        public LoginSuccessful(ConnectedPacket connectedPacket)
         {
-            public abstract bool Successful { get; }
+            Team = connectedPacket.Team;
+            Slot = connectedPacket.Slot;
+            MissingChecks = connectedPacket.MissingChecks.ToArray();
+            LocationsChecked = connectedPacket.LocationsChecked.ToArray();
+            SlotData = connectedPacket.SlotData;
+        }
+    }
+
+    public class LoginFailure : LoginResult
+    {
+        public override bool Successful => false;
+
+        public ConnectionRefusedError[] ErrorCodes { get; }
+        public string[] Errors { get; }
+
+        public LoginFailure(ConnectionRefusedPacket connectionRefusedPacket)
+        {
+            ErrorCodes = connectionRefusedPacket.Errors.ToArray();
+            Errors = ErrorCodes.Select(GetErrorMessage).ToArray();
         }
 
-        public class LoginSuccessful : LoginResult
+        public LoginFailure(string message)
         {
-            public override bool Successful => true;
-
-            public int Team { get; }
-            public int Slot { get; }
-            public int[] MissingChecks { get; }
-            public int[] LocationsChecked { get; }
-            public Dictionary<string, object> SlotData { get; }
-
-            public LoginSuccessful(ConnectedPacket connectedPacket)
-            {
-                Team = connectedPacket.Team;
-                Slot = connectedPacket.Slot;
-                MissingChecks = connectedPacket.MissingChecks.ToArray();
-                LocationsChecked = connectedPacket.LocationsChecked.ToArray();
-                SlotData = connectedPacket.SlotData;
-            }
+            ErrorCodes = new ConnectionRefusedError[0];
+            Errors = new[] { message };
         }
 
-        public class LoginFailure : LoginResult
+        static string GetErrorMessage(ConnectionRefusedError errorCode)
         {
-            public override bool Successful => false;
-
-            public ConnectionRefusedError[] ErrorCodes { get; }
-            public string[] Errors { get; }
-
-            public LoginFailure(ConnectionRefusedPacket connectionRefusedPacket)
+            switch (errorCode)
             {
-                ErrorCodes = connectionRefusedPacket.Errors.ToArray();
-                Errors = ErrorCodes.Select(GetErrorMessage).ToArray();
-            }
-
-            public LoginFailure(string message)
-            {
-                ErrorCodes = new ConnectionRefusedError[0];
-                Errors = new[] {message};
-            }
-
-            static string GetErrorMessage(ConnectionRefusedError errorCode)
-            {
-                switch (errorCode)
-                {
-                    case ConnectionRefusedError.InvalidSlot:
-                        return "The slot name did not match any slot name entry on the server.";
-                    case ConnectionRefusedError.InvalidGame:
-                        return "The slot name is set to a different game on the server.";
-                    case ConnectionRefusedError.SlotAlreadyTaken:
-                        return "The slot name already has a connection with a different uuid established.";
-                    case ConnectionRefusedError.IncompatibleVersion:
-                        return "The client and server version mismatch.";
-                    case ConnectionRefusedError.InvalidPassword:
-                        return "The password is invalid.";
-                    default:
-                        return $"Unknown error: {errorCode}.";
-                }
+                case ConnectionRefusedError.InvalidSlot:
+                return "The slot name did not match any slot name entry on the server.";
+                case ConnectionRefusedError.InvalidGame:
+                return "The slot name is set to a different game on the server.";
+                case ConnectionRefusedError.SlotAlreadyTaken:
+                return "The slot name already has a connection with a different uuid established.";
+                case ConnectionRefusedError.IncompatibleVersion:
+                return "The client and server version mismatch.";
+                case ConnectionRefusedError.InvalidPassword:
+                return "The password is invalid.";
+                default:
+                return $"Unknown error: {errorCode}.";
             }
         }
     }
