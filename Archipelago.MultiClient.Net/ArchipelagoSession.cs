@@ -13,7 +13,7 @@ namespace Archipelago.MultiClient.Net
 {
     public class ArchipelagoSession
     {
-        const int ApConnectionTimeoutInSeconds = 5;
+        const int APConnectionTimeoutInSeconds = 5;
 
         public ArchipelagoSocketHelper Socket { get; }
 
@@ -132,7 +132,7 @@ namespace Archipelago.MultiClient.Net
                 var connectedStartedTime = DateTime.UtcNow;
                 while (expectingLoginResult)
                 {
-                    if (DateTime.UtcNow - connectedStartedTime > TimeSpan.FromSeconds(ApConnectionTimeoutInSeconds))
+                    if (DateTime.UtcNow - connectedStartedTime > TimeSpan.FromSeconds(APConnectionTimeoutInSeconds))
                     {
                         Socket.DisconnectAsync();
 
