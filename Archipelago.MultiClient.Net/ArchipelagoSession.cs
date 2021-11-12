@@ -1,13 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using Archipelago.MultiClient.Net.Cache;
+﻿using Archipelago.MultiClient.Net.Cache;
 using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Exceptions;
 using Archipelago.MultiClient.Net.Helpers;
 using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 
 namespace Archipelago.MultiClient.Net
 {

@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
-using Archipelago.MultiClient.Net.Enums;
+﻿using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Packets;
+using System.Collections.Generic;
 
 namespace Archipelago.MultiClient.Net.BounceFeatures.DeathLink
 {

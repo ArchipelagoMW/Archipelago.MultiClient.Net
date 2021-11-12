@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using Archipelago.MultiClient.Net.Cache;
+﻿using Archipelago.MultiClient.Net.Cache;
 using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Exceptions;
 using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
 
 namespace Archipelago.MultiClient.Net.Helpers
 {
@@ -24,11 +23,11 @@ namespace Archipelago.MultiClient.Net.Helpers
 
         ReadOnlyCollection<NetworkItem> GetReceivedItems()
         {
-	        lock (itemQueueLockObject)
-	        {
-		        return new ReadOnlyCollection<NetworkItem>(allItemsReceived);
+            lock (itemQueueLockObject)
+            {
+                return new ReadOnlyCollection<NetworkItem>(allItemsReceived);
             }
-        }      
+        }
 
         public delegate void ItemReceivedHandler(ReceivedItemsHelper helper);
         public event ItemReceivedHandler ItemReceived;
@@ -134,7 +133,7 @@ namespace Archipelago.MultiClient.Net.Helpers
                 {
                     itemLookupCache.Add(kvp.Key, kvp.Value);
                 }
-                
+
                 try
                 {
                     return itemLookupCache[id];

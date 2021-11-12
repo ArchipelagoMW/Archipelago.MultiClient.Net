@@ -1,6 +1,6 @@
-﻿using System;
-using Archipelago.MultiClient.Net.Cache;
+﻿using Archipelago.MultiClient.Net.Cache;
 using Archipelago.MultiClient.Net.Helpers;
+using System;
 
 namespace Archipelago.MultiClient.Net
 {

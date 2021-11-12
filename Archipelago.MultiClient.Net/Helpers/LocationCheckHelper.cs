@@ -1,11 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using Archipelago.MultiClient.Net.Cache;
+﻿using Archipelago.MultiClient.Net.Cache;
 using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
 
 namespace Archipelago.MultiClient.Net.Helpers
 {

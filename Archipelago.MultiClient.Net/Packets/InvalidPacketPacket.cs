@@ -6,7 +6,7 @@ namespace Archipelago.MultiClient.Net.Packets
     public class InvalidPacketPacket : ArchipelagoPacketBase
     {
         public override ArchipelagoPacketType PacketType => ArchipelagoPacketType.InvalidPacket;
-        
+
         [JsonProperty("type")]
         public InvalidPacketErrorType ErrorType { get; set; }
 

@@ -72,9 +72,11 @@ namespace Archipelago.MultiClient.Net.Helpers
         {
             switch (packet)
             {
-                case ConnectedPacket connectedPacket: OnConnectedPacketReceived(connectedPacket); 
+                case ConnectedPacket connectedPacket:
+                    OnConnectedPacketReceived(connectedPacket);
                     break;
-                case RoomInfoPacket roomInfoPacket: OnRoomInfoPacketReceived(roomInfoPacket);
+                case RoomInfoPacket roomInfoPacket:
+                    OnRoomInfoPacketReceived(roomInfoPacket);
                     break;
             }
         }
