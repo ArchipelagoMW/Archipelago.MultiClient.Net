@@ -114,8 +114,10 @@ namespace Archipelago.MultiClient.Net.Helpers
         {
             if (networkPlayers != null && networkPlayers.Count > 0)
             {
+                players = new PlayerInfo[networkPlayers.Count];
                 for (int i = 0; i < networkPlayers.Count; i++)
                 {
+                    players[i] = new PlayerInfo();
                     players[i].Team = networkPlayers[i].Team;
                     players[i].Slot = networkPlayers[i].Slot;
                     players[i].Name = networkPlayers[i].Name;
