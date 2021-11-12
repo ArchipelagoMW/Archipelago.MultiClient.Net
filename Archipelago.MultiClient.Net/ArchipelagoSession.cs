@@ -73,23 +73,23 @@ namespace Archipelago.MultiClient.Net
             switch (packet)
             {
                 case ConnectedPacket connectedPacket:
+                {
+                    if (expectingLoginResult)
                     {
-                        if (expectingLoginResult)
-                        {
-                            expectingLoginResult = false;
-                            loginResult = new LoginSuccessful(connectedPacket);
-                        }
+                        expectingLoginResult = false;
+                        loginResult = new LoginSuccessful(connectedPacket);
                     }
-                    break;
+                }
+                break;
                 case ConnectionRefusedPacket connectionRefusedPacket:
+                {
+                    if (expectingLoginResult)
                     {
-                        if (expectingLoginResult)
-                        {
-                            expectingLoginResult = false;
-                            loginResult = new LoginFailure(connectionRefusedPacket);
-                        }
+                        expectingLoginResult = false;
+                        loginResult = new LoginFailure(connectionRefusedPacket);
                     }
-                    break;
+                }
+                break;
             }
         }
 
@@ -115,9 +115,9 @@ namespace Archipelago.MultiClient.Net
         {
             uuid = uuid ?? Guid.NewGuid().ToString();
             Tags = tags ?? new List<string>();
-            
+
             try
-            { 
+            {
                 Socket.Connect();
 
                 expectingLoginResult = true;
@@ -140,7 +140,7 @@ namespace Archipelago.MultiClient.Net
                     {
                         Socket.DisconnectAsync();
 
-                        return new LoginFailure("Connection Timedout.");
+                        return new LoginFailure("Connection timed out.");
                     }
 
                     Thread.Sleep(100);
@@ -220,17 +220,17 @@ namespace Archipelago.MultiClient.Net
             switch (errorCode)
             {
                 case ConnectionRefusedError.InvalidSlot:
-                return "The slot name did not match any slot name entry on the server.";
+                    return "The slot name did not match any slot on the server.";
                 case ConnectionRefusedError.InvalidGame:
-                return "The slot name is set to a different game on the server.";
+                    return "The slot is set to a different game on the server.";
                 case ConnectionRefusedError.SlotAlreadyTaken:
-                return "The slot name already has a connection with a different uuid established.";
+                    return "The slot already has a connection with a different uuid established.";
                 case ConnectionRefusedError.IncompatibleVersion:
-                return "The client and server version mismatch.";
+                    return "The client and server version mismatch.";
                 case ConnectionRefusedError.InvalidPassword:
-                return "The password is invalid.";
+                    return "The password is invalid.";
                 default:
-                return $"Unknown error: {errorCode}.";
+                    return $"Unknown error: {errorCode}.";
             }
         }
     }
