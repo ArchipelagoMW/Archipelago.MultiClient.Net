@@ -17,6 +17,8 @@ namespace Archipelago.MultiClient.Net
 
         public LocationCheckHelper Locations { get; }
 
+        public PlayerHelper Players { get; }
+
         private IDataPackageCache DataPackageCache { get; }
 
         private bool expectingDataPackage = false;
@@ -27,11 +29,13 @@ namespace Archipelago.MultiClient.Net
         internal ArchipelagoSession(ArchipelagoSocketHelper socket,
                                     ReceivedItemsHelper items,
                                     LocationCheckHelper locations,
+                                    PlayerHelper players,
                                     IDataPackageCache cache)
         {
             Socket = socket;
             Items = items;
             Locations = locations;
+            Players = players;
             DataPackageCache = cache;
 
             socket.PacketReceived += Socket_PacketReceived;

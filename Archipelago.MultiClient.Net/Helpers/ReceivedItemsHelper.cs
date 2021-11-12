@@ -42,12 +42,29 @@ namespace Archipelago.MultiClient.Net.Helpers
         }
 
         /// <summary>
+        ///     Check whether there are any items in the queue. 
+        /// </summary>
+        /// <returns>
+        ///     True if the queue is not empty, otherwise false
+        /// </returns>
+        public bool Any()
+        {
+            lock (itemQueueLockObject)
+            {
+                return itemQueue.Count > 0;
+            }
+        }
+
+        /// <summary>
         ///     Peek the next item on the queue to be handled. 
         ///     The item will remain on the queue until dequeued with <see cref="DequeueItem"/>.
         /// </summary>
         /// <returns>
         ///     The next item to be handled as a <see cref="NetworkItem"/>.
         /// </returns>
+        /// <exception cref="T:System.InvalidOperationException">
+        ///     The <see cref="T:System.Collections.Generic.Queue`1" /> is empty.
+        /// </exception>
         public NetworkItem PeekItem()
         {
             lock (itemQueueLockObject)
@@ -59,12 +76,12 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// <summary>
         ///     Peek the name of next item on the queue to be handled.
         /// </summary>
-        /// <param name="game">
-        ///     The game for which to look up the item id. This lookup is derived from the DataPackage packet.
-        /// </param>
         /// <returns>
         ///     The name of the item.
         /// </returns>
+        /// <exception cref="T:System.InvalidOperationException">
+        ///     The <see cref="T:System.Collections.Generic.Queue`1" /> is empty.
+        /// </exception>
         public string PeekItemName()
         {
             lock (itemQueueLockObject)
@@ -80,6 +97,9 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// <returns>
         ///     The next item to be handled as a <see cref="NetworkItem"/>.
         /// </returns>
+        /// <exception cref="T:System.InvalidOperationException">
+        ///     The <see cref="T:System.Collections.Generic.Queue`1" /> is empty.
+        /// </exception>
         public NetworkItem DequeueItem()
         {
             lock (itemQueueLockObject)
@@ -97,6 +117,9 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// <returns>
         ///     The name of the item as a string.
         /// </returns>
+        /// <exception cref="T:Archipelago.MultiClient.Net.Exceptions.UnknownItemIdException">
+        ///     The item id is not of any known items.
+        /// </exception>
         public string GetItemName(int id)
         {
             if (itemLookupCache.TryGetValue(id, out var name))
