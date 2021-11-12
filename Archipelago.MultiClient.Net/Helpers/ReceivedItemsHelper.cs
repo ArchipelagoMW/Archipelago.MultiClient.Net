@@ -191,12 +191,19 @@ namespace Archipelago.MultiClient.Net.Helpers
         {
             lock (itemQueueLockObject)
             {
+                var previouslyReceived = new List<NetworkItem>(allItemsReceived);
+
                 itemQueue.Clear();
                 allItemsReceived.Clear();
                 foreach (var item in receivedItemsPacket.Items)
                 {
                     itemQueue.Enqueue(item);
                     allItemsReceived.Add(item);
+
+                    if (ItemReceived != null && !previouslyReceived.Contains(item))
+                    {
+                        ItemReceived(this);
+                    }
                 }
             }
         }
