@@ -54,7 +54,10 @@ namespace Archipelago.MultiClient.Net
                     {
                         DataPackageCache.SaveDataPackageToCache(dataPackagePacket.DataPackage);
 
-                        dataPackageCallback?.Invoke(dataPackagePacket.DataPackage);
+                        if (dataPackageCallback != null)
+                        {
+                            dataPackageCallback(dataPackagePacket.DataPackage);
+                        }
 
                         expectingDataPackage = false;
                         dataPackageCallback = null;
