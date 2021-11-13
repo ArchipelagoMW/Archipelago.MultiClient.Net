@@ -106,8 +106,8 @@ namespace Archipelago.MultiClient.Net.Helpers
 
         private void OnRoomInfoPacketReceived(RoomInfoPacket packet)
         {
-            UpdateGames(packet.Games);
             UpdatePlayerInfo(packet.Players);
+            UpdateGames(packet.Games);
         }
 
         private void UpdateGames(List<string> games)
@@ -132,25 +132,13 @@ namespace Archipelago.MultiClient.Net.Helpers
         {
             if (networkPlayers != null && networkPlayers.Count > 0)
             {
-                if (players == null)
+                players = networkPlayers.Select(p => new PlayerInfo
                 {
-                    players = networkPlayers.Select(p => new PlayerInfo {
-                        Team = p.Team,
-                        Slot = p.Slot,
-                        Name = p.Name,
-                        Alias = p.Alias
-                    }).ToArray();
-                }
-                else
-                {
-                    for (int i = 0; i < networkPlayers.Count; i++)
-                    {
-                        players[i].Team = networkPlayers[i].Team;
-                        players[i].Slot = networkPlayers[i].Slot;
-                        players[i].Name = networkPlayers[i].Name;
-                        players[i].Alias = networkPlayers[i].Alias;
-                    }
-                }
+                    Team = p.Team,
+                    Slot = p.Slot,
+                    Name = p.Name,
+                    Alias = p.Alias
+                }).ToArray();
             }
         }
     }
