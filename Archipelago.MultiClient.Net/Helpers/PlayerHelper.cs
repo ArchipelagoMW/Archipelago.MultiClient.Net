@@ -39,7 +39,7 @@ namespace Archipelago.MultiClient.Net.Helpers
                 return $"Slot: {slot}";
             }
 
-			return playerInfo.Alias;
+            return playerInfo.Alias;
         }
 
         /// <summary>
@@ -60,7 +60,7 @@ namespace Archipelago.MultiClient.Net.Helpers
                 return $"Slot: {slot}";
             }
 
-			return playerInfo.Name;
+            return playerInfo.Name;
         }
 
         /// <summary>
@@ -83,7 +83,7 @@ namespace Archipelago.MultiClient.Net.Helpers
                 return $"Slot: {slot}";
             }
 
-			return $"{playerInfo.Alias} ({playerInfo.Name})";
+            return $"{playerInfo.Alias} ({playerInfo.Name})";
         }
 
         private void PacketReceived(ArchipelagoPacketBase packet)
