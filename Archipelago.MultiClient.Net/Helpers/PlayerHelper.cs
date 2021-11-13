@@ -28,12 +28,18 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// <returns>The player's alias</returns>
         public string GetPlayerAlias(int slot)
         {
-            if (players == null || slot >= players.Length || players[slot].Alias == null)
+            if (players == null)
             {
                 return $"Slot: {slot}";
             }
 
-            return players[slot].Alias;
+            var playerInfo = players.FirstOrDefault(p => p.Slot == slot);
+            if (playerInfo == null)
+            {
+                return $"Slot: {slot}";
+            }
+
+			return playerInfo.Alias;
         }
 
         /// <summary>
@@ -43,12 +49,18 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// <returns>The player's name</returns>
         public string GetPlayerName(int slot)
         {
-            if (players == null || slot >= players.Length || players[slot].Name == null)
+            if (players == null)
             {
                 return $"Slot: {slot}";
             }
 
-            return players[slot].Name;
+            var playerInfo = players.FirstOrDefault(p => p.Slot == slot);
+            if (playerInfo == null)
+            {
+                return $"Slot: {slot}";
+            }
+
+			return playerInfo.Name;
         }
 
         /// <summary>
@@ -60,12 +72,18 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// <returns>The player's alias and name in the following format of "Alias (Name)"</returns>
         public string GetPlayerAliasAndName(int slot)
         {
-            if (players == null || slot >= players.Length || players[slot].Name == null)
+            if (players == null)
             {
                 return $"Slot: {slot}";
             }
 
-            return $"{players[slot].Alias} ({players[slot].Name})";
+            var playerInfo = players.FirstOrDefault(p => p.Slot == slot);
+            if (playerInfo == null)
+            {
+                return $"Slot: {slot}";
+            }
+
+			return $"{playerInfo.Alias} ({playerInfo.Name})";
         }
 
         private void PacketReceived(ArchipelagoPacketBase packet)
@@ -114,14 +132,24 @@ namespace Archipelago.MultiClient.Net.Helpers
         {
             if (networkPlayers != null && networkPlayers.Count > 0)
             {
-                players = new PlayerInfo[networkPlayers.Count];
-                for (int i = 0; i < networkPlayers.Count; i++)
+                if (players == null)
                 {
-                    players[i] = new PlayerInfo();
-                    players[i].Team = networkPlayers[i].Team;
-                    players[i].Slot = networkPlayers[i].Slot;
-                    players[i].Name = networkPlayers[i].Name;
-                    players[i].Alias = networkPlayers[i].Alias;
+                    players = networkPlayers.Select(p => new PlayerInfo {
+                        Team = p.Team,
+                        Slot = p.Slot,
+                        Name = p.Name,
+                        Alias = p.Alias
+                    }).ToArray();
+                }
+                else
+                {
+                    for (int i = 0; i < networkPlayers.Count; i++)
+                    {
+                        players[i].Team = networkPlayers[i].Team;
+                        players[i].Slot = networkPlayers[i].Slot;
+                        players[i].Name = networkPlayers[i].Name;
+                        players[i].Alias = networkPlayers[i].Alias;
+                    }
                 }
             }
         }
