@@ -33,7 +33,7 @@ namespace Archipelago.MultiClient.Net.Helpers
                 return $"Slot: {slot}";
             }
 
-            var playerInfo = players.FirstOrDefault(p => p.Slot == slot);
+            PlayerInfo playerInfo = players.FirstOrDefault(p => p.Slot == slot);
             if (playerInfo == null)
             {
                 return $"Slot: {slot}";
@@ -54,7 +54,7 @@ namespace Archipelago.MultiClient.Net.Helpers
                 return $"Slot: {slot}";
             }
 
-            var playerInfo = players.FirstOrDefault(p => p.Slot == slot);
+            PlayerInfo playerInfo = players.FirstOrDefault(p => p.Slot == slot);
             if (playerInfo == null)
             {
                 return $"Slot: {slot}";
@@ -77,7 +77,7 @@ namespace Archipelago.MultiClient.Net.Helpers
                 return $"Slot: {slot}";
             }
 
-            var playerInfo = players.FirstOrDefault(p => p.Slot == slot);
+            PlayerInfo playerInfo = players.FirstOrDefault(p => p.Slot == slot);
             if (playerInfo == null)
             {
                 return $"Slot: {slot}";
@@ -93,10 +93,18 @@ namespace Archipelago.MultiClient.Net.Helpers
                 case ConnectedPacket connectedPacket:
                     OnConnectedPacketReceived(connectedPacket);
                     break;
+                case RoomUpdatePacket roomUpdatePacket:
+	                OnRoomUpdatedPacketReceived(roomUpdatePacket);
+	                break;
                 case RoomInfoPacket roomInfoPacket:
                     OnRoomInfoPacketReceived(roomInfoPacket);
                     break;
             }
+        }
+
+        private void OnRoomInfoPacketReceived(RoomInfoPacket packet)
+        {
+            UpdateGames(packet.Games);
         }
 
         private void OnConnectedPacketReceived(ConnectedPacket packet)
@@ -104,41 +112,49 @@ namespace Archipelago.MultiClient.Net.Helpers
             UpdatePlayerInfo(packet.Players);
         }
 
-        private void OnRoomInfoPacketReceived(RoomInfoPacket packet)
+        private void OnRoomUpdatedPacketReceived(RoomUpdatePacket packet)
         {
-            UpdatePlayerInfo(packet.Players);
-            UpdateGames(packet.Games);
+            if (packet.Players != null && packet.Players.Count > 0)
+            {
+                UpdatePlayerInfo(packet.Players);
+            }
         }
 
         private void UpdateGames(List<string> games)
         {
-            if (games != null && games.Count > 0)
+            if (players == null)
             {
-                if (players == null)
+                players = games.Select(g => new PlayerInfo { Game = g }).ToArray();
+            }
+            else
+            {
+                for (int i = 0; i < games.Count; i++)
                 {
-                    players = games.Select(g => new PlayerInfo { Game = g }).ToArray();
-                }
-                else
-                {
-                    for (int i = 0; i < games.Count; i++)
-                    {
-                        players[i].Game = games[i];
-                    }
+                    players[i].Game = games[i];
                 }
             }
         }
 
         private void UpdatePlayerInfo(List<NetworkPlayer> networkPlayers)
         {
-            if (networkPlayers != null && networkPlayers.Count > 0)
+            if (players == null)
             {
-                players = networkPlayers.Select(p => new PlayerInfo
-                {
+                players = networkPlayers.Select(p => new PlayerInfo {
                     Team = p.Team,
                     Slot = p.Slot,
                     Name = p.Name,
                     Alias = p.Alias
                 }).ToArray();
+            }
+            else
+            {
+                for (int i = 0; i < networkPlayers.Count; i++)
+                {
+                    players[i].Team = networkPlayers[i].Team;
+                    players[i].Slot = networkPlayers[i].Slot;
+                    players[i].Name = networkPlayers[i].Name;
+                    players[i].Alias = networkPlayers[i].Alias;
+                }
             }
         }
     }
