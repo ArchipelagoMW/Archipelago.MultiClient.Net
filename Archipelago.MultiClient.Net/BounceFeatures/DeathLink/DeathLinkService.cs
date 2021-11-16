@@ -19,12 +19,20 @@ namespace Archipelago.MultiClient.Net.BounceFeatures.DeathLink
 
         void OnPacketReceived(ArchipelagoPacketBase packet)
         {
+            System.Console.WriteLine($"Packet type: {packet?.PacketType.ToString() ?? "null"}");
             if (packet.PacketType != ArchipelagoPacketType.Bounced)
             {
                 return;
             }
 
             var bouncedPacket = packet as BouncedPacket;
+            System.Console.WriteLine($"Tags: {string.Join(", ", bouncedPacket?.Tags?.ToArray() ?? new string[] { "null" })}");
+            
+            if (bouncedPacket.Data != null)
+            foreach (var kv in bouncedPacket.Data)
+            {
+                System.Console.WriteLine($"Key: {kv.Key} Value: {kv.Value}");
+            }
             if (bouncedPacket == null
                 || !bouncedPacket.Tags.Contains("DeathLink")
                 || !DeathLink.TryParse(bouncedPacket.Data, out var deathLink))
@@ -32,7 +40,10 @@ namespace Archipelago.MultiClient.Net.BounceFeatures.DeathLink
                 return;
             }
 
-            OnDeathLinkReceived(deathLink);
+            if (OnDeathLinkReceived != null)
+            { 
+                OnDeathLinkReceived(deathLink);
+            }
         }
 
         /// <summary>
