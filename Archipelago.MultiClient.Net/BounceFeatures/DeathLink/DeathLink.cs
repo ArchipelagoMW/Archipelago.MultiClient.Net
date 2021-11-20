@@ -47,7 +47,7 @@ namespace Archipelago.MultiClient.Net.BounceFeatures.DeathLink
         public static DateTime UnixTimeStampToDateTime(double unixTimeStamp)
         {
             var dateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
-            dateTime = dateTime.AddSeconds(unixTimeStamp).ToLocalTime();
+            dateTime = dateTime.AddSeconds(unixTimeStamp);
             return dateTime;
         }
 
@@ -57,7 +57,7 @@ namespace Archipelago.MultiClient.Net.BounceFeatures.DeathLink
         public static double DateTimeToUnixTimeStamp(DateTime dateTime)
         {
             var utcEpoch = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
-            return (dateTime - utcEpoch).TotalSeconds;
+            return (dateTime - utcEpoch).TotalMilliseconds / 1000;
         }
     }
 }
