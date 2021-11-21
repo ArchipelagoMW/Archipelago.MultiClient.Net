@@ -48,7 +48,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         {
             lock (locationsCheckedLockObject)
             {
-                locationsChecked.AddRange(ids);
+                locationsChecked.AddRange(ids.Where(i => !locationsChecked.Contains(i)));
                 socket.SendPacket(new LocationChecksPacket()
                 {
                     Locations = locationsChecked
@@ -69,7 +69,8 @@ namespace Archipelago.MultiClient.Net.Helpers
         {
             lock (locationsCheckedLockObject)
             {
-                locationsChecked.AddRange(ids);
+                locationsChecked.AddRange(ids.Where(i => !locationsChecked.Contains(i)));
+                
                 socket.SendPacketAsync(
                     new LocationChecksPacket()
                     {
