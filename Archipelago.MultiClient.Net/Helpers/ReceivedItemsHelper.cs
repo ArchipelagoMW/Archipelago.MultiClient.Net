@@ -12,6 +12,7 @@ namespace Archipelago.MultiClient.Net.Helpers
     public class ReceivedItemsHelper
     {
         private readonly ArchipelagoSocketHelper socket;
+        private readonly LocationCheckHelper locationsHelper;
         private DataPackage dataPackage;
         private Queue<NetworkItem> itemQueue = new Queue<NetworkItem>();
         private List<NetworkItem> allItemsReceived = new List<NetworkItem>();
@@ -32,9 +33,11 @@ namespace Archipelago.MultiClient.Net.Helpers
         public delegate void ItemReceivedHandler(ReceivedItemsHelper helper);
         public event ItemReceivedHandler ItemReceived;
 
-        internal ReceivedItemsHelper(ArchipelagoSocketHelper socket, IDataPackageCache dataPackageCache)
+        internal ReceivedItemsHelper(ArchipelagoSocketHelper socket, LocationCheckHelper locationsHelper, IDataPackageCache dataPackageCache)
         {
             this.socket = socket;
+            this.locationsHelper = locationsHelper;
+
             socket.PacketReceived += Socket_PacketReceived;
 
             dataPackageCache.TryGetDataPackageFromCache(out dataPackage);
@@ -162,6 +165,7 @@ namespace Archipelago.MultiClient.Net.Helpers
                     if (allItemsReceived.Count != receivedItemsPacket.Index)
                     {
                         socket.SendPacket(new SyncPacket());
+                        locationsHelper.CompleteLocationChecks();
                         break;
                     }
 

@@ -16,11 +16,7 @@ namespace Archipelago.MultiClient.Net.BounceFeatures.DeathLink
             Cause = cause;
         }
 
-        /// <summary>
-        ///     Attempt to parse a <see cref="DeathLink"/> object from a data dictionary.
-        ///     The dictionary is typically obtained from a Bounced packet.
-        /// </summary>
-        public static bool TryParse(Dictionary<string, object> data, out DeathLink deathLink)
+        internal static bool TryParse(Dictionary<string, object> data, out DeathLink deathLink)
         {
             if (!data.TryGetValue("time", out object timeStamp) || !data.TryGetValue("source", out object source))
             {
@@ -41,20 +37,14 @@ namespace Archipelago.MultiClient.Net.BounceFeatures.DeathLink
             return true;
         }
 
-        /// <summary>
-        ///     Convert seconds since Unix epoch to a <see cref="DateTime"/>.
-        /// </summary>
-        public static DateTime UnixTimeStampToDateTime(double unixTimeStamp)
+        internal static DateTime UnixTimeStampToDateTime(double unixTimeStamp)
         {
             var dateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
             dateTime = dateTime.AddSeconds(unixTimeStamp);
             return dateTime;
         }
 
-        /// <summary>
-        ///     Convert a <see cref="DateTime"/> to seconds since Unix epoch.
-        /// </summary>
-        public static double DateTimeToUnixTimeStamp(DateTime dateTime)
+        internal static double DateTimeToUnixTimeStamp(DateTime dateTime)
         {
             var utcEpoch = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
             return (dateTime - utcEpoch).TotalMilliseconds / 1000;
