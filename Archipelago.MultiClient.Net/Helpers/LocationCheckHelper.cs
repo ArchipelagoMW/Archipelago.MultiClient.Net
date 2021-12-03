@@ -68,6 +68,9 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// <param name="ids">
         ///     Location ids which have been checked.
         /// </param>
+        /// <exception cref="T:Archipelago.MultiClient.Net.Exceptions.ArchipelagoSocketClosedException">
+        ///     The websocket connection is not alive
+        /// </exception>
         public void CompleteLocationChecksAsync(Action<bool> onComplete, params int[] ids)
         {
             lock (locationsCheckedLockObject)
@@ -99,6 +102,9 @@ namespace Archipelago.MultiClient.Net.Helpers
         ///     callback to be overwritten with the most recent call. It is recommended you chain calls to this method
         ///     within the callbacks themselves or call this only once.
         /// </remarks>
+        /// <exception cref="T:Archipelago.MultiClient.Net.Exceptions.ArchipelagoSocketClosedException">
+        ///     The websocket connection is not alive
+        /// </exception>
         public void ScoutLocationsAsync(Action<LocationInfoPacket> callback = null, params int[] ids)
         {
             socket.SendPacketAsync(new LocationScoutsPacket()
