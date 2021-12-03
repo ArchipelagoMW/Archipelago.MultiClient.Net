@@ -18,23 +18,30 @@ namespace Archipelago.MultiClient.Net.BounceFeatures.DeathLink
 
         internal static bool TryParse(Dictionary<string, object> data, out DeathLink deathLink)
         {
-            if (!data.TryGetValue("time", out object timeStamp) || !data.TryGetValue("source", out object source))
+            try
+            {
+                if (!data.TryGetValue("time", out object timeStamp) || !data.TryGetValue("source", out object source))
+                {
+                    deathLink = null;
+                    return false;
+                }
+
+                string cause = null;
+                if (data.TryGetValue("cause", out object causeObject))
+                {
+                    cause = causeObject.ToString();
+                }
+
+                deathLink = new DeathLink(source.ToString(), cause) {
+                    Timestamp = UnixTimeStampToDateTime((double)timeStamp),
+                };
+                return true;
+            }
+            catch
             {
                 deathLink = null;
                 return false;
             }
-
-            string cause = null;
-            if (data.TryGetValue("cause", out object causeObject))
-            {
-                cause = causeObject.ToString();
-            }
-
-            deathLink = new DeathLink((string)source, cause)
-            {
-                Timestamp = UnixTimeStampToDateTime((double)timeStamp),
-            };
-            return true;
         }
 
         internal static DateTime UnixTimeStampToDateTime(double unixTimeStamp)
