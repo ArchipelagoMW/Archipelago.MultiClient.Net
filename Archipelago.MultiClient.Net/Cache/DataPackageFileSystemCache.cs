@@ -62,25 +62,23 @@ namespace Archipelago.MultiClient.Net.Cache
             lock (fileAccessLockObject)
             {
                 var dataPackagePath = Path.Combine(CacheFolder, DataPackageFileName);
-                if (File.Exists(dataPackagePath))
+                try
                 {
-                    try
+                    if (File.Exists(dataPackagePath))
                     {
                         string fileText = File.ReadAllText(dataPackagePath);
                         package = JsonConvert.DeserializeObject<DataPackage>(fileText);
                         dataPackage = package;
                         return true;
                     }
-                    catch (Exception e)
-                    {
-                        throw new CacheLoadFailureException("Could not load data package cache from file system.", e);
-                    }
                 }
-                else
+                catch
                 {
-                    package = null;
-                    return false;
+                    // ignored
                 }
+
+                package = null;
+                return false;
             }
         }
 
@@ -149,34 +147,28 @@ namespace Archipelago.MultiClient.Net.Cache
         private List<string> GetCacheInvalidatedGames(RoomInfoPacket packet)
         {
             var gamesNeedingUpdating = new List<string>();
-            try
+
+            if (TryGetDataPackageFromCache(out var cachedPackage))
             {
-                if (TryGetDataPackageFromCache(out var cachedPackage))
+                foreach (var item in packet.DataPackageVersions)
                 {
-                    foreach (var item in packet.DataPackageVersions)
+                    if (cachedPackage.Games.ContainsKey(item.Key))
                     {
-                        if (cachedPackage.Games.ContainsKey(item.Key))
-                        {
-                            GameData gameDataFromCache = cachedPackage.Games[item.Key];
-                            if (item.Value != gameDataFromCache.Version)
-                            {
-                                gamesNeedingUpdating.Add(item.Key);
-                            }
-                        }
-                        else
+                        GameData gameDataFromCache = cachedPackage.Games[item.Key];
+                        if (item.Value != gameDataFromCache.Version)
                         {
                             gamesNeedingUpdating.Add(item.Key);
                         }
                     }
-                    return gamesNeedingUpdating;
+                    else
+                    {
+                        gamesNeedingUpdating.Add(item.Key);
+                    }
                 }
+                return gamesNeedingUpdating;
+            }
 
-                return packet.DataPackageVersions.Select(x => x.Key).ToList();
-            }
-            catch (CacheLoadFailureException)
-            {
-                return packet.DataPackageVersions.Select(x => x.Key).ToList();
-            }
+            return packet.DataPackageVersions.Select(x => x.Key).ToList();
         }
     }
 }

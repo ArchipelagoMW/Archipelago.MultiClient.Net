@@ -12,9 +12,6 @@ namespace Archipelago.MultiClient.Net
         /// <param name="uri">
         ///     The full URI to the Archipelago server, including scheme, hostname, and port.
         /// </param>
-        /// <exception cref="T:Archipelago.MultiClient.Net.Exceptions.CacheLoadFailureException">
-        ///     Thrown when the Archipelago cache fails to load
-        /// </exception>
         public static ArchipelagoSession CreateSession(Uri uri)
         {
             var socket = new ArchipelagoSocketHelper(uri.ToString());

@@ -92,6 +92,9 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// <param name="packet">
         ///     The packet to send to the server.
         /// </param>
+        /// <exception cref="T:Archipelago.MultiClient.Net.Exceptions.ArchipelagoSocketClosedException">
+        ///     The websocket connection is not alive
+        /// </exception>
         public void SendPacket(ArchipelagoPacketBase packet)
         {
             SendMultiplePackets(new List<ArchipelagoPacketBase> { packet });
@@ -106,6 +109,9 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// <remarks>
         ///     The packets will be sent in the order they are provided in the list.
         /// </remarks>
+        /// <exception cref="T:Archipelago.MultiClient.Net.Exceptions.ArchipelagoSocketClosedException">
+        ///     The websocket connection is not alive
+        /// </exception>
         public void SendMultiplePackets(List<ArchipelagoPacketBase> packets)
         {
             SendMultiplePackets(packets.ToArray());

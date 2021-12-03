@@ -160,6 +160,9 @@ namespace Archipelago.MultiClient.Net
         /// <param name="tags">
         ///     The tags with which to overwrite the current slot's tags.
         /// </param>
+        /// <exception cref="T:Archipelago.MultiClient.Net.Exceptions.ArchipelagoSocketClosedException">
+        ///     The websocket connection is not alive
+        /// </exception>
         public void UpdateTags(List<string> tags)
         {
             Tags = tags ?? new List<string>();

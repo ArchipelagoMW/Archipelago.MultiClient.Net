@@ -130,21 +130,16 @@ namespace Archipelago.MultiClient.Net.Helpers
             }
             else
             {
-                var gameDataContainingId = dataPackage.Games.Where(x => x.Value.ItemLookup.ContainsValue(id)).Single();
+                var gameDataContainingId = dataPackage.Games.Single(x => x.Value.ItemLookup.ContainsValue(id));
                 var gameDataItemLookup = gameDataContainingId.Value.ItemLookup.ToDictionary(x => x.Value, x => x.Key);
                 foreach (var kvp in gameDataItemLookup)
                 {
                     itemLookupCache.Add(kvp.Key, kvp.Value);
                 }
 
-                try
-                {
-                    return itemLookupCache[id];
-                }
-                catch (KeyNotFoundException e)
-                {
-                    throw new UnknownItemIdException($"Attempt to look up item id `{id}` failed.", e);
-                }
+                return itemLookupCache.TryGetValue(id, out name)
+                    ? name
+                    : $"Item: {id}";
             }
         }
 

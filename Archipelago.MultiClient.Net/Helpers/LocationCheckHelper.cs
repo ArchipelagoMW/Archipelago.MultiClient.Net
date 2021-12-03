@@ -44,6 +44,9 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// <param name="ids">
         ///     Location ids which have been checked.
         /// </param>
+        /// <exception cref="T:Archipelago.MultiClient.Net.Exceptions.ArchipelagoSocketClosedException">
+        ///     The websocket connection is not alive
+        /// </exception>
         public void CompleteLocationChecks(params int[] ids)
         {
             lock (locationsCheckedLockObject)
@@ -112,9 +115,6 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// <param name="locationName">
         ///     The name of the location to check the Id for. Must match the contents of the datapackage.
         /// </param>
-        /// <exception cref="T:Archipelago.MultiClient.Net.Exceptions.CacheLoadFailureException">
-        ///     Thrown when the Archipelago cache fails to load
-        /// </exception>
         public int GetLocationIdFromName(string game, string locationName)
         {
             if (dataPackage == null)
@@ -136,9 +136,6 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// <param name="locationId">
         ///     The Id of the location to look up the name for. Must match the contents of the datapackage.
         /// </param>
-        /// <exception cref="T:Archipelago.MultiClient.Net.Exceptions.CacheLoadFailureException">
-        ///     Thrown when the Archipelago cache fails to load
-        /// </exception>
         public string GetLocationNameFromId(int locationId)
         {
             if (dataPackage == null)
