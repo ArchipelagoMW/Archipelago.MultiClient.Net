@@ -1,6 +1,5 @@
 ﻿using Archipelago.MultiClient.Net.Cache;
 using Archipelago.MultiClient.Net.Enums;
-using Archipelago.MultiClient.Net.Exceptions;
 using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
 using System.Collections.Generic;
@@ -13,7 +12,7 @@ namespace Archipelago.MultiClient.Net.Helpers
     {
         private readonly ArchipelagoSocketHelper socket;
         private readonly LocationCheckHelper locationsHelper;
-        private DataPackage dataPackage;
+        private readonly IDataPackageCache dataPackageCache;
         private Queue<NetworkItem> itemQueue = new Queue<NetworkItem>();
         private List<NetworkItem> allItemsReceived = new List<NetworkItem>();
         private Dictionary<int, string> itemLookupCache = new Dictionary<int, string>();
@@ -37,10 +36,9 @@ namespace Archipelago.MultiClient.Net.Helpers
         {
             this.socket = socket;
             this.locationsHelper = locationsHelper;
+            this.dataPackageCache = dataPackageCache;
 
             socket.PacketReceived += Socket_PacketReceived;
-
-            dataPackageCache.TryGetDataPackageFromCache(out dataPackage);
         }
 
         /// <summary>
@@ -130,6 +128,11 @@ namespace Archipelago.MultiClient.Net.Helpers
             }
             else
             {
+                if (!dataPackageCache.TryGetDataPackageFromCache(out var dataPackage))
+                {
+                    return $"Item: {id}";
+                }
+
                 var gameDataContainingId = dataPackage.Games.Single(x => x.Value.ItemLookup.ContainsValue(id));
                 var gameDataItemLookup = gameDataContainingId.Value.ItemLookup.ToDictionary(x => x.Value, x => x.Key);
                 foreach (var kvp in gameDataItemLookup)

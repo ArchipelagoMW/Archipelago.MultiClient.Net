@@ -15,7 +15,6 @@ namespace Archipelago.MultiClient.Net.Helpers
         private readonly ArchipelagoSocketHelper socket;
         private readonly IDataPackageCache cache;
         private readonly object locationsCheckedLockObject = new object();
-        private DataPackage dataPackage;
         private bool awaitingLocationInfoPacket;
         private Action<LocationInfoPacket> locationInfoPacketCallback;
         private Dictionary<string, Dictionary<string, int>> gameLocationNameToIdMapping;
@@ -129,7 +128,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// </returns>
         public int GetLocationIdFromName(string game, string locationName)
         {
-            if (dataPackage == null && !cache.TryGetDataPackageFromCache(out dataPackage))
+            if (!cache.TryGetDataPackageFromCache(out var dataPackage))
             {
                 return -1;
             }
@@ -157,7 +156,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// </returns>
         public string GetLocationNameFromId(int locationId)
         {
-            if (dataPackage == null && !cache.TryGetDataPackageFromCache(out dataPackage))
+            if (!cache.TryGetDataPackageFromCache(out var dataPackage))
             {
                 return null;
             }
