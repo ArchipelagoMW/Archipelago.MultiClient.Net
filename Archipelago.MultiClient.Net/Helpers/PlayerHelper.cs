@@ -25,42 +25,34 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// Alias defaults to the player's name until a different alias is specifically set
         /// </summary>
         /// <param name="slot">The slot of which to retrieve the alias</param>
-        /// <returns>The player's alias</returns>
+        /// <returns>The player's alias, or null if no such player is found</returns>
         public string GetPlayerAlias(int slot)
         {
             if (players == null)
             {
-                return $"Slot: {slot}";
+                return null;
             }
 
             PlayerInfo playerInfo = players.FirstOrDefault(p => p.Slot == slot);
-            if (playerInfo == null)
-            {
-                return $"Slot: {slot}";
-            }
 
-            return playerInfo.Alias;
+            return playerInfo?.Alias;
         }
 
         /// <summary>
         /// Returns the Name corresponding to the provided player slot
         /// </summary>
         /// <param name="slot">The slot of which to retrieve the name</param>
-        /// <returns>The player's name</returns>
+        /// <returns>The player's name, or null if no such player is found</returns>
         public string GetPlayerName(int slot)
         {
             if (players == null)
             {
-                return $"Slot: {slot}";
+                return null;
             }
 
             PlayerInfo playerInfo = players.FirstOrDefault(p => p.Slot == slot);
-            if (playerInfo == null)
-            {
-                return $"Slot: {slot}";
-            }
 
-            return playerInfo.Name;
+            return playerInfo?.Name;
         }
 
         /// <summary>
@@ -69,18 +61,18 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// The result is returned in the format of "Alias (Name)"
         /// </summary>
         /// <param name="slot">The slot of which to retrieve the alias</param>
-        /// <returns>The player's alias and name in the following format of "Alias (Name)"</returns>
+        /// <returns>The player's alias and name in the following format of "Alias (Name)", or null if no such player is found</returns>
         public string GetPlayerAliasAndName(int slot)
         {
             if (players == null)
             {
-                return $"Slot: {slot}";
+                return null;
             }
 
             PlayerInfo playerInfo = players.FirstOrDefault(p => p.Slot == slot);
             if (playerInfo == null)
             {
-                return $"Slot: {slot}";
+                return null;
             }
 
             return $"{playerInfo.Alias} ({playerInfo.Name})";

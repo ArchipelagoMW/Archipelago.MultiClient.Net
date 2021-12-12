@@ -115,11 +115,8 @@ namespace Archipelago.MultiClient.Net.Helpers
         ///     Id of the item to lookup.
         /// </param>
         /// <returns>
-        ///     The name of the item as a string.
+        ///     The name of the item as a string, or null if no such item is found
         /// </returns>
-        /// <exception cref="T:Archipelago.MultiClient.Net.Exceptions.UnknownItemIdException">
-        ///     The item id is not of any known items.
-        /// </exception>
         public string GetItemName(int id)
         {
             if (itemLookupCache.TryGetValue(id, out var name))
@@ -130,7 +127,7 @@ namespace Archipelago.MultiClient.Net.Helpers
             {
                 if (!dataPackageCache.TryGetDataPackageFromCache(out var dataPackage))
                 {
-                    return $"Item: {id}";
+                    return null;
                 }
 
                 var gameDataContainingId = dataPackage.Games.Single(x => x.Value.ItemLookup.ContainsValue(id));
@@ -142,7 +139,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 
                 return itemLookupCache.TryGetValue(id, out name)
                     ? name
-                    : $"Item: {id}";
+                    : null;
             }
         }
 
