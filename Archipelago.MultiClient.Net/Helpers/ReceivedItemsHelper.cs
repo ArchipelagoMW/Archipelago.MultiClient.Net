@@ -45,7 +45,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         ///     Check whether there are any items in the queue. 
         /// </summary>
         /// <returns>
-        ///     True if the queue is not empty, otherwise false
+        ///     True if the queue is not empty, otherwise false.
         /// </returns>
         public bool Any()
         {
@@ -115,7 +115,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         ///     Id of the item to lookup.
         /// </param>
         /// <returns>
-        ///     The name of the item as a string, or null if no such item is found
+        ///     The name of the item as a string, or null if no such item is found.
         /// </returns>
         public string GetItemName(int id)
         {

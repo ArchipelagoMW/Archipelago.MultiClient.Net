@@ -93,7 +93,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         ///     The packet to send to the server.
         /// </param>
         /// <exception cref="T:Archipelago.MultiClient.Net.Exceptions.ArchipelagoSocketClosedException">
-        ///     The websocket connection is not alive
+        ///     The websocket connection is not alive.
         /// </exception>
         public void SendPacket(ArchipelagoPacketBase packet)
         {
@@ -110,7 +110,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         ///     The packets will be sent in the order they are provided in the list.
         /// </remarks>
         /// <exception cref="T:Archipelago.MultiClient.Net.Exceptions.ArchipelagoSocketClosedException">
-        ///     The websocket connection is not alive
+        ///     The websocket connection is not alive.
         /// </exception>
         public void SendMultiplePackets(List<ArchipelagoPacketBase> packets)
         {
@@ -127,7 +127,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         ///     The packets will be sent in the order they are provided as arguments.
         /// </remarks>
         /// <exception cref="T:Archipelago.MultiClient.Net.Exceptions.ArchipelagoSocketClosedException">
-        ///     The websocket connection is not alive
+        ///     The websocket connection is not alive.
         /// </exception>
         public void SendMultiplePackets(params ArchipelagoPacketBase[] packets)
         {
@@ -158,7 +158,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         ///     The packet to send to the server.
         /// </param>
         /// <exception cref="T:Archipelago.MultiClient.Net.Exceptions.ArchipelagoSocketClosedException">
-        ///     The websocket connection is not alive
+        ///     The websocket connection is not alive.
         /// </exception>
         public void SendPacketAsync(ArchipelagoPacketBase packet, Action<bool> onComplete = null)
         {
@@ -179,7 +179,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         ///     The packets will be sent in the order they are provided in the list.
         /// </remarks>
         /// <exception cref="T:Archipelago.MultiClient.Net.Exceptions.ArchipelagoSocketClosedException">
-        ///     The websocket connection is not alive
+        ///     The websocket connection is not alive.
         /// </exception>
         public void SendMultiplePacketsAsync(List<ArchipelagoPacketBase> packets, Action<bool> onComplete = null)
         {
@@ -200,7 +200,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         ///     The packets will be sent in the order they are provided as arguments.
         /// </remarks>
         /// <exception cref="T:Archipelago.MultiClient.Net.Exceptions.ArchipelagoSocketClosedException">
-        ///     The websocket connection is not alive
+        ///     The websocket connection is not alive.
         /// </exception>
         public void SendMultiplePacketsAsync(Action<bool> onComplete = null, params ArchipelagoPacketBase[] packets)
         {

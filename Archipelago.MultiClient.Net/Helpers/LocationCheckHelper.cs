@@ -43,7 +43,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         ///     Location ids which have been checked.
         /// </param>
         /// <exception cref="T:Archipelago.MultiClient.Net.Exceptions.ArchipelagoSocketClosedException">
-        ///     The websocket connection is not alive
+        ///     The websocket connection is not alive.
         /// </exception>
         public void CompleteLocationChecks(params int[] ids)
         {
@@ -67,7 +67,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         ///     Location ids which have been checked.
         /// </param>
         /// <exception cref="T:Archipelago.MultiClient.Net.Exceptions.ArchipelagoSocketClosedException">
-        ///     The websocket connection is not alive
+        ///     The websocket connection is not alive.
         /// </exception>
         public void CompleteLocationChecksAsync(Action<bool> onComplete, params int[] ids)
         {
@@ -101,7 +101,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         ///     within the callbacks themselves or call this only once.
         /// </remarks>
         /// <exception cref="T:Archipelago.MultiClient.Net.Exceptions.ArchipelagoSocketClosedException">
-        ///     The websocket connection is not alive
+        ///     The websocket connection is not alive.
         /// </exception>
         public void ScoutLocationsAsync(Action<LocationInfoPacket> callback = null, params int[] ids)
         {
@@ -123,7 +123,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         ///     The name of the location to check the Id for. Must match the contents of the datapackage.
         /// </param>
         /// <returns>
-        ///     Returns the locationId for the location name that was given or -1 if no location was found
+        ///     Returns the locationId for the location name that was given or -1 if no location was found.
         /// </returns>
         public int GetLocationIdFromName(string game, string locationName)
         {
@@ -151,7 +151,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         ///     The Id of the location to look up the name for. Must match the contents of the datapackage.
         /// </param>
         /// <returns>
-        ///     Returns the locationName for the provided locationId, or null if no such location is found
+        ///     Returns the locationName for the provided locationId, or null if no such location is found.
         /// </returns>
         public string GetLocationNameFromId(int locationId)
         {
