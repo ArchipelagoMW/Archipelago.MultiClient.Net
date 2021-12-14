@@ -9,7 +9,7 @@ namespace Archipelago.MultiClient.Net.Models
     {
         [JsonProperty("type")]
         [JsonConverter(typeof(StringEnumConverter), typeof(SnakeCaseNamingStrategy))]
-		public JsonMessagePartType? Type { get; set; }
+        public JsonMessagePartType? Type { get; set; }
 
         [JsonProperty("color")]
         [JsonConverter(typeof(StringEnumConverter), typeof(SnakeCaseNamingStrategy))]

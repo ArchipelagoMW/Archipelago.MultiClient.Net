@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using Archipelago.MultiClient.Net.Enums;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+﻿using Archipelago.MultiClient.Net.Enums;
 
 namespace Archipelago.MultiClient.Net.Packets
 {

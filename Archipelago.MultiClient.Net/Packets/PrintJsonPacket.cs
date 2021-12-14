@@ -11,7 +11,7 @@ namespace Archipelago.MultiClient.Net.Packets
         public override ArchipelagoPacketType PacketType => ArchipelagoPacketType.PrintJSON;
 
         [JsonProperty("data")]
-        public List<JsonMessagePart> Data { get; set; }
+        public List<JsonMessagePart> Data { get; set; } = new List<JsonMessagePart>();
 
         [JsonProperty("type")]
         [JsonConverter(typeof(StringEnumConverter))]
@@ -22,5 +22,8 @@ namespace Archipelago.MultiClient.Net.Packets
 
         [JsonProperty("item")]
         public NetworkItem Item { get; set; }
+
+        [JsonProperty("found")]
+        public bool? Found { get; set; }
     }
 }

@@ -27,6 +27,6 @@ namespace Archipelago.MultiClient.Net.Packets
         public Version Version { get; set; }
 
         [JsonProperty("tags")]
-        public List<string> Tags { get; set; }
+        public List<string> Tags { get; set; } = new List<string>();
     }
 }

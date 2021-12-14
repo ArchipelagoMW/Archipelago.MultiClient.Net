@@ -11,6 +11,7 @@
         Print,
         PrintJSON,
         Connect,
+        ConnectUpdate,
         LocationChecks,
         LocationScouts,
         StatusUpdate,
@@ -19,6 +20,7 @@
         DataPackage,
         Sync,
         Bounced,
-        Bounce
+        Bounce,
+        InvalidPacket
     }
 }

@@ -2,7 +2,6 @@
 using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Models;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
 
@@ -22,13 +21,8 @@ namespace Archipelago.MultiClient.Net.Packets
         [JsonProperty("password")]
         public bool Password { get; set; }
 
-        [JsonProperty("forfeit_mode")]
-        [JsonConverter(typeof(StringEnumConverter))]
-        public ForfeitModeType ForfeitMode { get; set; }
-
-        [JsonProperty("remaining_mode")]
-        [JsonConverter(typeof(StringEnumConverter))]
-        public RemainingModeType RemainingMode { get; set; }
+        [JsonProperty("permissions")]
+        public Dictionary<string, Permissions> Permissions { get; set; } = new Dictionary<string, Permissions>();
 
         [JsonProperty("hint_cost")]
         public int HintCost { get; set; }
@@ -37,15 +31,21 @@ namespace Archipelago.MultiClient.Net.Packets
         public int LocationCheckPoints { get; set; }
 
         [JsonProperty("players")]
-        public List<NetworkPlayer> Players { get; set; }
+        public List<NetworkPlayer> Players { get; set; } = new List<NetworkPlayer>();
+
+        [JsonProperty("games")]
+        public List<string> Games { get; set; } = new List<string>();
 
         [JsonProperty("datapackage_version")]
         public int DataPackageVersion { get; set; }
 
         [JsonProperty("datapackage_versions")]
-        public Dictionary<string, int> DataPackageVersions { get; set; }
+        public Dictionary<string, int> DataPackageVersions { get; set; } = new Dictionary<string, int>();
 
         [JsonProperty("seed_name")]
         public string SeedName { get; set; }
+
+        [JsonProperty("time")]
+        public double Timestamp { get; set; }
     }
 }

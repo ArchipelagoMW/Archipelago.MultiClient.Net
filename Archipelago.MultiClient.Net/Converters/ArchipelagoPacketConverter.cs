@@ -20,6 +20,7 @@ namespace Archipelago.MultiClient.Net.Converters
             [ArchipelagoPacketType.Print]             = (JObject obj) => obj.ToObject<PrintPacket>(),
             [ArchipelagoPacketType.PrintJSON]         = (JObject obj) => obj.ToObject<PrintJsonPacket>(),
             [ArchipelagoPacketType.Connect]           = (JObject obj) => obj.ToObject<ConnectPacket>(),
+            [ArchipelagoPacketType.ConnectUpdate]     = (JObject obj) => obj.ToObject<ConnectUpdatePacket>(),
             [ArchipelagoPacketType.LocationChecks]    = (JObject obj) => obj.ToObject<LocationChecksPacket>(),
             [ArchipelagoPacketType.LocationScouts]    = (JObject obj) => obj.ToObject<LocationScoutsPacket>(),
             [ArchipelagoPacketType.StatusUpdate]      = (JObject obj) => obj.ToObject<StatusUpdatePacket>(),
@@ -28,6 +29,7 @@ namespace Archipelago.MultiClient.Net.Converters
             [ArchipelagoPacketType.DataPackage]       = (JObject obj) => obj.ToObject<DataPackagePacket>(),
             [ArchipelagoPacketType.Bounce]            = (JObject obj) => obj.ToObject<BouncePacket>(),
             [ArchipelagoPacketType.Bounced]           = (JObject obj) => obj.ToObject<BouncedPacket>(),
+            [ArchipelagoPacketType.InvalidPacket]     = (JObject obj) => obj.ToObject<InvalidPacketPacket>()
         };
 
         public override bool CanWrite => false;

@@ -1,5 +1,6 @@
 ﻿using Archipelago.MultiClient.Net.Enums;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using System.Collections.Generic;
 
 namespace Archipelago.MultiClient.Net.Packets
@@ -8,7 +9,7 @@ namespace Archipelago.MultiClient.Net.Packets
     {
         public override ArchipelagoPacketType PacketType => ArchipelagoPacketType.ConnectionRefused;
 
-        [JsonProperty("errors")]
-        public List<string> Errors { get; set; }
+        [JsonProperty("errors", ItemConverterType = typeof(StringEnumConverter))]
+        public List<ConnectionRefusedError> Errors { get; set; } = new List<ConnectionRefusedError>();
     }
 }
