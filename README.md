@@ -60,13 +60,11 @@ var sortedPlayerNames = session.Players.AllPlayers.Select(x => x.Name).OrderBy(x
 
 The socket helper is a lower level API allowing for direct access to the socket which the session object uses to communicate with the Archipelago server. You may use this object to hook onto when messages are received or you may use it to send any packets defined in the library. Various events are exposed to allow for receipt of errors or notifying of socket close.
 
-W
-
 ```csharp
 var session = ArchipelagoSessionFactory.CreateSession("localhost", 38281);
 
 session.Socket.Connect();
-session.Socket.SendPacket(new PrintPacket(){Text = "Woof woof!"});
+session.Socket.SendPacket(new SayPacket(){Text = "Woof woof!"});
 
 ```
 
