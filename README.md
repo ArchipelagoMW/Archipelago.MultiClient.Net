@@ -6,7 +6,7 @@ A client library for use with .NET based prog-langs for interfacing with Archipe
 ```csharp
 var session = ArchipelagoSessionFactory.CreateSession("localhost", 38281);
 
-session.Socket.Connect();
+session.TryConnectAndLogin("Risk of Rain 2", "Ijwu", new Version(2,1,0));
 session.Locations.CompleteLocationChecks(42);
 ```
 
@@ -19,7 +19,7 @@ The location check helper may be used to complete or scout location checks. The 
 ```csharp
 var session = ArchipelagoSessionFactory.CreateSession("localhost", 38281);
 
-session.Socket.Connect();
+session.TryConnectAndLogin("Risk of Rain 2", "Ijwu", new Version(2,1,0));
 session.Locations.CompleteLocationChecks(42);
 
 string locationName = session.Locations.GetLocationNameFromId(42);
@@ -35,7 +35,7 @@ The received items helper provides an interface for retrieving the list of recei
 ```csharp
 var session = ArchipelagoSessionFactory.CreateSession("localhost", 38281);
 
-session.Socket.Connect();
+session.TryConnectAndLogin("Risk of Rain 2", "Ijwu", new Version(2,1,0));
 session.Items.ItemReceived += (receivedItemsHelper) => {
 	var itemReceivedName = receivedItemsHelper.PeekItemName();
 	// ... Handle item receipt.
@@ -51,8 +51,7 @@ The player helper provides methods for accessing details about the other players
 ```csharp
 var session = ArchipelagoSessionFactory.CreateSession("localhost", 38281);
 
-session.Socket.Connect();
-
+session.TryConnectAndLogin("Risk of Rain 2", "Ijwu", new Version(2,1,0));
 var sortedPlayerNames = session.Players.AllPlayers.Select(x => x.Name).OrderBy(x => x);
 ```
 
@@ -63,7 +62,7 @@ The socket helper is a lower level API allowing for direct access to the socket 
 ```csharp
 var session = ArchipelagoSessionFactory.CreateSession("localhost", 38281);
 
-session.Socket.Connect();
+session.TryConnectAndLogin("Risk of Rain 2", "Ijwu", new Version(2,1,0));
 session.Socket.SendPacket(new SayPacket(){Text = "Woof woof!"});
 
 ```
@@ -75,7 +74,7 @@ DeathLink support is included in the library. You may enable it by using the `Cr
 var session = ArchipelagoSessionFactory.CreateSession("localhost", 38281);
 
 var deathLinkService = session.CreateDeathLinkServiceAndEnable();
-session.Socket.Connect();
+session.TryConnectAndLogin("Risk of Rain 2", "Ijwu", new Version(2,1,0));
 
 deathLinkService.OnDeathLinkReceived += (deathLinkObject) => {
 	// ... Kill your player(s).
