@@ -1,6 +1,10 @@
 ﻿using Archipelago.MultiClient.Net.Converters;
 using Archipelago.MultiClient.Net.Exceptions;
+#if USE_OCULUS_NEWTONSOFT
+using Oculus.Newtonsoft.Json;
+#else
 using Newtonsoft.Json;
+#endif
 using System;
 using System.Collections.Generic;
 using WebSocketSharp;
