@@ -81,8 +81,5 @@ deathLinkService.OnDeathLinkReceived += (deathLinkObject) => {
 };
 
 // ... On death:
-deathLinkService.SendDeathLink(new DeathLink(){
-	sourcePlayer = "Ijwu",
-	cause = "Died to exposure."
-});
+deathLinkService.SendDeathLink(new DeathLink("Ijwu", "Died to exposure."));
 ```
