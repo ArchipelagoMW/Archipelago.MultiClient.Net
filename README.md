@@ -68,7 +68,7 @@ session.Socket.SendPacket(new SayPacket(){Text = "Woof woof!"});
 ```
 
 ## DeathLink
-DeathLink support is included in the library. You may enable it by using the `CreateDeathLinkServiceAndEnable` in the `DeathLinkProvider` class. This method is also an extension method so you may enable it more easily. DeathLink should be enabled before the socket connection is opened.
+DeathLink support is included in the library. You may enable it by using the `CreateDeathLinkServiceAndEnable` in the `DeathLinkProvider` class. This method is also an extension method so you may enable it more easily.
 
 ```csharp
 var session = ArchipelagoSessionFactory.CreateSession("localhost", 38281);
