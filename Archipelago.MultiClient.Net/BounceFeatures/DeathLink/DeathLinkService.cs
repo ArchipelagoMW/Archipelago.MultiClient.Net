@@ -43,7 +43,7 @@ namespace Archipelago.MultiClient.Net.BounceFeatures.DeathLink
         /// </summary>
         /// <param name="deathLink">
         ///     <see cref="DeathLink"/> object containing the information of the death which occurred.
-        ///     Must at least contain the <see cref="DeathLink.Timestamp"/> and <see cref="DeathLink.Source"/>.
+        ///     Must at least contain the <see cref="DeathLink.Source"/>.
         /// </param>
         /// <exception cref="T:Archipelago.MultiClient.Net.Exceptions.ArchipelagoSocketClosedException">
         ///     The websocket connection is not alive
