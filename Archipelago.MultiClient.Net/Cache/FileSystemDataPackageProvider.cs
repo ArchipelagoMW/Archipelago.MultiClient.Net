@@ -46,9 +46,16 @@ namespace Archipelago.MultiClient.Net.Cache
         {
             lock (fileAccessLockObject)
             {
-                var dataPackagePath = Path.Combine(CacheFolder, DataPackageFileName);
-                string contents = JsonConvert.SerializeObject(package);
-                File.WriteAllText(dataPackagePath, contents);
+                try
+                {
+                    var dataPackagePath = Path.Combine(CacheFolder, DataPackageFileName);
+                    string contents = JsonConvert.SerializeObject(package);
+                    File.WriteAllText(dataPackagePath, contents);
+                }
+                catch
+                {
+                    // ignored
+                }
             }
         }
     }

@@ -2,10 +2,7 @@
 using Archipelago.MultiClient.Net.Helpers;
 using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
-using Newtonsoft.Json;
-using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 
 namespace Archipelago.MultiClient.Net.Cache
@@ -17,8 +14,6 @@ namespace Archipelago.MultiClient.Net.Cache
 
         private RoomInfoPacket roomInfoPacket;
         private DataPackage dataPackage;
-
-
 
         public DataPackageFileSystemCache(IArchipelagoSocketHelper socket) : this(socket, new FileSystemDataPackageProvider())
         {
@@ -52,7 +47,7 @@ namespace Archipelago.MultiClient.Net.Cache
             else if (packet.PacketType == ArchipelagoPacketType.DataPackage)
             {
                 var packagePacket = (DataPackagePacket)packet;
-                SaveDataPackageToCache(packagePacket.DataPackage);
+                UpdateDataPackageFromServer(packagePacket.DataPackage);
             }
         }
 
@@ -67,61 +62,49 @@ namespace Archipelago.MultiClient.Net.Cache
             return fileSystemDataPackageProvider.TryGetDataPackage(out package);
         }
 
-        public bool SaveDataPackageToCache(DataPackage package)
+        internal void UpdateDataPackageFromServer(DataPackage package)
         {
-            try
+            if (TryGetDataPackageFromCache(out var combinedPackage))
             {
-                if (TryGetDataPackageFromCache(out var cachedPackage))
+                combinedPackage.Version = package.Version;
+
+                foreach (var game in package.Games)
                 {
-                    foreach (var item in cachedPackage.Games.Keys.ToList())
-                    {
-                        if (package.Games.ContainsKey(item))
-                        {
-                            if (cachedPackage.Games[item].Version != package.Games[item].Version)
-                            {
-                                if (package.Games[item].Version == 0)
-                                {
-                                    continue;
-                                }
-
-                                cachedPackage.Games[item] = package.Games[item];
-                            }
-                        }
-                    }
-
-                    foreach (var item in package.Games.Keys.ToList())
-                    {
-                        if (package.Games[item].Version == 0)
-                        {
-                            continue;
-                        }
-
-                        if (!cachedPackage.Games.ContainsKey(item))
-                        {
-                            cachedPackage.Games.Add(item, package.Games[item]);
-                        }
-                    }
-
-                    dataPackage = package;
-                    SaveDataPackageToFile(cachedPackage);
-                    return true;
-                }
-                else
-                {
-                    dataPackage = package;
-                    SaveDataPackageToFile(package);
-                    return true;
+                    combinedPackage.Games[game.Key] = game.Value;
                 }
             }
-            catch
+            else
             {
-                return false;
+                combinedPackage = package;
             }
+
+            dataPackage = combinedPackage;
+            SaveDataPackageToCache(combinedPackage);
+        }
+        
+        private void SaveDataPackageToCache(DataPackage package)
+        {
+            var dataPackageForSaving = PrepareDataPackageForSaving(package);
+
+            fileSystemDataPackageProvider.SaveDataPackageToFile(dataPackageForSaving);
         }
 
-        private void SaveDataPackageToFile(DataPackage package)
+        private DataPackage PrepareDataPackageForSaving(DataPackage package)
         {
-            fileSystemDataPackageProvider.SaveDataPackageToFile(package);
+            var dataPackageForSaving = new DataPackage {
+                Version = package.Version,
+                Games = new Dictionary<string, GameData>(package.Games.Count)
+            };
+
+            foreach (var game in package.Games)
+            {
+                if(game.Value.Version == 0)
+                    continue;
+
+                dataPackageForSaving.Games[game.Key] = game.Value;
+            }
+
+            return dataPackageForSaving;
         }
 
         private List<string> GetCacheInvalidatedGames(RoomInfoPacket packet)
