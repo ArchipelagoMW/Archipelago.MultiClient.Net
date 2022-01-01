@@ -12,17 +12,22 @@ namespace Archipelago.MultiClient.Net.Cache
 {
     internal class DataPackageFileSystemCache : IDataPackageCache
     {
-        private const string DataPackageFileName = "datapackagecache.archipelagocache";
-        private readonly ArchipelagoSocketHelper socket;
-        private readonly string CacheFolder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+        private readonly IArchipelagoSocketHelper socket;
+        private readonly IFileSystemDataPackageProvider fileSystemDataPackageProvider;
+
         private RoomInfoPacket roomInfoPacket;
         private DataPackage dataPackage;
 
-        private readonly object fileAccessLockObject = new object();
 
-        public DataPackageFileSystemCache(ArchipelagoSocketHelper socket)
+
+        public DataPackageFileSystemCache(IArchipelagoSocketHelper socket) : this(socket, new FileSystemDataPackageProvider())
+        {
+        }
+
+        internal DataPackageFileSystemCache(IArchipelagoSocketHelper socket, IFileSystemDataPackageProvider fileSystemDataPackageProvider)
         {
             this.socket = socket;
+            this.fileSystemDataPackageProvider = fileSystemDataPackageProvider;
 
             socket.PacketReceived += Socket_PacketReceived;
         }
@@ -58,27 +63,8 @@ namespace Archipelago.MultiClient.Net.Cache
                 package = dataPackage;
                 return true;
             }
-            lock (fileAccessLockObject)
-            {
-                var dataPackagePath = Path.Combine(CacheFolder, DataPackageFileName);
-                try
-                {
-                    if (File.Exists(dataPackagePath))
-                    {
-                        string fileText = File.ReadAllText(dataPackagePath);
-                        package = JsonConvert.DeserializeObject<DataPackage>(fileText);
-                        dataPackage = package;
-                        return true;
-                    }
-                }
-                catch
-                {
-                    // ignored
-                }
 
-                package = null;
-                return false;
-            }
+            return fileSystemDataPackageProvider.TryGetDataPackage(out package);
         }
 
         public bool SaveDataPackageToCache(DataPackage package)
@@ -135,12 +121,7 @@ namespace Archipelago.MultiClient.Net.Cache
 
         private void SaveDataPackageToFile(DataPackage package)
         {
-            lock (fileAccessLockObject)
-            {
-                var dataPackagePath = Path.Combine(CacheFolder, DataPackageFileName);
-                string contents = JsonConvert.SerializeObject(package);
-                File.WriteAllText(dataPackagePath, contents);
-            }
+            fileSystemDataPackageProvider.SaveDataPackageToFile(package);
         }
 
         private List<string> GetCacheInvalidatedGames(RoomInfoPacket packet)
