@@ -7,7 +7,15 @@ using WebSocketSharp;
 
 namespace Archipelago.MultiClient.Net.Helpers
 {
-    public class ArchipelagoSocketHelper
+    public interface IArchipelagoSocketHelper
+    {
+        event ArchipelagoSocketHelper.PacketReceivedHandler PacketReceived;
+
+        void SendPacket(ArchipelagoPacketBase packet);
+    }
+
+
+    public class ArchipelagoSocketHelper : IArchipelagoSocketHelper
     {
         public delegate void PacketReceivedHandler(ArchipelagoPacketBase packet);
         public event PacketReceivedHandler PacketReceived;

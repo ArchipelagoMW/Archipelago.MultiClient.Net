@@ -23,11 +23,6 @@ namespace Archipelago.MultiClient.Net
 
         public PlayerHelper Players { get; }
 
-        private IDataPackageCache DataPackageCache { get; }
-
-        private bool expectingDataPackage = false;
-        private Action<DataPackage> dataPackageCallback;
-
         volatile bool expectingLoginResult = false;
         private LoginResult loginResult = null;
 
@@ -36,40 +31,18 @@ namespace Archipelago.MultiClient.Net
         internal ArchipelagoSession(ArchipelagoSocketHelper socket,
                                     ReceivedItemsHelper items,
                                     LocationCheckHelper locations,
-                                    PlayerHelper players,
-                                    IDataPackageCache cache)
+                                    PlayerHelper players)
         {
             Socket = socket;
             Items = items;
             Locations = locations;
             Players = players;
-            DataPackageCache = cache;
 
             socket.PacketReceived += Socket_PacketReceived;
         }
 
         private void Socket_PacketReceived(ArchipelagoPacketBase packet)
         {
-            switch (packet)
-            {
-                case DataPackagePacket dataPackagePacket:
-                {
-                    if (expectingDataPackage)
-                    {
-                        DataPackageCache.SaveDataPackageToCache(dataPackagePacket.DataPackage);
-
-                        if (dataPackageCallback != null)
-                        {
-                            dataPackageCallback(dataPackagePacket.DataPackage);
-                        }
-
-                        expectingDataPackage = false;
-                        dataPackageCallback = null;
-                    }
-                    break;
-                }
-            }
-
             switch (packet)
             {
                 case ConnectedPacket connectedPacket:
