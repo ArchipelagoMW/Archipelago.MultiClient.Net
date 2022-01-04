@@ -15,7 +15,8 @@ namespace Archipelago.MultiClient.Net.Tests
     class ReceivedItemsHelperFixture
     {
         [Test]
-        public void Enumeratrion_over_collection_should_not_throw_when_new_data_is_received()
+        public void Enumeration_over_collection_should_not_throw_when_new_data_is_received()
+
         {
             var socket = Substitute.For<IArchipelagoSocketHelper>();
             var locationHelper = Substitute.For<ILocationCheckHelper>();
