@@ -10,8 +10,8 @@ namespace Archipelago.MultiClient.Net.Helpers
 {
     public class ReceivedItemsHelper
     {
-        private readonly ArchipelagoSocketHelper socket;
-        private readonly LocationCheckHelper locationsHelper;
+        private readonly IArchipelagoSocketHelper socket;
+        private readonly ILocationCheckHelper locationsHelper;
         private readonly IDataPackageCache dataPackageCache;
         private Queue<NetworkItem> itemQueue = new Queue<NetworkItem>();
         private List<NetworkItem> allItemsReceived = new List<NetworkItem>();
@@ -25,14 +25,14 @@ namespace Archipelago.MultiClient.Net.Helpers
         {
             lock (itemQueueLockObject)
             {
-                return new ReadOnlyCollection<NetworkItem>(allItemsReceived);
+                return new ReadOnlyCollection<NetworkItem>(allItemsReceived.ToArray());
             }
         }
 
         public delegate void ItemReceivedHandler(ReceivedItemsHelper helper);
         public event ItemReceivedHandler ItemReceived;
 
-        internal ReceivedItemsHelper(ArchipelagoSocketHelper socket, LocationCheckHelper locationsHelper, IDataPackageCache dataPackageCache)
+        internal ReceivedItemsHelper(IArchipelagoSocketHelper socket, ILocationCheckHelper locationsHelper, IDataPackageCache dataPackageCache)
         {
             this.socket = socket;
             this.locationsHelper = locationsHelper;
