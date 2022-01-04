@@ -8,10 +8,16 @@ using System.Linq;
 
 namespace Archipelago.MultiClient.Net.Helpers
 {
-    public class LocationCheckHelper
+    public interface ILocationCheckHelper
+    {
+        void CompleteLocationChecks(params int[] ids);
+        void CompleteLocationChecksAsync(Action<bool> onComplete, params int[] ids);
+    }
+
+    public class LocationCheckHelper : ILocationCheckHelper
     {
         private readonly List<int> locationsChecked = new List<int>();
-        private readonly ArchipelagoSocketHelper socket;
+        private readonly IArchipelagoSocketHelper socket;
         private readonly IDataPackageCache cache;
         private readonly object locationsCheckedLockObject = new object();
         private bool awaitingLocationInfoPacket;
@@ -29,7 +35,7 @@ namespace Archipelago.MultiClient.Net.Helpers
             }
         }
 
-        internal LocationCheckHelper(ArchipelagoSocketHelper socket, IDataPackageCache cache)
+        internal LocationCheckHelper(IArchipelagoSocketHelper socket, IDataPackageCache cache)
         {
             this.socket = socket;
             this.cache = cache;

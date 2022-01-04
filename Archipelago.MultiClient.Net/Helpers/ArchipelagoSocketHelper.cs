@@ -12,6 +12,8 @@ namespace Archipelago.MultiClient.Net.Helpers
         event ArchipelagoSocketHelper.PacketReceivedHandler PacketReceived;
 
         void SendPacket(ArchipelagoPacketBase packet);
+
+        void SendPacketAsync(ArchipelagoPacketBase packet, Action<bool> onComplete = null);
     }
 
 
