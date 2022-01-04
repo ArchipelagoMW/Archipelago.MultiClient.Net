@@ -25,7 +25,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         {
             lock (itemQueueLockObject)
             {
-                return new ReadOnlyCollection<NetworkItem>(allItemsReceived);
+                return new ReadOnlyCollection<NetworkItem>(allItemsReceived.ToArray());
             }
         }
 

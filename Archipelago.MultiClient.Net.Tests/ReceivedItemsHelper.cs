@@ -27,7 +27,7 @@ namespace Archipelago.MultiClient.Net.Tests
                 Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(
                     new ReceivedItemsPacket {
                         Index = 0, 
-                        Items = GetNetworkItems(100)
+                        Items = GetNetworkItems(3)
                     });
 
             var enumerateTask = new Task(() =>
@@ -42,13 +42,13 @@ namespace Archipelago.MultiClient.Net.Tests
             });
             var receiveNewItemTask = new Task(() =>
             {
-                Thread.Sleep(10);
+                Thread.Sleep(1);
                 socket.PacketReceived +=
                     Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(
                         new ReceivedItemsPacket
                         {
-                            Index = 100,
-                            Items = new List<NetworkItem>{ new NetworkItem { Item = 101 } }
+                            Index = 3,
+                            Items = new List<NetworkItem>{ new NetworkItem { Item = 11 } }
                         });
             });
 
