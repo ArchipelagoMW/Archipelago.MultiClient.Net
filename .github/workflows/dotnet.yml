@@ -37,5 +37,5 @@ jobs:
       uses: actions/upload-artifact@v2.3.1
       with:
         name: TestResults
-        path: Archipelago.MultiClient.Net.Tests/TestResults/*.trx
+        path: TestResults/*.trx
     
