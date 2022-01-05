@@ -31,7 +31,7 @@ jobs:
       run: msbuild Archipelago.MultiClient.Net.sln /property:Configuration=Release
       
     - name: Run Tests
-      run: dotnet test Archipelago.MultiClient.Net.Tests/bin/Release/Archipelago.MultiClient.Net.Tests.dll
+      run: dotnet test Archipelago.MultiClient.Net.Tests/bin/Release/Archipelago.MultiClient.Net.Tests.dll -l "trx;LogFileName=TestResults.trx"
        
     - name: Upload Test Results
       uses: actions/upload-artifact@v2.3.1
