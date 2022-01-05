@@ -31,7 +31,7 @@ jobs:
       run: msbuild Archipelago.MultiClient.Net.sln /property:Configuration=Release
       
     - name: Run Tests
-      run: dotnet test Archipelago.MultiClient.Net.sln
+      run: dotnet test Archipelago.MultiClient.Net.Tests/Archipelago.MultiClient.Net.Tests.csproj
        
     - name: Upload Test Results
       uses: actions/upload-artifact@v2.3.1
