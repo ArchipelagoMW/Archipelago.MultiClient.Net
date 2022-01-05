@@ -25,4 +25,7 @@ jobs:
       
     - name: Build Library
       run: msbuild Archipelago.MultiClient.Net.sln
+      
+    - name: Run tests
+      run: dotnet test Archipelago.MultiClient.Net.sln
     
