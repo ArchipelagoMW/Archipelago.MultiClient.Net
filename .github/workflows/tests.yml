@@ -2,14 +2,15 @@ name: Test Solution
 
 on:
   workflow_run:
-    workflows: ['Build Solution']
+    workflows: ["Build Solution"]
+    branches: ["main"]
     types:
       - completed
 
 jobs:
   report:
 
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     steps:
      - uses: dorny/test-reporter@v1
