@@ -33,7 +33,7 @@ jobs:
      
     - name: Run TestRunner
       run: |
-       C:\NUnit\bin\netstandard2.0\nunit3-console.exe Archipelago.MultiClient.Net.sln
+       C:\NUnit\bin\netstandard2.0\nunit3-console.exe '.\Archipelago.MultiClient.Net.Tests\bin\Release\Archipelago.MultiClient.Net.Tests.dll'
        
     - name: Upload Test Results
       uses: actions/upload-artifact@v2.3.1
