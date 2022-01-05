@@ -25,4 +25,19 @@ jobs:
       
     - name: Build Library
       run: msbuild Archipelago.MultiClient.Net.sln
+      
+    - name: Download NUnit.ConsoleRunner.zip
+      run: |
+       Invoke-WebRequest https://github.com/nunit/nunit-console/releases/download/3.13.1/NUnit.Console-3.13.1.zip -OutFile NUnit.zip
+       Expand-Archive -Path NUnit.zip -DestinationPath C:\NUnit
+     
+    - name: Run TestRunner
+      run: |
+       C:\NUnit\bin\net35\nunit3-console.exe ./Archipelago.MultiClient.Net.Tests\bin\Release\Archipelago.MultiClient.Net.Tests.dll
+       
+    - name: Upload Test Results
+      uses: actions/upload-artifact@v2.3.1
+      with:
+        name: TestResults
+        path: TestResults.xml
     
