@@ -1,4 +1,4 @@
-name: Test Solution
+name: Report Test Results
 
 on:
   workflow_run:
@@ -17,5 +17,5 @@ jobs:
        with:
         artifact: TestResults
         name: NUnit Tests
-        path: '*.xml'
+        path: '*.trx'
         reporter: dotnet-trx
