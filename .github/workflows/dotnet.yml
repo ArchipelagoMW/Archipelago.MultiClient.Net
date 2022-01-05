@@ -24,7 +24,7 @@ jobs:
       run: nuget restore Archipelago.MultiClient.Net.sln
       
     - name: Build Library
-      run: msbuild Archipelago.MultiClient.Net.sln
+      run: msbuild Archipelago.MultiClient.Net.sln /property:Configuration=Release
       
     - name: Download NUnit.ConsoleRunner.zip
       run: |
