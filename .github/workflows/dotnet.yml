@@ -9,11 +9,20 @@ on:
 jobs:
   build:
 
-    runs-on: windows-2019
+    runs-on: windows-latest
 
     steps:
     - uses: actions/checkout@v2
-    - name: Build
-      run: |
-           cd "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\"
-           .\MSBuild.exe $Env:GITHUB_WORKSPACE\Archipelago.MultiClient.Net.sln
+    
+    - name: setup-msbuild
+      uses: microsoft/setup-msbuild@v1.1
+      
+    - name: Setup NuGet.exe for use with actions
+      uses: NuGet/setup-nuget@v1.0.5
+      
+    - name: Restore NuGet Packages
+      run: nuget restore Archipelago.MultiClient.Net.sln
+      
+    - name: Build Library
+      run: msbuild Archipelago.MultiClient.Net.sln
+    
