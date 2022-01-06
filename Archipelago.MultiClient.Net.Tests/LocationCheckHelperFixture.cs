@@ -5,7 +5,6 @@ using NSubstitute;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -254,6 +253,78 @@ namespace Archipelago.MultiClient.Net.Tests
             Assert.That(invocationCount, Is.EqualTo(1));
 
             Assert.Contains(2, newCheckedLocations);
+        }
+
+        [Test]
+        public void Should_not_call_event_handler_when_no_new_locations_are_checked()
+        {
+            var socket = Substitute.For<IArchipelagoSocketHelper>();
+            var cache = Substitute.For<IDataPackageCache>();
+
+            var sut = new LocationCheckHelper(socket, cache);
+
+            var invocationCount = 0;
+            sut.CheckedLocationsUpdated += l =>
+            {
+                invocationCount++;
+            };
+
+            var connectedPacket = new ConnectedPacket
+            {
+                LocationsChecked = new List<int> { 1, 2 },
+                MissingChecks = new List<int> { 3 }
+            };
+            var roomUpdatePacket = new RoomUpdatePacket
+            {
+                CheckedLocations = new List<int> { 1 }
+            };
+
+            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(connectedPacket);
+            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(roomUpdatePacket);
+
+            sut.CompleteLocationChecks(null);
+            sut.CompleteLocationChecks(Array.Empty<int>());
+            sut.CompleteLocationChecks(1);
+            sut.CompleteLocationChecksAsync(b => { }, null);
+            sut.CompleteLocationChecksAsync(b => { }, Array.Empty<int>());
+            sut.CompleteLocationChecksAsync(b => { }, 1);
+
+            Assert.That(invocationCount, Is.Zero);
+        }
+
+        [Test]
+        public void Should_not_check_duplicated_locations()
+        {
+            var socket = Substitute.For<IArchipelagoSocketHelper>();
+            var cache = Substitute.For<IDataPackageCache>();
+
+            var sut = new LocationCheckHelper(socket, cache);
+
+            var connectedPacket = new ConnectedPacket
+            {
+                LocationsChecked = new List<int>(),
+                MissingChecks = new List<int> { 1, 2, 3 }
+            };
+            var roomUpdatePacket = new RoomUpdatePacket
+            {
+                CheckedLocations = new List<int> { 2, 3 }
+            };
+
+            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(connectedPacket);
+            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(roomUpdatePacket);
+
+            sut.CompleteLocationChecks(1, 2);
+            sut.CompleteLocationChecksAsync(b => { }, 1, 3);
+            
+            Assert.Contains(1, sut.AllLocations);
+            Assert.Contains(2, sut.AllLocations);
+            Assert.Contains(3, sut.AllLocations);
+
+            Assert.Contains(1, sut.AllLocationsChecked);
+            Assert.Contains(2, sut.AllLocationsChecked);
+            Assert.Contains(3, sut.AllLocationsChecked);
+
+            Assert.That(sut.AllMissingLocations, Is.Empty);
         }
     }
 }

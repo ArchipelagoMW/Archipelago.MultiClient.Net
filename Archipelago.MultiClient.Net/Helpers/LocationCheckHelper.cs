@@ -262,7 +262,10 @@ namespace Archipelago.MultiClient.Net.Helpers
                 }
             }
 
-            CheckedLocationsUpdated?.Invoke(new ReadOnlyCollection<int>(newLocations));
+            if (newLocations.Any())
+            {
+                CheckedLocationsUpdated?.Invoke(new ReadOnlyCollection<int>(newLocations));
+            }
         }
     }
 }
