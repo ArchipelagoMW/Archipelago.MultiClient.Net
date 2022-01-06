@@ -5,7 +5,6 @@ using Archipelago.MultiClient.Net.Packets;
 using NSubstitute;
 using NUnit.Framework;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -28,7 +27,11 @@ namespace Archipelago.MultiClient.Net.Tests
                 Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(
                     new ReceivedItemsPacket {
                         Index = 0, 
-                        Items = GetNetworkItems(3)
+                        Items = new List<NetworkItem> {
+                            new NetworkItem { Item = 1 },
+                            new NetworkItem { Item = 2 },
+                            new NetworkItem { Item = 3 }
+                        }
                     });
 
             var enumerateTask = new Task(() =>
@@ -49,7 +52,7 @@ namespace Archipelago.MultiClient.Net.Tests
                         new ReceivedItemsPacket
                         {
                             Index = 3,
-                            Items = new List<NetworkItem>{ new NetworkItem { Item = 11 } }
+                            Items = new List<NetworkItem>{ new NetworkItem { Item = 4 } }
                         });
             });
 
@@ -60,13 +63,6 @@ namespace Archipelago.MultiClient.Net.Tests
 
                 Task.WaitAll(enumerateTask, receiveNewItemTask);
             });
-        }
-
-        private List<NetworkItem> GetNetworkItems(int amount)
-        {
-            return Enumerable.Range(1, amount)
-                .Select(i => new NetworkItem { Item = i, Location = i, Player = i })
-                .ToList();
         }
     }
 }

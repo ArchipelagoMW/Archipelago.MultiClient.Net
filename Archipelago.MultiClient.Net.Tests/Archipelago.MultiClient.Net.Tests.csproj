@@ -67,7 +67,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DataPackageFileSystemCacheFixture.cs" />
-    <Compile Include="ReceivedItemsHelper.cs" />
+    <Compile Include="LocationCheckHelperFixture.cs" />
+    <Compile Include="ReceivedItemsHelperFixture.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Stubs\TestGameData.cs" />
   </ItemGroup>

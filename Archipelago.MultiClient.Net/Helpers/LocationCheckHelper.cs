@@ -16,22 +16,40 @@ namespace Archipelago.MultiClient.Net.Helpers
 
     public class LocationCheckHelper : ILocationCheckHelper
     {
-        private readonly List<int> locationsChecked = new List<int>();
+        public delegate void CheckedLocationsUpdatedHandler(ReadOnlyCollection<int> newCheckedLocations);
+        public event CheckedLocationsUpdatedHandler CheckedLocationsUpdated;
+
+        private readonly HashSet<int> allLocations = new HashSet<int>();
+        private readonly HashSet<int> locationsChecked = new HashSet<int>();
+
         private readonly IArchipelagoSocketHelper socket;
         private readonly IDataPackageCache cache;
+
         private readonly object locationsCheckedLockObject = new object();
+
         private bool awaitingLocationInfoPacket;
         private Action<LocationInfoPacket> locationInfoPacketCallback;
+
         private Dictionary<string, Dictionary<string, int>> gameLocationNameToIdMapping;
         private Dictionary<int, string> locationIdToNameMapping;
 
+        public ReadOnlyCollection<int> AllLocations => new ReadOnlyCollection<int>(allLocations.ToArray());
         public ReadOnlyCollection<int> AllLocationsChecked => GetCheckedLocations();
+        public ReadOnlyCollection<int> AllMissingLocations => GetMissingLocations();
 
         private ReadOnlyCollection<int> GetCheckedLocations()
         {
             lock (locationsCheckedLockObject)
             {
-                return new ReadOnlyCollection<int>(locationsChecked);
+                return new ReadOnlyCollection<int>(locationsChecked.ToArray());
+            }
+        }
+
+        private ReadOnlyCollection<int> GetMissingLocations()
+        {
+            lock (locationsCheckedLockObject)
+            {
+                return new ReadOnlyCollection<int>(allLocations.Where(l => !locationsChecked.Contains(l)).ToArray());
             }
         }
 
@@ -39,7 +57,51 @@ namespace Archipelago.MultiClient.Net.Helpers
         {
             this.socket = socket;
             this.cache = cache;
+
             socket.PacketReceived += Socket_PacketReceived;
+        }
+
+        private void Socket_PacketReceived(ArchipelagoPacketBase packet)
+        {
+            switch (packet)
+            {
+                case ConnectedPacket connectedPacket:
+                    allLocations.UnionWith(connectedPacket.LocationsChecked);
+                    allLocations.UnionWith(connectedPacket.MissingChecks);
+
+                    lock (locationsCheckedLockObject)
+                    {
+                        CheckLocations(connectedPacket.LocationsChecked);
+                    }
+                    break;
+                case RoomUpdatePacket updatePacket:
+                    lock (locationsCheckedLockObject)
+                    {
+                        CheckLocations(updatePacket.CheckedLocations);
+                    }
+                    break;
+                case LocationInfoPacket locationInfoPacket:
+                    if (awaitingLocationInfoPacket)
+                    {
+                        if (locationInfoPacketCallback != null)
+                        {
+                            locationInfoPacketCallback(locationInfoPacket);
+                        }
+
+                        awaitingLocationInfoPacket = false;
+                        locationInfoPacketCallback = null;
+                    }
+                    break;
+                case InvalidPacketPacket invalidPacket:
+                    if (awaitingLocationInfoPacket && invalidPacket.OriginalCmd == ArchipelagoPacketType.LocationScouts)
+                    {
+                        locationInfoPacketCallback(null);
+
+                        awaitingLocationInfoPacket = false;
+                        locationInfoPacketCallback = null;
+                    }
+                    break;
+            }
         }
 
         /// <summary>
@@ -55,10 +117,11 @@ namespace Archipelago.MultiClient.Net.Helpers
         {
             lock (locationsCheckedLockObject)
             {
-                locationsChecked.AddRange(ids.Where(i => !locationsChecked.Contains(i)));
+                CheckLocations(ids);
+                
                 socket.SendPacket(new LocationChecksPacket()
                 {
-                    Locations = locationsChecked
+                    Locations = locationsChecked.ToList()
                 });
             }
         }
@@ -79,12 +142,12 @@ namespace Archipelago.MultiClient.Net.Helpers
         {
             lock (locationsCheckedLockObject)
             {
-                locationsChecked.AddRange(ids.Where(i => !locationsChecked.Contains(i)));
-                
+                CheckLocations(ids);
+
                 socket.SendPacketAsync(
                     new LocationChecksPacket()
                     {
-                        Locations = locationsChecked
+                        Locations = locationsChecked.ToList()
                     },
                     onComplete
                 );
@@ -176,41 +239,30 @@ namespace Archipelago.MultiClient.Net.Helpers
                 : null;
         }
 
-        private void Socket_PacketReceived(ArchipelagoPacketBase packet)
+        private void CheckLocations(ICollection<int> locationIds)
         {
-            switch (packet.PacketType)
+            if (locationIds == null || !locationIds.Any())
+                return;
+
+            List<int> newLocations = new List<int>();
+
+            foreach (int locationId in locationIds)
             {
-                case ArchipelagoPacketType.LocationInfo:
+                if (!locationsChecked.Contains(locationId))
                 {
-                    if (awaitingLocationInfoPacket)
-                    {
-                        var infoPacket = (LocationInfoPacket)packet;
-
-                        if (locationInfoPacketCallback != null)
-                        {
-                            locationInfoPacketCallback(infoPacket);
-                        }
-
-                        awaitingLocationInfoPacket = false;
-                        locationInfoPacketCallback = null;
-                    }
-                    break;
+                    locationsChecked.Add(locationId);
+                    newLocations.Add(locationId);
                 }
-                case ArchipelagoPacketType.InvalidPacket:
+                
+                if (!allLocations.Contains(locationId))
                 {
-                    if (awaitingLocationInfoPacket)
-                    {
-                        var invalidPacket = (InvalidPacketPacket)packet;
-                        if (invalidPacket.OriginalCmd == ArchipelagoPacketType.LocationScouts)
-                        {
-                            locationInfoPacketCallback(null);
-
-                            awaitingLocationInfoPacket = false;
-                            locationInfoPacketCallback = null;
-                        }
-                    }
-                    break;
+                    allLocations.Add(locationId);
                 }
+            }
+
+            if (newLocations.Any())
+            {
+                CheckedLocationsUpdated?.Invoke(new ReadOnlyCollection<int>(newLocations));
             }
         }
     }
