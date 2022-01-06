@@ -7,6 +7,8 @@ on:
   # Triggers the workflow on push or pull request events but only for the main branch
   release:
     types: [published]
+    
+  workflow_dispatch:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -30,4 +32,4 @@ jobs:
       - name: "Releasing to NuGet"
         env:
           NUGET_API_KEY: ${{ secrets.NUGETAPIKEY }}
-        run: dotnet nuget push .\Archipelago.MultiClient.Net\Archipelago.MultiClient.Net\bin\Release\Archipelago.MultiClient.Net.${{ env.TAG }}.nupkg --source https://api.nuget.org/v3/index.json --api-key "$env:NUGET_API_KEY"
+        run: dotnet nuget push ".\Archipelago.MultiClient.Net\Archipelago.MultiClient.Net\bin\Release\Archipelago.MultiClient.Net.${{ env.TAG }}.nupkg" --source https://api.nuget.org/v3/index.json --api-key "$env:NUGET_API_KEY"
