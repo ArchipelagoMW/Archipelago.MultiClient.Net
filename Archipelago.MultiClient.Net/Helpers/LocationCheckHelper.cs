@@ -66,14 +66,12 @@ namespace Archipelago.MultiClient.Net.Helpers
             switch (packet)
             {
                 case ConnectedPacket connectedPacket:
-                    foreach (int locationId in connectedPacket.LocationsChecked)
+                    allLocations.UnionWith(connectedPacket.LocationsChecked);
+                    allLocations.UnionWith(connectedPacket.MissingChecks);
+
+                    lock (locationsCheckedLockObject)
                     {
-                        locationsChecked.Add(locationId);
-                        allLocations.Add(locationId);
-                    }
-                    foreach (int locationId in connectedPacket.MissingChecks)
-                    {
-                        allLocations.Add(locationId);
+                        CheckLocations(connectedPacket.LocationsChecked);
                     }
                     break;
                 case RoomUpdatePacket updatePacket:

@@ -5,6 +5,7 @@ using NSubstitute;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -200,23 +201,21 @@ namespace Archipelago.MultiClient.Net.Tests
 
             var sut = new LocationCheckHelper(socket, cache);
 
-            var invocationCount = 0;
-            var newCheckedLocations = new List<int>();
+            var newCheckedLocations = new List<int[]>();
 
             sut.CheckedLocationsUpdated += l =>
             {
-                invocationCount++;
-                newCheckedLocations.AddRange(l);
+                newCheckedLocations.Add(l.ToArray());
             };
 
             sut.CompleteLocationChecks(1, 2);
             sut.CompleteLocationChecksAsync(b => { }, 3);
 
-            Assert.That(invocationCount, Is.EqualTo(2));
+            Assert.That(newCheckedLocations.Count, Is.EqualTo(2));
 
-            Assert.Contains(1, newCheckedLocations);
-            Assert.Contains(2, newCheckedLocations);
-            Assert.Contains(3, newCheckedLocations);
+            Assert.Contains(1, newCheckedLocations[0]);
+            Assert.Contains(2, newCheckedLocations[0]);
+            Assert.Contains(3, newCheckedLocations[1]);
         }
 
         [Test]
@@ -227,19 +226,17 @@ namespace Archipelago.MultiClient.Net.Tests
 
             var sut = new LocationCheckHelper(socket, cache);
 
-            var invocationCount = 0;
-            var newCheckedLocations = new List<int>();
+            var newCheckedLocations = new List<int[]>();
 
             sut.CheckedLocationsUpdated += l =>
             {
-                invocationCount++;
-                newCheckedLocations.AddRange(l);
+                newCheckedLocations.Add(l.ToArray());
             };
 
             var connectedPacket = new ConnectedPacket
             {
-                LocationsChecked = new List<int>(),
-                MissingChecks = new List<int> { 1, 2, 3 }
+                LocationsChecked = new List<int> { 3 },
+                MissingChecks = new List<int> { 1, 2 }
             };
 
             var roomUpdatePacket = new RoomUpdatePacket
@@ -250,9 +247,10 @@ namespace Archipelago.MultiClient.Net.Tests
             socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(connectedPacket);
             socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(roomUpdatePacket);
 
-            Assert.That(invocationCount, Is.EqualTo(1));
+            Assert.That(newCheckedLocations.Count, Is.EqualTo(2));
 
-            Assert.Contains(2, newCheckedLocations);
+            Assert.Contains(3, newCheckedLocations[0]);
+            Assert.Contains(2, newCheckedLocations[1]);
         }
 
         [Test]
@@ -262,12 +260,6 @@ namespace Archipelago.MultiClient.Net.Tests
             var cache = Substitute.For<IDataPackageCache>();
 
             var sut = new LocationCheckHelper(socket, cache);
-
-            var invocationCount = 0;
-            sut.CheckedLocationsUpdated += l =>
-            {
-                invocationCount++;
-            };
 
             var connectedPacket = new ConnectedPacket
             {
@@ -281,6 +273,12 @@ namespace Archipelago.MultiClient.Net.Tests
 
             socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(connectedPacket);
             socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(roomUpdatePacket);
+
+            var invocationCount = 0;
+            sut.CheckedLocationsUpdated += l =>
+            {
+                invocationCount++;
+            };
 
             sut.CompleteLocationChecks(null);
             sut.CompleteLocationChecks(Array.Empty<int>());
