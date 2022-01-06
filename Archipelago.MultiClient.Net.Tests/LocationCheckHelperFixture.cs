@@ -50,8 +50,8 @@ namespace Archipelago.MultiClient.Net.Tests
             Assert.Contains(2, sut.AllLocations);
             Assert.Contains(3, sut.AllLocations);
 
-            Assert.Contains(1, sut.AllLocationsChecked.ToArray());
-            Assert.Contains(3, sut.AllLocationsChecked.ToArray());
+            Assert.Contains(1, sut.AllLocationsChecked);
+            Assert.Contains(3, sut.AllLocationsChecked);
 
             Assert.Contains(2, sut.AllMissingLocations);
         }
@@ -79,9 +79,9 @@ namespace Archipelago.MultiClient.Net.Tests
             Assert.Contains(2, sut.AllLocations);
             Assert.Contains(3, sut.AllLocations);
 
-            Assert.Contains(1, sut.AllLocationsChecked.ToArray());
-            Assert.Contains(2, sut.AllLocationsChecked.ToArray());
-            Assert.Contains(3, sut.AllLocationsChecked.ToArray());
+            Assert.Contains(1, sut.AllLocationsChecked);
+            Assert.Contains(2, sut.AllLocationsChecked);
+            Assert.Contains(3, sut.AllLocationsChecked);
 
             Assert.That(sut.AllMissingLocations, Is.Empty);
         }
@@ -108,8 +108,8 @@ namespace Archipelago.MultiClient.Net.Tests
             Assert.Contains(1, sut.AllLocations);
             Assert.Contains(2, sut.AllLocations);
 
-            Assert.Contains(1, sut.AllLocationsChecked.ToArray());
-            Assert.Contains(2, sut.AllLocationsChecked.ToArray());
+            Assert.Contains(1, sut.AllLocationsChecked);
+            Assert.Contains(2, sut.AllLocationsChecked);
 
             Assert.That(sut.AllMissingLocations, Is.Empty);
         }
@@ -140,8 +140,8 @@ namespace Archipelago.MultiClient.Net.Tests
             Assert.Contains(2, sut.AllLocations);
             Assert.Contains(3, sut.AllLocations);
 
-            Assert.Contains(1, sut.AllLocationsChecked.ToArray());
-            Assert.Contains(3, sut.AllLocationsChecked.ToArray());
+            Assert.Contains(1, sut.AllLocationsChecked);
+            Assert.Contains(3, sut.AllLocationsChecked);
 
             Assert.Contains(2, sut.AllMissingLocations);
         }
