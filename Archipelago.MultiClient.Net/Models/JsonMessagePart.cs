@@ -14,16 +14,20 @@ namespace Archipelago.MultiClient.Net.Models
     public class JsonMessagePart
     {
         [JsonProperty("type")]
-#if !USE_OCULUS_NEWTONSOFT
+#if USE_OCULUS_NEWTONSOFT
+        public string Type { get; set; }
+#else
         [JsonConverter(typeof(StringEnumConverter), typeof(SnakeCaseNamingStrategy))]
-#endif
         public JsonMessagePartType? Type { get; set; }
+#endif
 
         [JsonProperty("color")]
-#if !USE_OCULUS_NEWTONSOFT
+#if USE_OCULUS_NEWTONSOFT
+        public string Color { get; set; }
+#else
         [JsonConverter(typeof(StringEnumConverter), typeof(SnakeCaseNamingStrategy))]
-#endif
         public JsonMessagePartColor? Color { get; set; }
+#endif
 
         [JsonProperty("text")]
         public string Text { get; set; }
