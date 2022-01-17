@@ -11,25 +11,25 @@ namespace Archipelago.MultiClient.Net.Converters
     {
         public static Dictionary<ArchipelagoPacketType, Func<JObject, ArchipelagoPacketBase>> PacketDeserializationMap = new Dictionary<ArchipelagoPacketType, Func<JObject, ArchipelagoPacketBase>>()
         {
-            [ArchipelagoPacketType.RoomInfo]          = (JObject obj) => obj.ToObject<RoomInfoPacket>(),
-            [ArchipelagoPacketType.ConnectionRefused] = (JObject obj) => obj.ToObject<ConnectionRefusedPacket>(),
-            [ArchipelagoPacketType.Connected]         = (JObject obj) => obj.ToObject<ConnectedPacket>(),
-            [ArchipelagoPacketType.ReceivedItems]     = (JObject obj) => obj.ToObject<ReceivedItemsPacket>(),
-            [ArchipelagoPacketType.LocationInfo]      = (JObject obj) => obj.ToObject<LocationInfoPacket>(),
-            [ArchipelagoPacketType.RoomUpdate]        = (JObject obj) => obj.ToObject<RoomUpdatePacket>(),
-            [ArchipelagoPacketType.Print]             = (JObject obj) => obj.ToObject<PrintPacket>(),
-            [ArchipelagoPacketType.PrintJSON]         = (JObject obj) => obj.ToObject<PrintJsonPacket>(),
-            [ArchipelagoPacketType.Connect]           = (JObject obj) => obj.ToObject<ConnectPacket>(),
-            [ArchipelagoPacketType.ConnectUpdate]     = (JObject obj) => obj.ToObject<ConnectUpdatePacket>(),
-            [ArchipelagoPacketType.LocationChecks]    = (JObject obj) => obj.ToObject<LocationChecksPacket>(),
-            [ArchipelagoPacketType.LocationScouts]    = (JObject obj) => obj.ToObject<LocationScoutsPacket>(),
-            [ArchipelagoPacketType.StatusUpdate]      = (JObject obj) => obj.ToObject<StatusUpdatePacket>(),
-            [ArchipelagoPacketType.Say]               = (JObject obj) => obj.ToObject<SayPacket>(),
-            [ArchipelagoPacketType.GetDataPackage]    = (JObject obj) => obj.ToObject<GetDataPackagePacket>(),
-            [ArchipelagoPacketType.DataPackage]       = (JObject obj) => obj.ToObject<DataPackagePacket>(),
-            [ArchipelagoPacketType.Bounce]            = (JObject obj) => obj.ToObject<BouncePacket>(),
-            [ArchipelagoPacketType.Bounced]           = (JObject obj) => obj.ToObject<BouncedPacket>(),
-            [ArchipelagoPacketType.InvalidPacket]     = (JObject obj) => obj.ToObject<InvalidPacketPacket>()
+            [ArchipelagoPacketType.RoomInfo]          = obj => obj.ToObject<RoomInfoPacket>(),
+            [ArchipelagoPacketType.ConnectionRefused] = obj => obj.ToObject<ConnectionRefusedPacket>(),
+            [ArchipelagoPacketType.Connected]         = obj => obj.ToObject<ConnectedPacket>(),
+            [ArchipelagoPacketType.ReceivedItems]     = obj => obj.ToObject<ReceivedItemsPacket>(),
+            [ArchipelagoPacketType.LocationInfo]      = obj => obj.ToObject<LocationInfoPacket>(),
+            [ArchipelagoPacketType.RoomUpdate]        = obj => obj.ToObject<RoomUpdatePacket>(),
+            [ArchipelagoPacketType.Print]             = obj => obj.ToObject<PrintPacket>(),
+            [ArchipelagoPacketType.PrintJSON]         = DeserializePrintJsonPacket,
+            [ArchipelagoPacketType.Connect]           = obj => obj.ToObject<ConnectPacket>(),
+            [ArchipelagoPacketType.ConnectUpdate]     = obj => obj.ToObject<ConnectUpdatePacket>(),
+            [ArchipelagoPacketType.LocationChecks]    = obj => obj.ToObject<LocationChecksPacket>(),
+            [ArchipelagoPacketType.LocationScouts]    = obj => obj.ToObject<LocationScoutsPacket>(),
+            [ArchipelagoPacketType.StatusUpdate]      = obj => obj.ToObject<StatusUpdatePacket>(),
+            [ArchipelagoPacketType.Say]               = obj => obj.ToObject<SayPacket>(),
+            [ArchipelagoPacketType.GetDataPackage]    = obj => obj.ToObject<GetDataPackagePacket>(),
+            [ArchipelagoPacketType.DataPackage]       = obj => obj.ToObject<DataPackagePacket>(),
+            [ArchipelagoPacketType.Bounce]            = obj => obj.ToObject<BouncePacket>(),
+            [ArchipelagoPacketType.Bounced]           = obj => obj.ToObject<BouncedPacket>(),
+            [ArchipelagoPacketType.InvalidPacket]     = obj => obj.ToObject<InvalidPacketPacket>()
         };
 
         public override bool CanWrite => false;
@@ -54,6 +54,24 @@ namespace Archipelago.MultiClient.Net.Converters
             }
 
             return ret;
+        }
+
+        private static ArchipelagoPacketBase DeserializePrintJsonPacket(JObject obj)
+        {
+            if (obj.TryGetValue("type", out var token))
+            {
+                var type = (JsonMessageType)Enum.Parse(typeof(JsonMessageType), token.ToString());
+
+                switch (type)
+                {
+                    case JsonMessageType.Hint:
+                        return obj.ToObject<HintPrintJsonPacket>();
+                    case JsonMessageType.ItemSend:
+                        return obj.ToObject<ItemPrintJsonPacket>();
+                }
+            }
+
+            return obj.ToObject<PrintJsonPacket>();
         }
 
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)

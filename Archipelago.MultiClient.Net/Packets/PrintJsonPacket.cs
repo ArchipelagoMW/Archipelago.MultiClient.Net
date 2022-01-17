@@ -16,13 +16,19 @@ namespace Archipelago.MultiClient.Net.Packets
         [JsonProperty("type")]
         [JsonConverter(typeof(StringEnumConverter))]
         public JsonMessageType? MessageType { get; set; }
+    }
 
+    public class ItemPrintJsonPacket : PrintJsonPacket
+    {
         [JsonProperty("receiving")]
         public int ReceivingPlayer { get; set; }
 
         [JsonProperty("item")]
         public NetworkItem Item { get; set; }
+    }
 
+    public class HintPrintJsonPacket : ItemPrintJsonPacket
+    {
         [JsonProperty("found")]
         public bool? Found { get; set; }
     }
