@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Archipelago.MultiClient.Net.Enums;
+using Newtonsoft.Json;
 
 namespace Archipelago.MultiClient.Net.Models
 {
@@ -12,5 +13,8 @@ namespace Archipelago.MultiClient.Net.Models
 
         [JsonProperty("player")]
         public int Player { get; set; }
+
+        [JsonProperty("flags")]
+        public ItemFlags Flags { get; set; }
     }
 }
