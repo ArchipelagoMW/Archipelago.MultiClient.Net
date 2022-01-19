@@ -17,5 +17,11 @@ namespace Archipelago.MultiClient.Net.Models
 
         [JsonProperty("text")]
         public string Text { get; set; }
+
+        [JsonProperty("player")]
+        public int? Player { get; set; }
+
+        [JsonProperty("flags")]
+        public ItemFlags? Flags { get; set; }
     }
 }
