@@ -1,4 +1,5 @@
-﻿using Archipelago.MultiClient.Net.Exceptions;
+﻿using Archipelago.MultiClient.Net.Enums;
+using Archipelago.MultiClient.Net.Exceptions;
 using Archipelago.MultiClient.Net.Helpers;
 using Archipelago.MultiClient.Net.Packets;
 using System;
@@ -80,7 +81,7 @@ namespace Archipelago.MultiClient.Net
         ///     The connect attempt is synchronous and will lock for up to 5 seconds as it attempts to connect to the server. 
         ///     Most connections are instantaneous however the timeout is 5 seconds before it returns <see cref="T:Archipelago.MultiClient.Net.LoginFailure"/>.
         /// </remarks>
-        public LoginResult TryConnectAndLogin(string game, string name, Version version, List<string> tags = null, string uuid = null, string password = null)
+        public LoginResult TryConnectAndLogin(string game, string name, Version version, List<string> tags = null, string uuid = null, string password = null, ItemsHandlingFlags itemsHandlingFlags = ItemsHandlingFlags.RemoteItems)
         {
             uuid = uuid ?? Guid.NewGuid().ToString();
             Tags = tags ?? new List<string>();
@@ -99,7 +100,8 @@ namespace Archipelago.MultiClient.Net
                     Password = password,
                     Tags = Tags,
                     Uuid = uuid,
-                    Version = version
+                    Version = version,
+                    ItemsHandling = itemsHandlingFlags
                 });
 
                 var connectedStartedTime = DateTime.UtcNow;
@@ -132,6 +134,7 @@ namespace Archipelago.MultiClient.Net
         /// <exception cref="T:Archipelago.MultiClient.Net.Exceptions.ArchipelagoSocketClosedException">
         ///     The websocket connection is not alive
         /// </exception>
+        [Obsolete("Deprecated. Use UpdateConnectionOptions() instead. Will be removed in next major release.")]
         public void UpdateTags(List<string> tags)
         {
             Tags = tags ?? new List<string>();
@@ -139,6 +142,22 @@ namespace Archipelago.MultiClient.Net
             Socket.SendPacket(new ConnectUpdatePacket
             {
                 Tags = Tags
+            });
+        }
+
+        /// <summary>
+        ///     Send a ConnectUpdate packet and set the tags and ItemsHandlingFlags for the current connection to the provided params.
+        /// </summary>
+        /// <param name="tags">New tags for the current connection.</param>
+        /// <param name="itemsHandlingFlags">New ItemsHandlingFlags for the current connection.</param>
+        public void UpdateConnectionOptions(List<string> tags, ItemsHandlingFlags itemsHandlingFlags)
+        {
+            Tags = tags ?? new List<string>();
+
+            Socket.SendPacket(new ConnectUpdatePacket
+            {
+                Tags = Tags,
+                ItemsHandling = itemsHandlingFlags
             });
         }
     }

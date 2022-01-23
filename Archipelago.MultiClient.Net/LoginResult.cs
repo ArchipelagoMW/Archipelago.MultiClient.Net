@@ -71,6 +71,8 @@ namespace Archipelago.MultiClient.Net
                     return "The client and server version mismatch.";
                 case ConnectionRefusedError.InvalidPassword:
                     return "The password is invalid.";
+                case ConnectionRefusedError.InvalidItemsHandling:
+                    return "The item handling flags provided are invalid.";
                 default:
                     return $"Unknown error: {errorCode}.";
             }
