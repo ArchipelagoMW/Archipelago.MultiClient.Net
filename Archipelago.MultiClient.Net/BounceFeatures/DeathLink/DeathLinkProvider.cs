@@ -23,7 +23,7 @@ namespace Archipelago.MultiClient.Net.BounceFeatures.DeathLink
                 newTags.Add("DeathLink");
 
 
-                session.UpdateTags(newTags);
+                session.UpdateConnectionOptions(newTags, session.ItemsHandlingFlags);
             }
         }
     }

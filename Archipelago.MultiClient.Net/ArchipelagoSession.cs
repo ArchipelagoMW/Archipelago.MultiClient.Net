@@ -25,6 +25,8 @@ namespace Archipelago.MultiClient.Net
 
         public List<string> Tags = new List<string>();
 
+        public ItemsHandlingFlags? ItemsHandlingFlags { get; private set; }
+
         internal ArchipelagoSession(ArchipelagoSocketHelper socket,
                                     ReceivedItemsHelper items,
                                     LocationCheckHelper locations,
@@ -111,6 +113,7 @@ namespace Archipelago.MultiClient.Net
         {
             uuid = uuid ?? Guid.NewGuid().ToString();
             Tags = tags ?? new List<string>();
+            ItemsHandlingFlags = itemsHandlingFlags;
 
             try
             {
@@ -176,7 +179,7 @@ namespace Archipelago.MultiClient.Net
         /// </summary>
         /// <param name="tags">New tags for the current connection.</param>
         /// <param name="itemsHandlingFlags">New ItemsHandlingFlags for the current connection.</param>
-        public void UpdateConnectionOptions(List<string> tags, ItemsHandlingFlags itemsHandlingFlags)
+        public void UpdateConnectionOptions(List<string> tags, ItemsHandlingFlags? itemsHandlingFlags)
         {
             Tags = tags ?? new List<string>();
 
