@@ -47,7 +47,6 @@ namespace Archipelago.MultiClient.Net.Packets
         public string SeedName { get; set; }
 
         [JsonProperty("time")]
-        [JsonConverter(typeof(UnixDateTimeConverter))]
-        public DateTime Timestamp { get; set; }
+        public double Timestamp { get; set; }
     }
 }

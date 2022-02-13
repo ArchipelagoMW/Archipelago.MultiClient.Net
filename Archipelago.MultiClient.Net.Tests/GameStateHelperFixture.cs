@@ -1,7 +1,7 @@
-﻿using Archipelago.MultiClient.Net.Enums;
+﻿using Archipelago.MultiClient.Net.Converters;
+using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Helpers;
 using Archipelago.MultiClient.Net.Packets;
-using Newtonsoft.Json.Converters;
 using NSubstitute;
 using NUnit.Framework;
 using System;
@@ -165,7 +165,7 @@ namespace Archipelago.MultiClient.Net.Tests
                 // Time
                 new GameStateHelperTest<DateTime>(
                     "Should_read_time",
-                    new RoomInfoPacket { Timestamp = new DateTime(2000, 1, 2, 3, 4, 5) },
+                    new RoomInfoPacket { Timestamp = UnixTimeConverter.DateTimeToUnixTimeStamp(new DateTime(2000, 1, 2, 3, 4, 5)) },
                     s => s.RoomInfoSendTime, new DateTime(2000, 1, 2, 3, 4, 5))
             };
 

@@ -1,4 +1,5 @@
-﻿using Archipelago.MultiClient.Net.Enums;
+﻿using Archipelago.MultiClient.Net.Converters;
+using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Packets;
 using System;
 using System.Collections.Generic;
@@ -84,7 +85,7 @@ namespace Archipelago.MultiClient.Net.Helpers
             Version = packet.Version;
             HasPassword = packet.Password;
             Seed = packet.SeedName;
-            RoomInfoSendTime = packet.Timestamp;
+            RoomInfoSendTime = UnixTimeConverter.UnixTimeStampToDateTime(packet.Timestamp);
 
             tags = packet.Tags;
 
