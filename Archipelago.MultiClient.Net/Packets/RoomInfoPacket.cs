@@ -2,6 +2,7 @@
 using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Models;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
 
@@ -46,6 +47,7 @@ namespace Archipelago.MultiClient.Net.Packets
         public string SeedName { get; set; }
 
         [JsonProperty("time")]
-        public double Timestamp { get; set; }
+        [JsonConverter(typeof(UnixDateTimeConverter))]
+        public DateTime Timestamp { get; set; }
     }
 }

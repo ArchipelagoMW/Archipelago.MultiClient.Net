@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Archipelago.MultiClient.Net.Converters;
+using System;
 using System.Collections.Generic;
 
 namespace Archipelago.MultiClient.Net.BounceFeatures.DeathLink
@@ -33,7 +34,7 @@ namespace Archipelago.MultiClient.Net.BounceFeatures.DeathLink
                 }
 
                 deathLink = new DeathLink(source.ToString(), cause) {
-                    Timestamp = UnixTimeStampToDateTime((double)timeStamp),
+                    Timestamp = UnixTimeConverter.UnixTimeStampToDateTime((double)timeStamp),
                 };
                 return true;
             }
@@ -42,19 +43,6 @@ namespace Archipelago.MultiClient.Net.BounceFeatures.DeathLink
                 deathLink = null;
                 return false;
             }
-        }
-
-        internal static DateTime UnixTimeStampToDateTime(double unixTimeStamp)
-        {
-            var dateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
-            dateTime = dateTime.AddSeconds(unixTimeStamp);
-            return dateTime;
-        }
-
-        internal static double DateTimeToUnixTimeStamp(DateTime dateTime)
-        {
-            var utcEpoch = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
-            return (dateTime - utcEpoch).TotalMilliseconds / 1000;
         }
     }
 }
