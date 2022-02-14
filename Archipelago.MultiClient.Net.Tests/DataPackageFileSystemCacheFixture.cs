@@ -99,7 +99,7 @@ namespace Archipelago.MultiClient.Net.Tests
             socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(roomInfo);
 
             socket.Received().SendPacket(Arg.Is<GetDataPackagePacket>(p =>
-                p.Exclusions.Count == 1 && p.Exclusions[0] == "One"
+                p.Exclusions.Length == 1 && p.Exclusions[0] == "One"
             ));
         }
 

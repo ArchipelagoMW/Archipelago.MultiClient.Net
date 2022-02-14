@@ -1,6 +1,5 @@
 ﻿using Archipelago.MultiClient.Net.Enums;
 using Newtonsoft.Json;
-using System.Collections.Generic;
 
 namespace Archipelago.MultiClient.Net.Packets
 {
@@ -9,6 +8,6 @@ namespace Archipelago.MultiClient.Net.Packets
         public override ArchipelagoPacketType PacketType => ArchipelagoPacketType.GetDataPackage;
 
         [JsonProperty("exclusions")]
-        public List<string> Exclusions { get; set; } = new List<string>();
+        public string[] Exclusions { get; set; }
     }
 }

@@ -23,7 +23,7 @@ namespace Archipelago.MultiClient.Net
         volatile bool expectingLoginResult = false;
         private LoginResult loginResult = null;
 
-        public List<string> Tags = new List<string>();
+        public string[] Tags = new string[0];
 
         public ItemsHandlingFlags? ItemsHandlingFlags { get; private set; }
 
@@ -84,7 +84,7 @@ namespace Archipelago.MultiClient.Net
         ///     The connect attempt is synchronous and will lock for up to 5 seconds as it attempts to connect to the server. 
         ///     Most connections are instantaneous however the timeout is 5 seconds before it returns <see cref="T:Archipelago.MultiClient.Net.LoginFailure"/>.
         /// </remarks>
-        public LoginResult TryConnectAndLogin(string game, string name, Version version, ItemsHandlingFlags itemsHandlingFlags, List<string> tags = null, string uuid = null, string password = null)
+        public LoginResult TryConnectAndLogin(string game, string name, Version version, ItemsHandlingFlags itemsHandlingFlags, string[] tags = null, string uuid = null, string password = null)
         {
             return TryConnectAndLogin(game, name, version, tags, uuid, password, itemsHandlingFlags);
         }
@@ -109,10 +109,10 @@ namespace Archipelago.MultiClient.Net
         ///     Most connections are instantaneous however the timeout is 5 seconds before it returns <see cref="T:Archipelago.MultiClient.Net.LoginFailure"/>.
         /// </remarks>
         [Obsolete("Deprecated. Use the other overload for this method which requires you define the ItemHandlingFlags. This method defaults ItemHandlingFlags to null which is also deprecated.")]
-        public LoginResult TryConnectAndLogin(string game, string name, Version version, List<string> tags = null, string uuid = null, string password = null, ItemsHandlingFlags? itemsHandlingFlags = null)
+        public LoginResult TryConnectAndLogin(string game, string name, Version version, string[] tags = null, string uuid = null, string password = null, ItemsHandlingFlags? itemsHandlingFlags = null)
         {
             uuid = uuid ?? Guid.NewGuid().ToString();
-            Tags = tags ?? new List<string>();
+            Tags = tags ?? new string[0];
             ItemsHandlingFlags = itemsHandlingFlags;
 
             try
@@ -164,9 +164,9 @@ namespace Archipelago.MultiClient.Net
         ///     The websocket connection is not alive
         /// </exception>
         [Obsolete("Deprecated. Use UpdateConnectionOptions() instead. Will be removed in next major release.")]
-        public void UpdateTags(List<string> tags)
+        public void UpdateTags(string[] tags)
         {
-            Tags = tags ?? new List<string>();
+            Tags = tags ?? new string[0];
 
             Socket.SendPacket(new ConnectUpdatePacket
             {
@@ -179,9 +179,9 @@ namespace Archipelago.MultiClient.Net
         /// </summary>
         /// <param name="tags">New tags for the current connection.</param>
         /// <param name="itemsHandlingFlags">New ItemsHandlingFlags for the current connection.</param>
-        public void UpdateConnectionOptions(List<string> tags, ItemsHandlingFlags? itemsHandlingFlags)
+        public void UpdateConnectionOptions(string[] tags, ItemsHandlingFlags? itemsHandlingFlags)
         {
-            Tags = tags ?? new List<string>();
+            Tags = tags ?? new string[0];
 
             Socket.SendPacket(new ConnectUpdatePacket
             {
