@@ -16,24 +16,12 @@ namespace Archipelago.MultiClient.Net
 
         public int Team { get; }
         public int Slot { get; }
-
-        /// <summary>
-        /// Obsolete, use Location Helper instead
-        /// </summary>
-        public int[] MissingChecks { get; }
-        /// <summary>
-        /// Obsolete, use Location Helper instead
-        /// </summary>
-        public int[] LocationsChecked { get; }
-
         public Dictionary<string, object> SlotData { get; }
 
         public LoginSuccessful(ConnectedPacket connectedPacket)
         {
             Team = connectedPacket.Team;
             Slot = connectedPacket.Slot;
-            MissingChecks = connectedPacket.MissingChecks.ToArray();
-            LocationsChecked = connectedPacket.LocationsChecked.ToArray();
             SlotData = connectedPacket.SlotData;
         }
     }
