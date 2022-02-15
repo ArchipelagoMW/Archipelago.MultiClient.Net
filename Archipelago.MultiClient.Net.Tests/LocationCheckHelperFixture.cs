@@ -24,9 +24,9 @@ namespace Archipelago.MultiClient.Net.Tests
 
             Assert.DoesNotThrow(() => {
                 sut.CompleteLocationChecks(null);
-                sut.CompleteLocationChecks(Array.Empty<int>());
+                sut.CompleteLocationChecks(Array.Empty<long>());
                 sut.CompleteLocationChecksAsync(b => { }, null);
-                sut.CompleteLocationChecksAsync(b => { }, Array.Empty<int>());
+                sut.CompleteLocationChecksAsync(b => { }, Array.Empty<long>());
             });
         }
 
@@ -40,8 +40,8 @@ namespace Archipelago.MultiClient.Net.Tests
 
             var connectedPacket = new ConnectedPacket
             {
-                LocationsChecked = new List<int>{ 1, 3 },
-                MissingChecks = new List<int> { 2 }
+                LocationsChecked = new List<long> { 1, 3 },
+                MissingChecks = new List<long> { 2 }
             };
 
             socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(connectedPacket);
@@ -66,8 +66,8 @@ namespace Archipelago.MultiClient.Net.Tests
 
             var connectedPacket = new ConnectedPacket
             {
-                LocationsChecked = new List<int> { 1 },
-                MissingChecks = new List<int> { 2, 3 }
+                LocationsChecked = new List<long> { 1 },
+                MissingChecks = new List<long> { 2, 3 }
             };
 
             socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(connectedPacket);
@@ -96,8 +96,8 @@ namespace Archipelago.MultiClient.Net.Tests
 
             var connectedPacket = new ConnectedPacket
             {
-                LocationsChecked = new List<int>(),
-                MissingChecks = new List<int>()
+                LocationsChecked = new List<long>(),
+                MissingChecks = new List<long>()
             };
 
             socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(connectedPacket);
@@ -124,13 +124,13 @@ namespace Archipelago.MultiClient.Net.Tests
 
             var connectedPacket = new ConnectedPacket
             {
-                LocationsChecked = new List<int>(),
-                MissingChecks = new List<int>{ 1, 2, 3 }
+                LocationsChecked = new List<long>(),
+                MissingChecks = new List<long> { 1, 2, 3 }
             };
 
             var roomUpdatePacket = new RoomUpdatePacket
             {
-                CheckedLocations = new List<int> { 1, 3 }
+                CheckedLocations = new List<long> { 1, 3 }
             };
 
             socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(connectedPacket);
@@ -157,15 +157,15 @@ namespace Archipelago.MultiClient.Net.Tests
 
             var connectedPacket = new ConnectedPacket
             {
-                LocationsChecked = new List<int> { 1, 2, 3 },
-                MissingChecks = new List<int>{ 4 }
+                LocationsChecked = new List<long> { 1, 2, 3 },
+                MissingChecks = new List<long> { 4 }
             };
 
             socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(connectedPacket);
 
             var enumerateTask = new Task(() =>
             {
-                var total = 0;
+                long total = 0;
 
                 foreach (var locationId in sut.AllLocationsChecked)
                 {
@@ -180,7 +180,7 @@ namespace Archipelago.MultiClient.Net.Tests
                     Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(
                         new RoomUpdatePacket()
                         {
-                            CheckedLocations = new List<int>{ 4 }
+                            CheckedLocations = new List<long> { 4 }
                         });
             });
 
@@ -201,7 +201,7 @@ namespace Archipelago.MultiClient.Net.Tests
 
             var sut = new LocationCheckHelper(socket, cache);
 
-            var newCheckedLocations = new List<int[]>();
+            var newCheckedLocations = new List<long[]>();
 
             sut.CheckedLocationsUpdated += l =>
             {
@@ -226,7 +226,7 @@ namespace Archipelago.MultiClient.Net.Tests
 
             var sut = new LocationCheckHelper(socket, cache);
 
-            var newCheckedLocations = new List<int[]>();
+            var newCheckedLocations = new List<long[]>();
 
             sut.CheckedLocationsUpdated += l =>
             {
@@ -235,13 +235,13 @@ namespace Archipelago.MultiClient.Net.Tests
 
             var connectedPacket = new ConnectedPacket
             {
-                LocationsChecked = new List<int> { 3 },
-                MissingChecks = new List<int> { 1, 2 }
+                LocationsChecked = new List<long> { 3 },
+                MissingChecks = new List<long> { 1, 2 }
             };
 
             var roomUpdatePacket = new RoomUpdatePacket
             {
-                CheckedLocations = new List<int> { 2 }
+                CheckedLocations = new List<long> { 2 }
             };
 
             socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(connectedPacket);
@@ -263,12 +263,12 @@ namespace Archipelago.MultiClient.Net.Tests
 
             var connectedPacket = new ConnectedPacket
             {
-                LocationsChecked = new List<int> { 1, 2 },
-                MissingChecks = new List<int> { 3 }
+                LocationsChecked = new List<long> { 1, 2 },
+                MissingChecks = new List<long> { 3 }
             };
             var roomUpdatePacket = new RoomUpdatePacket
             {
-                CheckedLocations = new List<int> { 1 }
+                CheckedLocations = new List<long> { 1 }
             };
 
             socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(connectedPacket);
@@ -281,10 +281,10 @@ namespace Archipelago.MultiClient.Net.Tests
             };
 
             sut.CompleteLocationChecks(null);
-            sut.CompleteLocationChecks(Array.Empty<int>());
+            sut.CompleteLocationChecks(Array.Empty<long>());
             sut.CompleteLocationChecks(1);
             sut.CompleteLocationChecksAsync(b => { }, null);
-            sut.CompleteLocationChecksAsync(b => { }, Array.Empty<int>());
+            sut.CompleteLocationChecksAsync(b => { }, Array.Empty<long>());
             sut.CompleteLocationChecksAsync(b => { }, 1);
 
             Assert.That(invocationCount, Is.Zero);
@@ -300,12 +300,12 @@ namespace Archipelago.MultiClient.Net.Tests
 
             var connectedPacket = new ConnectedPacket
             {
-                LocationsChecked = new List<int>(),
-                MissingChecks = new List<int> { 1, 2, 3 }
+                LocationsChecked = new List<long>(),
+                MissingChecks = new List<long> { 1, 2, 3 }
             };
             var roomUpdatePacket = new RoomUpdatePacket
             {
-                CheckedLocations = new List<int> { 2, 3 }
+                CheckedLocations = new List<long> { 2, 3 }
             };
 
             socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(connectedPacket);

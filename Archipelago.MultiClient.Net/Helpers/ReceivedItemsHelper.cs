@@ -15,7 +15,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         private readonly IDataPackageCache dataPackageCache;
         private Queue<NetworkItem> itemQueue = new Queue<NetworkItem>();
         private List<NetworkItem> allItemsReceived = new List<NetworkItem>();
-        private Dictionary<int, string> itemLookupCache = new Dictionary<int, string>();
+        private Dictionary<long, string> itemLookupCache = new Dictionary<long, string>();
         private object itemQueueLockObject = new object();
 
         public int Index => allItemsReceived.Count;

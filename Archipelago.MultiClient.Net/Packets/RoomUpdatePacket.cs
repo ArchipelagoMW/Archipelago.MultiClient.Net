@@ -12,6 +12,6 @@ namespace Archipelago.MultiClient.Net.Packets
         public int HintPoints { get; set; }
 
         [JsonProperty("checked_locations")]
-        public List<int> CheckedLocations { get; set; }
+        public List<long> CheckedLocations { get; set; }
     }
 }
