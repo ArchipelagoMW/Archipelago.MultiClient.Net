@@ -55,7 +55,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// <summary>
         /// Denotes special features or capabilities that the sender is capable of.
         /// </summary>
-        public ReadOnlyCollection<string> Tags =>
+        public ReadOnlyCollection<string> ServerTags =>
             tags == null 
                 ? default 
                 : new ReadOnlyCollection<string>(tags);

@@ -70,17 +70,17 @@ namespace Archipelago.MultiClient.Net.Tests
                     "Should_update_tags",
                     new RoomInfoPacket { Tags = new List<string> { "Tag1" } },
                     new RoomUpdatePacket { Tags = new List<string> { "Tag2" } },
-                    s => s.Tags, new List<string> { "Tag1" }.AsReadOnly(), new List<string> { "Tag2" }.AsReadOnly()),
+                    s => s.ServerTags, new List<string> { "Tag1" }.AsReadOnly(), new List<string> { "Tag2" }.AsReadOnly()),
                 new GameStateHelperTest<IReadOnlyCollection<string>>(
                     "Should_not_update_tags_when_its_not_provided",
                     new RoomInfoPacket { Tags = new List<string> { "Tag1" } },
                     new RoomUpdatePacket { Tags = null },
-                    s => s.Tags, new List<string> { "Tag1" }.AsReadOnly(), new List<string> { "Tag1" }.AsReadOnly()),
+                    s => s.ServerTags, new List<string> { "Tag1" }.AsReadOnly(), new List<string> { "Tag1" }.AsReadOnly()),
                 new GameStateHelperTest<IReadOnlyCollection<string>>(
                     "Should_update_tags_to_empty_when_its_provided",
                     new RoomInfoPacket { Tags = new List<string> { "Tag1" } },
                     new RoomUpdatePacket { Tags = new List<string>() },
-                    s => s.Tags, new List<string> { "Tag1" }.AsReadOnly(), new List<string>().AsReadOnly()),
+                    s => s.ServerTags, new List<string> { "Tag1" }.AsReadOnly(), new List<string>().AsReadOnly()),
 
                 // Password
                 new GameStateHelperTest<bool>(
