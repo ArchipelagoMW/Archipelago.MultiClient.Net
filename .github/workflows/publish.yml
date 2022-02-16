@@ -4,15 +4,12 @@ name: Publish to NuGet
 
 # Controls when the workflow will run
 on:
-  # Triggers the workflow on push or pull request events but only for the main branch
   release:
     types: [published]
     
   workflow_dispatch:
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
   package:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
@@ -26,10 +23,25 @@ jobs:
         with:
           dotnet-version: '3.1.x'
         
+      - name: Setup NuGet.exe for use with actions
+        uses: NuGet/setup-nuget@v1.0.5
+        
+      - name: setup-msbuild
+        uses: microsoft/setup-msbuild@v1.1
+        
+      - name: Restore NuGet Packages
+        run: nuget restore Archipelago.MultiClient.Net.sln
+        
+      - name: Build Library
+        run: msbuild Archipelago.MultiClient.Net.sln /property:Configuration=Release
+        
       - name: Get the tag name
         run: echo "TAG=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
 
-      - name: "Releasing to NuGet"
+      - name: Creating NuGet Package
+        run: nuget pack Archipelago.MultiClient.Net.nuspec -Version "${{ env.TAG }}"
+
+      - name: Releasing to NuGet
         env:
           NUGET_API_KEY: ${{ secrets.NUGETAPIKEY }}
-        run: dotnet nuget push ".\Archipelago.MultiClient.Net\Archipelago.MultiClient.Net\bin\Release\Archipelago.MultiClient.Net.${{ env.TAG }}.nupkg" --source https://api.nuget.org/v3/index.json --api-key "$env:NUGET_API_KEY"
+        run: dotnet nuget push "Archipelago.MultiClient.Net.${{ env.TAG }}.nupkg" --source https://api.nuget.org/v3/index.json --api-key "$env:NUGET_API_KEY"
