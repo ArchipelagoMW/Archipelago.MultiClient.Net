@@ -29,6 +29,6 @@ namespace Archipelago.MultiClient.Net.Packets
         public string[] Tags { get; set; }
 
         [JsonProperty("items_handling")]
-        public ItemsHandlingFlags? ItemsHandling { get; set; }
+        public ItemsHandlingFlags ItemsHandling { get; set; }
     }
 }
