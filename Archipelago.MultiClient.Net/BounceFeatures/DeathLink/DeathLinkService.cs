@@ -1,4 +1,5 @@
-﻿using Archipelago.MultiClient.Net.Enums;
+﻿using Archipelago.MultiClient.Net.Converters;
+using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Packets;
 using System.Collections.Generic;
 
@@ -55,7 +56,7 @@ namespace Archipelago.MultiClient.Net.BounceFeatures.DeathLink
                 Tags = new List<string> { "DeathLink" },
                 Data = new Dictionary<string, object>
                 {
-                    {"time", DeathLink.DateTimeToUnixTimeStamp(deathLink.Timestamp)},
+                    {"time", deathLink.Timestamp.ToUnixTimeStamp()},
                     {"source", deathLink.Source},
                 }
             };

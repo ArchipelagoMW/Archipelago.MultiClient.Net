@@ -20,22 +20,26 @@ namespace Archipelago.MultiClient.Net
 
         public PlayerHelper Players { get; }
 
+        public RoomStateHelper RoomState { get; }
+
         volatile bool expectingLoginResult = false;
         private LoginResult loginResult = null;
 
-        public List<string> Tags = new List<string>();
+        public string[] Tags = new string[0];
 
         public ItemsHandlingFlags ItemsHandlingFlags { get; private set; }
 
         internal ArchipelagoSession(ArchipelagoSocketHelper socket,
                                     ReceivedItemsHelper items,
                                     LocationCheckHelper locations,
-                                    PlayerHelper players)
+                                    PlayerHelper players,
+                                    RoomStateHelper roomState)
         {
             Socket = socket;
             Items = items;
             Locations = locations;
             Players = players;
+            RoomState = roomState;
 
             socket.PacketReceived += Socket_PacketReceived;
         }
@@ -64,6 +68,7 @@ namespace Archipelago.MultiClient.Net
                 break;
             }
         }
+
         /// <summary>
         ///     Attempt to log in to the Archipelago server by opening a websocket connection and sending a Connect packet.
         ///     Determining success for this attempt is done by attaching a listener to Socket.PacketReceived and listening for a Connected packet.
@@ -83,10 +88,11 @@ namespace Archipelago.MultiClient.Net
         ///     The connect attempt is synchronous and will lock for up to 5 seconds as it attempts to connect to the server. 
         ///     Most connections are instantaneous however the timeout is 5 seconds before it returns <see cref="T:Archipelago.MultiClient.Net.LoginFailure"/>.
         /// </remarks>
-        public LoginResult TryConnectAndLogin(string game, string name, Version version, ItemsHandlingFlags itemsHandlingFlags, List<string> tags = null, string uuid = null, string password = null)
+        public LoginResult TryConnectAndLogin(string game, string name, Version version, ItemsHandlingFlags itemsHandlingFlags, string[] tags = null, string uuid = null, string password = null)
         {
+
             uuid = uuid ?? Guid.NewGuid().ToString();
-            Tags = tags ?? new List<string>();
+            Tags = tags ?? new string[0];
             ItemsHandlingFlags = itemsHandlingFlags;
 
             try
@@ -120,6 +126,9 @@ namespace Archipelago.MultiClient.Net
                     Thread.Sleep(100);
                 }
 
+                //give other handlers time to handle the ConnectedPacket so all values are available when this method returns
+                Thread.Sleep(50);
+
                 return loginResult;
             }
             catch (ArchipelagoSocketClosedException)
@@ -133,9 +142,9 @@ namespace Archipelago.MultiClient.Net
         /// </summary>
         /// <param name="tags">New tags for the current connection.</param>
         /// <param name="itemsHandlingFlags">New ItemsHandlingFlags for the current connection.</param>
-        public void UpdateConnectionOptions(List<string> tags, ItemsHandlingFlags itemsHandlingFlags)
+        public void UpdateConnectionOptions(string[] tags, ItemsHandlingFlags itemsHandlingFlags)
         {
-            Tags = tags ?? new List<string>();
+            Tags = tags ?? new string[0];
 
             Socket.SendPacket(new ConnectUpdatePacket
             {

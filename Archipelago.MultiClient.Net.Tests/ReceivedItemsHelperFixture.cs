@@ -27,7 +27,7 @@ namespace Archipelago.MultiClient.Net.Tests
                 Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(
                     new ReceivedItemsPacket {
                         Index = 0, 
-                        Items = new List<NetworkItem> {
+                        Items = new [] {
                             new NetworkItem { Item = 1 },
                             new NetworkItem { Item = 2 },
                             new NetworkItem { Item = 3 }
@@ -52,7 +52,7 @@ namespace Archipelago.MultiClient.Net.Tests
                         new ReceivedItemsPacket
                         {
                             Index = 3,
-                            Items = new List<NetworkItem>{ new NetworkItem { Item = 4 } }
+                            Items = new []{ new NetworkItem { Item = 4 } }
                         });
             });
 

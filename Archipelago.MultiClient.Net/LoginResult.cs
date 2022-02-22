@@ -14,8 +14,17 @@ namespace Archipelago.MultiClient.Net
     {
         public override bool Successful => true;
 
+        /// <summary>
+        /// Your team number.
+        /// </summary>
         public int Team { get; }
+        /// <summary>
+        /// Your slot number on your team.
+        /// </summary>
         public int Slot { get; }
+        /// <summary>
+        /// Contains a slot data, differs per game
+        /// </summary>
         public Dictionary<string, object> SlotData { get; }
 
         public LoginSuccessful(ConnectedPacket connectedPacket)

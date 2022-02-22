@@ -1,6 +1,5 @@
 ﻿using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 
@@ -106,13 +105,13 @@ namespace Archipelago.MultiClient.Net.Helpers
 
         private void OnRoomUpdatedPacketReceived(RoomUpdatePacket packet)
         {
-            if (packet.Players != null && packet.Players.Count > 0)
+            if (packet.Players != null && packet.Players.Length > 0)
             {
                 UpdatePlayerInfo(packet.Players);
             }
         }
 
-        private void UpdateGames(List<string> games)
+        private void UpdateGames(string[] games)
         {
             if (players == null)
             {
@@ -120,14 +119,14 @@ namespace Archipelago.MultiClient.Net.Helpers
             }
             else
             {
-                for (int i = 0; i < games.Count; i++)
+                for (int i = 0; i < games.Length; i++)
                 {
                     players[i].Game = games[i];
                 }
             }
         }
 
-        private void UpdatePlayerInfo(List<NetworkPlayer> networkPlayers)
+        private void UpdatePlayerInfo(NetworkPlayer[] networkPlayers)
         {
             if (players == null)
             {
@@ -140,7 +139,7 @@ namespace Archipelago.MultiClient.Net.Helpers
             }
             else
             {
-                for (int i = 0; i < networkPlayers.Count; i++)
+                for (int i = 0; i < networkPlayers.Length; i++)
                 {
                     players[i].Team = networkPlayers[i].Team;
                     players[i].Slot = networkPlayers[i].Slot;
