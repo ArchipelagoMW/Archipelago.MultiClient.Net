@@ -14,7 +14,7 @@ namespace Archipelago.MultiClient.Net.Packets
         public override ArchipelagoPacketType PacketType => ArchipelagoPacketType.RoomUpdate;
 
         [JsonProperty("tags")]
-        public List<string> Tags { get; set; }
+        public string[] Tags { get; set; }
 
         [JsonProperty("password")]
         public bool? Password { get; set; }
@@ -29,11 +29,12 @@ namespace Archipelago.MultiClient.Net.Packets
         public int? LocationCheckPoints { get; set; }
 
         [JsonProperty("players")]
-        public List<NetworkPlayer> Players { get; set; } = new List<NetworkPlayer>();
+        public NetworkPlayer[] Players { get; set; }
 
         [JsonProperty("hint_points")]
         public int? HintPoints { get; set; }
 
         [JsonProperty("checked_locations")]
-        public int[] CheckedLocations { get; set; }    }
+        public long[] CheckedLocations { get; set; }
+    }
 }

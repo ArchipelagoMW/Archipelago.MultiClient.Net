@@ -2,14 +2,13 @@
 using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Packets;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
 namespace Archipelago.MultiClient.Net.Helpers
 {
     public class RoomStateHelper
     {
-        private List<string> tags;
+        private string[] tags;
 
         /// <summary>
         /// The amount of points it costs to receive a hint from the server.
@@ -89,17 +88,20 @@ namespace Archipelago.MultiClient.Net.Helpers
 
             tags = packet.Tags;
 
-            if (packet.Permissions.TryGetValue("forfeit", out Permissions forfeitPermissions))
+            if (packet.Permissions != null)
             {
-                ForfeitPermissions = forfeitPermissions;
-            }
-            if (packet.Permissions.TryGetValue("collect", out Permissions collectPermissions))
-            {
-                CollectPermissions = collectPermissions;
-            }
-            if (packet.Permissions.TryGetValue("remaining", out Permissions remainingPermissions))
-            {
-                RemainingPermissions = remainingPermissions;
+                if (packet.Permissions.TryGetValue("forfeit", out Permissions forfeitPermissions))
+                {
+                    ForfeitPermissions = forfeitPermissions;
+                }
+                if (packet.Permissions.TryGetValue("collect", out Permissions collectPermissions))
+                {
+                    CollectPermissions = collectPermissions;
+                }
+                if (packet.Permissions.TryGetValue("remaining", out Permissions remainingPermissions))
+                {
+                    RemainingPermissions = remainingPermissions;
+                }
             }
         }
 

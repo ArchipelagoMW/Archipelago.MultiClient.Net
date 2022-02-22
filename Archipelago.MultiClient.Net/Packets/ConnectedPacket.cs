@@ -19,9 +19,9 @@ namespace Archipelago.MultiClient.Net.Packets
         public NetworkPlayer[] Players { get; set; }
 
         [JsonProperty("missing_locations")]
-        public int[] MissingChecks { get; set; }
+        public long[] MissingChecks { get; set; }
         [JsonProperty("checked_locations")]
-        public int[] LocationsChecked { get; set; }
+        public long[] LocationsChecked { get; set; }
         [JsonProperty("slot_data")]
         public Dictionary<string, object> SlotData { get; set; }
     }

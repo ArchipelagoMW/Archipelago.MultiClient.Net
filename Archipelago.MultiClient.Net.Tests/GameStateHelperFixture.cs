@@ -68,18 +68,18 @@ namespace Archipelago.MultiClient.Net.Tests
                 // Tags
                 new RoomStateHelperTest<IReadOnlyCollection<string>>(
                     "Should_update_tags",
-                    new RoomInfoPacket { Tags = new List<string> { "Tag1" } },
-                    new RoomUpdatePacket { Tags = new List<string> { "Tag2" } },
+                    new RoomInfoPacket { Tags = new []{ "Tag1" } },
+                    new RoomUpdatePacket { Tags = new []{ "Tag2" } },
                     s => s.ServerTags, new List<string> { "Tag1" }.AsReadOnly(), new List<string> { "Tag2" }.AsReadOnly()),
                 new RoomStateHelperTest<IReadOnlyCollection<string>>(
                     "Should_not_update_tags_when_its_not_provided",
-                    new RoomInfoPacket { Tags = new List<string> { "Tag1" } },
+                    new RoomInfoPacket { Tags = new []{ "Tag1" } },
                     new RoomUpdatePacket { Tags = null },
                     s => s.ServerTags, new List<string> { "Tag1" }.AsReadOnly(), new List<string> { "Tag1" }.AsReadOnly()),
                 new RoomStateHelperTest<IReadOnlyCollection<string>>(
                     "Should_update_tags_to_empty_when_its_provided",
-                    new RoomInfoPacket { Tags = new List<string> { "Tag1" } },
-                    new RoomUpdatePacket { Tags = new List<string>() },
+                    new RoomInfoPacket { Tags = new []{ "Tag1" } },
+                    new RoomUpdatePacket { Tags = Array.Empty<string>() },
                     s => s.ServerTags, new List<string> { "Tag1" }.AsReadOnly(), new List<string>().AsReadOnly()),
 
                 // Password
@@ -165,7 +165,7 @@ namespace Archipelago.MultiClient.Net.Tests
                 // Time
                 new RoomStateHelperTest<DateTime>(
                     "Should_read_time",
-                    new RoomInfoPacket { Timestamp = UnixTimeConverter.DateTimeToUnixTimeStamp(new DateTime(2000, 1, 2, 3, 4, 5)) },
+                    new RoomInfoPacket { Timestamp = new DateTime(2000, 1, 2, 3, 4, 5).ToUnixTimeStamp() },
                     s => s.RoomInfoSendTime, new DateTime(2000, 1, 2, 3, 4, 5))
             };
 

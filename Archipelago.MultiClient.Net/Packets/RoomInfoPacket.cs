@@ -2,7 +2,6 @@
 using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Models;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
 
@@ -17,7 +16,7 @@ namespace Archipelago.MultiClient.Net.Packets
         public Version Version { get; set; }
 
         [JsonProperty("tags")]
-        public List<string> Tags { get; set; }
+        public string[] Tags { get; set; }
 
         [JsonProperty("password")]
         public bool Password { get; set; }
