@@ -7,7 +7,7 @@ using System.Collections.ObjectModel;
 
 namespace Archipelago.MultiClient.Net.Helpers
 {
-    public class GameStateHelper
+    public class RoomStateHelper
     {
         private List<string> tags;
 
@@ -60,7 +60,7 @@ namespace Archipelago.MultiClient.Net.Helpers
                 ? default 
                 : new ReadOnlyCollection<string>(tags);
         
-        public GameStateHelper(IArchipelagoSocketHelper socket)
+        public RoomStateHelper(IArchipelagoSocketHelper socket)
         {
             socket.PacketReceived += PacketReceived;
         }
