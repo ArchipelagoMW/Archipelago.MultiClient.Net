@@ -40,9 +40,8 @@ namespace Archipelago.MultiClient.Net.Tests
 
             var connectedPacket = new ConnectedPacket
             {
-                LocationsChecked = new List<long> { 1, 3 },
-                MissingChecks = new List<long> { 2 }
-            };
+                LocationsChecked = new long[]{ 1, 3 },
+                MissingChecks = new long[]{ 2 }            };
 
             socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(connectedPacket);
 
@@ -66,9 +65,8 @@ namespace Archipelago.MultiClient.Net.Tests
 
             var connectedPacket = new ConnectedPacket
             {
-                LocationsChecked = new List<long> { 1 },
-                MissingChecks = new List<long> { 2, 3 }
-            };
+                LocationsChecked = new long[]{ 1 },
+                MissingChecks = new long[]{ 2, 3 }            };
 
             socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(connectedPacket);
 
@@ -96,8 +94,8 @@ namespace Archipelago.MultiClient.Net.Tests
 
             var connectedPacket = new ConnectedPacket
             {
-                LocationsChecked = new List<long>(),
-                MissingChecks = new List<long>()
+                LocationsChecked = Array.Empty<long>(),
+                MissingChecks = Array.Empty<long>()
             };
 
             socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(connectedPacket);
@@ -124,13 +122,13 @@ namespace Archipelago.MultiClient.Net.Tests
 
             var connectedPacket = new ConnectedPacket
             {
-                LocationsChecked = new List<long>(),
-                MissingChecks = new List<long> { 1, 2, 3 }
+                LocationsChecked = Array.Empty<long>(),
+                MissingChecks = new long[]{ 1, 2, 3 }
             };
 
             var roomUpdatePacket = new RoomUpdatePacket
             {
-                CheckedLocations = new List<long> { 1, 3 }
+                CheckedLocations = new long[]{ 1, 3 }
             };
 
             socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(connectedPacket);
@@ -157,8 +155,8 @@ namespace Archipelago.MultiClient.Net.Tests
 
             var connectedPacket = new ConnectedPacket
             {
-                LocationsChecked = new List<long> { 1, 2, 3 },
-                MissingChecks = new List<long> { 4 }
+                LocationsChecked = new long[]{ 1, 2, 3 },
+                MissingChecks = new long[]{ 4 }
             };
 
             socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(connectedPacket);
@@ -180,7 +178,7 @@ namespace Archipelago.MultiClient.Net.Tests
                     Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(
                         new RoomUpdatePacket()
                         {
-                            CheckedLocations = new List<long> { 4 }
+                            CheckedLocations = new long[]{ 4 }
                         });
             });
 
@@ -235,13 +233,13 @@ namespace Archipelago.MultiClient.Net.Tests
 
             var connectedPacket = new ConnectedPacket
             {
-                LocationsChecked = new List<long> { 3 },
-                MissingChecks = new List<long> { 1, 2 }
+                LocationsChecked = new long[]{ 3 },
+                MissingChecks = new long[]{ 1, 2 }
             };
 
             var roomUpdatePacket = new RoomUpdatePacket
             {
-                CheckedLocations = new List<long> { 2 }
+                CheckedLocations = new long[]{ 2 }
             };
 
             socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(connectedPacket);
@@ -263,12 +261,12 @@ namespace Archipelago.MultiClient.Net.Tests
 
             var connectedPacket = new ConnectedPacket
             {
-                LocationsChecked = new List<long> { 1, 2 },
-                MissingChecks = new List<long> { 3 }
+                LocationsChecked = new long[]{ 1, 2 },
+                MissingChecks = new long[]{ 3 }
             };
             var roomUpdatePacket = new RoomUpdatePacket
             {
-                CheckedLocations = new List<long> { 1 }
+                CheckedLocations = new long[]{ 1 }
             };
 
             socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(connectedPacket);
@@ -300,12 +298,12 @@ namespace Archipelago.MultiClient.Net.Tests
 
             var connectedPacket = new ConnectedPacket
             {
-                LocationsChecked = new List<long>(),
-                MissingChecks = new List<long> { 1, 2, 3 }
+                LocationsChecked = Array.Empty<long>(),
+                MissingChecks = new long[]{ 1, 2, 3 }
             };
             var roomUpdatePacket = new RoomUpdatePacket
             {
-                CheckedLocations = new List<long> { 2, 3 }
+                CheckedLocations = new long[]{ 2, 3 }
             };
 
             socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(connectedPacket);

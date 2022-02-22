@@ -121,7 +121,7 @@ namespace Archipelago.MultiClient.Net.Helpers
                 
                 socket.SendPacket(new LocationChecksPacket()
                 {
-                    Locations = locationsChecked.ToList()
+                    Locations = locationsChecked.ToArray()
                 });
             }
         }
@@ -147,7 +147,7 @@ namespace Archipelago.MultiClient.Net.Helpers
                 socket.SendPacketAsync(
                     new LocationChecksPacket()
                     {
-                        Locations = locationsChecked.ToList()
+                        Locations = locationsChecked.ToArray()
                     },
                     onComplete
                 );
@@ -176,7 +176,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         {
             socket.SendPacketAsync(new LocationScoutsPacket()
             {
-                Locations = ids.ToList()
+                Locations = ids
             });
             awaitingLocationInfoPacket = true;
             locationInfoPacketCallback = callback;

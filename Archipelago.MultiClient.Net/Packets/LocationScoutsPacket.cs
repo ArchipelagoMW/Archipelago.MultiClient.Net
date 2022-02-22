@@ -9,6 +9,5 @@ namespace Archipelago.MultiClient.Net.Packets
         public override ArchipelagoPacketType PacketType => ArchipelagoPacketType.LocationScouts;
 
         [JsonProperty("locations")]
-        public List<long> Locations { get; set; } = new List<long>();
-    }
+        public long[] Locations { get; set; }    }
 }

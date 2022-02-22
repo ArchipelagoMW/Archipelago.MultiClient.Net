@@ -1,7 +1,6 @@
 ﻿using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Models;
 using Newtonsoft.Json;
-using System.Collections.Generic;
 
 namespace Archipelago.MultiClient.Net.Packets
 {
@@ -13,6 +12,6 @@ namespace Archipelago.MultiClient.Net.Packets
         public int Index { get; set; }
 
         [JsonProperty("items")]
-        public List<NetworkItem> Items { get; set; } = new List<NetworkItem>();
+        public NetworkItem[] Items { get; set; }
     }
 }

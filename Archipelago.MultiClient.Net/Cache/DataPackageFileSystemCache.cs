@@ -40,7 +40,7 @@ namespace Archipelago.MultiClient.Net.Cache
 
                     socket.SendPacket(new GetDataPackagePacket()
                     {
-                        Exclusions = exclusions.ToList()
+                        Exclusions = exclusions.ToArray()
                     });
                 }
             }

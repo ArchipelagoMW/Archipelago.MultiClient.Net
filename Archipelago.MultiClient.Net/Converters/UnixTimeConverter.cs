@@ -11,7 +11,7 @@ namespace Archipelago.MultiClient.Net.Converters
             return dateTime;
         }
 
-        public static double DateTimeToUnixTimeStamp(DateTime dateTime)
+        public static double ToUnixTimeStamp(this DateTime dateTime)
         {
             var utcEpoch = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
             return (dateTime - utcEpoch).TotalMilliseconds / 1000;

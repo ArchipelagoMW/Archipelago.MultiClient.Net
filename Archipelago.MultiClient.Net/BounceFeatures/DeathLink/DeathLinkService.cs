@@ -56,7 +56,7 @@ namespace Archipelago.MultiClient.Net.BounceFeatures.DeathLink
                 Tags = new List<string> { "DeathLink" },
                 Data = new Dictionary<string, object>
                 {
-                    {"time", UnixTimeConverter.DateTimeToUnixTimeStamp(deathLink.Timestamp)},
+                    {"time", deathLink.Timestamp.ToUnixTimeStamp()},
                     {"source", deathLink.Source},
                 }
             };
