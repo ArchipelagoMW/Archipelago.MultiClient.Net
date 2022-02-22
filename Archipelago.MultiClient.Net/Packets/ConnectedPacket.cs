@@ -20,10 +20,8 @@ namespace Archipelago.MultiClient.Net.Packets
 
         [JsonProperty("missing_locations")]
         public int[] MissingChecks { get; set; }
-
         [JsonProperty("checked_locations")]
         public int[] LocationsChecked { get; set; }
-
         [JsonProperty("slot_data")]
         public Dictionary<string, object> SlotData { get; set; }
     }

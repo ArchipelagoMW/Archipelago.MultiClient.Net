@@ -10,17 +10,17 @@ namespace Archipelago.MultiClient.Net.Helpers
 {
     public interface ILocationCheckHelper
     {
-        void CompleteLocationChecks(params int[] ids);
-        void CompleteLocationChecksAsync(Action<bool> onComplete, params int[] ids);
+        void CompleteLocationChecks(params long[] ids);
+        void CompleteLocationChecksAsync(Action<bool> onComplete, params long[] ids);
     }
 
     public class LocationCheckHelper : ILocationCheckHelper
     {
-        public delegate void CheckedLocationsUpdatedHandler(ReadOnlyCollection<int> newCheckedLocations);
+        public delegate void CheckedLocationsUpdatedHandler(ReadOnlyCollection<long> newCheckedLocations);
         public event CheckedLocationsUpdatedHandler CheckedLocationsUpdated;
 
-        private readonly HashSet<int> allLocations = new HashSet<int>();
-        private readonly HashSet<int> locationsChecked = new HashSet<int>();
+        private readonly HashSet<long> allLocations = new HashSet<long>();
+        private readonly HashSet<long> locationsChecked = new HashSet<long>();
 
         private readonly IArchipelagoSocketHelper socket;
         private readonly IDataPackageCache cache;
@@ -30,26 +30,26 @@ namespace Archipelago.MultiClient.Net.Helpers
         private bool awaitingLocationInfoPacket;
         private Action<LocationInfoPacket> locationInfoPacketCallback;
 
-        private Dictionary<string, Dictionary<string, int>> gameLocationNameToIdMapping;
-        private Dictionary<int, string> locationIdToNameMapping;
+        private Dictionary<string, Dictionary<string, long>> gameLocationNameToIdMapping;
+        private Dictionary<long, string> locationIdToNameMapping;
 
-        public ReadOnlyCollection<int> AllLocations => new ReadOnlyCollection<int>(allLocations.ToArray());
-        public ReadOnlyCollection<int> AllLocationsChecked => GetCheckedLocations();
-        public ReadOnlyCollection<int> AllMissingLocations => GetMissingLocations();
+        public ReadOnlyCollection<long> AllLocations => new ReadOnlyCollection<long>(allLocations.ToArray());
+        public ReadOnlyCollection<long> AllLocationsChecked => GetCheckedLocations();
+        public ReadOnlyCollection<long> AllMissingLocations => GetMissingLocations();
 
-        private ReadOnlyCollection<int> GetCheckedLocations()
+        private ReadOnlyCollection<long> GetCheckedLocations()
         {
             lock (locationsCheckedLockObject)
             {
-                return new ReadOnlyCollection<int>(locationsChecked.ToArray());
+                return new ReadOnlyCollection<long>(locationsChecked.ToArray());
             }
         }
 
-        private ReadOnlyCollection<int> GetMissingLocations()
+        private ReadOnlyCollection<long> GetMissingLocations()
         {
             lock (locationsCheckedLockObject)
             {
-                return new ReadOnlyCollection<int>(allLocations.Where(l => !locationsChecked.Contains(l)).ToArray());
+                return new ReadOnlyCollection<long>(allLocations.Where(l => !locationsChecked.Contains(l)).ToArray());
             }
         }
 
@@ -113,7 +113,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// <exception cref="T:Archipelago.MultiClient.Net.Exceptions.ArchipelagoSocketClosedException">
         ///     The websocket connection is not alive.
         /// </exception>
-        public void CompleteLocationChecks(params int[] ids)
+        public void CompleteLocationChecks(params long[] ids)
         {
             lock (locationsCheckedLockObject)
             {
@@ -138,7 +138,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// <exception cref="T:Archipelago.MultiClient.Net.Exceptions.ArchipelagoSocketClosedException">
         ///     The websocket connection is not alive.
         /// </exception>
-        public void CompleteLocationChecksAsync(Action<bool> onComplete, params int[] ids)
+        public void CompleteLocationChecksAsync(Action<bool> onComplete, params long[] ids)
         {
             lock (locationsCheckedLockObject)
             {
@@ -172,7 +172,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// <exception cref="T:Archipelago.MultiClient.Net.Exceptions.ArchipelagoSocketClosedException">
         ///     The websocket connection is not alive.
         /// </exception>
-        public void ScoutLocationsAsync(Action<LocationInfoPacket> callback = null, params int[] ids)
+        public void ScoutLocationsAsync(Action<LocationInfoPacket> callback = null, params long[] ids)
         {
             socket.SendPacketAsync(new LocationScoutsPacket()
             {
@@ -194,7 +194,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// <returns>
         ///     Returns the locationId for the location name that was given or -1 if no location was found.
         /// </returns>
-        public int GetLocationIdFromName(string game, string locationName)
+        public long GetLocationIdFromName(string game, string locationName)
         {
             if (!cache.TryGetDataPackageFromCache(out var dataPackage))
             {
@@ -222,7 +222,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// <returns>
         ///     Returns the locationName for the provided locationId, or null if no such location is found.
         /// </returns>
-        public string GetLocationNameFromId(int locationId)
+        public string GetLocationNameFromId(long locationId)
         {
             if (!cache.TryGetDataPackageFromCache(out var dataPackage))
             {
@@ -239,14 +239,14 @@ namespace Archipelago.MultiClient.Net.Helpers
                 : null;
         }
 
-        private void CheckLocations(ICollection<int> locationIds)
+        private void CheckLocations(ICollection<long> locationIds)
         {
             if (locationIds == null || !locationIds.Any())
                 return;
 
-            List<int> newLocations = new List<int>();
+            List<long> newLocations = new List<long>();
 
-            foreach (int locationId in locationIds)
+            foreach (long locationId in locationIds)
             {
                 if (!locationsChecked.Contains(locationId))
                 {
@@ -262,7 +262,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 
             if (newLocations.Any())
             {
-                CheckedLocationsUpdated?.Invoke(new ReadOnlyCollection<int>(newLocations));
+                CheckedLocationsUpdated?.Invoke(new ReadOnlyCollection<long>(newLocations));
             }
         }
     }

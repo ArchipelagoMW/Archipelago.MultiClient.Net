@@ -8,8 +8,8 @@ namespace Archipelago.MultiClient.Net.Tests.Stubs
         public TestGameData(int version)
         {
             Version = version;
-            LocationLookup = new Dictionary<string, int>(0);
-            ItemLookup = new Dictionary<string, int>(0);
+            LocationLookup = new Dictionary<string, long>(0);
+            ItemLookup = new Dictionary<string, long>(0);
         }
     }
 }

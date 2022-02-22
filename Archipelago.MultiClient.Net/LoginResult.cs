@@ -20,11 +20,11 @@ namespace Archipelago.MultiClient.Net
         /// <summary>
         /// Obsolete, use Location Helper instead
         /// </summary>
-        public int[] MissingChecks { get; }
+        public long[] MissingChecks { get; }
         /// <summary>
         /// Obsolete, use Location Helper instead
         /// </summary>
-        public int[] LocationsChecked { get; }
+        public long[] LocationsChecked { get; }
 
         public Dictionary<string, object> SlotData { get; }
 

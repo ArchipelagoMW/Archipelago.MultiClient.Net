@@ -112,10 +112,10 @@ namespace Archipelago.MultiClient.Net.Tests
                         { 
                             "One", new GameData {
                                 Version = 2,
-                                ItemLookup = new Dictionary<string, int> {
+                                ItemLookup = new Dictionary<string, long> {
                                     { "ItemOne", 101 }
                                 },
-                                LocationLookup = new Dictionary<string, int> {
+                                LocationLookup = new Dictionary<string, long> {
                                     { "LocationOne", 201 },
                                     { "LocationTwo", 202 }
                                 }
