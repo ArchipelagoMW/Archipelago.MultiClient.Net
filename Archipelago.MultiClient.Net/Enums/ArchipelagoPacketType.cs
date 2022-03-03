@@ -21,6 +21,11 @@
         Sync,
         Bounced,
         Bounce,
-        InvalidPacket
+        InvalidPacket,
+        Get,
+        Retrieved,
+        Set,
+        SetReply,
+        SetNotify
     }
 }

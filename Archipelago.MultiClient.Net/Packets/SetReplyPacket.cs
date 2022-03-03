@@ -1,0 +1,28 @@
+﻿using Archipelago.MultiClient.Net.Enums;
+using Newtonsoft.Json;
+
+namespace Archipelago.MultiClient.Net.Packets
+{
+    public class SetReplyPacket : ArchipelagoPacketBase
+    {
+        public override ArchipelagoPacketType PacketType => ArchipelagoPacketType.SetReply;
+
+        [JsonProperty("key")]
+        public string Key { get; set; }
+
+        [JsonProperty("value")]
+        public object Value { get; set; }
+
+        [JsonProperty("default")]
+        public object DefaultValue { get; set; }
+
+        [JsonProperty("original_value")]
+        public object OriginalValue { get; set; }
+
+        [JsonProperty("operation")]
+        public string Operation { get; set; }
+
+        [JsonProperty("want_reply")]
+        public bool WantReply { get; set; }
+    }
+}

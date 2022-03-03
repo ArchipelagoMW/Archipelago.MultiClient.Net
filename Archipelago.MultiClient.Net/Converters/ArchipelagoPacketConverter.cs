@@ -29,7 +29,12 @@ namespace Archipelago.MultiClient.Net.Converters
             [ArchipelagoPacketType.DataPackage]       = obj => obj.ToObject<DataPackagePacket>(),
             [ArchipelagoPacketType.Bounce]            = obj => obj.ToObject<BouncePacket>(),
             [ArchipelagoPacketType.Bounced]           = obj => obj.ToObject<BouncedPacket>(),
-            [ArchipelagoPacketType.InvalidPacket]     = obj => obj.ToObject<InvalidPacketPacket>()
+            [ArchipelagoPacketType.InvalidPacket]     = obj => obj.ToObject<InvalidPacketPacket>(),
+            [ArchipelagoPacketType.Get]               = obj => obj.ToObject<GetPacket>(),
+            [ArchipelagoPacketType.Retrieved]         = obj => obj.ToObject<RetrievedPacket>(),
+            [ArchipelagoPacketType.Set]               = obj => obj.ToObject<SetPacket>(),
+            [ArchipelagoPacketType.SetNotify]         = obj => obj.ToObject<SetNotifyPacket>(),
+            [ArchipelagoPacketType.SetReply]          = obj => obj.ToObject<SetReplyPacket>(),
         };
 
         public override bool CanWrite => false;
