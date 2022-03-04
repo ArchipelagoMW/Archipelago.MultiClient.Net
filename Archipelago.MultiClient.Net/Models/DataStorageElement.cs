@@ -1,9 +1,10 @@
-﻿using Archipelago.MultiClient.Net.Helpers;
+﻿using Archipelago.MultiClient.Net.Enums;
+using Archipelago.MultiClient.Net.Helpers;
 using System;
 
 namespace Archipelago.MultiClient.Net.Models
 {
-    class DataStorageElement
+    public class DataStorageElement
     {
         public event DataStorageHelper.DataStorageUpdatedHandler OnValueChanged
         {
@@ -11,12 +12,11 @@ namespace Archipelago.MultiClient.Net.Models
             remove => Context.RemoveHandler(Context.Key, value);
         }
 
-        public DataStorageElementContext Context;
+        internal DataStorageElementContext Context;
+        internal Operation Operation;
+        internal object Value;
 
-        public string Method { get; set; }
-        public object Value { get; set; }
-
-        public object CachedValue { get; set; }
+        private object cachedValue;
 
         internal DataStorageElement() { }
 
@@ -27,157 +27,157 @@ namespace Archipelago.MultiClient.Net.Models
 
         public static DataStorageElement operator ++(DataStorageElement a)
         {
-            return new DataStorageElement { Method = "add", Value = 1, Context = a.Context };
+            return new DataStorageElement { Operation = Operation.Add, Value = 1, Context = a.Context };
         }
 
         public static DataStorageElement operator --(DataStorageElement a)
         {
-            return new DataStorageElement { Method = "add", Value = -1, Context = a.Context };
+            return new DataStorageElement { Operation = Operation.Add, Value = -1, Context = a.Context };
         }
 
         public static DataStorageElement operator +(DataStorageElement a, int b)
         {
-            return new DataStorageElement { Method = "add", Value = b, Context = a.Context };
+            return new DataStorageElement { Operation = Operation.Add, Value = b, Context = a.Context };
         }
 
         public static DataStorageElement operator +(DataStorageElement a, long b)
         {
-            return new DataStorageElement { Method = "add", Value = b, Context = a.Context };
+            return new DataStorageElement { Operation = Operation.Add, Value = b, Context = a.Context };
         }
 
         public static DataStorageElement operator +(DataStorageElement a, decimal b)
         {
-            return new DataStorageElement { Method = "add", Value = b, Context = a.Context };
+            return new DataStorageElement { Operation = Operation.Add, Value = b, Context = a.Context };
         }
 
         public static DataStorageElement operator +(DataStorageElement a, double b)
         {
-            return new DataStorageElement { Method = "add", Value = b, Context = a.Context };
+            return new DataStorageElement { Operation = Operation.Add, Value = b, Context = a.Context };
         }
 
         public static DataStorageElement operator +(DataStorageElement a, float b)
         {
-            return new DataStorageElement { Method = "add", Value = b, Context = a.Context };
+            return new DataStorageElement { Operation = Operation.Add, Value = b, Context = a.Context };
         }
 
         public static DataStorageElement operator +(DataStorageElement a, string b)
         {
-            return new DataStorageElement { Method = "add", Value = b, Context = a.Context };
+            return new DataStorageElement { Operation = Operation.Add, Value = b, Context = a.Context };
         }
 
         public static DataStorageElement operator -(DataStorageElement a, int b)
         {
-            return new DataStorageElement { Method = "add", Value = -b, Context = a.Context };
+            return new DataStorageElement { Operation = Operation.Add, Value = -b, Context = a.Context };
         }
 
         public static DataStorageElement operator -(DataStorageElement a, long b)
         {
-            return new DataStorageElement { Method = "add", Value = -b, Context = a.Context };
+            return new DataStorageElement { Operation = Operation.Add, Value = -b, Context = a.Context };
         }
 
         public static DataStorageElement operator -(DataStorageElement a, decimal b)
         {
-            return new DataStorageElement { Method = "add", Value = -b, Context = a.Context };
+            return new DataStorageElement { Operation = Operation.Add, Value = -b, Context = a.Context };
         }
 
         public static DataStorageElement operator -(DataStorageElement a, double b)
         {
-            return new DataStorageElement { Method = "add", Value = -b, Context = a.Context };
+            return new DataStorageElement { Operation = Operation.Add, Value = -b, Context = a.Context };
         }
 
         public static DataStorageElement operator -(DataStorageElement a, float b)
         {
-            return new DataStorageElement { Method = "add", Value = -b, Context = a.Context };
+            return new DataStorageElement { Operation = Operation.Add, Value = -b, Context = a.Context };
         }
 
         public static DataStorageElement operator *(DataStorageElement a, int b)
         {
-            return new DataStorageElement { Method = "mul", Value = b, Context = a.Context };
+            return new DataStorageElement { Operation = Operation.Mul, Value = b, Context = a.Context };
         }
 
         public static DataStorageElement operator *(DataStorageElement a, long b)
         {
-            return new DataStorageElement { Method = "mul", Value = b, Context = a.Context };
+            return new DataStorageElement { Operation = Operation.Mul, Value = b, Context = a.Context };
         }
 
         public static DataStorageElement operator *(DataStorageElement a, decimal b)
         {
-            return new DataStorageElement { Method = "mul", Value = b, Context = a.Context };
+            return new DataStorageElement { Operation = Operation.Mul, Value = b, Context = a.Context };
         }
 
         public static DataStorageElement operator *(DataStorageElement a, double b)
         {
-            return new DataStorageElement { Method = "mul", Value = b, Context = a.Context };
+            return new DataStorageElement { Operation = Operation.Mul, Value = b, Context = a.Context };
         }
 
         public static DataStorageElement operator *(DataStorageElement a, float b)
         {
-            return new DataStorageElement { Method = "mul", Value = b, Context = a.Context };
+            return new DataStorageElement { Operation = Operation.Mul, Value = b, Context = a.Context };
         }
 
         public static DataStorageElement operator /(DataStorageElement a, int b)
         {
-            return new DataStorageElement { Method = "mul", Value = 1m / b, Context = a.Context };
+            return new DataStorageElement { Operation = Operation.Mul, Value = 1m / b, Context = a.Context };
         }
 
         public static DataStorageElement operator /(DataStorageElement a, long b)
         {
-            return new DataStorageElement { Method = "mul", Value = 1m / b, Context = a.Context };
+            return new DataStorageElement { Operation = Operation.Mul, Value = 1m / b, Context = a.Context };
         }
 
         public static DataStorageElement operator /(DataStorageElement a, decimal b)
         {
-            return new DataStorageElement { Method = "mul", Value = 1m / b, Context = a.Context };
+            return new DataStorageElement { Operation = Operation.Mul, Value = 1m / b, Context = a.Context };
         }
 
         public static DataStorageElement operator /(DataStorageElement a, double b)
         {
-            return new DataStorageElement { Method = "mul", Value = 1d / b, Context = a.Context };
+            return new DataStorageElement { Operation = Operation.Mul, Value = 1d / b, Context = a.Context };
         }
 
         public static DataStorageElement operator /(DataStorageElement a, float b)
         {
-            return new DataStorageElement { Method = "mul", Value = 1d / b, Context = a.Context };
+            return new DataStorageElement { Operation = Operation.Mul, Value = 1d / b, Context = a.Context };
         }
 
         public static DataStorageElement operator >>(DataStorageElement a, int b)
         {
-            return new DataStorageElement { Method = "min", Value = b, Context = a.Context };
+            return new DataStorageElement { Operation = Operation.Min, Value = b, Context = a.Context };
         }
 
         public static DataStorageElement operator <<(DataStorageElement a, int b)
         {
-            return new DataStorageElement { Method = "max", Value = b, Context = a.Context };
+            return new DataStorageElement { Operation = Operation.Max, Value = b, Context = a.Context };
         }
 
         public static implicit operator DataStorageElement(int i)
         {
-            return new DataStorageElement { Value = i };
+            return new DataStorageElement { Operation = Operation.Replace, Value = i };
         }
 
         public static implicit operator DataStorageElement(long l)
         {
-            return new DataStorageElement { Value = l };
+            return new DataStorageElement { Operation = Operation.Replace, Value = l };
         }
 
         public static implicit operator DataStorageElement(decimal l)
         {
-            return new DataStorageElement { Value = l };
+            return new DataStorageElement { Operation = Operation.Replace, Value = l };
         }
 
         public static implicit operator DataStorageElement(double l)
         {
-            return new DataStorageElement { Value = l };
+            return new DataStorageElement { Operation = Operation.Replace, Value = l };
         }
 
         public static implicit operator DataStorageElement(float l)
         {
-            return new DataStorageElement { Value = l };
+            return new DataStorageElement { Operation = Operation.Replace, Value = l };
         }
 
         public static implicit operator DataStorageElement(string s)
         {
-            return new DataStorageElement { Value = s };
+            return new DataStorageElement { Operation = Operation.Replace, Value = s };
         }
 
         public static implicit operator int(DataStorageElement e)
@@ -212,51 +212,58 @@ namespace Archipelago.MultiClient.Net.Models
 
         private static string RetrieveAndReturnValue(DataStorageElement e)
         {
-            if (e.CachedValue == null)
+            if (e.cachedValue != null)
             {
-                e.CachedValue = e.Context.GetData(e.Context.Key);
+                return (string)e.cachedValue;
             }
 
-            switch (e.Method)
+            string value;
+            string serverValue = Convert.ToString(e.Context.GetData(e.Context.Key));
+
+            switch (e.Operation)
             {
-                case "add":
-                    e.CachedValue = Convert.ToString(e.CachedValue) + Convert.ToString(e.Value);
+                case Operation.Add:
+                    value = serverValue + Convert.ToString(e.Value);
                     break;
 
-                case "mul":
-                case "max":
-                case "min":
-                    throw new InvalidOperationException($"Cannot perform operation {e.Method} on string value");
+                case Operation.Default:
+                    value = serverValue;
+                    break;
+
+                default:
+                    throw new InvalidOperationException($"Cannot perform operation {e.Operation} on string value");
             }
 
-            return Convert.ToString(e.CachedValue);
+            e.cachedValue = value;
+
+            return Convert.ToString(e.cachedValue);
         }
 
         private static T RetrieveAndReturnValue<T>(DataStorageElement e) where T : struct
         {
-            if (e.CachedValue != null)
+            if (e.cachedValue != null)
             {
-                return (T)e.CachedValue;
+                return (T)e.cachedValue;
             }
 
             decimal value;
             decimal serverValue = Convert.ToDecimal(e.Context.GetData(e.Context.Key));
 
-            switch (e.Method)
+            switch (e.Operation)
             {
-                case "add":
+                case Operation.Add:
                     value = serverValue + Convert.ToDecimal(e.Value);
                     break;
 
-                case "mul":
+                case Operation.Mul:
                     value = serverValue * Convert.ToDecimal(e.Value);
                     break;
 
-                case "max":
+                case Operation.Max:
                     value = Math.Max(serverValue, Convert.ToDecimal(e.Value));
                     break;
 
-                case "min":
+                case Operation.Min:
                     value = Math.Min(serverValue, Convert.ToDecimal(e.Value));
                     break;
 
@@ -265,7 +272,7 @@ namespace Archipelago.MultiClient.Net.Models
                     break;
             }
 
-            e.CachedValue = value;
+            e.cachedValue = value;
 
             return (T)Convert.ChangeType(value, typeof(T));
         }

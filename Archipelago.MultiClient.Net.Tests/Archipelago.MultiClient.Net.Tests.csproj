@@ -68,6 +68,7 @@
   <ItemGroup>
     <Compile Include="DataPackageFileSystemCacheFixture.cs" />
     <Compile Include="DataStorageHelperFixture.cs" />
+    <Compile Include="IntegrationTest.cs" />
     <Compile Include="LocationCheckHelperFixture.cs" />
     <Compile Include="ReceivedItemsHelperFixture.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

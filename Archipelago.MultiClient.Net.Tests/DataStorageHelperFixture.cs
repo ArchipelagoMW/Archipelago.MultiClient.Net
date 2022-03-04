@@ -1,4 +1,5 @@
-﻿using Archipelago.MultiClient.Net.Helpers;
+﻿using Archipelago.MultiClient.Net.Enums;
+using Archipelago.MultiClient.Net.Helpers;
 using Archipelago.MultiClient.Net.Packets;
 using NSubstitute;
 using NUnit.Framework;
@@ -53,72 +54,75 @@ namespace Archipelago.MultiClient.Net.Tests
             T result = getValue(sut, "Key");
 
             Assert.That(result, Is.EqualTo(value));
+
+            socket.DidNotReceive().SendPacket(Arg.Any<SetPacket>());
+            socket.Received().SendPacketAsync(Arg.Is<GetPacket>(p => p.Keys[0] == "Key"));
         }
 
         public static TestCaseData[] CompoundAssignmentTests =>
             new TestCaseData[] {
                 new CompoundAssignmentTest<int>("=", 30, (sut, key, value) => sut[key] = value,
-                    (p, key, value) => p.Key == key && (int)p.Value == value && p.Operation == "replace"),
+                    (p, key, value) => p.Key == key && (int)p.Operation[0].Value == value && p.Operation[0].Operation == Operation.Replace),
                 new CompoundAssignmentTest<long>("=", 300L, (sut, key, value) => sut[key] = value,
-                    (p, key, value) => p.Key == key && (long)p.Value == value && p.Operation == "replace"),
+                    (p, key, value) => p.Key == key && (long)p.Operation[0].Value == value && p.Operation[0].Operation == Operation.Replace),
                 new CompoundAssignmentTest<decimal>("=", 3.003m, (sut, key, value) => sut[key] = value,
-                    (p, key, value) => p.Key == key && (decimal)p.Value == value && p.Operation == "replace"),
+                    (p, key, value) => p.Key == key && (decimal)p.Operation[0].Value == value && p.Operation[0].Operation == Operation.Replace),
                 new CompoundAssignmentTest<double>("=", 3.03d, (sut, key, value) => sut[key] = value,
-                    (p, key, value) => p.Key == key && (double)p.Value == value && p.Operation == "replace"),
+                    (p, key, value) => p.Key == key && (double)p.Operation[0].Value == value && p.Operation[0].Operation == Operation.Replace),
                 new CompoundAssignmentTest<float>("=", 3f, (sut, key, value) => sut[key] = value,
-                    (p, key, value) => p.Key == key && (float)p.Value == value && p.Operation == "replace"),
+                    (p, key, value) => p.Key == key && (float)p.Operation[0].Value == value && p.Operation[0].Operation == Operation.Replace),
                 new CompoundAssignmentTest<string>("=", "test", (sut, key, value) => sut[key] = value,
-                    (p, key, value) => p.Key == key && (string)p.Value == value && p.Operation == "replace"),
+                    (p, key, value) => p.Key == key && (string)p.Operation[0].Value == value && p.Operation[0].Operation == Operation.Replace),
                 new CompoundAssignmentTest<int>("+=", 10, (sut, key, value) => sut[key] += value,
-                    (p, key, value) => p.Key == key && (int)p.Value == value && p.Operation == "add"),
+                    (p, key, value) => p.Key == key && (int)p.Operation[0].Value == value && p.Operation[0].Operation == Operation.Add),
                 new CompoundAssignmentTest<long>("+=", 300L, (sut, key, value) => sut[key] += value,
-                    (p, key, value) => p.Key == key && (long)p.Value == value && p.Operation == "add"),
+                    (p, key, value) => p.Key == key && (long)p.Operation[0].Value == value && p.Operation[0].Operation == Operation.Add),
                 new CompoundAssignmentTest<decimal>("+=", 3.003m, (sut, key, value) => sut[key] += value,
-                    (p, key, value) => p.Key == key && (decimal)p.Value == value && p.Operation == "add"),
+                    (p, key, value) => p.Key == key && (decimal)p.Operation[0].Value == value && p.Operation[0].Operation == Operation.Add),
                 new CompoundAssignmentTest<double>("+=", 3.03d, (sut, key, value) => sut[key] += value,
-                    (p, key, value) => p.Key == key && (double)p.Value == value && p.Operation == "add"),
+                    (p, key, value) => p.Key == key && (double)p.Operation[0].Value == value && p.Operation[0].Operation == Operation.Add),
                 new CompoundAssignmentTest<float>("+=", 3f, (sut, key, value) => sut[key] += value,
-                    (p, key, value) => p.Key == key && (float)p.Value == value && p.Operation == "add"),
+                    (p, key, value) => p.Key == key && (float)p.Operation[0].Value == value && p.Operation[0].Operation == Operation.Add),
                 new CompoundAssignmentTest<string>("+=", "test", (sut, key, value) => sut[key] += value,
-                    (p, key, value) => p.Key == key && (string)p.Value == value && p.Operation == "add"),
+                    (p, key, value) => p.Key == key && (string)p.Operation[0].Value == value && p.Operation[0].Operation == Operation.Add),
                 new CompoundAssignmentTest<int>("-=", 10, (sut, key, value) => sut[key] -= value,
-                    (p, key, value) => p.Key == key && -(int)p.Value == value && p.Operation == "add"),
+                    (p, key, value) => p.Key == key && -(int)p.Operation[0].Value == value && p.Operation[0].Operation == Operation.Add),
                 new CompoundAssignmentTest<long>("-=", 300L, (sut, key, value) => sut[key] -= value,
-                    (p, key, value) => p.Key == key && -(long)p.Value == value && p.Operation == "add"),
+                    (p, key, value) => p.Key == key && -(long)p.Operation[0].Value == value && p.Operation[0].Operation == Operation.Add),
                 new CompoundAssignmentTest<decimal>("-=", 3.003m, (sut, key, value) => sut[key] -= value,
-                    (p, key, value) => p.Key == key && -(decimal)p.Value == value && p.Operation == "add"),
+                    (p, key, value) => p.Key == key && -(decimal)p.Operation[0].Value == value && p.Operation[0].Operation == Operation.Add),
                 new CompoundAssignmentTest<double>("-=", 3.03d, (sut, key, value) => sut[key] -= value,
-                    (p, key, value) => p.Key == key && -(double)p.Value == value && p.Operation == "add"),
+                    (p, key, value) => p.Key == key && -(double)p.Operation[0].Value == value && p.Operation[0].Operation == Operation.Add),
                 new CompoundAssignmentTest<float>("-=", 3f, (sut, key, value) => sut[key] -= value,
-                    (p, key, value) => p.Key == key && -(float)p.Value == value && p.Operation == "add"),
+                    (p, key, value) => p.Key == key && -(float)p.Operation[0].Value == value && p.Operation[0].Operation == Operation.Add),
                 new CompoundAssignmentTest<int>("*=", 10, (sut, key, value) => sut[key] *= value,
-                    (p, key, value) => p.Key == key && (int)p.Value == value && p.Operation == "mul"),
+                    (p, key, value) => p.Key == key && (int)p.Operation[0].Value == value && p.Operation[0].Operation == Operation.Mul),
                 new CompoundAssignmentTest<long>("*=", 300L, (sut, key, value) => sut[key] *= value,
-                    (p, key, value) => p.Key == key && (long)p.Value == value && p.Operation == "mul"),
+                    (p, key, value) => p.Key == key && (long)p.Operation[0].Value == value && p.Operation[0].Operation == Operation.Mul),
                 new CompoundAssignmentTest<decimal>("*=", 3.003m, (sut, key, value) => sut[key] *= value,
-                    (p, key, value) => p.Key == key && (decimal)p.Value == value && p.Operation == "mul"),
+                    (p, key, value) => p.Key == key && (decimal)p.Operation[0].Value == value && p.Operation[0].Operation == Operation.Mul),
                 new CompoundAssignmentTest<double>("*=", 3.03d, (sut, key, value) => sut[key] *= value,
-                    (p, key, value) => p.Key == key && (double)p.Value == value && p.Operation == "mul"),
+                    (p, key, value) => p.Key == key && (double)p.Operation[0].Value == value && p.Operation[0].Operation == Operation.Mul),
                 new CompoundAssignmentTest<float>("*=", 3f, (sut, key, value) => sut[key] *= value,
-                    (p, key, value) => p.Key == key && (float)p.Value == value && p.Operation == "mul"),
+                    (p, key, value) => p.Key == key && (float)p.Operation[0].Value == value && p.Operation[0].Operation == Operation.Mul),
                 new CompoundAssignmentTest<int>("/=", 10, (sut, key, value) => sut[key] /= value,
-                    (p, key, value) => p.Key == key && (decimal)p.Value == 1m/value && p.Operation == "mul"),
+                    (p, key, value) => p.Key == key && (decimal)p.Operation[0].Value == 1m/value && p.Operation[0].Operation == Operation.Mul),
                 new CompoundAssignmentTest<long>("/=", 300L, (sut, key, value) => sut[key] /= value,
-                    (p, key, value) => p.Key == key && (decimal)p.Value == 1m/value && p.Operation == "mul"),
+                    (p, key, value) => p.Key == key && (decimal)p.Operation[0].Value == 1m/value && p.Operation[0].Operation == Operation.Mul),
                 new CompoundAssignmentTest<decimal>("/=", 3.003m, (sut, key, value) => sut[key] /= value,
-                    (p, key, value) => p.Key == key && (decimal)p.Value == 1m/value && p.Operation == "mul"),
+                    (p, key, value) => p.Key == key && (decimal)p.Operation[0].Value == 1m/value && p.Operation[0].Operation == Operation.Mul),
                 new CompoundAssignmentTest<double>("/=", 3.03d, (sut, key, value) => sut[key] /= value,
-                    (p, key, value) => p.Key == key && (double)p.Value == 1d/value && p.Operation == "mul"),
+                    (p, key, value) => p.Key == key && (double)p.Operation[0].Value == 1d/value && p.Operation[0].Operation == Operation.Mul),
                 new CompoundAssignmentTest<float>("/=", 3f, (sut, key, value) => sut[key] /= value,
-                    (p, key, value) => p.Key == key && (double)p.Value == 1d/value && p.Operation == "mul"),
+                    (p, key, value) => p.Key == key && (double)p.Operation[0].Value == 1d/value && p.Operation[0].Operation == Operation.Mul),
                 new CompoundAssignmentTest<int>("++", 0, (sut, key, value) => sut[key]++,
-                    (p, key, value) => p.Key == key && (int)p.Value == 1 && p.Operation == "add"),
+                    (p, key, value) => p.Key == key && (int)p.Operation[0].Value == 1 && p.Operation[0].Operation == Operation.Add),
                 new CompoundAssignmentTest<int>("--", 0, (sut, key, value) => sut[key]--,
-                    (p, key, value) => p.Key == key && (int)p.Value == -1 && p.Operation == "add"),
+                    (p, key, value) => p.Key == key && (int)p.Operation[0].Value == -1 && p.Operation[0].Operation == Operation.Add),
                 new CompoundAssignmentTest<int>("<<=", 10, (sut, key, value) => sut[key] <<= value,
-                    (p, key, value) => p.Key == key && (int)p.Value == value && p.Operation == "max"),
+                    (p, key, value) => p.Key == key && (int)p.Operation[0].Value == value && p.Operation[0].Operation == Operation.Max),
                 new CompoundAssignmentTest<int>(">>=", 10, (sut, key, value) => sut[key] >>= value,
-                    (p, key, value) => p.Key == key && (int)p.Value == value && p.Operation == "min")
+                    (p, key, value) => p.Key == key && (int)p.Operation[0].Value == value && p.Operation[0].Operation == Operation.Min)
             };
 
         [TestCaseSource(nameof(CompoundAssignmentTests))]
@@ -213,10 +217,82 @@ namespace Archipelago.MultiClient.Net.Tests
             });
         }
 
+        [Test]
+        public void Should_register_handler_and_recieve_update()
+        {
+            var socket = Substitute.For<IArchipelagoSocketHelper>();
+
+            var sut = new DataStorageHelper(socket);
+
+            object oldValueA = null;
+            object newValueA = null;
+            object newValueB = null;
+            object newValueC = null;
+
+            sut["Key"].OnValueChanged += (o, n) =>
+            {
+                oldValueA = o;
+                newValueA = n;
+            };
+            sut["KeyB"].OnValueChanged += (o, n) =>
+            {
+                newValueB = n;
+            };
+            sut["KeyB"].OnValueChanged += (o, n) =>
+            {
+                newValueC = n;
+            };
+
+            socket.DidNotReceive().SendPacket(Arg.Any<GetPacket>());
+            socket.DidNotReceive().SendPacket(Arg.Any<SetPacket>());
+            socket.Received().SendPacketAsync(Arg.Is<SetNotifyPacket>(p => p.Keys[0] == "Key"));
+
+            var setReplyPacketA = new SetReplyPacket { Key = "Key", OriginalValue = 10, Value = 20 };
+            var setReplyPacketB = new SetReplyPacket { Key = "KeyB", OriginalValue = "Ola", Value = "Yeeh" };
+
+            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(setReplyPacketA);
+            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(setReplyPacketB);
+
+            Assert.That(oldValueA, Is.EqualTo(10));
+            Assert.That(newValueA, Is.EqualTo(20));
+            Assert.That(newValueB, Is.EqualTo("Yeeh"));
+            Assert.That(newValueC, Is.EqualTo("Yeeh"));
+        }
+
+        [Test]
+        public void Should_unregister_handler()
+        {
+            var socket = Substitute.For<IArchipelagoSocketHelper>();
+
+            var sut = new DataStorageHelper(socket);
+
+            int callbackCount = 0;
+
+            void OnValueChanged(object oldValue, object newValue)
+            {
+                callbackCount++;
+            }
+
+            sut["Key"].OnValueChanged += OnValueChanged;
+
+            var setReplyPacketA = new SetReplyPacket { Key = "Key", OriginalValue = 10, Value = 20 };
+
+            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(setReplyPacketA);
+
+            sut["Key"].OnValueChanged -= OnValueChanged;
+
+            var setReplyPacketB = new SetReplyPacket { Key = "Key", OriginalValue = 20, Value = 30 };
+
+            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(setReplyPacketB);
+
+            Assert.That(callbackCount, Is.EqualTo(1));
+        }
+
+
         //TODO test retrieval async
         //TODO test deplete
-        //TODO OnValueChanged 
-
+        //TODO custom objects
+        //TODO array + array
 
         private static void RaiseEventAsync(IArchipelagoSocketHelper socket, ArchipelagoPacketBase packet)
         {

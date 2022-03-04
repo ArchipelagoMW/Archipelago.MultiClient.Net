@@ -2,16 +2,16 @@
 using Archipelago.MultiClient.Net.Packets;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Threading;
 
 namespace Archipelago.MultiClient.Net.Helpers
 {
-    class DataStorageHelper
+    public class DataStorageHelper
     {
-        public delegate void DataStorageUpdatedHandler(string key, object originalValue, object newValue);
+        public delegate void DataStorageUpdatedHandler(object originalValue, object newValue);
 
-        private readonly EventHandlerList onValueChangedEventHandlers = new EventHandlerList();
+        private readonly Dictionary<string, DataStorageUpdatedHandler> onValueChangedEventHandlers = new Dictionary<string, DataStorageUpdatedHandler>();
+
         private readonly Dictionary<string, object> retrievalResults = new Dictionary<string, object>();
 
         private IArchipelagoSocketHelper socket;
@@ -34,10 +34,9 @@ namespace Archipelago.MultiClient.Net.Helpers
                     }
                     break;
                 case SetReplyPacket setReplyPacket:
-                    var handler = (DataStorageUpdatedHandler)onValueChangedEventHandlers[setReplyPacket.Key];
-                    if (handler != null)
+                    if (onValueChangedEventHandlers.TryGetValue(setReplyPacket.Key, out var handler))
                     {
-                        handler(setReplyPacket.Key, setReplyPacket.OriginalValue, setReplyPacket.Value);
+                        handler(setReplyPacket.OriginalValue, setReplyPacket.Value);
                     }
                     break;
             }
@@ -54,12 +53,13 @@ namespace Archipelago.MultiClient.Net.Helpers
             set => SetValue(key, value);
         }
 
-        public void Deplete(string key, DataStorageElement value)
+        //TODO move to element
+        public void Deplete(string key, DataStorageElement value/*, todo add callback to see how much was depleted*/)
         {
-            value.Method = "deplete";
-            this[key] = value;
+            //requires custom code
         }
 
+        //TODO move to element
         public void GetValueAsync(Action<string, object> onValueRetrieved, params string[] keys)
         {
 
@@ -92,21 +92,38 @@ namespace Archipelago.MultiClient.Net.Helpers
         {
             socket.SendPacketAsync(new SetPacket {
                 Key = key,
-                Value = e.Value,
-                Operation = e.Method ?? "replace"
+                Operation = new []{ new OperationSpecification {
+                    Operation = e.Operation, 
+                    Value = e.Value
+                }}
             });
         }
 
         void AddHandler(string key, DataStorageUpdatedHandler handler)
         {
-            onValueChangedEventHandlers.AddHandler(key, handler);
+            if (onValueChangedEventHandlers.ContainsKey(key))
+            {
+                onValueChangedEventHandlers[key] += handler;
+            }
+            else
+            {
+                onValueChangedEventHandlers[key] = handler;
+            }
 
             socket.SendPacketAsync(new SetNotifyPacket { Keys = new []{ key } });
         }
 
         void RemoveHandler(string key, DataStorageUpdatedHandler handler)
         {
-            onValueChangedEventHandlers.RemoveHandler(key, handler);
+            if (onValueChangedEventHandlers.ContainsKey(key))
+            {
+                onValueChangedEventHandlers[key] -= handler;
+
+                if (onValueChangedEventHandlers[key] == null)
+                {
+                    onValueChangedEventHandlers.Remove(key);
+                }
+            }
         }
     }
 }

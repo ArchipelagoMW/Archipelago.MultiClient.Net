@@ -20,6 +20,8 @@ namespace Archipelago.MultiClient.Net
 
         public PlayerHelper Players { get; }
 
+        public DataStorageHelper DataStorage { get; }
+
         volatile bool expectingLoginResult = false;
         private LoginResult loginResult = null;
 
@@ -30,12 +32,14 @@ namespace Archipelago.MultiClient.Net
         internal ArchipelagoSession(ArchipelagoSocketHelper socket,
                                     ReceivedItemsHelper items,
                                     LocationCheckHelper locations,
-                                    PlayerHelper players)
+                                    PlayerHelper players,
+                                    DataStorageHelper dataStorage)
         {
             Socket = socket;
             Items = items;
             Locations = locations;
             Players = players;
+            DataStorage = dataStorage;
 
             socket.PacketReceived += Socket_PacketReceived;
         }
