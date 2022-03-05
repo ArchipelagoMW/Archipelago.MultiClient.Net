@@ -4,7 +4,6 @@ using Archipelago.MultiClient.Net.Packets;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
-using System.Linq.Expressions;
 using System.Threading;
 
 namespace Archipelago.MultiClient.Net.Tests
@@ -19,6 +18,12 @@ namespace Archipelago.MultiClient.Net.Tests
 
             session.TryConnectAndLogin("Archipelago", "Spectator", new Version(0, 2, 4), ItemsHandlingFlags.NoItems,
                 new List<string>{ "IgnoreGame", "TextOnly" });
+
+            //session.DataStorage["KeyA"] = 10;
+            session.DataStorage["KeyB"] = 134.5m;
+
+            int ten = session.DataStorage["KeyB"];
+
 
             //int nope = session.DataStorage["NotExisting"];
 
@@ -36,9 +41,9 @@ namespace Archipelago.MultiClient.Net.Tests
             
             /*Expression<Func<int, int>> test = k => (k - 20) << 0;
 
-            session.DataStorage["Func"] = (Expression<Func<int, int>>)w => (w - 20) << 0;
+            session.DataStorage["Func"] = (Expression<Func<int, int>>)w => (w - 20) << 0;*/
 
-            session.DataStorage["KeyA"] += 10 * 5;*/
+            session.DataStorage["Deflate"] = session.DataStorage["Deflate"] - 10 << 0;
 
 
             //session.DataStorage["KeyA"]++;

@@ -7,7 +7,7 @@ namespace Archipelago.MultiClient.Net.Packets
     {
         public override ArchipelagoPacketType PacketType => ArchipelagoPacketType.SetNotify;
 
-        [JsonProperty("data")]
+        [JsonProperty("keys")]
         public string[] Keys { get; set; }
     }
 }

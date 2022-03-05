@@ -8,6 +8,7 @@
         Min,
         Replace,
         Default,
+        Mod,
         Pow,
         Xor,
         Or,

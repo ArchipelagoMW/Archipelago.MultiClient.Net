@@ -13,19 +13,17 @@ namespace Archipelago.MultiClient.Net
         const int APConnectionTimeoutInSeconds = 5;
 
         public ArchipelagoSocketHelper Socket { get; }
-
         public ReceivedItemsHelper Items { get; }
-
         public LocationCheckHelper Locations { get; }
-
         public PlayerHelper Players { get; }
-
         public DataStorageHelper DataStorage { get; }
 
         volatile bool expectingLoginResult = false;
         private LoginResult loginResult = null;
 
-        public List<string> Tags = new List<string>();
+        public List<string> Tags { get; private set; } = new List<string>();
+
+        public static string Game { get; internal set; }
 
         public ItemsHandlingFlags? ItemsHandlingFlags { get; private set; }
 
@@ -118,6 +116,7 @@ namespace Archipelago.MultiClient.Net
             uuid = uuid ?? Guid.NewGuid().ToString();
             Tags = tags ?? new List<string>();
             ItemsHandlingFlags = itemsHandlingFlags;
+            Game = game;
 
             try
             {
@@ -128,7 +127,7 @@ namespace Archipelago.MultiClient.Net
 
                 Socket.SendPacket(new ConnectPacket
                 {
-                    Game = game,
+                    Game = Game,
                     Name = name,
                     Password = password,
                     Tags = Tags,

@@ -1,6 +1,9 @@
-﻿using Archipelago.MultiClient.Net.Models;
+﻿using Archipelago.MultiClient.Net.Enums;
+using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
+using Newtonsoft.Json.Linq;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
 
@@ -8,13 +11,19 @@ namespace Archipelago.MultiClient.Net.Helpers
 {
     public class DataStorageHelper
     {
-        public delegate void DataStorageUpdatedHandler(object originalValue, object newValue);
+        public delegate void DataStorageUpdatedHandler(JToken originalValue, JToken newValue);
 
         private readonly Dictionary<string, DataStorageUpdatedHandler> onValueChangedEventHandlers = new Dictionary<string, DataStorageUpdatedHandler>();
+        private readonly Dictionary<string, JToken> retrievalResults = new Dictionary<string, JToken>();
+        private readonly Dictionary<string, List<Action<JToken>>> asyncRetrievalCallbacks = new Dictionary<string, List<Action<JToken>>>();
+        private readonly Dictionary<Guid, Action<decimal, decimal>> depletionCallbacks = new Dictionary<Guid, Action<decimal, decimal>>();
 
-        private readonly Dictionary<string, object> retrievalResults = new Dictionary<string, object>();
+        private readonly object asyncRetrievalCallbackLockObject = new object();
 
-        private IArchipelagoSocketHelper socket;
+        private readonly IArchipelagoSocketHelper socket;
+
+        private int slot;
+        private int team;
 
         public DataStorageHelper(IArchipelagoSocketHelper socket)
         {
@@ -27,10 +36,27 @@ namespace Archipelago.MultiClient.Net.Helpers
         {
             switch (packet)
             {
+                case ConnectedPacket connectedPacket:
+                    slot = connectedPacket.Slot;
+                    team = connectedPacket.Team;
+                    break;
                 case RetrievedPacket retrievedPacket:
                     foreach (var data in retrievedPacket.Data)
                     {
                         retrievalResults[data.Key] = data.Value;
+
+                        lock (asyncRetrievalCallbackLockObject)
+                        {
+                            if (asyncRetrievalCallbacks.TryGetValue(data.Key, out var callbacks))
+                            {
+                                foreach (var callback in callbacks)
+                                {
+                                    callback(data.Value);
+                                }
+
+                                asyncRetrievalCallbacks.Remove(data.Key);
+                            }
+                        }
                     }
                     break;
                 case SetReplyPacket setReplyPacket:
@@ -38,36 +64,107 @@ namespace Archipelago.MultiClient.Net.Helpers
                     {
                         handler(setReplyPacket.OriginalValue, setReplyPacket.Value);
                     }
+
+                    if (setReplyPacket.Reference.HasValue && depletionCallbacks.TryGetValue(setReplyPacket.Reference.Value, out var depleteCallback))
+                    {
+                        depleteCallback(setReplyPacket.OriginalValue.ToObject<decimal>(), setReplyPacket.Value.ToObject<decimal>());
+
+                        depletionCallbacks.Remove(setReplyPacket.Reference.Value);
+                    }
                     break;
             }
         }
 
+        public DataStorageElement this[Scope scope, string key]
+        {
+            get => this[AddScope(scope, key)];
+            set => this[AddScope(scope, key)] = value;
+        }
         public DataStorageElement this[string key]
         {
-            get => new DataStorageElement(new DataStorageElementContext {
-                Key = key, 
-                GetData = GetValue,
-                AddHandler = AddHandler,
-                RemoveHandler = RemoveHandler
-            });
+            get => new DataStorageElement(GetContextForKey(key));
             set => SetValue(key, value);
         }
 
-        //TODO move to element
-        public void Deplete(string key, DataStorageElement value/*, todo add callback to see how much was depleted*/)
+        public void GetAsync<T>(Scope scope, string key, Action<T> callback)
         {
-            //requires custom code
+            GetAsync(AddScope(scope, key), t => callback(t.ToObject<T>()));
+        }
+        public void GetAsync(Scope scope, string key, Action<JToken> callback)
+        {
+            GetAsync(AddScope(scope, key), callback);
+        }
+        public void GetAsync<T>(string key, Action<T> callback)
+        {
+            GetAsync(key, t => callback(t.ToObject<T>()));
+        }
+        public void GetAsync(string key, Action<JToken> callback)
+        {
+            lock (asyncRetrievalCallbackLockObject)
+            {
+                if (!asyncRetrievalCallbacks.ContainsKey(key))
+                {
+                    asyncRetrievalCallbacks[key] = new List<Action<JToken>> { callback };
+                }
+                else
+                {
+                    asyncRetrievalCallbacks[key].Add(callback);
+                }
+            }
+
+            socket.SendPacketAsync(new GetPacket { Keys = new[] { key } });
         }
 
-        //TODO move to element
-        public void GetValueAsync(Action<string, object> onValueRetrieved, params string[] keys)
+        public void Deplete(Scope scope, string key, decimal amount, Action<decimal, decimal> callback)
         {
+            Deplete(AddScope(scope, key), amount, callback);
+        }
+        public void Deplete(string key, decimal amount, Action<decimal, decimal> callback)
+        {
+            var guid = Guid.NewGuid();
 
+            depletionCallbacks[guid] = callback;
+
+            socket.SendPacketAsync(new SetPacket
+            {
+                Key = key,
+                Operations = new[] {
+                    new OperationSpecification { Operation = Operation.Add, Value = amount },
+                    new OperationSpecification { Operation = Operation.Max, Value = 0 },
+                },
+                WantReply = true,
+                Reference = guid
+            });
         }
 
-        object GetValue(string key)
+
+        public void Initialize(Scope scope, string key, IEnumerable value)
         {
-            socket.SendPacketAsync(new GetPacket { Keys = new []{ key } });
+            Initialize(AddScope(scope, key), value);
+        }
+        public void Initialize(string key, IEnumerable value)
+        {
+            Initialize(key, JArray.FromObject(value));
+        }
+        public void Initialize(Scope scope, string key, JToken value)
+        {
+            Initialize(AddScope(scope, key), value);
+        }
+        public void Initialize(string key, JToken value)
+        {
+            socket.SendPacketAsync(new SetPacket
+            {
+                Key = key,
+                DefaultValue = value,
+                Operations = new[] {
+                    new OperationSpecification { Operation = Operation.Default },
+                }
+            });
+        }
+
+        private JToken GetValue(string key)
+        {
+            socket.SendPacketAsync(new GetPacket { Keys = new[] { key } });
 
             var startTime = DateTime.Now;
 
@@ -88,18 +185,41 @@ namespace Archipelago.MultiClient.Net.Helpers
             return value;
         }
 
-        void SetValue(string key, DataStorageElement e)
+        private void SetValue(string key, DataStorageElement e)
         {
-            socket.SendPacketAsync(new SetPacket {
+            if (e.Context == null)
+            {
+                e.Context = GetContextForKey(key);
+            }
+            else if (e.Context.Key != key)
+            {
+                e.Operations.Insert(0, new OperationSpecification
+                {
+                    Operation = Operation.Replace,
+                    Value = GetValue(e.Context.Key)
+                });
+            }
+
+            socket.SendPacketAsync(new SetPacket
+            {
                 Key = key,
-                Operation = new []{ new OperationSpecification {
-                    Operation = e.Operation, 
-                    Value = e.Value
-                }}
+                Operations = e.Operations.ToArray()
             });
         }
 
-        void AddHandler(string key, DataStorageUpdatedHandler handler)
+        private DataStorageElementContext GetContextForKey(string key)
+        {
+            return new DataStorageElementContext
+            {
+                Key = key,
+                GetData = GetValue,
+                AddHandler = AddHandler,
+                RemoveHandler = RemoveHandler,
+                Deplete = Deplete,
+            };
+        }
+
+        private void AddHandler(string key, DataStorageUpdatedHandler handler)
         {
             if (onValueChangedEventHandlers.ContainsKey(key))
             {
@@ -110,10 +230,10 @@ namespace Archipelago.MultiClient.Net.Helpers
                 onValueChangedEventHandlers[key] = handler;
             }
 
-            socket.SendPacketAsync(new SetNotifyPacket { Keys = new []{ key } });
+            socket.SendPacketAsync(new SetNotifyPacket { Keys = new[] { key } });
         }
 
-        void RemoveHandler(string key, DataStorageUpdatedHandler handler)
+        private void RemoveHandler(string key, DataStorageUpdatedHandler handler)
         {
             if (onValueChangedEventHandlers.ContainsKey(key))
             {
@@ -123,6 +243,23 @@ namespace Archipelago.MultiClient.Net.Helpers
                 {
                     onValueChangedEventHandlers.Remove(key);
                 }
+            }
+        }
+
+        private string AddScope(Scope scope, string key)
+        {
+            switch (scope)
+            {
+                case Scope.Global:
+                    return key;
+                case Scope.Game:
+                    return $"{scope}:{ArchipelagoSession.Game}:{key}";
+                case Scope.Team:
+                    return $"{scope}:{team}:{key}";
+                case Scope.Slot:
+                    return $"{scope}:{slot}:{key}";
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(scope), scope, $"Invalid scope for key {key}");
             }
         }
     }
