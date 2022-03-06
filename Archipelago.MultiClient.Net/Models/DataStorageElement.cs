@@ -10,6 +10,9 @@ namespace Archipelago.MultiClient.Net.Models
 {
     public class DataStorageElement : IEnumerable
     {
+        /// <summary>
+        /// Event handler will be called when the server side value for this key changes
+        /// </summary>
         public event DataStorageHelper.DataStorageUpdatedHandler OnValueChanged
         {
             add => Context.AddHandler(Context.Key, value);
@@ -148,81 +151,147 @@ namespace Archipelago.MultiClient.Net.Models
             return new DataStorageElement(a, Operation.Max, b);
         }
 
+        /// <summary>
+        /// DataStorageElements should only be created by the DataStorage,
+        /// Do not try to manually create them by casting
+        /// </summary>
         public static implicit operator DataStorageElement(bool b)
         {
             return new DataStorageElement(Operation.Replace, b);
         }
 
+        /// <summary>
+        /// DataStorageElements should only be created by the DataStorage,
+        /// Do not try to manually create them by casting
+        /// </summary>
         public static implicit operator DataStorageElement(int i)
         {
             return new DataStorageElement(Operation.Replace, i);
         }
 
+        /// <summary>
+        /// DataStorageElements should only be created by the DataStorage,
+        /// Do not try to manually create them by casting
+        /// </summary>
         public static implicit operator DataStorageElement(long l)
         {
             return new DataStorageElement(Operation.Replace, l);
         }
 
+        /// <summary>
+        /// DataStorageElements should only be created by the DataStorage,
+        /// Do not try to manually create them by casting
+        /// </summary>
         public static implicit operator DataStorageElement(decimal m)
         {
             return new DataStorageElement(Operation.Replace, m);
         }
 
+        /// <summary>
+        /// DataStorageElements should only be created by the DataStorage,
+        /// Do not try to manually create them by casting
+        /// </summary>
         public static implicit operator DataStorageElement(double d)
         {
             return new DataStorageElement(Operation.Replace, d);
         }
 
+        /// <summary>
+        /// DataStorageElements should only be created by the DataStorage,
+        /// Do not try to manually create them by casting
+        /// </summary>
         public static implicit operator DataStorageElement(float f)
         {
             return new DataStorageElement(Operation.Replace, f);
         }
 
+        /// <summary>
+        /// DataStorageElements should only be created by the DataStorage,
+        /// Do not try to manually create them by casting
+        /// </summary>
         public static implicit operator DataStorageElement(string s)
         {
             return new DataStorageElement(Operation.Replace, s);
         }
 
+        /// <summary>
+        /// DataStorageElements should only be created by the DataStorage,
+        /// Do not try to manually create them by casting
+        /// </summary>
         public static implicit operator DataStorageElement(JToken o)
         {
             return new DataStorageElement(Operation.Replace, o);
         }
 
+        /// <summary>
+        /// DataStorageElements should only be created by the DataStorage,
+        /// Do not try to manually create them by casting
+        /// </summary>
         public static implicit operator DataStorageElement(Array a)
         {
             return new DataStorageElement(Operation.Replace, JArray.FromObject(a));
         }
 
+        /// <summary>
+        /// DataStorageElements should only be created by the DataStorage,
+        /// Do not try to manually create them by casting
+        /// </summary>
         public static implicit operator DataStorageElement(List<bool> l)
         {
             return new DataStorageElement(Operation.Replace, JArray.FromObject(l));
         }
 
+        /// <summary>
+        /// DataStorageElements should only be created by the DataStorage,
+        /// Do not try to manually create them by casting
+        /// </summary>
         public static implicit operator DataStorageElement(List<int> l)
         {
             return new DataStorageElement(Operation.Replace, JArray.FromObject(l));
         }
 
+        /// <summary>
+        /// DataStorageElements should only be created by the DataStorage,
+        /// Do not try to manually create them by casting
+        /// </summary>
         public static implicit operator DataStorageElement(List<long> l)
         {
             return new DataStorageElement(Operation.Replace, JArray.FromObject(l));
         }
 
+        /// <summary>
+        /// DataStorageElements should only be created by the DataStorage,
+        /// Do not try to manually create them by casting
+        /// </summary>
         public static implicit operator DataStorageElement(List<decimal> l)
         {
             return new DataStorageElement(Operation.Replace, JArray.FromObject(l));
         }
 
+        /// <summary>
+        /// DataStorageElements should only be created by the DataStorage,
+        /// Do not try to manually create them by casting
+        /// </summary>
         public static implicit operator DataStorageElement(List<double> l)
         {
             return new DataStorageElement(Operation.Replace, JArray.FromObject(l));
         }
 
+        /// <summary>
+        /// DataStorageElements should only be created by the DataStorage,
+        /// Do not try to manually create them by casting
+        /// </summary>
+        /// <param name="l"></param>
         public static implicit operator DataStorageElement(List<float> l)
         {
             return new DataStorageElement(Operation.Replace, JArray.FromObject(l));
         }
 
+        /// <summary>
+        /// DataStorageElements should only be created by the DataStorage,
+        /// Do not try to manually create them by casting
+        /// </summary>
+        /// <param name="l"></param>
         public static implicit operator DataStorageElement(List<string> l)
         {
             return new DataStorageElement(Operation.Replace, JArray.FromObject(l));
@@ -387,6 +456,26 @@ namespace Archipelago.MultiClient.Net.Models
                     case Operation.Min:
                         value = Math.Min(value, (decimal)operation.Value);
                         break;
+
+                    case Operation.Xor:
+                        value = (long)value ^ (long)operation.Value;
+                        break;
+
+                    case Operation.Or:
+                        value = (long)value | (long)operation.Value;
+                        break;
+
+                    case Operation.And:
+                        value = (long)value & (long)operation.Value;
+                        break;
+
+                    case Operation.LeftShift:
+                        value = (long)value << (int)operation.Value;
+                        break;
+                    
+                    case Operation.RightShift:
+                        value = (long)value >> (int)operation.Value;
+                        break;
                 }
             }
 
@@ -395,8 +484,26 @@ namespace Archipelago.MultiClient.Net.Models
             return (T)Convert.ChangeType(value, typeof(T));
         }
 
+        /// <summary>
+        /// Retrieves the value from the server and casts it to the given type
+        /// Cannot be used in combination with other operators
+        /// </summary>
+        /// <returns>The value from server as the given type</returns>
+        /// <exception cref="T:System.InvalidOperationException">
+        ///     DataStorageElement.To<T>() cannot be used together with other operations on the DataStorageElement
+        ///     Other operations include =, +=, /=, + etc
+        /// </exception>
+        /// <exception cref="T:Archipelago.MultiClient.Net.Exceptions.ArchipelagoSocketClosedException">
+        ///     The websocket connection is not alive
+        /// </exception>
         public T To<T>()
         {
+            if (Operations.Count != 0)
+            {
+                throw new InvalidOperationException(
+                    "DataStorageElement.To<T>() cannot be used together with other operations on the DataStorageElement");
+            }
+
             return Context.GetData(Context.Key).ToObject<T>();
         }
 
@@ -410,7 +517,7 @@ namespace Archipelago.MultiClient.Net.Models
             return ((IEnumerable)Context.GetData(Context.Key)).GetEnumerator();
         }
 
-        public string ListOperations()
+        private string ListOperations()
         {
             if (Operations == null)
             {

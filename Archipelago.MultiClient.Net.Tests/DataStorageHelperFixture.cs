@@ -195,6 +195,11 @@ namespace Archipelago.MultiClient.Net.Tests
                 new AssignmentTest<float>("+", 10f, (sut, key) => sut[key] + 1f, 11f),
                 new AssignmentTest<string>("+", "test", (sut, key) => sut[key] + "ing", "testing"),
                 new AssignmentTest<int[]>("+", new []{ 1, 2 }, (sut, key) => ((JArray)(sut[key] + new []{ 3 })).ToObject<int[]>(), new []{ 1, 2, 3 }),
+                new AssignmentTest<long>("+", 0xF0, (sut, key) => sut[key] + Bitwise.Xor(0xFF), 0x0F),
+                new AssignmentTest<long>("+", 0xF0, (sut, key) => sut[key] + Bitwise.Or(0x0F), 0xFF),
+                new AssignmentTest<long>("+", 0xFF, (sut, key) => sut[key] + Bitwise.And(0x0F), 0x0F),
+                new AssignmentTest<long>("+", 0b101, (sut, key) => sut[key] + Bitwise.LeftShift(1), 0b1010),
+                new AssignmentTest<long>("+", 0b101, (sut, key) => sut[key] + Bitwise.RightShift(2), 0b1),
                 new AssignmentTest<int>("-", 30, (sut, key) => sut[key] - 5, 25),
                 new AssignmentTest<long>("-", 1000L, (sut, key) => sut[key] - 10L, 990L),
                 new AssignmentTest<decimal>("-", 1.001m, (sut, key) => sut[key] - 0.2m, 0.801m),
@@ -533,7 +538,7 @@ namespace Archipelago.MultiClient.Net.Tests
 
             sut["A"] = sut["A"] - 10 << 0;
             sut["B"] = (((sut["B"] + 5) * 8) / 2) - 3;
-            sut["C"] = (((sut["X"] + 5) * 8) / 2) - 3;
+            sut["C"] = (((sut["X"] + Bitwise.And(0xFF)) * 8) / 2) - 3;
 
             socket.Received().SendPacketAsync(Arg.Is<SetPacket>(
                 p => p.Key == "A" && p.Operations.Length == 2
@@ -548,7 +553,7 @@ namespace Archipelago.MultiClient.Net.Tests
             socket.Received().SendPacketAsync(Arg.Is<SetPacket>(
                 p => p.Key == "C" && p.Operations.Length == 5
                     && p.Operations[0].Operation == Operation.Replace && (int)p.Operations[0].Value == 100
-                    && p.Operations[1].Operation == Operation.Add && (int)p.Operations[1].Value == 5
+                    && p.Operations[1].Operation == Operation.And && (int)p.Operations[1].Value == 0xFF
                     && p.Operations[2].Operation == Operation.Mul && (int)p.Operations[2].Value == 8
                     && p.Operations[3].Operation == Operation.Mul && (decimal)p.Operations[3].Value == 0.5m
                     && p.Operations[4].Operation == Operation.Add && (int)p.Operations[4].Value == -3));
@@ -567,7 +572,7 @@ namespace Archipelago.MultiClient.Net.Tests
             socket.Received().SendPacketAsync(Arg.Is<SetPacket>(
                 p => p.Key == "Item" && p.Operations[0].Operation == Operation.Replace && p.Operations[0].Value is JObject));
             socket.Received().SendPacketAsync(Arg.Is<SetPacket>(
-                p => p.Key == "Item" && p.Operations[0].Operation == Operation.Replace && p.Operations[0].Value is JObject));
+                p => p.Key == "Anonymous" && p.Operations[0].Operation == Operation.Replace && p.Operations[0].Value is JObject));
         }
 
         [Test]
