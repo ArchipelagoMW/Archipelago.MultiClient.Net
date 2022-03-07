@@ -113,7 +113,7 @@ Bitwise operations are supported using the following opperations:
 * `+ Bitwise.RightShift(x)`, binairy shift left to the right value by x
 
 Operation specific callbacks are supported, these get called only once with the results of the current operation:
-* '+ Callback.Add((oldValue, newValue) => {});', calls this method after your operation or chain of operations are proccesed
+* `+ Callback.Add((oldValue, newValue) => {});`, calls this method after your operation or chain of operations are proccesed
 
 mathematical and bitwise operations can be chained, given the extended syntax with `()` around each operation
 
@@ -144,9 +144,8 @@ session.DataStorage["L"] = ((session.DataStorage["M"] - 6) + Bitwise.RightShift(
 
 //Update callbacks
 //Enerylink deplete pattern, Subtract 50, than set value to 0 if its lower than 0
-session.DataStorage["EnergyLink"] = ((session.DataStorage["EnergyLink"] - 50) << 0) + Callback.Add((value, newValue) =>
-{
-    var actualDepletedValue = (float)newValue - (float)value; //calculate the actual update, might differ if there was less that 50 left on the server
+session.DataStorage["EnergyLink"] = ((session.DataStorage["EnergyLink"] - 50) << 0) + Callback.Add((old, new) => {
+    var actualDepleted = (float)new - (float)old; //calculate the actual update, might differ if there was less that 50 left on the server
 });
 
 //Keepking track of changes
