@@ -20,34 +20,32 @@ namespace Archipelago.MultiClient.Net.Models
         }
 
         internal DataStorageElementContext Context;
-        internal List<OperationSpecification> Operations;
+        internal List<OperationSpecification> Operations = new List<OperationSpecification>(0);
+        internal DataStorageHelper.DataStorageUpdatedHandler Callbacks;
 
         private JToken cachedValue;
 
         internal DataStorageElement(DataStorageElementContext context)
         {
             Context = context;
-            Operations = new List<OperationSpecification>(0);
         }
-
         internal DataStorageElement(Operation operation, JToken value)
         {
             Operations = new List<OperationSpecification>(1) {
                 new OperationSpecification { Operation = operation, Value = value }
             };
         }
-
-        internal DataStorageElement(DataStorageElement source, Operation operation, JToken value)
-            : this(source, new OperationSpecification { Operation = operation, Value = value })
+        internal DataStorageElement(DataStorageElement source, Operation operation, JToken value) : this(source.Context)
         {
+            Operations = source.Operations.ToList();
+            Operations.Add(new OperationSpecification { Operation = operation, Value = value });
+            Callbacks = source.Callbacks;
         }
-
-        internal DataStorageElement(DataStorageElement source, OperationSpecification operation) 
-            : this(source.Context)
+        internal DataStorageElement(DataStorageElement source, Callback callback) : this(source.Context)
         {
-            Operations = new List<OperationSpecification>(source.Operations.Count + 1);
-            Operations.AddRange(source.Operations);
-            Operations.Add(operation);
+            Operations = source.Operations.ToList();
+            Callbacks = source.Callbacks;
+            Callbacks += callback.Method;
         }
 
         public static DataStorageElement operator ++(DataStorageElement a)
@@ -73,6 +71,11 @@ namespace Archipelago.MultiClient.Net.Models
         public static DataStorageElement operator +(DataStorageElement a, OperationSpecification s)
         {
             return new DataStorageElement(a, s.Operation, s.Value);
+        }
+
+        public static DataStorageElement operator +(DataStorageElement a, Callback c)
+        {
+            return new DataStorageElement(a, c);
         }
 
         public static DataStorageElement operator *(DataStorageElement a, JToken b)

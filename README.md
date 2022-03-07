@@ -89,22 +89,33 @@ deathLinkService.SendDeathLink(new DeathLink("Ijwu", "Died to exposure."));
 
 DataStorage support is included in the library. you may save values on the archipelago server in order to share there across other players or to simply keep track of values outside of your game's state
 
-The DataStorage provides an interace based on keys and thier scope. by assinging a value to a key, that value is stored on the server, and by reading from a key a value is retieved from the server. 
+The DataStorage provides an interface based on keys and thier scope. by assinging a value to a key, that value is stored on the server, and by reading from a key a value is retrieved from the server. 
 The DataStorage also provides methods to retrieve the value of key asynchronously. 
-If your intrested in keep tracking of when a value of a certian key is changed you can use the `OnValueChanged` handler to register a callback for when the value gets updated.
+If your intrested in keeping track of when a value of a certian key is changed you can use the `OnValueChanged` handler to register a callback for when the value gets updated.
 An `Initialize` Method is provided to set the initial value of a key without overriding any existing value.
 Complex objects need to be stored in the form of a `JObject`, therefor you must wrap them into a `JObject.FromObject()`
 
-More complex mathematical operations are supported using the following operators:
+Mathematical operations are supported using the following operators:
 * `+`, Add right value to left value
 * `-`, Subtract right value from left value
 * `*`, Multiply right value by left value
 * `/`, Divide right value by left value
-* `%`, Get remainder af dividing right value by left value
-* `^`, Multiply right value by the power of the left value
-* `>>`, Override right with left value. if left value is lower
-* `<<`, Override right with left value. if left value is bigger
-mathematical operations can be chained, given the extended syntax with `()` around all
+* `%`, Gets remainder after dividing left value by right value
+* `^`, Multiply left value by the power of the right value
+* `>>`, Override left with right value. if right value is lower
+* `<<`, Override left with right value. if right value is bigger
+
+Bitwise operations are supported using the following opperations:
+* `+ Bitwise.Xor(x)`, apply logical exclusive OR to the right value using value x
+* `+ Bitwise.Or(x)`, apply logical OR to the right value using value x
+* `+ Bitwise.And(x)`, apply logical AND to the right value using value x
+* `+ Bitwise.LeftShift(x)`, binairy shift left to the left value by x
+* `+ Bitwise.RightShift(x)`, binairy shift left to the right value by x
+
+Operation specific callbacks are supported, these get called only once with the results of the current operation:
+* '+ Callback.Add((oldValue, newValue) => {});', calls this method after your operation or chain of operations are proccesed
+
+mathematical and bitwise operations can be chained, given the extended syntax with `()` around each operation
 
 examples:
 ```csharp
@@ -129,11 +140,18 @@ session.DataStorage["J"] += new []{ "Three" }; //Append array to existing array 
 
 //Chaining operations
 session.DataStorage["K"] = (session.DataStorage["K"] + 40) >> 100; //Add 40 to G, than Set G to 100 if G is bigger then 100
-session.DataStorage["L"] = ((session.DataStorage["M"] - 6) + Bitwise.RightShift(1)) ^ 3; //Subtract 6 from I, than multiply I by 2, than take I to the power of 3
+session.DataStorage["L"] = ((session.DataStorage["M"] - 6) + Bitwise.RightShift(1)) ^ 3; //Subtract 6 from I, than multiply I by 2 using bitshifting, than take I to the power of 3
+
+//Update callbacks
+//Enerylink deplete pattern, Subtract 50, than set value to 0 if its lower than 0
+session.DataStorage["EnergyLink"] = ((session.DataStorage["EnergyLink"] - 50) << 0) + Callback.Add((value, newValue) =>
+{
+    var actualDepletedValue = (float)newValue - (float)value; //calculate the actual update, might differ if there was less that 50 left on the server
+});
 
 //Keepking track of changes
 session.DataStorage["N"].OnValueChaned += (old, new) => {
-	var changed = (int)new - (int)old; //Keep track of changes made to E and calculate the difference
+	var changed = (int)new - (int)old; //Keep track of changes made to E by anyone client, and calculate the difference
 };
 
 //Retrieving

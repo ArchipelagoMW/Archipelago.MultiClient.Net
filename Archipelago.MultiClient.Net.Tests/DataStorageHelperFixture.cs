@@ -10,6 +10,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Callback = Archipelago.MultiClient.Net.Models.Callback;
 
 // ReSharper disable All
 // ReSharper disable UnusedVariable
@@ -476,13 +477,13 @@ namespace Archipelago.MultiClient.Net.Tests
                     callback2Reference = p.Reference.Value;
             }));
 
-            sut.Deplete(Scope.Global, "DP1", 50, (value, newValue) =>
+            sut[Scope.Global, "DP1"] = ((sut[Scope.Global, "DP1"] + 50) << 0) + Callback.Add((o, n) =>
             {
-                actualDepleteValue1 = newValue - value;
+                actualDepleteValue1 = (decimal)o - (decimal)n;
             });
-            sut.Deplete("DP2", -11.53m, (value, newValue) =>
+            sut["DP2"] = ((sut["DP2"] - 11.53m) << 0) + Callback.Add((o, n) =>
             {
-                actualDepleteValue2 = newValue - value;
+                actualDepleteValue2 = (decimal)o - (decimal)n;
             });
 
             socket.Received().SendPacketAsync(Arg.Is<SetPacket>(
@@ -576,7 +577,7 @@ namespace Archipelago.MultiClient.Net.Tests
         }
 
         [Test]
-        public void Should_recieve_custom_objects()
+        public void Should_retrieve_custom_objects()
         {
             var socket = Substitute.For<IArchipelagoSocketHelper>();
 

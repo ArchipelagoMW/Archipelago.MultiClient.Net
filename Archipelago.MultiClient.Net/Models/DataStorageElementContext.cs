@@ -11,7 +11,7 @@ namespace Archipelago.MultiClient.Net.Models
         internal Action<string, DataStorageHelper.DataStorageUpdatedHandler> AddHandler { get; set; }
         internal Action<string, DataStorageHelper.DataStorageUpdatedHandler> RemoveHandler { get; set; }
         internal Func<string, JToken> GetData { get; set; }
-        internal Action<string, decimal, Action<decimal, decimal>> Deplete { get; set; }
+        internal Action<string, Action<JToken, JToken>> AddCallback { get; set; }
 
         public override string ToString()
         {

@@ -5,6 +5,7 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 
 namespace Archipelago.MultiClient.Net.Helpers
@@ -16,7 +17,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         private readonly Dictionary<string, DataStorageUpdatedHandler> onValueChangedEventHandlers = new Dictionary<string, DataStorageUpdatedHandler>();
         private readonly Dictionary<string, JToken> retrievalResults = new Dictionary<string, JToken>();
         private readonly Dictionary<string, List<Action<JToken>>> asyncRetrievalCallbacks = new Dictionary<string, List<Action<JToken>>>();
-        private readonly Dictionary<Guid, Action<decimal, decimal>> depletionCallbacks = new Dictionary<Guid, Action<decimal, decimal>>();
+        private readonly Dictionary<Guid, DataStorageUpdatedHandler> operationSpecificCallbacks = new Dictionary<Guid, DataStorageUpdatedHandler>();
 
         private readonly object asyncRetrievalCallbackLockObject = new object();
 
@@ -65,11 +66,12 @@ namespace Archipelago.MultiClient.Net.Helpers
                         handler(setReplyPacket.OriginalValue, setReplyPacket.Value);
                     }
 
-                    if (setReplyPacket.Reference.HasValue && depletionCallbacks.TryGetValue(setReplyPacket.Reference.Value, out var depleteCallback))
+                    if (setReplyPacket.Reference.HasValue 
+                        && operationSpecificCallbacks.TryGetValue(setReplyPacket.Reference.Value, out var operationCallback))
                     {
-                        depleteCallback(setReplyPacket.OriginalValue.ToObject<decimal>(), setReplyPacket.Value.ToObject<decimal>());
+                        operationCallback(setReplyPacket.OriginalValue, setReplyPacket.Value);
 
-                        depletionCallbacks.Remove(setReplyPacket.Reference.Value);
+                        operationSpecificCallbacks.Remove(setReplyPacket.Reference.Value);
                     }
                     break;
             }
@@ -151,50 +153,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 
             socket.SendPacketAsync(new GetPacket { Keys = new[] { key } });
         }
-
-        /// <summary>
-        /// Requests to deplete a numeric value from the server side data storage.
-        /// A positive value will add to the value stored on the server.
-        /// A negative value will subtract from the value stored on the server.
-        /// A depletion van never make the value go lower that 0
-        /// A callback is provided with both the old and new value so you can calculate how much was actually added or subtrackted
-        /// </summary>
-        /// <param name="scope">The scope of the key, the default scope is global</param>
-        /// <param name="key">The key for which the value should retrieved</param>
-        /// <param name="amount">The amount to add (if its positive) or subtract (if its negative)</param>
-        /// <param name="callback">The callback to be called when your request is processed with the old and new values</param>
-        public void Deplete(Scope scope, string key, decimal amount, Action<decimal, decimal> callback)
-        {
-            Deplete(AddScope(scope, key), amount, callback);
-        }
-        /// <summary>
-        /// Requests to deplete a numeric value from the server side data storage.
-        /// A positive value will add to the value stored on the server.
-        /// A negative value will subtract from the value stored on the server.
-        /// A depletion van never make the value go lower that 0
-        /// A callback is provided with both the old and new value so you can calculate how much was actually added or subtrackted
-        /// </summary>
-        /// <param name="key">The key for which the value should retrieved</param>
-        /// <param name="amount">The amount to add (if its positive) or subtract (if its negative)</param>
-        /// <param name="callback">The callback to be called when your request is processed with the old and new values</param>
-        public void Deplete(string key, decimal amount, Action<decimal, decimal> callback)
-        {
-            var guid = Guid.NewGuid();
-
-            depletionCallbacks[guid] = callback;
-
-            socket.SendPacketAsync(new SetPacket
-            {
-                Key = key,
-                Operations = new[] {
-                    new OperationSpecification { Operation = Operation.Add, Value = amount },
-                    new OperationSpecification { Operation = Operation.Max, Value = 0 },
-                },
-                WantReply = true,
-                Reference = guid
-            });
-        }
-
+        
         /// <summary>
         /// Initializes a value in the server side data storage
         /// Will not override any existing value, only set the default value if none existed
@@ -283,11 +242,28 @@ namespace Archipelago.MultiClient.Net.Helpers
                 });
             }
 
-            socket.SendPacketAsync(new SetPacket
+            if (e.Callbacks != null)
+            { 
+                var guid = Guid.NewGuid();
+
+                operationSpecificCallbacks[guid] = e.Callbacks;
+
+                socket.SendPacketAsync(new SetPacket
+                {
+                    Key = key,
+                    Operations = e.Operations.ToArray(),
+                    WantReply = true,
+                    Reference = guid
+                });
+            }
+            else
             {
-                Key = key,
-                Operations = e.Operations.ToArray()
-            });
+                socket.SendPacketAsync(new SetPacket
+                {
+                    Key = key,
+                    Operations = e.Operations.ToArray()
+                });
+            }
         }
 
         private DataStorageElementContext GetContextForKey(string key)
@@ -298,7 +274,6 @@ namespace Archipelago.MultiClient.Net.Helpers
                 GetData = GetValue,
                 AddHandler = AddHandler,
                 RemoveHandler = RemoveHandler,
-                Deplete = Deplete,
             };
         }
 
