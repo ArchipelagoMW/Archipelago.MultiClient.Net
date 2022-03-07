@@ -493,7 +493,7 @@ namespace Archipelago.MultiClient.Net.Models
         /// </summary>
         /// <returns>The value from server as the given type</returns>
         /// <exception cref="T:System.InvalidOperationException">
-        ///     DataStorageElement.To<T>() cannot be used together with other operations on the DataStorageElement
+        ///     DataStorageElement.To() cannot be used together with other operations on the DataStorageElement
         ///     Other operations include =, +=, /=, + etc
         /// </exception>
         /// <exception cref="T:Archipelago.MultiClient.Net.Exceptions.ArchipelagoSocketClosedException">

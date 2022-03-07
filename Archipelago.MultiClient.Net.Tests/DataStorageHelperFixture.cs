@@ -479,11 +479,11 @@ namespace Archipelago.MultiClient.Net.Tests
 
             sut[Scope.Global, "DP1"] = ((sut[Scope.Global, "DP1"] + 50) << 0) + Callback.Add((o, n) =>
             {
-                actualDepleteValue1 = (decimal)o - (decimal)n;
+                actualDepleteValue1 = (decimal)n - (decimal)o;
             });
             sut["DP2"] = ((sut["DP2"] - 11.53m) << 0) + Callback.Add((o, n) =>
             {
-                actualDepleteValue2 = (decimal)o - (decimal)n;
+                actualDepleteValue2 = (decimal)n - (decimal)o;
             });
 
             socket.Received().SendPacketAsync(Arg.Is<SetPacket>(
@@ -504,8 +504,8 @@ namespace Archipelago.MultiClient.Net.Tests
             var setReplyPacketB = new SetReplyPacket()
             {
                 Key = "DP1",
-                Value = 120m,
-                OriginalValue = 70m,
+                Value = 120,
+                OriginalValue = 70,
                 Reference = callback1Reference
             };
             var setReplyPacketC = new SetReplyPacket()
@@ -658,6 +658,19 @@ namespace Archipelago.MultiClient.Net.Tests
             Assert.DoesNotThrow(() =>
             {
                 Task.WaitAll(addNewAsyncCallback);
+            });
+        }
+
+        [Test]
+        public void Should_throw_on_invallid_scope()
+        {
+            var socket = Substitute.For<IArchipelagoSocketHelper>();
+
+            var sut = new DataStorageHelper(socket);
+
+            Assert.Throws<ArgumentOutOfRangeException>(() =>
+            {
+                sut[(Scope)6, "Key"] = 10;
             });
         }
 
