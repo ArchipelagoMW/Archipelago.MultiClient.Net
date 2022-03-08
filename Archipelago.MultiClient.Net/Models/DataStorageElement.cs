@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace Archipelago.MultiClient.Net.Models
 {
-    public class DataStorageElement : IEnumerable
+    public class DataStorageElement
     {
         /// <summary>
         /// Event handler will be called when the server side value for this key changes
@@ -154,148 +154,87 @@ namespace Archipelago.MultiClient.Net.Models
             return new DataStorageElement(a, Operation.Max, b);
         }
 
-        /// <summary>
-        /// DataStorageElements should only be created by the DataStorage,
-        /// Do not try to manually create them by casting
-        /// </summary>
         public static implicit operator DataStorageElement(bool b)
         {
             return new DataStorageElement(Operation.Replace, b);
         }
 
-        /// <summary>
-        /// DataStorageElements should only be created by the DataStorage,
-        /// Do not try to manually create them by casting
-        /// </summary>
         public static implicit operator DataStorageElement(int i)
         {
             return new DataStorageElement(Operation.Replace, i);
         }
 
-        /// <summary>
-        /// DataStorageElements should only be created by the DataStorage,
-        /// Do not try to manually create them by casting
-        /// </summary>
         public static implicit operator DataStorageElement(long l)
         {
             return new DataStorageElement(Operation.Replace, l);
         }
 
-        /// <summary>
-        /// DataStorageElements should only be created by the DataStorage,
-        /// Do not try to manually create them by casting
-        /// </summary>
         public static implicit operator DataStorageElement(decimal m)
         {
             return new DataStorageElement(Operation.Replace, m);
         }
 
-        /// <summary>
-        /// DataStorageElements should only be created by the DataStorage,
-        /// Do not try to manually create them by casting
-        /// </summary>
         public static implicit operator DataStorageElement(double d)
         {
             return new DataStorageElement(Operation.Replace, d);
         }
 
-        /// <summary>
-        /// DataStorageElements should only be created by the DataStorage,
-        /// Do not try to manually create them by casting
-        /// </summary>
         public static implicit operator DataStorageElement(float f)
         {
             return new DataStorageElement(Operation.Replace, f);
         }
 
-        /// <summary>
-        /// DataStorageElements should only be created by the DataStorage,
-        /// Do not try to manually create them by casting
-        /// </summary>
         public static implicit operator DataStorageElement(string s)
         {
             return new DataStorageElement(Operation.Replace, s);
         }
 
-        /// <summary>
-        /// DataStorageElements should only be created by the DataStorage,
-        /// Do not try to manually create them by casting
-        /// </summary>
         public static implicit operator DataStorageElement(JToken o)
         {
             return new DataStorageElement(Operation.Replace, o);
         }
 
-        /// <summary>
-        /// DataStorageElements should only be created by the DataStorage,
-        /// Do not try to manually create them by casting
-        /// </summary>
         public static implicit operator DataStorageElement(Array a)
         {
             return new DataStorageElement(Operation.Replace, JArray.FromObject(a));
         }
 
-        /// <summary>
-        /// DataStorageElements should only be created by the DataStorage,
-        /// Do not try to manually create them by casting
-        /// </summary>
         public static implicit operator DataStorageElement(List<bool> l)
         {
             return new DataStorageElement(Operation.Replace, JArray.FromObject(l));
         }
 
-        /// <summary>
-        /// DataStorageElements should only be created by the DataStorage,
-        /// Do not try to manually create them by casting
-        /// </summary>
         public static implicit operator DataStorageElement(List<int> l)
         {
             return new DataStorageElement(Operation.Replace, JArray.FromObject(l));
         }
 
-        /// <summary>
-        /// DataStorageElements should only be created by the DataStorage,
-        /// Do not try to manually create them by casting
-        /// </summary>
         public static implicit operator DataStorageElement(List<long> l)
         {
             return new DataStorageElement(Operation.Replace, JArray.FromObject(l));
         }
 
-        /// <summary>
-        /// DataStorageElements should only be created by the DataStorage,
-        /// Do not try to manually create them by casting
-        /// </summary>
         public static implicit operator DataStorageElement(List<decimal> l)
         {
             return new DataStorageElement(Operation.Replace, JArray.FromObject(l));
         }
 
-        /// <summary>
-        /// DataStorageElements should only be created by the DataStorage,
-        /// Do not try to manually create them by casting
-        /// </summary>
         public static implicit operator DataStorageElement(List<double> l)
         {
             return new DataStorageElement(Operation.Replace, JArray.FromObject(l));
         }
 
-        /// <summary>
-        /// DataStorageElements should only be created by the DataStorage,
-        /// Do not try to manually create them by casting
-        /// </summary>
-        /// <param name="l"></param>
         public static implicit operator DataStorageElement(List<float> l)
         {
             return new DataStorageElement(Operation.Replace, JArray.FromObject(l));
         }
 
-        /// <summary>
-        /// DataStorageElements should only be created by the DataStorage,
-        /// Do not try to manually create them by casting
-        /// </summary>
-        /// <param name="l"></param>
         public static implicit operator DataStorageElement(List<string> l)
+        {
+            return new DataStorageElement(Operation.Replace, JArray.FromObject(l));
+        }
+
+        public static implicit operator DataStorageElement(List<object> l)
         {
             return new DataStorageElement(Operation.Replace, JArray.FromObject(l));
         }
@@ -327,7 +266,7 @@ namespace Archipelago.MultiClient.Net.Models
 
         public static implicit operator string(DataStorageElement e)
         {
-            return RetrieveAndReturnValue(e);
+            return RetrieveAndReturnStringValue(e);
         }
 
         public static implicit operator JToken(DataStorageElement e)
@@ -335,11 +274,96 @@ namespace Archipelago.MultiClient.Net.Models
             return e.Context.GetData(e.Context.Key);
         }
 
+        public static implicit operator bool[](DataStorageElement e)
+        {
+            return RetrieveAndReturnArrayValue<bool[]>(e);
+        }
+
+        public static implicit operator int[](DataStorageElement e)
+        {
+            return RetrieveAndReturnArrayValue<int[]>(e);
+        }
+
+        public static implicit operator long[](DataStorageElement e)
+        {
+            return RetrieveAndReturnArrayValue<long[]>(e);
+        }
+
+        public static implicit operator decimal[](DataStorageElement e)
+        {
+            return RetrieveAndReturnArrayValue<decimal[]>(e);
+        }
+
+        public static implicit operator double[](DataStorageElement e)
+        {
+            return RetrieveAndReturnArrayValue<double[]>(e);
+        }
+
+        public static implicit operator float[](DataStorageElement e)
+        {
+            return RetrieveAndReturnArrayValue<float[]>(e);
+        }
+
+        public static implicit operator string[](DataStorageElement e)
+        {
+            return RetrieveAndReturnArrayValue<string[]>(e);
+        }
+
+        public static implicit operator object[](DataStorageElement e)
+        {
+            return RetrieveAndReturnArrayValue<object[]>(e);
+        }
+
+        public static implicit operator List<bool>(DataStorageElement e)
+        {
+            return RetrieveAndReturnArrayValue<List<bool>>(e);
+        }
+
+        public static implicit operator List<int>(DataStorageElement e)
+        {
+            return RetrieveAndReturnArrayValue<List<int>>(e);
+        }
+
+        public static implicit operator List<long>(DataStorageElement e)
+        {
+            return RetrieveAndReturnArrayValue<List<long>>(e);
+        }
+
+        public static implicit operator List<decimal>(DataStorageElement e)
+        {
+            return RetrieveAndReturnArrayValue<List<decimal>>(e);
+        }
+
+        public static implicit operator List<double>(DataStorageElement e)
+        {
+            return RetrieveAndReturnArrayValue<List<double>>(e);
+        }
+
+        public static implicit operator List<float>(DataStorageElement e)
+        {
+            return RetrieveAndReturnArrayValue<List<float>>(e);
+        }
+
+        public static implicit operator List<string>(DataStorageElement e)
+        {
+            return RetrieveAndReturnArrayValue<List<string>>(e);
+        }
+
+        public static implicit operator List<object>(DataStorageElement e)
+        {
+            return RetrieveAndReturnArrayValue<List<object>>(e);
+        }
+
         public static implicit operator JArray(DataStorageElement e)
+        {
+            return RetrieveAndReturnArrayValue<JArray>(e);
+        }
+
+        private static T RetrieveAndReturnArrayValue<T>(DataStorageElement e)
         {
             if (e.cachedValue != null)
             {
-                return (JArray)e.cachedValue;
+                return ((JArray)e.cachedValue).ToObject<T>();
             }
 
             var value = e.Context.GetData(e.Context.Key).ToObject<JArray>() ?? new JArray();
@@ -371,15 +395,14 @@ namespace Archipelago.MultiClient.Net.Models
                     default:
                         throw new InvalidOperationException($"Cannot perform operation {operation.Operation} on Array value");
                 }
-
             }
 
             e.cachedValue = value;
 
-            return value;
+            return value.ToObject<T>();
         }
 
-        private static string RetrieveAndReturnValue(DataStorageElement e)
+        private static string RetrieveAndReturnStringValue(DataStorageElement e)
         {
             if (e.cachedValue != null)
             {
@@ -513,11 +536,6 @@ namespace Archipelago.MultiClient.Net.Models
         public override string ToString()
         {
             return $"{Context?.ToString() ?? "(null)"}, ({ListOperations()})";
-        }
-
-        public IEnumerator GetEnumerator()
-        {
-            return ((IEnumerable)Context.GetData(Context.Key)).GetEnumerator();
         }
 
         private string ListOperations()
