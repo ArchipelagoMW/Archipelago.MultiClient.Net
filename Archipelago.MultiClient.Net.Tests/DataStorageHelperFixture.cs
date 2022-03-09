@@ -19,19 +19,6 @@ namespace Archipelago.MultiClient.Net.Tests
     [TestFixture]
     class DataStorageHelperFixture
     {
-        [Test]
-        public void Should_throw_if_async_retrieval_timeout()
-        {
-            var socket = Substitute.For<IArchipelagoSocketHelper>();
-
-            var sut = new DataStorageHelper(socket);
-
-            Assert.Throws<TimeoutException>(() =>
-            {
-                int value = sut["KeyNope"];
-            });
-        }
-
         public static TestCaseData[] GetValueTests =>
             new TestCaseData[] {
                 new GetValueTest<int>((sut, key) => sut[key], 10),
@@ -49,14 +36,11 @@ namespace Archipelago.MultiClient.Net.Tests
 
             var sut = new DataStorageHelper(socket);
 
-            var retrievalPacket = new RetrievedPacket
-            {
-                Data = new Dictionary<string, JToken> { { "Key", JToken.FromObject(value) } }
-            };
+            T result = default;
 
-            RaiseEventAsync(socket, retrievalPacket);
-
-            T result = getValue(sut, "Key");
+            ExecuteAsyncWithDelay(
+                () => result = getValue(sut, "Key"),
+                () => RaiseRetrieved(socket, "Key", JToken.FromObject(value)));
 
             Assert.That(result, Is.EqualTo(value));
 
@@ -314,14 +298,11 @@ namespace Archipelago.MultiClient.Net.Tests
 
             var sut = new DataStorageHelper(socket);
 
-            var retrievalPacket = new RetrievedPacket
-            {
-                Data = new Dictionary<string, JToken> { { "Key", JToken.FromObject(baseValue) } }
-            };
+            T result = default;
 
-            RaiseEventAsync(socket, retrievalPacket);
-
-            T result = action(sut, "Key");
+            ExecuteAsyncWithDelay(
+                () => result = action(sut, "Key"),
+                () => RaiseRetrieved(socket, "Key", JToken.FromObject(baseValue)));
 
             Assert.That(result, Is.EqualTo(expectedValue));
         }
@@ -333,30 +314,32 @@ namespace Archipelago.MultiClient.Net.Tests
 
             var sut = new DataStorageHelper(socket);
 
-            var retrievalPacket = new RetrievedPacket
-            {
-                Data = new Dictionary<string, JToken> {
-                    { "StringValueA", "A" },
-                    { "StringValueB", "B" },
-                    { "StringValueC", "C" },
-                    { "StringValueD", "D" },
-                }
-            };
+            string result;
 
-            RaiseEventAsync(socket, retrievalPacket);
-
-            Assert.Throws<InvalidOperationException>(() => {
-                string value = sut["StringValueA"] * 1.5d;
-            });
-            Assert.Throws<InvalidOperationException>(() => {
-                string value = sut["StringValueB"] << 10;
-            });
-            Assert.Throws<InvalidOperationException>(() => {
-                string value = sut["StringValueC"] >> 10;
-            });
-            Assert.Throws<InvalidOperationException>(() => {
-                string value = sut["StringValueD"] / 2;
-            });
+            ExecuteAsyncWithDelay(
+                () => Assert.Throws<InvalidOperationException>(() => { result = sut["StringValueA"] * 1.5d; }),
+                () => { 
+                    Thread.Sleep(100);
+                    RaiseRetrieved(socket, "StringValueA", "A");
+                });
+            ExecuteAsyncWithDelay(
+                () => Assert.Throws<InvalidOperationException>(() => { result = sut["StringValueB"] << 10; }),
+                () => {
+                    Thread.Sleep(100);
+                    RaiseRetrieved(socket, "StringValueB", "B");
+                });
+            ExecuteAsyncWithDelay(
+                () => Assert.Throws<InvalidOperationException>(() => { result = sut["StringValueC"] >> 10; }),
+                () => {
+                    Thread.Sleep(100);
+                    RaiseRetrieved(socket, "StringValueC", "C");
+                });
+            ExecuteAsyncWithDelay(
+                () => Assert.Throws<InvalidOperationException>(() => { result = sut["StringValueD"] / 2; }),
+                () => {
+                    Thread.Sleep(100);
+                    RaiseRetrieved(socket, "StringValueD", "D");
+                });
         }
 
         [Test]
@@ -512,19 +495,23 @@ namespace Archipelago.MultiClient.Net.Tests
             socket.Received().SendPacketAsync(Arg.Is<SetPacket>(
                 p => p.Key == "Slot:12:A" && p.Operations[0].Operation == Operation.Replace && (string)p.Operations[0].Value == "slot"));
 
-            var retrievedPacketA = new RetrievedPacket { Data = new Dictionary<string, JToken> {
-                { "A", "global" },
-                { "Game:UnitTest:A", "game"},
-                { "Team:5:A", "team"},
-                { "Slot:12:A", "slot"},
-            }};
+            string global = default;
+            string game = default;
+            string team = default;
+            string slot = default;
 
-            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(retrievedPacketA);
-
-            string global = sut[Scope.Global, "A"];
-            string game = sut[Scope.Game, "A"];
-            string team = sut[Scope.Team, "A"];
-            string slot = sut[Scope.Slot, "A"];
+            ExecuteAsyncWithDelay(
+                () => global = sut[Scope.Global, "A"],
+                () => RaiseRetrieved(socket, "A", "global"));
+            ExecuteAsyncWithDelay(
+                () => game = sut[Scope.Game, "A"],
+                () => RaiseRetrieved(socket, "Game:UnitTest:A", "game"));
+            ExecuteAsyncWithDelay(
+                () => team = sut[Scope.Team, "A"],
+                () => RaiseRetrieved(socket, "Team:5:A", "team"));
+            ExecuteAsyncWithDelay(
+                () => slot = sut[Scope.Slot, "A"],
+                () => RaiseRetrieved(socket, "Slot:12:A", "slot"));
 
             Assert.That(global, Is.EqualTo("global"));
             Assert.That(game, Is.EqualTo("game"));
@@ -605,16 +592,12 @@ namespace Archipelago.MultiClient.Net.Tests
 
             var sut = new DataStorageHelper(socket);
 
-            var retrievalPacket = new RetrievedPacket
-            {
-                Data = new Dictionary<string, JToken> { { "X", 100 } }
-            };
-
-            RaiseEventAsync(socket, retrievalPacket);
-
             sut["A"] = sut["A"] - 10 << 0;
             sut["B"] = (((sut["B"] + 5) * 8) / 2) - 3;
-            sut["C"] = (((sut["X"] + Bitwise.And(0xFF)) * 8) / 2) - 3;
+
+            ExecuteAsyncWithDelay(
+                () => sut["C"] = (((sut["X"] + Bitwise.And(0xFF)) * 8) / 2) - 3,
+                () => RaiseRetrieved(socket, "X", 100));
 
             socket.Received().SendPacketAsync(Arg.Is<SetPacket>(
                 p => p.Key == "A" && p.Operations.Length == 2
@@ -658,22 +641,23 @@ namespace Archipelago.MultiClient.Net.Tests
 
             var sut = new DataStorageHelper(socket);
 
-            var retrievalPacket = new RetrievedPacket
-            {
-                Data = new Dictionary<string, JToken> {
-                    { "Item", JObject.FromObject(new NetworkItem {
-                        Item = 1337, Location = 999, Player = 2, Flags = ItemFlags.Trap }
-                    )},
-                    { "Anonymous", JObject.FromObject(
-                        new { A = 10, B = "Hello" }
-                    )}
-                }
-            };
+            NetworkItem networkItem = default;
+            JObject anonymousType = default;
 
-            RaiseEventAsync(socket, retrievalPacket);
-
-            var networkItem = sut["Item"].To<NetworkItem>();
-            var anonymousType = sut["Anonymous"].To<JObject>();
+            ExecuteAsyncWithDelay(
+                () => networkItem = sut["Item"].To<NetworkItem>(),
+                () => RaiseRetrieved(socket, "Item", JObject.FromObject(new NetworkItem {
+                    Item = 1337,
+                    Location = 999,
+                    Player = 2,
+                    Flags = ItemFlags.Trap
+                })));
+            ExecuteAsyncWithDelay(
+                () => anonymousType = sut["Anonymous"].To<JObject>(),
+                () => RaiseRetrieved(socket, "Anonymous", JObject.FromObject(new { 
+                    A = 10, 
+                    B = "Hello"
+                })));
 
             Assert.That(networkItem.Item, Is.EqualTo(1337));
             Assert.That(networkItem.Location, Is.EqualTo(999));
@@ -750,16 +734,47 @@ namespace Archipelago.MultiClient.Net.Tests
         }
 
         [Test]
-        public void Should_allow_assignments_from_basic_lists()
-        {
+        public void Should_not_use_old_data_that_is_requested_outside_of_the_datastorage()        {
+            var socket = Substitute.For<IArchipelagoSocketHelper>();
 
+            var sut = new DataStorageHelper(socket);
+
+            var oldRetrievedPacket = new RetrievedPacket()
+            {
+                Data = new Dictionary<string, JToken> { { "Key", 10 } }
+            };
+
+            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(oldRetrievedPacket);
+
+            int result = default;
+
+            ExecuteAsyncWithDelay(
+                () => result = sut["Key"],
+                () => RaiseRetrieved(socket, "Key", 25));
+
+            Assert.That(result, Is.EqualTo(25));
         }
 
-        private static void RaiseEventAsync(IArchipelagoSocketHelper socket, ArchipelagoPacketBase packet)
+        public static void ExecuteAsyncWithDelay(Action retrieve, Action raiseEvent)
         {
-            Task.Factory.StartNew(() => {
-                socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(packet);
-            });
+            Task.WaitAll( new [] {
+                Task.Factory.StartNew(() =>
+                {
+                    retrieve();
+                }), 
+                Task.Factory.StartNew(() =>
+                {
+                    Thread.Sleep(100);
+                    raiseEvent();
+                })
+            }, 3000);
+        }
+
+        public static void RaiseRetrieved(IArchipelagoSocketHelper socket, string key, JToken value)
+        {
+            var packet = new RetrievedPacket() { Data = new Dictionary<string, JToken> { { key, value } } };
+
+            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(packet);
         }
 
         class GetValueTest<T> : TestCaseData

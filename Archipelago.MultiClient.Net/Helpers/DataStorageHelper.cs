@@ -14,9 +14,8 @@ namespace Archipelago.MultiClient.Net.Helpers
         public delegate void DataStorageUpdatedHandler(JToken originalValue, JToken newValue);
 
         private readonly Dictionary<string, DataStorageUpdatedHandler> onValueChangedEventHandlers = new Dictionary<string, DataStorageUpdatedHandler>();
-        private readonly Dictionary<string, JToken> retrievalResults = new Dictionary<string, JToken>();
-        private readonly Dictionary<string, List<Action<JToken>>> asyncRetrievalCallbacks = new Dictionary<string, List<Action<JToken>>>();
         private readonly Dictionary<Guid, DataStorageUpdatedHandler> operationSpecificCallbacks = new Dictionary<Guid, DataStorageUpdatedHandler>();
+        private readonly Dictionary<string, List<Action<JToken>>> asyncRetrievalCallbacks = new Dictionary<string, List<Action<JToken>>>();
 
         private readonly object asyncRetrievalCallbackLockObject = new object();
 
@@ -43,8 +42,6 @@ namespace Archipelago.MultiClient.Net.Helpers
                 case RetrievedPacket retrievedPacket:
                     foreach (var data in retrievedPacket.Data)
                     {
-                        retrievalResults[data.Key] = data.Value;
-
                         lock (asyncRetrievalCallbackLockObject)
                         {
                             if (asyncRetrievalCallbacks.TryGetValue(data.Key, out var callbacks))
@@ -60,17 +57,17 @@ namespace Archipelago.MultiClient.Net.Helpers
                     }
                     break;
                 case SetReplyPacket setReplyPacket:
-                    if (onValueChangedEventHandlers.TryGetValue(setReplyPacket.Key, out var handler))
-                    {
-                        handler(setReplyPacket.OriginalValue, setReplyPacket.Value);
-                    }
-
-                    if (setReplyPacket.Reference.HasValue 
+                    if (setReplyPacket.Reference.HasValue
                         && operationSpecificCallbacks.TryGetValue(setReplyPacket.Reference.Value, out var operationCallback))
                     {
                         operationCallback(setReplyPacket.OriginalValue, setReplyPacket.Value);
 
                         operationSpecificCallbacks.Remove(setReplyPacket.Reference.Value);
+                    }
+
+                    if (onValueChangedEventHandlers.TryGetValue(setReplyPacket.Key, out var handler))
+                    {
+                        handler(setReplyPacket.OriginalValue, setReplyPacket.Value);
                     }
                     break;
             }
@@ -152,7 +149,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 
             socket.SendPacketAsync(new GetPacket { Keys = new[] { key } });
         }
-        
+
         /// <summary>
         /// Initializes a value in the server side data storage
         /// Will not override any existing value, only set the default value if none existed
@@ -205,23 +202,14 @@ namespace Archipelago.MultiClient.Net.Helpers
 
         private JToken GetValue(string key)
         {
-            socket.SendPacketAsync(new GetPacket { Keys = new[] { key } });
+            JToken value = null;
 
-            var startTime = DateTime.Now;
+            GetAsync(key, v => value = v);
 
-            while (!retrievalResults.ContainsKey(key))
+            while (value == null)
             {
-                if (DateTime.Now - startTime > TimeSpan.FromMilliseconds(1000))
-                {
-                    throw new TimeoutException($"Timeout retrieving value for key: '{key}' exceeded 1000ms.");
-                }
-
                 Thread.Sleep(10);
             }
-
-            var value = retrievalResults[key];
-
-            retrievalResults.Remove(key);
 
             return value;
         }
@@ -242,7 +230,7 @@ namespace Archipelago.MultiClient.Net.Helpers
             }
 
             if (e.Callbacks != null)
-            { 
+            {
                 var guid = Guid.NewGuid();
 
                 operationSpecificCallbacks[guid] = e.Callbacks;
