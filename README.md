@@ -154,7 +154,7 @@ session.DataStorage["EnergyLink"] = ((session.DataStorage["EnergyLink"] - 50) <<
 });
 
 //Keepking track of changes
-session.DataStorage["OnChangeHandler"].OnValueChaned += (old, new) => {
+session.DataStorage["OnChangeHandler"].OnValueChanged += (old, new) => {
 	var changed = (int)new - (int)old; //Keep track of changes made to `OnChangeHandler` by any client, and calculate the difference
 };
 
