@@ -95,6 +95,10 @@ If your intrested in keeping track of when a value of a certian key is changed y
 An `Initialize` Method is provided to set the initial value of a key without overriding any existing value.
 Complex objects need to be stored in the form of a `JObject`, therefor you must wrap them into a `JObject.FromObject()`
 
+Assigning and reading values from the store can be done using `=`:
+* `session.DataStorage["Key"] =`, write value to the data storage
+* `= session.DataStorage["Key"]`, read value from the data storage
+
 Mathematical operations are supported using the following operators:
 * `+`, Add right value to left value
 * `-`, Subtract right value from left value
@@ -115,7 +119,7 @@ Bitwise operations are supported using the following opperations:
 Operation specific callbacks are supported, these get called only once with the results of the current operation:
 * `+ Callback.Add((oldValue, newValue) => {});`, calls this method after your operation or chain of operations are proccesed
 
-mathematical and bitwise operations can be chained, given the extended syntax with `()` around each operation
+mathematical operations, bitwise operations and callbacks can be chained, given the extended syntax with `()` around each operation
 
 examples:
 ```csharp
@@ -126,40 +130,44 @@ session.TryConnectAndLogin("Risk of Rain 2", "Ijwu", new Version(2,1,0));
 session.DataStorage.Initialize("B", 20); //Set initial value for B in global scope if it has no value assigned yet
 
 //Storing/Updating
-session.DataStorage[Scope.Slot, "A"] = 20; //Set A to 20, in scope of the current connected user\slot
-session.DataStorage[Scope.Global, "A"] = 30; //Set A to 30, in gloval scope shared amoung all players (the default scope is global)
-session.DataStorage["B"] += 50; //Add 50 to the current value of B
-session.DataStorage["C"] /= 2; //Divide current value of C in half
-session.DataStorage["D"] <<= 80; //Set D to 80 if the stored value is lower
-session.DataStorage["F"] = JObject.FromObject(new { Number = 10, Text = "Hello" }); //Set F to a custom object
-session.DataStorage["C"] += Bitwise.LeftShift(1); //Divide current value of C in half, again
-session.DataStorage["G"] += Bitwise.Xor(0xFF); //Moddify G using the Bitwise excluse or operation
-session.DataStorage["H"] = session.DataStorage["I"] - 30; //Get value of I, Assign it to H and than subtract 30
-session.DataStorage["J"] = new []{ "One", "Two" }; //Arrays can be stored directly, List's needs to be converted ToArray() first 
-session.DataStorage["J"] += new []{ "Three" }; //Append array to existing array on the server
+session.DataStorage[Scope.Slot, "SetPersonal"] = 20; //Set `SetPersonal` to 20, in scope of the current connected user\slot
+session.DataStorage[Scope.Global, "SetGlobal"] = 30; //Set `SetGlobal` to 30, in gloval scope shared amoung all players (the default scope is global)
+session.DataStorage["Add"] += 50; //Add 50 to the current value of `Add`
+session.DataStorage["Divide"] /= 2; //Divide current value of `Divide` in half
+session.DataStorage["Max"] <<= 80; //Set `Max` to 80 if the stored value is lower than 80
+session.DataStorage["Dictionary"] = JObject.FromObject(new Dictionary<string, int>()); //Set `Dictionary` to a Dictionary
+session.DataStorage["SetObject"] = JObject.FromObject(new SomeClassOrStruct()); //Set `SetObject` to a custom object
+session.DataStorage["BitShiftLeft"] += Bitwise.LeftShift(1); //Divide current value of `BitShiftLeft` in half
+session.DataStorage["Xor"] += Bitwise.Xor(0xFF); //Moddify `Xor` using the Bitwise excluse or operation
+session.DataStorage["DifferentKey"] = session.DataStorage["A"] - 30; //Get value of `A`, Assign it to `DifferentKey` and then subtract 30
+session.DataStorage["Array"] = new []{ "One", "Two" }; //Arrays can be stored directly, List's needs to be converted ToArray() first 
+session.DataStorage["Array"] += new []{ "Three" }; //Append array values to existing array on the server
 
 //Chaining operations
-session.DataStorage["K"] = (session.DataStorage["K"] + 40) >> 100; //Add 40 to G, than Set G to 100 if G is bigger then 100
-session.DataStorage["L"] = ((session.DataStorage["M"] - 6) + Bitwise.RightShift(1)) ^ 3; //Subtract 6 from I, than multiply I by 2 using bitshifting, than take I to the power of 3
+session.DataStorage["Min"] = (session.DataStorage["Min"] + 40) >> 100; //Add 40 to `Min`, then Set `Min` to 100 if `Min` is bigger than 100
+session.DataStorage["C"] = ((session.DataStorage["C"] - 6) + Bitwise.RightShift(1)) ^ 3; //Subtract 6 from `C`, then multiply `C` by 2 using bitshifting, then take `C` to the power of 3
 
 //Update callbacks
-//Enerylink deplete pattern, Subtract 50, than set value to 0 if its lower than 0
+//Enerylink deplete pattern, Subtract 50, then set value to 0 if its lower than 0
 session.DataStorage["EnergyLink"] = ((session.DataStorage["EnergyLink"] - 50) << 0) + Callback.Add((old, new) => {
-    var actualDepleted = (float)new - (float)old; //calculate the actual update, might differ if there was less that 50 left on the server
+    var actualDepleted = (float)new - (float)old; //calculate the actual change, might differ if there was less that 50 left on the server
 });
 
 //Keepking track of changes
-session.DataStorage["N"].OnValueChaned += (old, new) => {
-	var changed = (int)new - (int)old; //Keep track of changes made to E by anyone client, and calculate the difference
+session.DataStorage["OnChangeHandler"].OnValueChaned += (old, new) => {
+	var changed = (int)new - (int)old; //Keep track of changes made to `OnChangeHandler` by any client, and calculate the difference
 };
 
 //Retrieving
-session.DataStorage.GetAsync<string>("O", s => { string r = s }); //Retrieve value of M asynchronously
-float c = session.DataStorage["C"]; //Retrieve value for C
-var d = session.DataStorage["T"].To<DateTime>() //Retrieve value for T as a DateTime struct
-var array = session.DataStorage["J"].To<string[]>() //Retrieve value for J as string Array
-var obj = session.DataStorage["F"].To<JObject>(); //Retrieve value for F where an anonymous object was stored
-var value = (int)obj["Number"]; //Get value for anonymous object key A
-var text = (string)obj["Text"]; //Get value for anonymous object key B
+session.DataStorage.GetAsync<string>("Async", s => { string r = s }); //Retrieve value of `Async` asynchronously
+float f = session.DataStorage["Float"]; //Retrieve value for `Float` synchronously and store it as a float
+var d = session.DataStorage["DateTime"].To<DateTime>() //Retrieve value for `DateTime` as a DateTime struct
+var array = session.DataStorage["Strings"].To<string[]>() //Retrieve value for `Strings` as string Array
+
+//Handleing anonymous object, if the target type is not known you can use `To<JObject>()` and use its interface to access the members
+session.DataStorage["Anonymous"] = JObject.FromObject(new { Number = 10, Text = "Hello" }); //Set `Anonymous` to an anonymous object
+var obj = session.DataStorage["Anonymous"].To<JObject>(); //Retrieve value for `Anonymous` where an anonymous object was stored
+var number = (int)obj["Number"]; //Get value for anonymous object key `Number`
+var text = (string)obj["Text"]; //Get value for anonymous object key `Text`
 
 ```
