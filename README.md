@@ -87,7 +87,7 @@ deathLinkService.SendDeathLink(new DeathLink("Ijwu", "Died to exposure."));
 
 ## DataStorage
 
-DataStorage support is included in the library. you may save values on the archipelago server in order to share there across other players or to simply keep track of values outside of your game's state
+DataStorage support is included in the library. You may save values on the archipelago server in order to share them across other player's sessions or to simply keep track of values outside of your game's state.
 
 The DataStorage provides an interface based on keys and thier scope. by assinging a value to a key, that value is stored on the server, and by reading from a key a value is retrieved from the server. 
 The DataStorage also provides methods to retrieve the value of key asynchronously. 
