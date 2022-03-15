@@ -89,9 +89,9 @@ deathLinkService.SendDeathLink(new DeathLink("Ijwu", "Died to exposure."));
 
 DataStorage support is included in the library. You may save values on the archipelago server in order to share them across other player's sessions or to simply keep track of values outside of your game's state.
 
-The DataStorage provides an interface based on keys and thier scope. by assinging a value to a key, that value is stored on the server, and by reading from a key a value is retrieved from the server. 
-The DataStorage also provides methods to retrieve the value of key asynchronously. 
-If your intrested in keeping track of when a value of a certian key is changed you can use the `OnValueChanged` handler to register a callback for when the value gets updated.
+The DataStorage provides an interface based on keys and their scope. By assigning a value to a key, that value is stored on the server and by reading from a key a value is retrieved from the server. 
+The DataStorage also provides methods to retrieve the value of a key asynchronously. 
+If you're interested in keeping track of when a value of a certain key is changed you can use the `OnValueChanged` handler to register a callback for when the value gets updated.
 An `Initialize` Method is provided to set the initial value of a key without overriding any existing value.
 Complex objects need to be stored in the form of a `JObject`, therefor you must wrap them into a `JObject.FromObject()`
 
@@ -106,22 +106,22 @@ Mathematical operations are supported using the following operators:
 * `/`, Divide right value by left value
 * `%`, Gets remainder after dividing left value by right value
 * `^`, Multiply left value by the power of the right value
-* `>>`, Override left with right value. if right value is lower
-* `<<`, Override left with right value. if right value is bigger
+* `>>`, Override left with right value, if right value is lower
+* `<<`, Override left with right value, if right value is bigger
 
 Bitwise operations are supported using the following opperations:
 * `+ Bitwise.Xor(x)`, apply logical exclusive OR to the right value using value x
 * `+ Bitwise.Or(x)`, apply logical OR to the right value using value x
 * `+ Bitwise.And(x)`, apply logical AND to the right value using value x
-* `+ Bitwise.LeftShift(x)`, binairy shift left to the left value by x
-* `+ Bitwise.RightShift(x)`, binairy shift left to the right value by x
+* `+ Bitwise.LeftShift(x)`, binary shift the value to the left by x
+* `+ Bitwise.RightShift(x)`, binary shift the value to the right by x
 
 Operation specific callbacks are supported, these get called only once with the results of the current operation:
 * `+ Callback.Add((oldValue, newValue) => {});`, calls this method after your operation or chain of operations are proccesed
 
-mathematical operations, bitwise operations and callbacks can be chained, given the extended syntax with `()` around each operation
+Mathematical operations, bitwise operations and callbacks can be chained, given the extended syntax with `()` around each operation.
 
-examples:
+Examples:
 ```csharp
 var session = ArchipelagoSessionFactory.CreateSession("localhost", 38281);
 session.TryConnectAndLogin("Risk of Rain 2", "Ijwu", new Version(2,1,0));
@@ -131,14 +131,14 @@ session.DataStorage.Initialize("B", 20); //Set initial value for B in global sco
 
 //Storing/Updating
 session.DataStorage[Scope.Slot, "SetPersonal"] = 20; //Set `SetPersonal` to 20, in scope of the current connected user\slot
-session.DataStorage[Scope.Global, "SetGlobal"] = 30; //Set `SetGlobal` to 30, in gloval scope shared amoung all players (the default scope is global)
+session.DataStorage[Scope.Global, "SetGlobal"] = 30; //Set `SetGlobal` to 30, in global scope shared among all players (the default scope is global)
 session.DataStorage["Add"] += 50; //Add 50 to the current value of `Add`
 session.DataStorage["Divide"] /= 2; //Divide current value of `Divide` in half
 session.DataStorage["Max"] <<= 80; //Set `Max` to 80 if the stored value is lower than 80
 session.DataStorage["Dictionary"] = JObject.FromObject(new Dictionary<string, int>()); //Set `Dictionary` to a Dictionary
 session.DataStorage["SetObject"] = JObject.FromObject(new SomeClassOrStruct()); //Set `SetObject` to a custom object
-session.DataStorage["BitShiftLeft"] += Bitwise.LeftShift(1); //Divide current value of `BitShiftLeft` in half
-session.DataStorage["Xor"] += Bitwise.Xor(0xFF); //Moddify `Xor` using the Bitwise excluse or operation
+session.DataStorage["BitShiftLeft"] += Bitwise.LeftShift(1); //Bitshift current value of  `BitShiftLeft` to left by 1
+session.DataStorage["Xor"] += Bitwise.Xor(0xFF); //Modify `Xor` using the Bitwise exclusive or operation
 session.DataStorage["DifferentKey"] = session.DataStorage["A"] - 30; //Get value of `A`, Assign it to `DifferentKey` and then subtract 30
 session.DataStorage["Array"] = new []{ "One", "Two" }; //Arrays can be stored directly, List's needs to be converted ToArray() first 
 session.DataStorage["Array"] += new []{ "Three" }; //Append array values to existing array on the server
@@ -148,7 +148,7 @@ session.DataStorage["Min"] = (session.DataStorage["Min"] + 40) >> 100; //Add 40 
 session.DataStorage["C"] = ((session.DataStorage["C"] - 6) + Bitwise.RightShift(1)) ^ 3; //Subtract 6 from `C`, then multiply `C` by 2 using bitshifting, then take `C` to the power of 3
 
 //Update callbacks
-//Enerylink deplete pattern, Subtract 50, then set value to 0 if its lower than 0
+//EnergyLink deplete pattern, subtract 50, then set value to 0 if its lower than 0
 session.DataStorage["EnergyLink"] = ((session.DataStorage["EnergyLink"] - 50) << 0) + Callback.Add((old, new) => {
     var actualDepleted = (float)new - (float)old; //calculate the actual change, might differ if there was less that 50 left on the server
 });
@@ -164,7 +164,7 @@ float f = session.DataStorage["Float"]; //Retrieve value for `Float` synchronous
 var d = session.DataStorage["DateTime"].To<DateTime>() //Retrieve value for `DateTime` as a DateTime struct
 var array = session.DataStorage["Strings"].To<string[]>() //Retrieve value for `Strings` as string Array
 
-//Handleing anonymous object, if the target type is not known you can use `To<JObject>()` and use its interface to access the members
+//Handling anonymous object, if the target type is not known you can use `To<JObject>()` and use its interface to access the members
 session.DataStorage["Anonymous"] = JObject.FromObject(new { Number = 10, Text = "Hello" }); //Set `Anonymous` to an anonymous object
 var obj = session.DataStorage["Anonymous"].To<JObject>(); //Retrieve value for `Anonymous` where an anonymous object was stored
 var number = (int)obj["Number"]; //Get value for anonymous object key `Number`
