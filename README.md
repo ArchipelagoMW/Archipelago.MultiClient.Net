@@ -150,7 +150,7 @@ session.DataStorage["C"] = ((session.DataStorage["C"] - 6) + Bitwise.RightShift(
 //Update callbacks
 //EnergyLink deplete pattern, subtract 50, then set value to 0 if its lower than 0
 session.DataStorage["EnergyLink"] = ((session.DataStorage["EnergyLink"] - 50) << 0) + Callback.Add((old, new) => {
-    var actualDepleted = (float)new - (float)old; //calculate the actual change, might differ if there was less then 50 left on the server
+    var actualDepleted = (float)new - (float)old; //calculate the actual change, might differ if there was less than 50 left on the server
 });
 
 //Keepking track of changes
