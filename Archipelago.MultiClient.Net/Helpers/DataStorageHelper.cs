@@ -3,7 +3,6 @@ using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
 using Newtonsoft.Json.Linq;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
 
@@ -15,9 +14,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 
         private readonly Dictionary<string, DataStorageUpdatedHandler> onValueChangedEventHandlers = new Dictionary<string, DataStorageUpdatedHandler>();
         private readonly Dictionary<Guid, DataStorageUpdatedHandler> operationSpecificCallbacks = new Dictionary<Guid, DataStorageUpdatedHandler>();
-        private readonly Dictionary<string, List<Action<JToken>>> asyncRetrievalCallbacks = new Dictionary<string, List<Action<JToken>>>();
-
-        private readonly object asyncRetrievalCallbackLockObject = new object();
+        private readonly Dictionary<string, Action<JToken>> asyncRetrievalCallbacks = new Dictionary<string, Action<JToken>>();
 
         private readonly IArchipelagoSocketHelper socket;
 
@@ -42,17 +39,11 @@ namespace Archipelago.MultiClient.Net.Helpers
                 case RetrievedPacket retrievedPacket:
                     foreach (var data in retrievedPacket.Data)
                     {
-                        lock (asyncRetrievalCallbackLockObject)
+                        if (asyncRetrievalCallbacks.TryGetValue(data.Key, out var asyncCallback))
                         {
-                            if (asyncRetrievalCallbacks.TryGetValue(data.Key, out var callbacks))
-                            {
-                                foreach (var callback in callbacks)
-                                {
-                                    callback(data.Value);
-                                }
+                            asyncCallback(data.Value);
 
-                                asyncRetrievalCallbacks.Remove(data.Key);
-                            }
+                            asyncRetrievalCallbacks.Remove(data.Key);
                         }
                     }
                     break;
@@ -101,16 +92,13 @@ namespace Archipelago.MultiClient.Net.Helpers
 
         private void GetAsync(string key, Action<JToken> callback)
         {
-            lock (asyncRetrievalCallbackLockObject)
+            if (!asyncRetrievalCallbacks.ContainsKey(key))
             {
-                if (!asyncRetrievalCallbacks.ContainsKey(key))
-                {
-                    asyncRetrievalCallbacks[key] = new List<Action<JToken>> { callback };
-                }
-                else
-                {
-                    asyncRetrievalCallbacks[key].Add(callback);
-                }
+                asyncRetrievalCallbacks[key] = callback;
+            }
+            else
+            {
+                asyncRetrievalCallbacks[key] += callback;
             }
 
             socket.SendPacketAsync(new GetPacket { Keys = new[] { key } });
