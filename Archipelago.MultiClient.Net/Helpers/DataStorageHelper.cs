@@ -99,41 +99,7 @@ namespace Archipelago.MultiClient.Net.Helpers
             set => SetValue(key, value);
         }
 
-        /// <summary>
-        /// Retrieves the value of a certain key from server side data storage.
-        /// </summary>
-        /// <param name="scope">The scope of the key, the default scope is global</param>
-        /// <param name="key">The key for which the value should retrieved</param>
-        /// <param name="callback">The callback that will be called when the value is retrieved</param>
-        public void GetAsync<T>(Scope scope, string key, Action<T> callback)
-        {
-            GetAsync(AddScope(scope, key), t => callback(t.ToObject<T>()));
-        }
-        /// <summary>
-        /// Retrieves the value of a certain key from server side data storage.
-        /// </summary>
-        /// <param name="scope">The scope of the key, the default scope is global</param>
-        /// <param name="key">The key for which the value should retrieved</param>
-        /// <param name="callback">The callback that will be called when the value is retrieved</param>
-        public void GetAsync(Scope scope, string key, Action<JToken> callback)
-        {
-            GetAsync(AddScope(scope, key), callback);
-        }
-        /// <summary>
-        /// Retrieves the value of a certain key from server side data storage.
-        /// </summary>
-        /// <param name="key">The key for which the value should retrieved</param>
-        /// <param name="callback">The callback that will be called when the value is retrieved</param>
-        public void GetAsync<T>(string key, Action<T> callback)
-        {
-            GetAsync(key, t => callback(t.ToObject<T>()));
-        }
-        /// <summary>
-        /// Retrieves the value of a certain key from server side data storage.
-        /// </summary>
-        /// <param name="key">The key for which the value should retrieved</param>
-        /// <param name="callback">The callback that will be called when the value is retrieved</param>
-        public void GetAsync(string key, Action<JToken> callback)
+        private void GetAsync(string key, Action<JToken> callback)
         {
             lock (asyncRetrievalCallbackLockObject)
             {
@@ -150,52 +116,14 @@ namespace Archipelago.MultiClient.Net.Helpers
             socket.SendPacketAsync(new GetPacket { Keys = new[] { key } });
         }
 
-        /// <summary>
-        /// Initializes a value in the server side data storage
-        /// Will not override any existing value, only set the default value if none existed
-        /// </summary>
-        /// <param name="scope">The scope of the key, the default scope is global</param>
-        /// <param name="key">The key for which the value should retrieved</param>
-        /// <param name="value">The default value for the key</param>
-        public void Initialize(Scope scope, string key, IEnumerable value)
-        {
-            Initialize(AddScope(scope, key), value);
-        }
-        /// <summary>
-        /// Initializes a value in the server side data storage
-        /// Will not override any existing value, only set the default value if none existed
-        /// </summary>
-        /// <param name="key">The key for which the value should retrieved</param>
-        /// <param name="value">The default value for the key</param>
-        public void Initialize(string key, IEnumerable value)
-        {
-            Initialize(key, JArray.FromObject(value));
-        }
-        /// <summary>
-        /// Initializes a value in the server side data storage
-        /// Will not override any existing value, only set the default value if none existed
-        /// </summary>
-        /// <param name="scope">The scope of the key, the default scope is global</param>
-        /// <param name="key">The key for which the value should retrieved</param>
-        /// <param name="value">The default value for the key</param>
-        public void Initialize(Scope scope, string key, JToken value)
-        {
-            Initialize(AddScope(scope, key), value);
-        }
-        /// <summary>
-        /// Initializes a value in the server side data storage
-        /// Will not override any existing value, only set the default value if none existed
-        /// </summary>
-        /// <param name="key">The key for which the value should retrieved</param>
-        /// <param name="value">The default value for the key</param>
-        public void Initialize(string key, JToken value)
+        private void Initialize(string key, JToken value)
         {
             socket.SendPacketAsync(new SetPacket
             {
                 Key = key,
                 DefaultValue = value,
                 Operations = new[] {
-                    new OperationSpecification { Operation = Operation.Default },
+                    new OperationSpecification { Operation = Operation.Default }
                 }
             });
         }
@@ -259,8 +187,10 @@ namespace Archipelago.MultiClient.Net.Helpers
             {
                 Key = key,
                 GetData = GetValue,
+                GetAsync = GetAsync,
+                Initialize = Initialize,
                 AddHandler = AddHandler,
-                RemoveHandler = RemoveHandler,
+                RemoveHandler = RemoveHandler
             };
         }
 

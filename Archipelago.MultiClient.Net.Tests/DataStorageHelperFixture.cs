@@ -425,11 +425,11 @@ namespace Archipelago.MultiClient.Net.Tests
             object c = null;
             object d = null;
 
-            sut.GetAsync<int>("Key", v =>
+            sut["Key"].GetAsync<int>(v =>
             {
                 a = v;
             });
-            sut.GetAsync<int>(Scope.Global, "Key", v =>
+            sut[Scope.Global, "Key"].GetAsync<int>(v =>
             {
                 b = v;
             });
@@ -440,11 +440,11 @@ namespace Archipelago.MultiClient.Net.Tests
 
             socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(retrievedPacketA);
 
-            sut.GetAsync("Key", v =>
+            sut["Key"].GetAsync(v =>
             {
                 c = (int)v;
             });
-            sut.GetAsync(Scope.Global, "OtherKey", v =>
+            sut[Scope.Global, "OtherKey"].GetAsync(v =>
             {
                 d = (string)v;
             });
@@ -674,10 +674,10 @@ namespace Archipelago.MultiClient.Net.Tests
 
             var sut = new DataStorageHelper(socket);
 
-            sut.Initialize("A", 20);
-            sut.Initialize(Scope.Global, "B", new string[0]);
-            sut.Initialize("C", new List<long>(3) { 1L, 3L, 9L });
-            sut.Initialize(Scope.Global, "D", "");
+            sut["A"].Initialize(20);
+            sut[Scope.Global, "B"].Initialize(new string[0]);
+            sut["C"].Initialize(new List<long>(3) { 1L, 3L, 9L });
+            sut[Scope.Global, "D"].Initialize("");
 
             socket.Received().SendPacketAsync(Arg.Is<SetPacket>(
                 p => p.Key == "A" && p.Operations[0].Operation == Operation.Default && (int)p.DefaultValue == 20));
@@ -703,12 +703,12 @@ namespace Archipelago.MultiClient.Net.Tests
             var addNewAsyncCallback = new Task(() =>
             {
                 Thread.Sleep(1);
-                sut.GetAsync("Key", t => {});
+                sut["Key"].GetAsync(t => {});
             });
 
-            sut.GetAsync("Key", t => Thread.Sleep(1));
-            sut.GetAsync("Key", t => Thread.Sleep(1));
-            sut.GetAsync("Key", t => Thread.Sleep(1));
+            sut["Key"].GetAsync(t => Thread.Sleep(1));
+            sut["Key"].GetAsync(t => Thread.Sleep(1));
+            sut["Key"].GetAsync(t => Thread.Sleep(1));
 
             addNewAsyncCallback.Start();
 

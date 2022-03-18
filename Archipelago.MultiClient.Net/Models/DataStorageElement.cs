@@ -359,6 +359,42 @@ namespace Archipelago.MultiClient.Net.Models
             return RetrieveAndReturnArrayValue<JArray>(e);
         }
 
+        /// <summary>
+        /// Initializes a value in the server side data storage
+        /// Will not override any existing value, only set the default value if none existed
+        /// </summary>
+        /// <param name="value">The default value for the key</param>
+        public void Initialize(JToken value)
+        {
+            Context.Initialize(Context.Key, value);
+        }
+        /// <summary>
+        /// Initializes a value in the server side data storage
+        /// Will not override any existing value, only set the default value if none existed
+        /// </summary>
+        /// <param name="value">The default value for the key</param>
+        public void Initialize(IEnumerable value)
+        {
+            Context.Initialize(Context.Key, JArray.FromObject(value));
+        }
+
+        /// <summary>
+        /// Retrieves the value of a certain key from server side data storage.
+        /// </summary>
+        /// <param name="callback">The callback that will be called when the value is retrieved</param>
+        public void GetAsync<T>(Action<T> callback)
+        {
+            GetAsync(t => callback(t.ToObject<T>()));
+        }
+        /// <summary>
+        /// Retrieves the value of a certain key from server side data storage.
+        /// </summary>
+        /// <param name="callback">The callback that will be called when the value is retrieved</param>
+        public void GetAsync(Action<JToken> callback)
+        {
+            Context.GetAsync(Context.Key, callback);
+        }
+
         private static T RetrieveAndReturnArrayValue<T>(DataStorageElement e)
         {
             if (e.cachedValue != null)
