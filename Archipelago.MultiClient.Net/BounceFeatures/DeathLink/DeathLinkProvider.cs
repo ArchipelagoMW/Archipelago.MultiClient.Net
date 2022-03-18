@@ -17,7 +17,7 @@ namespace Archipelago.MultiClient.Net.BounceFeatures.DeathLink
 
         private static void EnsureDeathLinkTagIsSet(ArchipelagoSession session)
         {
-            if (Array.IndexOf(session.Tags, "DeathLink") >= 0)
+            if (Array.IndexOf(session.Tags, "DeathLink") == -1)
             {
                 var newTags = new List<string>(session.Tags.Length + 1);
                 newTags.AddRange(session.Tags);
