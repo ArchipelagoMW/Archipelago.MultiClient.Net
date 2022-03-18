@@ -12,7 +12,7 @@ namespace Archipelago.MultiClient.Net.BounceFeatures.DeathLink
         {
             EnsureDeathLinkTagIsSet(session);
 
-            return new DeathLinkService(session);
+            return new DeathLinkService(session.Socket);
         }
 
         private static void EnsureDeathLinkTagIsSet(ArchipelagoSession session)

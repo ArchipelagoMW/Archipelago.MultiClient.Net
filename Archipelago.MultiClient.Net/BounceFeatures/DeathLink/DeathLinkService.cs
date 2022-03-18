@@ -1,21 +1,23 @@
 ﻿using Archipelago.MultiClient.Net.Converters;
 using Archipelago.MultiClient.Net.Enums;
+using Archipelago.MultiClient.Net.Helpers;
 using Archipelago.MultiClient.Net.Packets;
+using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 
 namespace Archipelago.MultiClient.Net.BounceFeatures.DeathLink
 {
     public class DeathLinkService
     {
-        readonly ArchipelagoSession session;
+        readonly IArchipelagoSocketHelper socket;
 
         public delegate void DeathLinkReceivedHandler(DeathLink deathLink);
         public event DeathLinkReceivedHandler OnDeathLinkReceived;
 
-        internal DeathLinkService(ArchipelagoSession session)
+        internal DeathLinkService(IArchipelagoSocketHelper socket)
         {
-            this.session = session;
-            session.Socket.PacketReceived += OnPacketReceived;
+            this.socket = socket;
+            socket.PacketReceived += OnPacketReceived;
         }
 
         void OnPacketReceived(ArchipelagoPacketBase packet)
@@ -54,7 +56,7 @@ namespace Archipelago.MultiClient.Net.BounceFeatures.DeathLink
             var bouncePacket = new BouncePacket
             {
                 Tags = new List<string> { "DeathLink" },
-                Data = new Dictionary<string, object>
+                Data = new Dictionary<string, JToken>
                 {
                     {"time", deathLink.Timestamp.ToUnixTimeStamp()},
                     {"source", deathLink.Source},
@@ -66,7 +68,7 @@ namespace Archipelago.MultiClient.Net.BounceFeatures.DeathLink
                 bouncePacket.Data.Add("cause", deathLink.Cause);
             }
 
-            session.Socket.SendPacketAsync(bouncePacket);
+            socket.SendPacketAsync(bouncePacket);
         }
     }
 }
