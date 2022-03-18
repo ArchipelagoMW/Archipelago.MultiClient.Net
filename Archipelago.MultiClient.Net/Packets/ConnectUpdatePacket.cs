@@ -1,6 +1,5 @@
 ﻿using Archipelago.MultiClient.Net.Enums;
 using Newtonsoft.Json;
-using System.Collections.Generic;
 
 namespace Archipelago.MultiClient.Net.Packets
 {
@@ -9,7 +8,7 @@ namespace Archipelago.MultiClient.Net.Packets
         public override ArchipelagoPacketType PacketType => ArchipelagoPacketType.ConnectUpdate;
 
         [JsonProperty("tags")]
-        public List<string> Tags { get; set; } = new List<string>();
+        public string[] Tags { get; set; }
 
         [JsonProperty("items_handling")]
         public ItemsHandlingFlags? ItemsHandling { get; set; }

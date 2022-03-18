@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Archipelago.MultiClient.Net.BounceFeatures.DeathLink
 {
@@ -16,14 +17,13 @@ namespace Archipelago.MultiClient.Net.BounceFeatures.DeathLink
 
         private static void EnsureDeathLinkTagIsSet(ArchipelagoSession session)
         {
-            if (!session.Tags.Contains("DeathLink"))
+            if (Array.IndexOf(session.Tags, "DeathLink") >= 0)
             {
-                var newTags = new List<string>(session.Tags.Count + 1);
+                var newTags = new List<string>(session.Tags.Length + 1);
                 newTags.AddRange(session.Tags);
                 newTags.Add("DeathLink");
 
-
-                session.UpdateConnectionOptions(newTags, session.ItemsHandlingFlags);
+                session.UpdateConnectionOptions(newTags.ToArray(), session.ItemsHandlingFlags);
             }
         }
     }
