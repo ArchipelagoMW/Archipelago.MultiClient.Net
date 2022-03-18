@@ -55,6 +55,17 @@ session.TryConnectAndLogin("Risk of Rain 2", "Ijwu", new Version(2,1,0));
 var sortedPlayerNames = session.Players.AllPlayers.Select(x => x.Name).OrderBy(x => x);
 ```
 
+## RoomStateHelper
+
+The roomstate helper provides access to values that represent the current state of the multiworld room, with information such as the cost of a hint and or your current accumulated amount of hint point or the permissions for things like forfeiting
+
+```csharp
+var session = ArchipelagoSessionFactory.CreateSession("localhost", 38281);
+session.TryConnectAndLogin("Timespinner", "Jarno", new Version(2,1,0));
+
+Console.WriteLine($"You have {session.RoomState.HintPoints}, and need {session.RoomState.HintCost} for a hint");
+```
+
 ### ArchipelagoSocketHelper
 
 The socket helper is a lower level API allowing for direct access to the socket which the session object uses to communicate with the Archipelago server. You may use this object to hook onto when messages are received or you may use it to send any packets defined in the library. Various events are exposed to allow for receipt of errors or notifying of socket close.
@@ -124,10 +135,10 @@ Mathematical operations, bitwise operations and callbacks can be chained, given 
 Examples:
 ```csharp
 var session = ArchipelagoSessionFactory.CreateSession("localhost", 38281);
-session.TryConnectAndLogin("Risk of Rain 2", "Ijwu", new Version(2,1,0));
+session.TryConnectAndLogin("Timespinner", "Jarno", new Version(2,5,0));
 
 //Initializing
-session.DataStorage.Initialize("B", 20); //Set initial value for B in global scope if it has no value assigned yet
+session.DataStorage["B"].Initialize(20); //Set initial value for B in global scope if it has no value assigned yet
 
 //Storing/Updating
 session.DataStorage[Scope.Slot, "SetPersonal"] = 20; //Set `SetPersonal` to 20, in scope of the current connected user\slot
@@ -159,7 +170,7 @@ session.DataStorage["OnChangeHandler"].OnValueChanged += (old, new) => {
 };
 
 //Retrieving
-session.DataStorage.GetAsync<string>("Async", s => { string r = s }); //Retrieve value of `Async` asynchronously
+session.DataStorage["Async"].GetAsync<string>(s => { string r = s }); //Retrieve value of `Async` asynchronously
 float f = session.DataStorage["Float"]; //Retrieve value for `Float` synchronously and store it as a float
 var d = session.DataStorage["DateTime"].To<DateTime>() //Retrieve value for `DateTime` as a DateTime struct
 var array = session.DataStorage["Strings"].To<string[]>() //Retrieve value for `Strings` as string Array
