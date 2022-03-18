@@ -130,7 +130,13 @@ namespace Archipelago.MultiClient.Net.Helpers
                     return null;
                 }
 
-                var gameDataContainingId = dataPackage.Games.Single(x => x.Value.ItemLookup.ContainsValue(id));
+                var gameDataContainingId = dataPackage.Games.SingleOrDefault(x => x.Value.ItemLookup.ContainsValue(id));
+
+                if (string.IsNullOrEmpty(gameDataContainingId.Key) || gameDataContainingId.Value == null)
+                {
+                    return null;
+                }
+
                 var gameDataItemLookup = gameDataContainingId.Value.ItemLookup.ToDictionary(x => x.Value, x => x.Key);
                 foreach (var kvp in gameDataItemLookup)
                 {
