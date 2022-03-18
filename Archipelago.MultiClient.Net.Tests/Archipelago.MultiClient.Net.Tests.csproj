@@ -67,6 +67,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DataPackageFileSystemCacheFixture.cs" />
+    <Compile Include="DataStorageHelperFixture.cs" />
     <Compile Include="GameStateHelperFixture.cs" />
     <Compile Include="LocationCheckHelperFixture.cs" />
     <Compile Include="ReceivedItemsHelperFixture.cs" />

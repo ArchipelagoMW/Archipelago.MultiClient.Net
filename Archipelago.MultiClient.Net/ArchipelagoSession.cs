@@ -3,7 +3,6 @@ using Archipelago.MultiClient.Net.Exceptions;
 using Archipelago.MultiClient.Net.Helpers;
 using Archipelago.MultiClient.Net.Packets;
 using System;
-using System.Collections.Generic;
 using System.Threading;
 
 namespace Archipelago.MultiClient.Net
@@ -11,35 +10,34 @@ namespace Archipelago.MultiClient.Net
     public class ArchipelagoSession
     {
         const int APConnectionTimeoutInSeconds = 5;
+        public static string Game { get; internal set; }
 
         public ArchipelagoSocketHelper Socket { get; }
-
         public ReceivedItemsHelper Items { get; }
-
         public LocationCheckHelper Locations { get; }
-
         public PlayerHelper Players { get; }
-
+        public DataStorageHelper DataStorage { get; }
         public RoomStateHelper RoomState { get; }
 
-        volatile bool expectingLoginResult = false;
-        private LoginResult loginResult = null;
+        volatile bool expectingLoginResult;
+        private LoginResult loginResult;
 
         public string[] Tags = new string[0];
 
         public ItemsHandlingFlags ItemsHandlingFlags { get; private set; }
-
         internal ArchipelagoSession(ArchipelagoSocketHelper socket,
                                     ReceivedItemsHelper items,
                                     LocationCheckHelper locations,
                                     PlayerHelper players,
-                                    RoomStateHelper roomState)
+                                    RoomStateHelper roomState,
+                                    DataStorageHelper dataStorage)
         {
             Socket = socket;
             Items = items;
             Locations = locations;
             Players = players;
             RoomState = roomState;
+            DataStorage = dataStorage;
 
             socket.PacketReceived += Socket_PacketReceived;
         }
@@ -94,6 +92,7 @@ namespace Archipelago.MultiClient.Net
             uuid = uuid ?? Guid.NewGuid().ToString();
             Tags = tags ?? new string[0];
             ItemsHandlingFlags = itemsHandlingFlags;
+            Game = game;
 
             try
             {

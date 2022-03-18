@@ -14,7 +14,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// </summary>
         public ReadOnlyCollection<PlayerInfo> AllPlayers => new ReadOnlyCollection<PlayerInfo>(players);
 
-        public PlayerHelper(ArchipelagoSocketHelper socket)
+        internal PlayerHelper(ArchipelagoSocketHelper socket)
         {
             socket.PacketReceived += PacketReceived;
         }
