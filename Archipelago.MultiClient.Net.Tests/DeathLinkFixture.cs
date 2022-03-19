@@ -58,8 +58,9 @@ namespace Archipelago.MultiClient.Net.Tests
         public void Should_create_death_link(string json)
         {
             var socket = Substitute.For<IArchipelagoSocketHelper>();
+            var connectionInfo = Substitute.For<IConnectionInfoProvider>();
 
-            var sut = new DeathLinkService(socket);
+            var sut = new DeathLinkService(socket, connectionInfo, new DataStorageHelper(socket, connectionInfo));
 
             DeathLink receivedDeathLink = null;
 

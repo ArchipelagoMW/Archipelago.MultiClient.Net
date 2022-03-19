@@ -52,7 +52,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// </summary>
         public DateTime RoomInfoSendTime { get; private set; }
         /// <summary>
-        /// Denotes special features or capabilities that the sender is capable of.
+        /// Denotes special features or capabilities that the server is capable of.
         /// </summary>
         public ReadOnlyCollection<string> ServerTags =>
             tags == null 

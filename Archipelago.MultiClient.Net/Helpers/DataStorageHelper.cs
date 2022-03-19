@@ -17,13 +17,15 @@ namespace Archipelago.MultiClient.Net.Helpers
         private readonly Dictionary<string, Action<JToken>> asyncRetrievalCallbacks = new Dictionary<string, Action<JToken>>();
 
         private readonly IArchipelagoSocketHelper socket;
+        private readonly IConnectionInfoProvider connectionInfoProvider;
 
         private int slot;
         private int team;
 
-        internal DataStorageHelper(IArchipelagoSocketHelper socket)
+        internal DataStorageHelper(IArchipelagoSocketHelper socket, IConnectionInfoProvider connectionInfoProvider)
         {
             this.socket = socket;
+            this.connectionInfoProvider = connectionInfoProvider;
 
             socket.PacketReceived += OnPacketReceived;
         }
@@ -216,11 +218,11 @@ namespace Archipelago.MultiClient.Net.Helpers
                 case Scope.Global:
                     return key;
                 case Scope.Game:
-                    return $"{scope}:{ArchipelagoSession.Game}:{key}";
+                    return $"{scope}:{connectionInfoProvider.Game}:{key}";
                 case Scope.Team:
-                    return $"{scope}:{team}:{key}";
+                    return $"{scope}:{connectionInfoProvider.Team}:{key}";
                 case Scope.Slot:
-                    return $"{scope}:{slot}:{key}";
+                    return $"{scope}:{connectionInfoProvider.Slot}:{key}";
                 default:
                     throw new ArgumentOutOfRangeException(nameof(scope), scope, $"Invalid scope for key {key}");
             }

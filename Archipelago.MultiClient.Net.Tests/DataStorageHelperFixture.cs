@@ -33,8 +33,9 @@ namespace Archipelago.MultiClient.Net.Tests
         public void Should_get_value_correctly<T>(Func<DataStorageHelper, string, T> getValue, T value)
         {
             var socket = Substitute.For<IArchipelagoSocketHelper>();
+            var connectionInfo = Substitute.For<IConnectionInfoProvider>();
 
-            var sut = new DataStorageHelper(socket);
+            var sut = new DataStorageHelper(socket, connectionInfo);
 
             T result = default;
 
@@ -222,8 +223,9 @@ namespace Archipelago.MultiClient.Net.Tests
             Func<SetPacket, string, T, bool> validatePacket)
         {
             var socket = Substitute.For<IArchipelagoSocketHelper>();
+            var connectionInfo = Substitute.For<IConnectionInfoProvider>();
 
-            var sut = new DataStorageHelper(socket);
+            var sut = new DataStorageHelper(socket, connectionInfo);
 
             action(sut, "Key", value);
 
@@ -295,8 +297,9 @@ namespace Archipelago.MultiClient.Net.Tests
         public void Should_handle_Assignment_correctly<T>(T baseValue, Func<DataStorageHelper, string, T> action, T expectedValue)
         {
             var socket = Substitute.For<IArchipelagoSocketHelper>();
+            var connectionInfo = Substitute.For<IConnectionInfoProvider>();
 
-            var sut = new DataStorageHelper(socket);
+            var sut = new DataStorageHelper(socket, connectionInfo);
 
             T result = default;
 
@@ -311,8 +314,9 @@ namespace Archipelago.MultiClient.Net.Tests
         public void Should_throw_on_invalid_operation_on_string()
         {
             var socket = Substitute.For<IArchipelagoSocketHelper>();
+            var connectionInfo = Substitute.For<IConnectionInfoProvider>();
 
-            var sut = new DataStorageHelper(socket);
+            var sut = new DataStorageHelper(socket, connectionInfo);
 
             string result;
 
@@ -346,8 +350,9 @@ namespace Archipelago.MultiClient.Net.Tests
         public void Should_register_handler_and_recieve_update()
         {
             var socket = Substitute.For<IArchipelagoSocketHelper>();
+            var connectionInfo = Substitute.For<IConnectionInfoProvider>();
 
-            var sut = new DataStorageHelper(socket);
+            var sut = new DataStorageHelper(socket, connectionInfo);
 
             object oldValueA = null;
             object newValueA = null;
@@ -388,8 +393,9 @@ namespace Archipelago.MultiClient.Net.Tests
         public void Should_unregister_handler()
         {
             var socket = Substitute.For<IArchipelagoSocketHelper>();
+            var connectionInfo = Substitute.For<IConnectionInfoProvider>();
 
-            var sut = new DataStorageHelper(socket);
+            var sut = new DataStorageHelper(socket, connectionInfo);
 
             int callbackCount = 0;
 
@@ -417,8 +423,9 @@ namespace Archipelago.MultiClient.Net.Tests
         public void Should_retreive_values_async()
         {
             var socket = Substitute.For<IArchipelagoSocketHelper>();
+            var connectionInfo = Substitute.For<IConnectionInfoProvider>();
 
-            var sut = new DataStorageHelper(socket);
+            var sut = new DataStorageHelper(socket, connectionInfo);
 
             object a = null;
             object b = null;
@@ -469,17 +476,12 @@ namespace Archipelago.MultiClient.Net.Tests
         public void Different_scopes_should_not_interfere()
         {
             var socket = Substitute.For<IArchipelagoSocketHelper>();
-            ArchipelagoSession.Game = "UnitTest";
+            var connectionInfo = Substitute.For<IConnectionInfoProvider>();
+            connectionInfo.Game.Returns("UnitTest");
+            connectionInfo.Team.Returns(5);
+            connectionInfo.Slot.Returns(12);
 
-            var sut = new DataStorageHelper(socket);
-
-            var connectedPacket = new ConnectedPacket
-            {
-                Slot = 12,
-                Team = 5
-            };
-
-            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(connectedPacket);
+            var sut = new DataStorageHelper(socket, connectionInfo);
 
             sut[Scope.Global, "A"] = "global";
             sut[Scope.Game, "A"] = "game";
@@ -523,8 +525,9 @@ namespace Archipelago.MultiClient.Net.Tests
         public void Should_correctly_handle_deplete()
         {
             var socket = Substitute.For<IArchipelagoSocketHelper>();
+            var connectionInfo = Substitute.For<IConnectionInfoProvider>();
 
-            var sut = new DataStorageHelper(socket);
+            var sut = new DataStorageHelper(socket, connectionInfo);
 
             decimal actualDepleteValue1 = 0;
             decimal actualDepleteValue2 = 0;
@@ -589,8 +592,9 @@ namespace Archipelago.MultiClient.Net.Tests
         public void Should_handle_complex_opperations()
         {
             var socket = Substitute.For<IArchipelagoSocketHelper>();
+            var connectionInfo = Substitute.For<IConnectionInfoProvider>();
 
-            var sut = new DataStorageHelper(socket);
+            var sut = new DataStorageHelper(socket, connectionInfo);
 
             sut["A"] = sut["A"] - 10 << 0;
             sut["B"] = (((sut["B"] + 5) * 8) / 2) - 3;
@@ -622,8 +626,9 @@ namespace Archipelago.MultiClient.Net.Tests
         public void Should_send_custom_objects()
         {
             var socket = Substitute.For<IArchipelagoSocketHelper>();
+            var connectionInfo = Substitute.For<IConnectionInfoProvider>();
 
-            var sut = new DataStorageHelper(socket);
+            var sut = new DataStorageHelper(socket, connectionInfo);
 
             sut["Item"] = JObject.FromObject(new NetworkItem { Item = 1337, Location = 999, Player = 2, Flags = ItemFlags.Trap });
             sut["Anonymous"] = JObject.FromObject(new { A = 10, B = "Hello" });
@@ -638,8 +643,9 @@ namespace Archipelago.MultiClient.Net.Tests
         public void Should_retrieve_custom_objects()
         {
             var socket = Substitute.For<IArchipelagoSocketHelper>();
+            var connectionInfo = Substitute.For<IConnectionInfoProvider>();
 
-            var sut = new DataStorageHelper(socket);
+            var sut = new DataStorageHelper(socket, connectionInfo);
 
             NetworkItem networkItem = default;
             JObject anonymousType = default;
@@ -671,8 +677,9 @@ namespace Archipelago.MultiClient.Net.Tests
         public void Should_set_default()
         {
             var socket = Substitute.For<IArchipelagoSocketHelper>();
+            var connectionInfo = Substitute.For<IConnectionInfoProvider>();
 
-            var sut = new DataStorageHelper(socket);
+            var sut = new DataStorageHelper(socket, connectionInfo);
 
             sut["A"].Initialize(20);
             sut[Scope.Global, "B"].Initialize(new string[0]);
@@ -693,8 +700,9 @@ namespace Archipelago.MultiClient.Net.Tests
         public void Should_not_throw_when_handling_async_callbacks_and_new_data_is_received()
         {
             var socket = Substitute.For<IArchipelagoSocketHelper>();
+            var connectionInfo = Substitute.For<IConnectionInfoProvider>();
 
-            var sut = new DataStorageHelper(socket);
+            var sut = new DataStorageHelper(socket, connectionInfo);
 
             var retrievedPacked = new RetrievedPacket() {
                 Data = new Dictionary<string, JToken> { { "Key", 10 } }
@@ -724,8 +732,9 @@ namespace Archipelago.MultiClient.Net.Tests
         public void Should_throw_on_invallid_scope()
         {
             var socket = Substitute.For<IArchipelagoSocketHelper>();
+            var connectionInfo = Substitute.For<IConnectionInfoProvider>();
 
-            var sut = new DataStorageHelper(socket);
+            var sut = new DataStorageHelper(socket, connectionInfo);
 
             Assert.Throws<ArgumentOutOfRangeException>(() =>
             {
@@ -734,10 +743,12 @@ namespace Archipelago.MultiClient.Net.Tests
         }
 
         [Test]
-        public void Should_not_use_old_data_that_is_requested_outside_of_the_datastorage()        {
+        public void Should_not_use_old_data_that_is_requested_outside_of_the_datastorage()
+        {
             var socket = Substitute.For<IArchipelagoSocketHelper>();
+            var connectionInfo = Substitute.For<IConnectionInfoProvider>();
 
-            var sut = new DataStorageHelper(socket);
+            var sut = new DataStorageHelper(socket, connectionInfo);
 
             var oldRetrievedPacket = new RetrievedPacket()
             {

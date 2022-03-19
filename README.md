@@ -66,6 +66,17 @@ session.TryConnectAndLogin("Timespinner", "Jarno", new Version(2,1,0));
 Console.WriteLine($"You have {session.RoomState.HintPoints}, and need {session.RoomState.HintCost} for a hint");
 ```
 
+## ConnectionInfoHelper
+
+The conection info helper provides access to values under which you are currently connected, such as your slot number or your currently used tags and item handling flags
+
+```csharp
+var session = ArchipelagoSessionFactory.CreateSession("localhost", 38281);
+session.TryConnectAndLogin("Timespinner", "Jarno", new Version(2,4,0));
+
+Console.WriteLine($"You are connected on slot {session.ConnectionInfo.Slot}, on team {session.ConnectionInfo.Team}");
+```
+
 ### ArchipelagoSocketHelper
 
 The socket helper is a lower level API allowing for direct access to the socket which the session object uses to communicate with the Archipelago server. You may use this object to hook onto when messages are received or you may use it to send any packets defined in the library. Various events are exposed to allow for receipt of errors or notifying of socket close.

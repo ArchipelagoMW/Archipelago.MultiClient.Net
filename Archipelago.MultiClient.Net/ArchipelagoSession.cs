@@ -9,27 +9,25 @@ namespace Archipelago.MultiClient.Net
 {
     public class ArchipelagoSession
     {
-        const int APConnectionTimeoutInSeconds = 5;
-        public static string Game { get; internal set; }
+        private const int ArchipelagoConnectionTimeoutInSeconds = 5;
 
         public ArchipelagoSocketHelper Socket { get; }
         public ReceivedItemsHelper Items { get; }
         public LocationCheckHelper Locations { get; }
         public PlayerHelper Players { get; }
         public DataStorageHelper DataStorage { get; }
+        public ConnectionInfoHelper ConnectionInfo { get; }
         public RoomStateHelper RoomState { get; }
 
         volatile bool expectingLoginResult;
         private LoginResult loginResult;
 
-        public string[] Tags = new string[0];
-
-        public ItemsHandlingFlags ItemsHandlingFlags { get; private set; }
         internal ArchipelagoSession(ArchipelagoSocketHelper socket,
                                     ReceivedItemsHelper items,
                                     LocationCheckHelper locations,
                                     PlayerHelper players,
                                     RoomStateHelper roomState,
+                                    ConnectionInfoHelper connectionInfo,
                                     DataStorageHelper dataStorage)
         {
             Socket = socket;
@@ -37,6 +35,7 @@ namespace Archipelago.MultiClient.Net
             Locations = locations;
             Players = players;
             RoomState = roomState;
+            ConnectionInfo = connectionInfo;
             DataStorage = dataStorage;
 
             socket.PacketReceived += Socket_PacketReceived;
@@ -67,6 +66,7 @@ namespace Archipelago.MultiClient.Net
             }
         }
 
+        // ReSharper disable once UnusedMember.Global
         /// <summary>
         ///     Attempt to log in to the Archipelago server by opening a websocket connection and sending a Connect packet.
         ///     Determining success for this attempt is done by attaching a listener to Socket.PacketReceived and listening for a Connected packet.
@@ -88,11 +88,7 @@ namespace Archipelago.MultiClient.Net
         /// </remarks>
         public LoginResult TryConnectAndLogin(string game, string name, Version version, ItemsHandlingFlags itemsHandlingFlags, string[] tags = null, string uuid = null, string password = null)
         {
-
-            uuid = uuid ?? Guid.NewGuid().ToString();
-            Tags = tags ?? new string[0];
-            ItemsHandlingFlags = itemsHandlingFlags;
-            Game = game;
+            ConnectionInfo.SetConnectionParameters(game, tags, itemsHandlingFlags, uuid);
 
             try
             {
@@ -103,26 +99,26 @@ namespace Archipelago.MultiClient.Net
 
                 Socket.SendPacket(new ConnectPacket
                 {
-                    Game = game,
+                    Game = ConnectionInfo.Game,
                     Name = name,
                     Password = password,
-                    Tags = Tags,
+                    Tags = ConnectionInfo.Tags,
                     Uuid = uuid,
                     Version = version,
-                    ItemsHandling = itemsHandlingFlags
+                    ItemsHandling = ConnectionInfo.ItemsHandlingFlags
                 });
 
                 var connectedStartedTime = DateTime.UtcNow;
                 while (expectingLoginResult)
                 {
-                    if (DateTime.UtcNow - connectedStartedTime > TimeSpan.FromSeconds(APConnectionTimeoutInSeconds))
+                    if (DateTime.UtcNow - connectedStartedTime > TimeSpan.FromSeconds(ArchipelagoConnectionTimeoutInSeconds))
                     {
                         Socket.DisconnectAsync();
 
                         return new LoginFailure("Connection timed out.");
                     }
 
-                    Thread.Sleep(100);
+                    Thread.Sleep(25);
                 }
 
                 //give other handlers time to handle the ConnectedPacket so all values are available when this method returns
@@ -143,12 +139,12 @@ namespace Archipelago.MultiClient.Net
         /// <param name="itemsHandlingFlags">New ItemsHandlingFlags for the current connection.</param>
         public void UpdateConnectionOptions(string[] tags, ItemsHandlingFlags itemsHandlingFlags)
         {
-            Tags = tags ?? new string[0];
+            ConnectionInfo.SetConnectionParameters(ConnectionInfo.Game, tags, itemsHandlingFlags, ConnectionInfo.Uuid);
 
             Socket.SendPacket(new ConnectUpdatePacket
             {
-                Tags = Tags,
-                ItemsHandling = itemsHandlingFlags
+                Tags = ConnectionInfo.Tags,
+                ItemsHandling = ConnectionInfo.ItemsHandlingFlags
             });
         }
     }
