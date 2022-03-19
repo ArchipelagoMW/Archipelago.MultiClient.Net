@@ -159,7 +159,7 @@ session.DataStorage["Divide"] /= 2; //Divide current value of `Divide` in half
 session.DataStorage["Max"] <<= 80; //Set `Max` to 80 if the stored value is lower than 80
 session.DataStorage["Dictionary"] = JObject.FromObject(new Dictionary<string, int>()); //Set `Dictionary` to a Dictionary
 session.DataStorage["SetObject"] = JObject.FromObject(new SomeClassOrStruct()); //Set `SetObject` to a custom object
-session.DataStorage["BitShiftLeft"] += Bitwise.LeftShift(1); //Bitshift current value of  `BitShiftLeft` to left by 1
+session.DataStorage["BitShiftLeft"] += Bitwise.LeftShift(1); //Bitshift current value of `BitShiftLeft` to left by 1
 session.DataStorage["Xor"] += Bitwise.Xor(0xFF); //Modify `Xor` using the Bitwise exclusive or operation
 session.DataStorage["DifferentKey"] = session.DataStorage["A"] - 30; //Get value of `A`, Assign it to `DifferentKey` and then subtract 30
 session.DataStorage["Array"] = new []{ "One", "Two" }; //Arrays can be stored directly, List's needs to be converted ToArray() first 
@@ -175,7 +175,7 @@ session.DataStorage["EnergyLink"] = ((session.DataStorage["EnergyLink"] - 50) <<
     var actualDepleted = (float)new - (float)old; //calculate the actual change, might differ if there was less than 50 left on the server
 });
 
-//Keepking track of changes
+//Keeping track of changes
 session.DataStorage["OnChangeHandler"].OnValueChanged += (old, new) => {
 	var changed = (int)new - (int)old; //Keep track of changes made to `OnChangeHandler` by any client, and calculate the difference
 };
