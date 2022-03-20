@@ -117,36 +117,34 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// <returns>
         ///     The name of the item as a string, or null if no such item is found.
         /// </returns>
-        public string GetItemName(int id)
+        public string GetItemName(long id)
         {
             if (itemLookupCache.TryGetValue(id, out var name))
             {
                 return name;
             }
-            else
+
+            if (!dataPackageCache.TryGetDataPackageFromCache(out var dataPackage))
             {
-                if (!dataPackageCache.TryGetDataPackageFromCache(out var dataPackage))
-                {
-                    return null;
-                }
-
-                var gameDataContainingId = dataPackage.Games.SingleOrDefault(x => x.Value.ItemLookup.ContainsValue(id));
-
-                if (string.IsNullOrEmpty(gameDataContainingId.Key) || gameDataContainingId.Value == null)
-                {
-                    return null;
-                }
-
-                var gameDataItemLookup = gameDataContainingId.Value.ItemLookup.ToDictionary(x => x.Value, x => x.Key);
-                foreach (var kvp in gameDataItemLookup)
-                {
-                    itemLookupCache.Add(kvp.Key, kvp.Value);
-                }
-
-                return itemLookupCache.TryGetValue(id, out name)
-                    ? name
-                    : null;
+                return null;
             }
+
+            var gameDataContainingId = dataPackage.Games.SingleOrDefault(x => x.Value.ItemLookup.ContainsValue(id));
+
+            if (string.IsNullOrEmpty(gameDataContainingId.Key) || gameDataContainingId.Value == null)
+            {
+                return null;
+            }
+
+            var gameDataItemLookup = gameDataContainingId.Value.ItemLookup.ToDictionary(x => x.Value, x => x.Key);
+            foreach (var kvp in gameDataItemLookup)
+            {
+                itemLookupCache.Add(kvp.Key, kvp.Value);
+            }
+
+            return itemLookupCache.TryGetValue(id, out name)
+                ? name
+                : null;
         }
 
         private void Socket_PacketReceived(ArchipelagoPacketBase packet)
