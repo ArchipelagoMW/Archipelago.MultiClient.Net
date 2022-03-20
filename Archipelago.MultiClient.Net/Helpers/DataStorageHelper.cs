@@ -19,9 +19,6 @@ namespace Archipelago.MultiClient.Net.Helpers
         private readonly IArchipelagoSocketHelper socket;
         private readonly IConnectionInfoProvider connectionInfoProvider;
 
-        private int slot;
-        private int team;
-
         internal DataStorageHelper(IArchipelagoSocketHelper socket, IConnectionInfoProvider connectionInfoProvider)
         {
             this.socket = socket;
@@ -34,10 +31,6 @@ namespace Archipelago.MultiClient.Net.Helpers
         {
             switch (packet)
             {
-                case ConnectedPacket connectedPacket:
-                    slot = connectedPacket.Slot;
-                    team = connectedPacket.Team;
-                    break;
                 case RetrievedPacket retrievedPacket:
                     foreach (var data in retrievedPacket.Data)
                     {
