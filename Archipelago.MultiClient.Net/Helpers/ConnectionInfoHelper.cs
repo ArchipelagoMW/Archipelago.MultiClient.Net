@@ -72,12 +72,12 @@ namespace Archipelago.MultiClient.Net.Helpers
 
         private void Reset()
         {
-            Game = "";
+            Game = null;
             Team = -1;
             Slot = -1;
             Tags = new string[0];
             ItemsHandlingFlags = ItemsHandlingFlags.NoItems;
-            Uuid = "";
+            Uuid = null;
         }
     }
 }

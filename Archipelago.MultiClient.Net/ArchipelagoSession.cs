@@ -103,7 +103,7 @@ namespace Archipelago.MultiClient.Net
                     Name = name,
                     Password = password,
                     Tags = ConnectionInfo.Tags,
-                    Uuid = uuid,
+                    Uuid = ConnectionInfo.Uuid,
                     Version = version,
                     ItemsHandling = ConnectionInfo.ItemsHandlingFlags
                 });

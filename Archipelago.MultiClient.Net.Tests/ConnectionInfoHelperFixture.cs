@@ -5,6 +5,7 @@ using Archipelago.MultiClient.Net.Helpers;
 using Archipelago.MultiClient.Net.Packets;
 using NSubstitute;
 using NUnit.Framework;
+using System;
 
 namespace Archipelago.MultiClient.Net.Tests
 {
@@ -48,12 +49,12 @@ namespace Archipelago.MultiClient.Net.Tests
 
             var sut = new ConnectionInfoHelper(socket);
 
-            Assert.That(sut.Game, Is.EqualTo(""));
+            Assert.That(sut.Game, Is.Null);
             Assert.That(sut.Team, Is.EqualTo(-1));
             Assert.That(sut.Slot, Is.EqualTo(-1));
-            Assert.That(sut.Tags, Is.EqualTo(new string[0]));
+            Assert.That(sut.Tags, Is.EqualTo(Array.Empty<string>()));
             Assert.That(sut.ItemsHandlingFlags, Is.EqualTo(ItemsHandlingFlags.NoItems));
-            Assert.That(sut.Uuid, Is.EqualTo(""));
+            Assert.That(sut.Uuid, Is.Null);
         }
 
         [Test] 
@@ -71,12 +72,12 @@ namespace Archipelago.MultiClient.Net.Tests
 
             socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(new ConnectionRefusedPacket());
 
-            Assert.That(sut.Game, Is.EqualTo(""));
+            Assert.That(sut.Game, Is.Null);
             Assert.That(sut.Team, Is.EqualTo(-1));
             Assert.That(sut.Slot, Is.EqualTo(-1));
-            Assert.That(sut.Tags, Is.EqualTo(new string[0]));
+            Assert.That(sut.Tags, Is.EqualTo(Array.Empty<string>()));
             Assert.That(sut.ItemsHandlingFlags, Is.EqualTo(ItemsHandlingFlags.NoItems));
-            Assert.That(sut.Uuid, Is.EqualTo(""));
+            Assert.That(sut.Uuid, Is.Null);
         }
     }
 }
