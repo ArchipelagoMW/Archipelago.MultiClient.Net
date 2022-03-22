@@ -115,7 +115,7 @@ The DataStorage provides an interface based on keys and their scope. By assignin
 Assigning and reading values from the store can be done using simple assignments `=`:
 * `= session.DataStorage["Key"]`, read value from the data storage synchronously
 * `session.DataStorage["Key"] =`, write value to the data storage asynchronously
-** Complex objects need to be stored and retrieved in the form of a `JObject`, therefor you must wrap them into a `JObject.FromObject()`
+  * Complex objects need to be stored and retrieved in the form of a `JObject`, therefor you must wrap them into a `JObject.FromObject()`
 
 The DataStorage also provides methods to retrieve the value of a key asynchronously using `[key].GetAsync`. 
 To set the initial value of a key without overriding any existing value the `[key].Initialize` method can be used.
