@@ -1,5 +1,6 @@
 ﻿using Archipelago.MultiClient.Net.Enums;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 
 namespace Archipelago.MultiClient.Net.Packets
@@ -18,6 +19,6 @@ namespace Archipelago.MultiClient.Net.Packets
         public List<string> Tags { get; set; } = new List<string>();
 
         [JsonProperty("data")]
-        public Dictionary<string, object> Data { get; set; } = new Dictionary<string, object>();
+        public Dictionary<string, JToken> Data { get; set; }
     }
 }
