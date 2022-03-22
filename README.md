@@ -55,7 +55,7 @@ session.TryConnectAndLogin("Risk of Rain 2", "Ijwu", new Version(2,1,0));
 var sortedPlayerNames = session.Players.AllPlayers.Select(x => x.Name).OrderBy(x => x);
 ```
 
-## RoomStateHelper
+### RoomStateHelper
 
 The roomstate helper provides access to values that represent the current state of the multiworld room, with information such as the cost of a hint and or your current accumulated amount of hint point or the permissions for things like forfeiting
 
@@ -66,7 +66,7 @@ session.TryConnectAndLogin("Timespinner", "Jarno", new Version(2,1,0));
 Console.WriteLine($"You have {session.RoomState.HintPoints}, and need {session.RoomState.HintCost} for a hint");
 ```
 
-## ConnectionInfoHelper
+### ConnectionInfoHelper
 
 The conection info helper provides access to values under which you are currently connected, such as your slot number or your currently used tags and item handling flags
 
@@ -89,7 +89,7 @@ session.Socket.SendPacket(new SayPacket(){Text = "Woof woof!"});
 
 ```
 
-## DeathLink
+### DeathLink
 
 DeathLink support is included in the library. You may enable it by using the `CreateDeathLinkServiceAndEnable` in the `DeathLinkProvider` class. This method is also an extension method so you may enable it more easily.
 
@@ -107,46 +107,46 @@ deathLinkService.OnDeathLinkReceived += (deathLinkObject) => {
 deathLinkService.SendDeathLink(new DeathLink("Ijwu", "Died to exposure."));
 ```
 
-## DataStorage
+### DataStorage
 
 DataStorage support is included in the library. You may save values on the archipelago server in order to share them across other player's sessions or to simply keep track of values outside of your game's state.
 
 The DataStorage provides an interface based on keys and their scope. By assigning a value to a key, that value is stored on the server and by reading from a key a value is retrieved from the server. 
-The DataStorage also provides methods to retrieve the value of a key asynchronously. 
-If you're interested in keeping track of when a value of a certain key is changed you can use the `OnValueChanged` handler to register a callback for when the value gets updated.
-An `Initialize` Method is provided to set the initial value of a key without overriding any existing value.
-Complex objects need to be stored in the form of a `JObject`, therefor you must wrap them into a `JObject.FromObject()`
+Assigning and reading values from the store can be done using simple assignments `=`:
+* `= session.DataStorage["Key"]`, read value from the data storage synchronously
+* `session.DataStorage["Key"] =`, write value to the data storage asynchronously
+** Complex objects need to be stored and retrieved in the form of a `JObject`, therefor you must wrap them into a `JObject.FromObject()`
 
-Assigning and reading values from the store can be done using `=`:
-* `session.DataStorage["Key"] =`, write value to the data storage
-* `= session.DataStorage["Key"]`, read value from the data storage
+The DataStorage also provides methods to retrieve the value of a key asynchronously using `[key].GetAsync`. 
+To set the initial value of a key without overriding any existing value the `[key].Initialize` method can be used.
+If you're interested in keeping track of when a value of a certain key is changed by any client you can use the `[key].OnValueChanged` handler to register a callback for when the value gets updated.
 
-Mathematical operations are supported using the following operators:
+Mathematical operations on values stored on the server are supported using the following operators:
 * `+`, Add right value to left value
 * `-`, Subtract right value from left value
-* `*`, Multiply right value by left value
-* `/`, Divide right value by left value
+* `*`, Multiply left value by right value
+* `/`, Divide left value by right value
 * `%`, Gets remainder after dividing left value by right value
 * `^`, Multiply left value by the power of the right value
 * `>>`, Override left with right value, if right value is lower
 * `<<`, Override left with right value, if right value is bigger
 
-Bitwise operations are supported using the following opperations:
-* `+ Bitwise.Xor(x)`, apply logical exclusive OR to the right value using value x
-* `+ Bitwise.Or(x)`, apply logical OR to the right value using value x
-* `+ Bitwise.And(x)`, apply logical AND to the right value using value x
-* `+ Bitwise.LeftShift(x)`, binary shift the value to the left by x
-* `+ Bitwise.RightShift(x)`, binary shift the value to the right by x
+Bitwise operations on values stored on the server are supported using the following opperations:
+* `+ Bitwise.Xor(x)`, apply logical exclusive OR to the left value using value x
+* `+ Bitwise.Or(x)`, apply logical OR to the left value using value x
+* `+ Bitwise.And(x)`, apply logical AND to the left value using value x
+* `+ Bitwise.LeftShift(x)`, binary shift the left value to the left by x
+* `+ Bitwise.RightShift(x)`, binary shift the left value to the right by x
 
 Operation specific callbacks are supported, these get called only once with the results of the current operation:
-* `+ Callback.Add((oldValue, newValue) => {});`, calls this method after your operation or chain of operations are proccesed
+* `+ Callback.Add((oldValue, newValue) => {});`, calls this method after your operation or chain of operations are proccesed by the server
 
 Mathematical operations, bitwise operations and callbacks can be chained, given the extended syntax with `()` around each operation.
 
 Examples:
 ```csharp
 var session = ArchipelagoSessionFactory.CreateSession("localhost", 38281);
-session.TryConnectAndLogin("Timespinner", "Jarno", new Version(2,5,0));
+session.TryConnectAndLogin("Timespinner", "Jarno", new Version(2,6,0));
 
 //Initializing
 session.DataStorage["B"].Initialize(20); //Set initial value for B in global scope if it has no value assigned yet
