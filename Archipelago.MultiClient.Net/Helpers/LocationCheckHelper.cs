@@ -118,7 +118,7 @@ namespace Archipelago.MultiClient.Net.Helpers
             lock (locationsCheckedLockObject)
             {
                 CheckLocations(ids);
-                
+
                 socket.SendPacket(new LocationChecksPacket()
                 {
                     Locations = locationsChecked.ToArray()
@@ -161,6 +161,38 @@ namespace Archipelago.MultiClient.Net.Helpers
         ///     An action to run once the server responds to the scout packet.
         ///     If the argument to the action is null then the server responded with an InvalidPacket response.
         /// </param>
+        /// <param name="createAsHint">
+        ///     If true, creates a free hint for these locations.
+        /// </param>
+        /// <param name="ids">
+        ///     The locations ids which are to be scouted.
+        /// </param>
+        /// <remarks>
+        ///     Repeated calls of this method before a LocationInfo packet is received will cause the stored
+        ///     callback to be overwritten with the most recent call. It is recommended you chain calls to this method
+        ///     within the callbacks themselves or call this only once.
+        /// </remarks>
+        /// <exception cref="T:Archipelago.MultiClient.Net.Exceptions.ArchipelagoSocketClosedException">
+        ///     The websocket connection is not alive.
+        /// </exception>
+        public void ScoutLocationsAsync(Action<LocationInfoPacket> callback = null, bool createAsHint = false, params long[] ids)
+        {
+            socket.SendPacketAsync(new LocationScoutsPacket()
+            {
+                Locations = ids,
+                CreateAsHint = createAsHint
+            });
+            awaitingLocationInfoPacket = true;
+            locationInfoPacketCallback = callback;
+        }
+
+        /// <summary>
+        ///     Ask the server for the items which are present in the provided location ids.
+        /// </summary>
+        /// <param name="callback">
+        ///     An action to run once the server responds to the scout packet.
+        ///     If the argument to the action is null then the server responded with an InvalidPacket response.
+        /// </param>
         /// <param name="ids">
         ///     The locations ids which are to be scouted.
         /// </param>
@@ -174,12 +206,8 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// </exception>
         public void ScoutLocationsAsync(Action<LocationInfoPacket> callback = null, params long[] ids)
         {
-            socket.SendPacketAsync(new LocationScoutsPacket()
-            {
-                Locations = ids
-            });
-            awaitingLocationInfoPacket = true;
-            locationInfoPacketCallback = callback;
+            // Maintain backwards compatibility if createAsHint parameter is not specified.
+            ScoutLocationsAsync(callback, false, ids);
         }
 
         /// <summary>
@@ -200,7 +228,7 @@ namespace Archipelago.MultiClient.Net.Helpers
             {
                 return -1;
             }
-            
+
             if (gameLocationNameToIdMapping == null)
             {
                 gameLocationNameToIdMapping = dataPackage.Games.ToDictionary(x => x.Key, x => x.Value.LocationLookup.ToDictionary(y => y.Key, y => y.Value));
@@ -253,7 +281,7 @@ namespace Archipelago.MultiClient.Net.Helpers
                     locationsChecked.Add(locationId);
                     newLocations.Add(locationId);
                 }
-                
+
                 if (!allLocations.Contains(locationId))
                 {
                     allLocations.Add(locationId);
