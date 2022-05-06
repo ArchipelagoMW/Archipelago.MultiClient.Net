@@ -24,5 +24,7 @@ namespace Archipelago.MultiClient.Net.Packets
         public long[] LocationsChecked { get; set; }
         [JsonProperty("slot_data")]
         public Dictionary<string, object> SlotData { get; set; }
+        [JsonProperty("slot_info")]
+        public Dictionary<int, NetworkSlot> SlotInfo { get; set; }
     }
 }
