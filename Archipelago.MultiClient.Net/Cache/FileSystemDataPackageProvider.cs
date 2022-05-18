@@ -29,7 +29,7 @@ namespace Archipelago.MultiClient.Net.Cache
                     {
                         string fileText = File.ReadAllText(dataPackagePath);
                         package = JsonConvert.DeserializeObject<DataPackage>(fileText);
-                        return true;
+                        return package != null;
                     }
                 }
                 catch
