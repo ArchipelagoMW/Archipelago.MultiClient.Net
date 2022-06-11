@@ -10,12 +10,12 @@
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryUrl>https://github.com/ArchipelagoMW/Archipelago.MultiClient.Net</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <AssemblyVersion>3.0.1.0</AssemblyVersion>
-    <FileVersion>3.0.1.0</FileVersion>
+    <AssemblyVersion>3.1.0.0</AssemblyVersion>
+    <FileVersion>3.1.0.0</FileVersion>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <Version>3.0.1</Version>
-    <Company>Hussein Farran, Jarno Westhof</Company>
+    <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
+    <Version>3.1.0</Version>
+    <Company>Hussein Farran, Jarno Westhof, Zach Parks</Company>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugType>full</DebugType>
