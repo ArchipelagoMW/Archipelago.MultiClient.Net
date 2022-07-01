@@ -77,7 +77,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         ///     Peek the name of next item on the queue to be handled.
         /// </summary>
         /// <returns>
-        ///     The name of the item.
+        ///     The name of the item as a string, or null if no such item is found.
         /// </returns>
         /// <exception cref="T:System.InvalidOperationException">
         ///     The <see cref="T:System.Collections.Generic.Queue`1" /> is empty.
@@ -172,15 +172,12 @@ namespace Archipelago.MultiClient.Net.Helpers
                     {
                         foreach (var item in receivedItemsPacket.Items)
                         {
-                            if (!allItemsReceived.Contains(item))
-                            {
-                                allItemsReceived.Add(item);
-                                itemQueue.Enqueue(item);
+                            allItemsReceived.Add(item);
+                            itemQueue.Enqueue(item);
 
-                                if (ItemReceived != null)
-                                {
-                                    ItemReceived(this);
-                                }
+                            if (ItemReceived != null)
+                            {
+                                ItemReceived(this);
                             }
                         }
                     }

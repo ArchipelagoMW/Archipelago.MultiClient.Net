@@ -114,7 +114,6 @@ namespace Archipelago.MultiClient.Net.Tests
 
         [Test]
         public void Get_Item_Name_Returns_Null_For_Invalid_ItemId_Where_Game_Doesnt_Exist()
-
         {
             var socket = Substitute.For<IArchipelagoSocketHelper>();
             var locationHelper = Substitute.For<ILocationCheckHelper>();
@@ -157,6 +156,67 @@ namespace Archipelago.MultiClient.Net.Tests
                         new NetworkItem { Item = 2 }
                     }
                 });
+        }
+
+        //https://github.com/ArchipelagoMW/Archipelago.MultiClient.Net/issues/46
+        [Test]
+        public void Receiving_Same_Item_From_Same_Location_Should_Add_To_Queue()
+        {
+            var socket = Substitute.For<IArchipelagoSocketHelper>();
+            var locationHelper = Substitute.For<ILocationCheckHelper>();
+            var cache = Substitute.For<IDataPackageCache>();
+
+            var localCache = new DataPackage()
+            {
+                Games = new Dictionary<string, GameData>()
+                {
+                    ["TestGame"] = new GameData()
+                    {
+                        ItemLookup = new Dictionary<string, long>()
+                        {
+                            ["TestItem"] = 1
+                        }
+                    }
+                }
+            };
+            cache.TryGetDataPackageFromCache(out Arg.Any<DataPackage>()).Returns(x =>
+            {
+                x[0] = localCache;
+                return true;
+            });
+
+            var sut = new ReceivedItemsHelper(socket, locationHelper, cache);
+            var itemInPacket = new NetworkItem { Item = 1, Location = 1, Player = 1, Flags = Enums.ItemFlags.None };
+
+            sut.ItemReceived += (helper) =>
+            {
+                var item = helper.DequeueItem();
+                var itemName = helper.GetItemName(item.Item);
+                Assert.That(item, Is.EqualTo(itemInPacket));
+                Assert.That(itemName, Is.EqualTo("TestItem"));
+            };
+
+            socket.PacketReceived +=
+            Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(
+                new ReceivedItemsPacket
+                {
+                    Index = 0,
+                    Items = new[] {
+                        itemInPacket
+                    }
+                });
+
+            socket.PacketReceived +=
+            Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(
+                new ReceivedItemsPacket
+                {
+                    Index = 1,
+                    Items = new[] {
+                        itemInPacket
+                    }
+                });
+
+            Assert.That(sut.Index, Is.EqualTo(2));
         }
     }
 }
