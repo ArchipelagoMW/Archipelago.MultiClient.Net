@@ -22,7 +22,7 @@ var session = ArchipelagoSessionFactory.CreateSession("localhost", 38281);
 session.TryConnectAndLogin("Risk of Rain 2", "Ijwu", new Version(2,1,0));
 session.Locations.CompleteLocationChecks(42);
 
-string locationName = session.Locations.GetLocationNameFromId(42);
+string locationName = session.Locations.GetLocationNameFromId(42) ?? $"Location: {locationId}";
 int locationId = session.Locations.GetLocationIdFromName(locationName);
 
 session.Locations.ScoutLocationsAsync(locationInfoPacket => Console.WriteLine(locationInfoPacket.Locations.Count));
@@ -37,11 +37,13 @@ var session = ArchipelagoSessionFactory.CreateSession("localhost", 38281);
 
 session.TryConnectAndLogin("Risk of Rain 2", "Ijwu", new Version(2,1,0));
 session.Items.ItemReceived += (receivedItemsHelper) => {
-	var itemReceivedName = receivedItemsHelper.PeekItemName();
+	var itemReceivedName = receivedItemsHelper.PeekItemName() ?? $"Item: {itemId}";
 	// ... Handle item receipt.
 
 	receivedItemsHelper.DequeueItem();
 };
+
+string itemName = session.Items.GetItemName(88) ?? $"Item: {itemId}"
 ```
 
 ### PlayerHelper
