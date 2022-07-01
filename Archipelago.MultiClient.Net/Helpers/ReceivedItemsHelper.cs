@@ -172,15 +172,12 @@ namespace Archipelago.MultiClient.Net.Helpers
                     {
                         foreach (var item in receivedItemsPacket.Items)
                         {
-                            if (!allItemsReceived.Contains(item))
-                            {
-                                allItemsReceived.Add(item);
-                                itemQueue.Enqueue(item);
+                            allItemsReceived.Add(item);
+                            itemQueue.Enqueue(item);
 
-                                if (ItemReceived != null)
-                                {
-                                    ItemReceived(this);
-                                }
+                            if (ItemReceived != null)
+                            {
+                                ItemReceived(this);
                             }
                         }
                     }
