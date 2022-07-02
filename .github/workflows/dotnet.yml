@@ -9,16 +9,14 @@ on:
 jobs:
   build:
 
-    runs-on: windows-latest
+    runs-on: windows-2019
 
     steps:
     - uses: actions/checkout@v2
     
     - uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: | 
-          3.1.x
-          4.0.x
+        dotnet-version: '3.1.x'
     
     - name: setup-msbuild
       uses: microsoft/setup-msbuild@v1.1
