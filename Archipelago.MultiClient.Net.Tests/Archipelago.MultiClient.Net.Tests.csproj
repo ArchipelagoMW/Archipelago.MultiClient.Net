@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net472;net48;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net471;net472;net48</TargetFrameworks>
 
     <IsPackable>false</IsPackable>
   </PropertyGroup>
@@ -19,11 +19,7 @@
     <PackageReference Include="NSubstitute" Version="4.2.2" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Archipelago.MultiClient.Net\Archipelago.MultiClient.Net.csproj" />
-  </ItemGroup>
-
-	<ItemGroup Condition="'$(TargetFramework)' == 'net472'">
+	<ItemGroup Condition="'$(TargetFramework)' == 'net471'">
 		<Reference Include="Newtonsoft.Json">
 			<HintPath>..\DLLs\net35\Newtonsoft.Json.dll</HintPath>
 		</Reference>
@@ -31,7 +27,7 @@
 			<HintPath>..\Archipelago.MultiClient.Net\bin\Debug\net35\Archipelago.MultiClient.Net.dll</HintPath>
 		</Reference>
 	</ItemGroup>
-	<ItemGroup Condition="'$(TargetFramework)' == 'net48'">
+	<ItemGroup Condition="'$(TargetFramework)' == 'net472'">
 		<Reference Include="Newtonsoft.Json">
 			<HintPath>..\DLLs\net35\Newtonsoft.Json.dll</HintPath>
 		</Reference>
@@ -39,7 +35,7 @@
 			<HintPath>..\Archipelago.MultiClient.Net\bin\Debug\net40\Archipelago.MultiClient.Net.dll</HintPath>
 		</Reference>
 	</ItemGroup>
-	<ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+	<ItemGroup Condition="'$(TargetFramework)' == 'net48'">
 		<Reference Include="Newtonsoft.Json">
 			<HintPath>..\DLLs\netstandard2.0\Newtonsoft.Json.dll</HintPath>
 		</Reference>
