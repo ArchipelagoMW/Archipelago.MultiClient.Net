@@ -6,6 +6,9 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Archipelago.MultiClient.Net", "Archipelago.MultiClient.Net\Archipelago.MultiClient.Net.csproj", "{35A803AD-85ED-42E9-B1E3-C6B72096F0C1}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Archipelago.MultiClient.Net.Tests", "Archipelago.MultiClient.Net.Tests\Archipelago.MultiClient.Net.Tests.csproj", "{BD1C42B9-FCAF-41FB-8682-65DD4AED3C62}"
+	ProjectSection(ProjectDependencies) = postProject
+		{35A803AD-85ED-42E9-B1E3-C6B72096F0C1} = {35A803AD-85ED-42E9-B1E3-C6B72096F0C1}
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{91CC2CBA-B904-460F-A030-52056922E300}"
 	ProjectSection(SolutionItems) = preProject
