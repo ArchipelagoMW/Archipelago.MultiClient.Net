@@ -41,12 +41,12 @@
 	</ItemGroup>
 	<ItemGroup Condition="'$(TargetFramework)' == 'net472' AND '$(Configuration)' == 'Debug'">
 		<Reference Include="Archipelago.MultiClient.Net">
-			<HintPath>..\Archipelago.MultiClient.Net\bin\Debug\net35\Archipelago.MultiClient.Net.dll</HintPath>
+			<HintPath>..\Archipelago.MultiClient.Net\bin\Debug\net40\Archipelago.MultiClient.Net.dll</HintPath>
 		</Reference>
 	</ItemGroup>
 	<ItemGroup Condition="'$(TargetFramework)' == 'net472' AND '$(Configuration)' == 'Release'">
 		<Reference Include="Archipelago.MultiClient.Net">
-			<HintPath>..\Archipelago.MultiClient.Net\bin\Release\net35\Archipelago.MultiClient.Net.dll</HintPath>
+			<HintPath>..\Archipelago.MultiClient.Net\bin\Release\net40\Archipelago.MultiClient.Net.dll</HintPath>
 		</Reference>
 	</ItemGroup>
 
