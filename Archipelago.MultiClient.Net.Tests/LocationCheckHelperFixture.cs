@@ -1,5 +1,6 @@
 ﻿using Archipelago.MultiClient.Net.Cache;
 using Archipelago.MultiClient.Net.Helpers;
+using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
 using NSubstitute;
 using NUnit.Framework;
@@ -351,5 +352,29 @@ namespace Archipelago.MultiClient.Net.Tests
 
             Assert.That(sut.AllMissingLocations, Is.Empty);
         }
+
+#if !NET471
+        [Test]
+        public async Task Should_scout_locations_async()
+        {
+            var socket = Substitute.For<IArchipelagoSocketHelper>();
+            var cache = Substitute.For<IDataPackageCache>();
+
+            var sut = new LocationCheckHelper(socket, cache);
+
+            var locationScoutResponse = new LocationInfoPacket()
+            {
+                Locations = new [] { new NetworkItem { Location = 1 } }
+            };
+
+            var scoutTask = sut.ScoutLocationsAsync(1);
+
+            Assert.That(scoutTask.IsCompleted, Is.False);
+
+            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(locationScoutResponse);
+
+            Assert.That(scoutTask.IsCompleted, Is.True);
+        }
+#endif
     }
 }
