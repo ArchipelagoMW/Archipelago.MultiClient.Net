@@ -25,8 +25,13 @@ namespace Archipelago.MultiClient.Net.Tests
             Assert.DoesNotThrow(() => {
                 sut.CompleteLocationChecks(null);
                 sut.CompleteLocationChecks(Array.Empty<long>());
+#if NET471
                 sut.CompleteLocationChecksAsync(b => { }, null);
                 sut.CompleteLocationChecksAsync(b => { }, Array.Empty<long>());
+#else
+                sut.CompleteLocationChecksAsync(null).Wait();
+                sut.CompleteLocationChecksAsync(Array.Empty<long>()).Wait();
+#endif
             });
         }
 
@@ -41,7 +46,8 @@ namespace Archipelago.MultiClient.Net.Tests
             var connectedPacket = new ConnectedPacket
             {
                 LocationsChecked = new long[]{ 1, 3 },
-                MissingChecks = new long[]{ 2 }            };
+                MissingChecks = new long[]{ 2 }
+            };
 
             socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(connectedPacket);
 
@@ -66,12 +72,17 @@ namespace Archipelago.MultiClient.Net.Tests
             var connectedPacket = new ConnectedPacket
             {
                 LocationsChecked = new long[]{ 1 },
-                MissingChecks = new long[]{ 2, 3 }            };
+                MissingChecks = new long[]{ 2, 3 }
+            };
 
             socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(connectedPacket);
 
             sut.CompleteLocationChecks(2);
+#if NET471
             sut.CompleteLocationChecksAsync(b => { }, 3);
+#else
+            sut.CompleteLocationChecksAsync(3).Wait();
+#endif
 
             Assert.Contains(1, sut.AllLocations);
             Assert.Contains(2, sut.AllLocations);
@@ -101,7 +112,11 @@ namespace Archipelago.MultiClient.Net.Tests
             socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(connectedPacket);
 
             sut.CompleteLocationChecks(1);
+#if NET471
             sut.CompleteLocationChecksAsync(b => { }, 2);
+#else
+            sut.CompleteLocationChecksAsync(2).Wait();
+#endif
 
             Assert.Contains(1, sut.AllLocations);
             Assert.Contains(2, sut.AllLocations);
@@ -207,7 +222,11 @@ namespace Archipelago.MultiClient.Net.Tests
             };
 
             sut.CompleteLocationChecks(1, 2);
+#if NET471
             sut.CompleteLocationChecksAsync(b => { }, 3);
+#else
+            sut.CompleteLocationChecksAsync(3).Wait();
+#endif
 
             Assert.That(newCheckedLocations.Count, Is.EqualTo(2));
 
@@ -281,9 +300,15 @@ namespace Archipelago.MultiClient.Net.Tests
             sut.CompleteLocationChecks(null);
             sut.CompleteLocationChecks(Array.Empty<long>());
             sut.CompleteLocationChecks(1);
+#if NET471
             sut.CompleteLocationChecksAsync(b => { }, null);
             sut.CompleteLocationChecksAsync(b => { }, Array.Empty<long>());
             sut.CompleteLocationChecksAsync(b => { }, 1);
+#else
+            sut.CompleteLocationChecksAsync(null).Wait();
+            sut.CompleteLocationChecksAsync(Array.Empty<long>()).Wait();
+            sut.CompleteLocationChecksAsync(1).Wait();
+#endif
 
             Assert.That(invocationCount, Is.Zero);
         }
@@ -310,7 +335,11 @@ namespace Archipelago.MultiClient.Net.Tests
             socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(roomUpdatePacket);
 
             sut.CompleteLocationChecks(1, 2);
+#if NET471
             sut.CompleteLocationChecksAsync(b => { }, 1, 3);
+#else
+            sut.CompleteLocationChecksAsync(1, 3).Wait();
+#endif
             
             Assert.Contains(1, sut.AllLocations);
             Assert.Contains(2, sut.AllLocations);
