@@ -6,6 +6,10 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
+#if !NET35
+using System.Threading.Tasks;
+#endif
+
 namespace Archipelago.MultiClient.Net.Models
 {
     public class DataStorageElement
@@ -378,6 +382,7 @@ namespace Archipelago.MultiClient.Net.Models
             Context.Initialize(Context.Key, JArray.FromObject(value));
         }
 
+#if NET35
         /// <summary>
         /// Retrieves the value of a certain key from server side data storage.
         /// </summary>
@@ -394,6 +399,24 @@ namespace Archipelago.MultiClient.Net.Models
         {
             Context.GetAsync(Context.Key, callback);
         }
+#else
+        /// <summary>
+        /// Retrieves the value of a certain key from server side data storage.
+        /// </summary>
+        public async Task<T> GetAsync<T>()
+        {
+            JToken obj = await GetAsync();
+
+            return obj.ToObject<T>();
+        }
+        /// <summary>
+        /// Retrieves the value of a certain key from server side data storage.
+        /// </summary>
+        public async Task<JToken> GetAsync()
+        {
+            return await Context.GetAsync(Context.Key);
+        }
+#endif
 
         private static T RetrieveAndReturnArrayValue<T>(DataStorageElement e)
         {

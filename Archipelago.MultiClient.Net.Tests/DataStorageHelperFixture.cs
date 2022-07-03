@@ -432,6 +432,7 @@ namespace Archipelago.MultiClient.Net.Tests
             object c = null;
             object d = null;
 
+#if NET471
             sut["Key"].GetAsync<int>(v =>
             {
                 a = v;
@@ -441,12 +442,19 @@ namespace Archipelago.MultiClient.Net.Tests
                 b = v;
             });
 
-            socket.Received(2).SendPacketAsync(Arg.Is<GetPacket>(p => p.Keys[0] == "Key"));
+           socket.Received(2).SendPacketAsync(Arg.Is<GetPacket>(p => p.Keys[0] == "Key"));
+#else       
+            sut["Key"].GetAsync<int>().ContinueWith(v => { a = v.Result; });
+            sut[Scope.Global, "Key"].GetAsync<int>().ContinueWith(v => { b = v.Result; });
+
+            socket.Received(1).SendPacketAsync(Arg.Is<GetPacket>(p => p.Keys[0] == "Key"));
+#endif
 
             var retrievedPacketA = new RetrievedPacket { Data = new Dictionary<string, JToken> { { "Key", 10 } } };
 
             socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(retrievedPacketA);
 
+#if NET471
             sut["Key"].GetAsync(v =>
             {
                 c = (int)v;
@@ -455,7 +463,10 @@ namespace Archipelago.MultiClient.Net.Tests
             {
                 d = (string)v;
             });
-
+#else 
+            sut["Key"].GetAsync().ContinueWith(v => { c = (int)v.Result; });
+            sut[Scope.Global, "OtherKey"].GetAsync().ContinueWith(v => { d = (string)v.Result; });
+#endif
             var retrievedPacketB = new RetrievedPacket { Data = new Dictionary<string, JToken> {
                 { "Key", 20 },
                 { "OtherKey", "yolo" },
@@ -463,7 +474,11 @@ namespace Archipelago.MultiClient.Net.Tests
 
             socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(retrievedPacketB);
 
+#if NET471
             socket.Received(3).SendPacketAsync(Arg.Is<GetPacket>(p => p.Keys[0] == "Key"));
+#else
+            socket.Received(2).SendPacketAsync(Arg.Is<GetPacket>(p => p.Keys[0] == "Key"));
+#endif
             socket.Received().SendPacketAsync(Arg.Is<GetPacket>(p => p.Keys[0] == "OtherKey"));
 
             Assert.That(a, Is.EqualTo(10));
@@ -708,6 +723,7 @@ namespace Archipelago.MultiClient.Net.Tests
                 Data = new Dictionary<string, JToken> { { "Key", 10 } }
             };
 
+#if NET471
             var addNewAsyncCallback = new Task(() =>
             {
                 Thread.Sleep(1);
@@ -717,6 +733,17 @@ namespace Archipelago.MultiClient.Net.Tests
             sut["Key"].GetAsync(t => Thread.Sleep(1));
             sut["Key"].GetAsync(t => Thread.Sleep(1));
             sut["Key"].GetAsync(t => Thread.Sleep(1));
+#else
+            var addNewAsyncCallback = new Task(() =>
+            {
+                Thread.Sleep(1);
+                _ = sut["Key"].GetAsync();
+            });
+
+            sut["Key"].GetAsync().ContinueWith(t => Thread.Sleep(1));
+            sut["Key"].GetAsync().ContinueWith(t => Thread.Sleep(1));
+            sut["Key"].GetAsync().ContinueWith(t => Thread.Sleep(1));
+#endif
 
             addNewAsyncCallback.Start();
 
