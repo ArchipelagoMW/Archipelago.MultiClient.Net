@@ -374,6 +374,8 @@ namespace Archipelago.MultiClient.Net.Tests
             socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(locationScoutResponse);
 
             Assert.That(scoutTask.IsCompleted, Is.True);
+
+            await scoutTask;
         }
 #endif
     }
