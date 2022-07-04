@@ -159,8 +159,8 @@ namespace Archipelago.MultiClient.Net.Helpers
             int iterations = 0;
             while (value == null)
             {
-                Thread.Sleep(100);
-                if (++iterations > 10)
+                Thread.Sleep(10);
+                if (++iterations > 200)
                 {
                     throw new TimeoutException($"Timed out retrieving data for key `{key}`. " +
                         $"This may be due to an attempt to retrieve a value from the DataStorageHelper in a synchronous fashion from within a PacketReceived handler. " +
@@ -171,7 +171,9 @@ namespace Archipelago.MultiClient.Net.Helpers
             
             return value;
 #else
-            return GetAsync(key).Result;
+            var t = GetAsync(key);
+            t.Wait(TimeSpan.FromSeconds(2));
+            return t.Result;
 #endif
         }
 
