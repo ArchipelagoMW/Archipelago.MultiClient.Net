@@ -92,7 +92,11 @@ namespace Archipelago.MultiClient.Net
 
             try
             {
+#if !NET35
+                Socket.ConnectAsync().Wait(TimeSpan.FromSeconds(5));
+#else
                 Socket.Connect();
+#endif
 
                 expectingLoginResult = true;
                 loginResult = null;
@@ -113,7 +117,11 @@ namespace Archipelago.MultiClient.Net
                 {
                     if (DateTime.UtcNow - connectedStartedTime > TimeSpan.FromSeconds(ArchipelagoConnectionTimeoutInSeconds))
                     {
-                        Socket.DisconnectAsync();
+#if !NET35
+                        Socket.DisconnectAsync().Wait();
+#else
+                        Socket.Connect();
+#endif
 
                         return new LoginFailure("Connection timed out.");
                     }

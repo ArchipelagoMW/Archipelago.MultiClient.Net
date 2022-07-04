@@ -1,30 +1,18 @@
-﻿using Archipelago.MultiClient.Net.Converters;
+﻿#if NET35 || NET40
+using Archipelago.MultiClient.Net.Converters;
 using Archipelago.MultiClient.Net.Exceptions;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using WebSocketSharp;
 
 #if !NET35
 using System.Threading.Tasks;
 #endif
 
+using WebSocketSharp;
+
 namespace Archipelago.MultiClient.Net.Helpers
 {
-    public interface IArchipelagoSocketHelper
-    {
-        event ArchipelagoSocketHelper.PacketReceivedHandler PacketReceived;
-
-        void SendPacket(ArchipelagoPacketBase packet);
-
-#if NET35
-        void SendPacketAsync(ArchipelagoPacketBase packet, Action<bool> onComplete = null);
-#else
-        Task<bool> SendPacketAsync(ArchipelagoPacketBase packet);
-#endif
-    }
-
-
     public class ArchipelagoSocketHelper : IArchipelagoSocketHelper
     {
         public delegate void PacketReceivedHandler(ArchipelagoPacketBase packet);
@@ -344,3 +332,4 @@ namespace Archipelago.MultiClient.Net.Helpers
         }
     }
 }
+#endif
