@@ -419,6 +419,7 @@ namespace Archipelago.MultiClient.Net.Tests
             Assert.That(callbackCount, Is.EqualTo(1));
         }
 
+#if NET471
         [Test]
         public void Should_retreive_values_async()
         {
@@ -432,7 +433,6 @@ namespace Archipelago.MultiClient.Net.Tests
             object c = null;
             object d = null;
 
-#if NET471
             sut["Key"].GetAsync<int>(v =>
             {
                 a = v;
@@ -442,19 +442,12 @@ namespace Archipelago.MultiClient.Net.Tests
                 b = v;
             });
 
-           socket.Received(2).SendPacketAsync(Arg.Is<GetPacket>(p => p.Keys[0] == "Key"));
-#else       
-            sut["Key"].GetAsync<int>().ContinueWith(v => { a = v.Result; });
-            sut[Scope.Global, "Key"].GetAsync<int>().ContinueWith(v => { b = v.Result; });
-
-            socket.Received(1).SendPacketAsync(Arg.Is<GetPacket>(p => p.Keys[0] == "Key"));
-#endif
+            socket.Received(2).SendPacketAsync(Arg.Is<GetPacket>(p => p.Keys[0] == "Key"));
 
             var retrievedPacketA = new RetrievedPacket { Data = new Dictionary<string, JToken> { { "Key", 10 } } };
 
             socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(retrievedPacketA);
 
-#if NET471
             sut["Key"].GetAsync(v =>
             {
                 c = (int)v;
@@ -463,10 +456,7 @@ namespace Archipelago.MultiClient.Net.Tests
             {
                 d = (string)v;
             });
-#else 
-            sut["Key"].GetAsync().ContinueWith(v => { c = (int)v.Result; });
-            sut[Scope.Global, "OtherKey"].GetAsync().ContinueWith(v => { d = (string)v.Result; });
-#endif
+
             var retrievedPacketB = new RetrievedPacket { Data = new Dictionary<string, JToken> {
                 { "Key", 20 },
                 { "OtherKey", "yolo" },
@@ -474,11 +464,7 @@ namespace Archipelago.MultiClient.Net.Tests
 
             socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(retrievedPacketB);
 
-#if NET471
             socket.Received(3).SendPacketAsync(Arg.Is<GetPacket>(p => p.Keys[0] == "Key"));
-#else
-            socket.Received(2).SendPacketAsync(Arg.Is<GetPacket>(p => p.Keys[0] == "Key"));
-#endif
             socket.Received().SendPacketAsync(Arg.Is<GetPacket>(p => p.Keys[0] == "OtherKey"));
 
             Assert.That(a, Is.EqualTo(10));
@@ -486,6 +472,52 @@ namespace Archipelago.MultiClient.Net.Tests
             Assert.That(c, Is.EqualTo(20));
             Assert.That(d, Is.EqualTo("yolo"));
         }
+#else
+        [Test]
+        public async Task Should_retreive_values_async()
+        {
+            var socket = Substitute.For<IArchipelagoSocketHelper>();
+            var connectionInfo = Substitute.For<IConnectionInfoProvider>();
+
+            var sut = new DataStorageHelper(socket, connectionInfo);
+
+            object a = null;
+            object b = null;
+            object c = null;
+            object d = null;
+
+            var t1 = sut["Key"].GetAsync<int>().ContinueWith(v => { a = v.Result; });
+            var t2 = sut[Scope.Global, "Key"].GetAsync<int>().ContinueWith(v => { b = v.Result; });
+
+            await socket.Received(1).SendPacketAsync(Arg.Is<GetPacket>(p => p.Keys[0] == "Key"));
+            
+            var retrievedPacketA = new RetrievedPacket { Data = new Dictionary<string, JToken> { { "Key", 10 } } };
+
+            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(retrievedPacketA);
+
+            await Task.WhenAll(t1, t2);
+
+            var t3 = sut["Key"].GetAsync().ContinueWith(v => { c = (int)v.Result; });
+            var t4 = sut[Scope.Global, "OtherKey"].GetAsync().ContinueWith(v => { d = (string)v.Result; });
+
+            var retrievedPacketB = new RetrievedPacket { Data = new Dictionary<string, JToken> {
+                { "Key", 20 },
+                { "OtherKey", "yolo" },
+            } };
+
+            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(retrievedPacketB);
+
+            await Task.WhenAll(t1, t2);
+
+            await socket.Received(2).SendPacketAsync(Arg.Is<GetPacket>(p => p.Keys[0] == "Key"));
+            await socket.Received().SendPacketAsync(Arg.Is<GetPacket>(p => p.Keys[0] == "OtherKey"));
+
+            Assert.That(a, Is.EqualTo(10));
+            Assert.That(b, Is.EqualTo(10));
+            Assert.That(c, Is.EqualTo(20));
+            Assert.That(d, Is.EqualTo("yolo"));
+        }
+#endif
 
         [Test]
         public void Different_scopes_should_not_interfere()
@@ -740,9 +772,9 @@ namespace Archipelago.MultiClient.Net.Tests
                 _ = sut["Key"].GetAsync();
             });
 
-            sut["Key"].GetAsync().ContinueWith(t => Thread.Sleep(1));
-            sut["Key"].GetAsync().ContinueWith(t => Thread.Sleep(1));
-            sut["Key"].GetAsync().ContinueWith(t => Thread.Sleep(1));
+            _ = sut["Key"].GetAsync().ContinueWith(t => Task.Delay(1));
+            _ = sut["Key"].GetAsync().ContinueWith(t => Task.Delay(1));
+            _ = sut["Key"].GetAsync().ContinueWith(t => Task.Delay(1));
 #endif
 
             addNewAsyncCallback.Start();

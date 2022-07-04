@@ -403,18 +403,16 @@ namespace Archipelago.MultiClient.Net.Models
         /// <summary>
         /// Retrieves the value of a certain key from server side data storage.
         /// </summary>
-        public async Task<T> GetAsync<T>()
+        public Task<T> GetAsync<T>()
         {
-            JToken obj = await GetAsync();
-
-            return obj.ToObject<T>();
+            return GetAsync().ContinueWith(r => r.Result.ToObject<T>());
         }
         /// <summary>
         /// Retrieves the value of a certain key from server side data storage.
         /// </summary>
-        public async Task<JToken> GetAsync()
+        public Task<JToken> GetAsync()
         {
-            return await Context.GetAsync(Context.Key);
+            return Context.GetAsync(Context.Key);
         }
 #endif
 

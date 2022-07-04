@@ -201,7 +201,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// <exception cref="T:Archipelago.MultiClient.Net.Exceptions.ArchipelagoSocketClosedException">
         ///     The websocket connection is not alive.
         /// </exception>
-        public async Task<bool> CompleteLocationChecksAsync(params long[] ids)
+        public Task<bool> CompleteLocationChecksAsync(params long[] ids)
         {
             long[] allCheckedLocations;
 
@@ -212,7 +212,7 @@ namespace Archipelago.MultiClient.Net.Helpers
                 allCheckedLocations = locationsChecked.ToArray();
             }
 
-            return await socket.SendPacketAsync(
+            return socket.SendPacketAsync(
                 new LocationChecksPacket()
                 {
                     Locations = allCheckedLocations
@@ -295,18 +295,18 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// <exception cref="T:Archipelago.MultiClient.Net.Exceptions.ArchipelagoSocketClosedException">
         ///     The websocket connection is not alive.
         /// </exception>
-        public async Task<LocationInfoPacket> ScoutLocationsAsync(bool createAsHint, params long[] ids)
+        public Task<LocationInfoPacket> ScoutLocationsAsync(bool createAsHint, params long[] ids)
         {
             locationInfoPacketCallbackTask = new TaskCompletionSource<LocationInfoPacket>();
             awaitingLocationInfoPacket = true;
 
-            await socket.SendPacketAsync(new LocationScoutsPacket()
+            socket.SendPacket(new LocationScoutsPacket()
             {
                 Locations = ids,
                 CreateAsHint = createAsHint
             });
 
-            return await locationInfoPacketCallbackTask.Task;
+            return locationInfoPacketCallbackTask.Task;
         }
 
         /// <summary>
@@ -323,10 +323,10 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// <exception cref="T:Archipelago.MultiClient.Net.Exceptions.ArchipelagoSocketClosedException">
         ///     The websocket connection is not alive.
         /// </exception>
-        public async Task<LocationInfoPacket> ScoutLocationsAsync(params long[] ids)
+        public Task<LocationInfoPacket> ScoutLocationsAsync(params long[] ids)
         {
             // Maintain backwards compatibility if createAsHint parameter is not specified.
-            return await ScoutLocationsAsync(false, ids);
+            return ScoutLocationsAsync(false, ids);
         }
 #endif
 

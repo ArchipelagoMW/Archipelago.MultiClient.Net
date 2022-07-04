@@ -248,9 +248,9 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// <exception cref="T:Archipelago.MultiClient.Net.Exceptions.ArchipelagoSocketClosedException">
         ///     The websocket connection is not alive.
         /// </exception>
-        public async Task<bool> SendPacketAsync(ArchipelagoPacketBase packet)
+        public Task<bool> SendPacketAsync(ArchipelagoPacketBase packet)
         {
-            return await SendMultiplePacketsAsync(new List<ArchipelagoPacketBase> { packet });
+            return SendMultiplePacketsAsync(new List<ArchipelagoPacketBase> { packet });
         }
 
         /// <summary>
@@ -265,9 +265,9 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// <exception cref="T:Archipelago.MultiClient.Net.Exceptions.ArchipelagoSocketClosedException">
         ///     The websocket connection is not alive.
         /// </exception>
-        public async Task<bool> SendMultiplePacketsAsync(List<ArchipelagoPacketBase> packets)
+        public Task<bool> SendMultiplePacketsAsync(List<ArchipelagoPacketBase> packets)
         {
-            return await SendMultiplePacketsAsync(packets.ToArray());
+            return SendMultiplePacketsAsync(packets.ToArray());
         }
 
         /// <summary>
@@ -282,7 +282,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// <exception cref="T:Archipelago.MultiClient.Net.Exceptions.ArchipelagoSocketClosedException">
         ///     The websocket connection is not alive.
         /// </exception>
-        public async Task<bool> SendMultiplePacketsAsync(params ArchipelagoPacketBase[] packets)
+        public Task<bool> SendMultiplePacketsAsync(params ArchipelagoPacketBase[] packets)
         {
             var taskCompletionSource = new TaskCompletionSource<bool>();
 
@@ -303,7 +303,7 @@ namespace Archipelago.MultiClient.Net.Helpers
                 taskCompletionSource.SetException(new ArchipelagoSocketClosedException());
             }
 
-            return await taskCompletionSource.Task;
+            return taskCompletionSource.Task;
         }
 #endif
 

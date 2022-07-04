@@ -118,11 +118,11 @@ namespace Archipelago.MultiClient.Net.Helpers
             socket.SendPacketAsync(new GetPacket { Keys = new[] { key } });
         }
 #else
-        private async Task<JToken> GetAsync(string key)
+        private Task<JToken> GetAsync(string key)
         {
             if (asyncRetrievalTasks.TryGetValue(key, out var asyncRetrievalTask))
             {
-                return await asyncRetrievalTask.Task;
+                return asyncRetrievalTask.Task;
             }
             else
             {
@@ -130,9 +130,9 @@ namespace Archipelago.MultiClient.Net.Helpers
 
                 asyncRetrievalTasks[key] = newRetrievalTask;
 
-                await socket.SendPacketAsync(new GetPacket { Keys = new[] { key } });
+                socket.SendPacketAsync(new GetPacket { Keys = new[] { key } });
 
-                return await newRetrievalTask.Task;
+                return newRetrievalTask.Task;
             }
         }
 #endif
