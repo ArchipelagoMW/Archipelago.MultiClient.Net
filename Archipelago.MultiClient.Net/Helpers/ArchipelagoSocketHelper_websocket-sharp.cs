@@ -236,7 +236,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// <exception cref="T:Archipelago.MultiClient.Net.Exceptions.ArchipelagoSocketClosedException">
         ///     The websocket connection is not alive.
         /// </exception>
-        public Task<bool> SendPacketAsync(ArchipelagoPacketBase packet)
+        public Task SendPacketAsync(ArchipelagoPacketBase packet)
         {
             return SendMultiplePacketsAsync(new List<ArchipelagoPacketBase> { packet });
         }
@@ -253,7 +253,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// <exception cref="T:Archipelago.MultiClient.Net.Exceptions.ArchipelagoSocketClosedException">
         ///     The websocket connection is not alive.
         /// </exception>
-        public Task<bool> SendMultiplePacketsAsync(List<ArchipelagoPacketBase> packets)
+        public Task SendMultiplePacketsAsync(List<ArchipelagoPacketBase> packets)
         {
             return SendMultiplePacketsAsync(packets.ToArray());
         }
@@ -270,7 +270,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// <exception cref="T:Archipelago.MultiClient.Net.Exceptions.ArchipelagoSocketClosedException">
         ///     The websocket connection is not alive.
         /// </exception>
-        public Task<bool> SendMultiplePacketsAsync(params ArchipelagoPacketBase[] packets)
+        public Task SendMultiplePacketsAsync(params ArchipelagoPacketBase[] packets)
         {
             var taskCompletionSource = new TaskCompletionSource<bool>();
 
@@ -278,7 +278,10 @@ namespace Archipelago.MultiClient.Net.Helpers
             {
                 var packetAsJson = JsonConvert.SerializeObject(packets);
                 webSocket.SendAsync(packetAsJson, success => {
-                    taskCompletionSource.SetResult(success);
+                    if (!success)
+                        taskCompletionSource.SetException(new Exception("Failed to send packets async"));
+                    else
+                        taskCompletionSource.SetResult(true);
                 });
 
                 if (PacketsSent != null)

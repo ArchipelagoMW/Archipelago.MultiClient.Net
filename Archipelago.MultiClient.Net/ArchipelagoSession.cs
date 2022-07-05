@@ -92,7 +92,7 @@ namespace Archipelago.MultiClient.Net
 
             try
             {
-#if !NET35
+#if NETSTANDARD2_0
                 Socket.ConnectAsync().Wait(TimeSpan.FromSeconds(5));
 #else
                 Socket.Connect();
@@ -117,7 +117,7 @@ namespace Archipelago.MultiClient.Net
                 {
                     if (DateTime.UtcNow - connectedStartedTime > TimeSpan.FromSeconds(ArchipelagoConnectionTimeoutInSeconds))
                     {
-#if !NET35
+#if NETSTANDARD2_0
                         Socket.DisconnectAsync().Wait();
 #else
                         Socket.Connect();

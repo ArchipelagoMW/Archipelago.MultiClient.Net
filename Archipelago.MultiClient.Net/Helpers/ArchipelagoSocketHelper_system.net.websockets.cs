@@ -13,6 +13,9 @@ namespace Archipelago.MultiClient.Net.Helpers
 {
     public class ArchipelagoSocketHelper : IArchipelagoSocketHelper
     {
+        private const int ReceiveChunkSize = 1024;
+        private const int SendChunkSize = 1024;
+
         public delegate void PacketReceivedHandler(ArchipelagoPacketBase packet);
         public event PacketReceivedHandler PacketReceived;
 
@@ -59,7 +62,52 @@ namespace Archipelago.MultiClient.Net.Helpers
                 SocketOpened();
             }
 
-            
+            _ = Task.Run(PollingLoop);
+        }
+
+        private async Task PollingLoop()
+        {
+            var buffer = new byte[ReceiveChunkSize];
+
+            while (webSocket.State == WebSocketState.Open)
+            {
+                string message = null;
+
+                try
+                {
+                    message = await ReadMessageAsync(buffer);
+                }
+                catch (Exception e)
+                {
+                    OnError(e);
+                }
+
+                OnMessageReceived(message);
+            }
+        }
+
+        private async Task<string> ReadMessageAsync(byte[] buffer)
+        {
+            var stringResult = new StringBuilder();
+
+            WebSocketReceiveResult result;
+            do
+            {
+                result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+
+                if (result.MessageType == WebSocketMessageType.Close)
+                {
+                    await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, CancellationToken.None);
+
+                    OnSocketClosed();
+                }
+                else
+                {
+                    stringResult.Append(Encoding.UTF8.GetString(buffer, 0, result.Count));
+                }
+            } while (!result.EndOfMessage);
+
+            return stringResult.ToString();
         }
 
         /// <summary>
@@ -71,10 +119,7 @@ namespace Archipelago.MultiClient.Net.Helpers
             await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closure requested by client",
                 CancellationToken.None);
 
-            if (SocketClosed != null)
-            {
-                SocketClosed();
-            }
+            OnSocketClosed();
         }
 
         /// <summary>
@@ -170,91 +215,101 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// </exception>
         public async Task SendMultiplePacketsAsync(params ArchipelagoPacketBase[] packets)
         {
-            if (!Connected)
+            if (webSocket.State != WebSocketState.Open)
             {
-                await Task.FromException(new ArchipelagoSocketClosedException());
+                throw new ArchipelagoSocketClosedException();
             }
-            else
+
+            var packetAsJson = JsonConvert.SerializeObject(packets);
+            var messageBuffer = Encoding.UTF8.GetBytes(packetAsJson);
+            var messagesCount = (int)Math.Ceiling((double)messageBuffer.Length / SendChunkSize);
+
+            for (var i = 0; i < messagesCount; i++)
             {
-                var packetAsJson = JsonConvert.SerializeObject(packets);
-                var bytes = Encoding.UTF8.GetBytes(packetAsJson);
-                var data = new ArraySegment<byte>(bytes, 0, bytes.Length);
+                var offset = (SendChunkSize * i);
+                var count = SendChunkSize;
+                var lastMessage = ((i + 1) == messagesCount);
 
-                await webSocket.SendAsync(data, WebSocketMessageType.Text, true, CancellationToken.None);
+                if ((count * (i + 1)) > messageBuffer.Length)
+                {
+                    count = messageBuffer.Length - offset;
+                }
 
+                await webSocket.SendAsync(new ArraySegment<byte>(messageBuffer, offset, count), WebSocketMessageType.Text, lastMessage, CancellationToken.None);
+            }
+
+            OnPacketSend(packets);
+        }
+
+        private void OnPacketSend(ArchipelagoPacketBase[] packets)
+        {
+            try
+            {
                 if (PacketsSent != null)
                 {
                     PacketsSent(packets);
                 }
             }
+            catch (Exception e)
+            {
+                OnError(e);
+            }
         }
 
-        /*
-        private void OnMessageReceived(object sender, MessageEventArgs e)
+        private void OnSocketClosed()
         {
-            if (e.IsText && PacketReceived != null)
+            try
             {
-                var packets = JsonConvert.DeserializeObject<List<ArchipelagoPacketBase>>(e.Data, new ArchipelagoPacketConverter());
-                foreach (var packet in packets)
+                if (SocketClosed != null)
                 {
-                    PacketReceived(packet);
+                    SocketClosed();
                 }
             }
-        }
-
-        private void OnError(object sender, ErrorEventArgs e)
-        {
-            if (ErrorReceived != null)
+            catch (Exception e)
             {
-                ErrorReceived(e.Exception, e.Message);
+                OnError(e);
             }
         }
-        */
+
+        private void OnMessageReceived(string message)
+        {
+            try
+            {
+                if (!string.IsNullOrEmpty(message) && PacketReceived != null)
+                {
+                    var packets = JsonConvert.DeserializeObject<List<ArchipelagoPacketBase>>(message, new ArchipelagoPacketConverter());
+                    if (packets == null)
+                        return;
+
+                    foreach (var packet in packets)
+                    {
+                        PacketReceived(packet);
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                OnError(e);
+            }
+        }
+
+        private void OnError(Exception e)
+        {
+            try
+            {
+                if (ErrorReceived != null)
+                {
+                    ErrorReceived(e, e.Message);
+                }
+            }
+            catch (Exception innerError)
+            {
+                Console.Out.WriteLine(
+                    $"Error occured during reporting of error" +
+                    $"Outer Errror: {e.Message} {e.StackTrace}" +
+                    $"Inner Errror: {innerError.Message} {innerError.StackTrace}");
+            }
+        }
     }
 }
 #endif
-
-/*
-    do
-    {
-        using (var socket = new ClientWebSocket())
-            try
-            {
-                await socket.ConnectAsync(new Uri(Connection), CancellationToken.None);
-
-                await Send(socket, "data");
-                await Receive(socket);
-
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"ERROR - {ex.Message}");
-            }
-    } while (true); 
-
-
-static async Task Receive(ClientWebSocket socket)
-{
-    var buffer = new ArraySegment<byte>(new byte[2048]);
-    do
-    {
-        WebSocketReceiveResult result;
-        using (var ms = new MemoryStream())
-        {
-            do
-            {
-                result = await socket.ReceiveAsync(buffer, CancellationToken.None);
-                ms.Write(buffer.Array, buffer.Offset, result.Count);
-            } while (!result.EndOfMessage);
-
-            if (result.MessageType == WebSocketMessageType.Close)
-                break;
-
-            ms.Seek(0, SeekOrigin.Begin);
-            using (var reader = new StreamReader(ms, Encoding.UTF8))
-                Console.WriteLine(await reader.ReadToEndAsync());
-        }
-    } while (true);
-}
-*/
-

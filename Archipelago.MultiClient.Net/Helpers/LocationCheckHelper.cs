@@ -1,12 +1,13 @@
 ﻿using Archipelago.MultiClient.Net.Cache;
 using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Packets;
-using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 
-#if !NET35
+#if NET35
+using System;
+#else
 using System.Threading.Tasks;
 #endif
 
@@ -19,7 +20,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 #if NET35
         void CompleteLocationChecksAsync(Action<bool> onComplete, params long[] ids);
 #else
-        Task<bool> CompleteLocationChecksAsync(params long[] ids);
+        Task CompleteLocationChecksAsync(params long[] ids);
 #endif
     }
 
@@ -201,7 +202,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// <exception cref="T:Archipelago.MultiClient.Net.Exceptions.ArchipelagoSocketClosedException">
         ///     The websocket connection is not alive.
         /// </exception>
-        public Task<bool> CompleteLocationChecksAsync(params long[] ids)
+        public Task CompleteLocationChecksAsync(params long[] ids)
         {
             long[] allCheckedLocations;
 
