@@ -36,7 +36,7 @@ namespace Archipelago.MultiClient.Net.Tests
 
             var enumerateTask = new Task(() =>
             {
-                var total = 0;
+                var total = 0L;
 
                 foreach (var networkItem in sut.AllItemsReceived)
                 {
