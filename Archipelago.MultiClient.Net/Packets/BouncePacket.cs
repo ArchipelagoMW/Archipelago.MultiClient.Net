@@ -3,6 +3,7 @@
 using Oculus.Newtonsoft.Json;
 #else
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 #endif
 using System.Collections.Generic;
 
@@ -22,6 +23,6 @@ namespace Archipelago.MultiClient.Net.Packets
         public List<string> Tags { get; set; } = new List<string>();
 
         [JsonProperty("data")]
-        public Dictionary<string, object> Data { get; set; } = new Dictionary<string, object>();
+        public Dictionary<string, JToken> Data { get; set; }
     }
 }

@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Archipelago.MultiClient.Net.Converters;
+using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 
 namespace Archipelago.MultiClient.Net.BounceFeatures.DeathLink
@@ -16,24 +18,24 @@ namespace Archipelago.MultiClient.Net.BounceFeatures.DeathLink
             Cause = cause;
         }
 
-        internal static bool TryParse(Dictionary<string, object> data, out DeathLink deathLink)
+        internal static bool TryParse(Dictionary<string, JToken> data, out DeathLink deathLink)
         {
             try
             {
-                if (!data.TryGetValue("time", out object timeStamp) || !data.TryGetValue("source", out object source))
+                if (!data.TryGetValue("time", out JToken timeStampToken) || !data.TryGetValue("source", out JToken sourceToken))
                 {
                     deathLink = null;
                     return false;
                 }
 
                 string cause = null;
-                if (data.TryGetValue("cause", out object causeObject))
+                if (data.TryGetValue("cause", out JToken causeToken))
                 {
-                    cause = causeObject.ToString();
+                    cause = causeToken.ToString();
                 }
 
-                deathLink = new DeathLink(source.ToString(), cause) {
-                    Timestamp = UnixTimeStampToDateTime((double)timeStamp),
+                deathLink = new DeathLink(sourceToken.ToString(), cause) {
+                    Timestamp = UnixTimeConverter.UnixTimeStampToDateTime(timeStampToken.ToObject<double>()),
                 };
                 return true;
             }
@@ -42,19 +44,6 @@ namespace Archipelago.MultiClient.Net.BounceFeatures.DeathLink
                 deathLink = null;
                 return false;
             }
-        }
-
-        internal static DateTime UnixTimeStampToDateTime(double unixTimeStamp)
-        {
-            var dateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
-            dateTime = dateTime.AddSeconds(unixTimeStamp);
-            return dateTime;
-        }
-
-        internal static double DateTimeToUnixTimeStamp(DateTime dateTime)
-        {
-            var utcEpoch = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
-            return (dateTime - utcEpoch).TotalMilliseconds / 1000;
         }
     }
 }

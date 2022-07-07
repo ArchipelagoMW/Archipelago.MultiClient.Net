@@ -15,6 +15,6 @@ namespace Archipelago.MultiClient.Net.Packets
         public override ArchipelagoPacketType PacketType => ArchipelagoPacketType.ConnectionRefused;
 
         [JsonProperty("errors", ItemConverterType = typeof(StringEnumConverter))]
-        public List<ConnectionRefusedError> Errors { get; set; } = new List<ConnectionRefusedError>();
+        public ConnectionRefusedError[] Errors { get; set; }
     }
 }

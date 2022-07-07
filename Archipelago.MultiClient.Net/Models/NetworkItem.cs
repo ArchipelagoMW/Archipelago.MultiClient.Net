@@ -2,6 +2,7 @@
 using Oculus.Newtonsoft.Json;
 #else
 using Newtonsoft.Json;
+using Archipelago.MultiClient.Net.Enums;
 #endif
 
 namespace Archipelago.MultiClient.Net.Models
@@ -16,5 +17,8 @@ namespace Archipelago.MultiClient.Net.Models
 
         [JsonProperty("player")]
         public int Player { get; set; }
+
+        [JsonProperty("flags")]
+        public ItemFlags Flags { get; set; }
     }
 }

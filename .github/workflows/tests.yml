@@ -1,0 +1,21 @@
+name: Report Test Results
+
+on:
+  workflow_run:
+    workflows: ["Build Solution"]
+    branches: ["main"]
+    types:
+      - completed
+
+jobs:
+  report:
+
+    runs-on: ubuntu-latest
+
+    steps:
+     - uses: dorny/test-reporter@v1
+       with:
+        artifact: TestResults
+        name: NUnit Tests
+        path: '*.trx'
+        reporter: dotnet-trx

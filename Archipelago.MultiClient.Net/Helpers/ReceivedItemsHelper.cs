@@ -10,12 +10,12 @@ namespace Archipelago.MultiClient.Net.Helpers
 {
     public class ReceivedItemsHelper
     {
-        private readonly ArchipelagoSocketHelper socket;
-        private readonly LocationCheckHelper locationsHelper;
+        private readonly IArchipelagoSocketHelper socket;
+        private readonly ILocationCheckHelper locationsHelper;
         private readonly IDataPackageCache dataPackageCache;
         private Queue<NetworkItem> itemQueue = new Queue<NetworkItem>();
         private List<NetworkItem> allItemsReceived = new List<NetworkItem>();
-        private Dictionary<int, string> itemLookupCache = new Dictionary<int, string>();
+        private Dictionary<long, string> itemLookupCache = new Dictionary<long, string>();
         private object itemQueueLockObject = new object();
 
         public int Index => allItemsReceived.Count;
@@ -25,14 +25,14 @@ namespace Archipelago.MultiClient.Net.Helpers
         {
             lock (itemQueueLockObject)
             {
-                return new ReadOnlyCollection<NetworkItem>(allItemsReceived);
+                return new ReadOnlyCollection<NetworkItem>(allItemsReceived.ToArray());
             }
         }
 
         public delegate void ItemReceivedHandler(ReceivedItemsHelper helper);
         public event ItemReceivedHandler ItemReceived;
 
-        internal ReceivedItemsHelper(ArchipelagoSocketHelper socket, LocationCheckHelper locationsHelper, IDataPackageCache dataPackageCache)
+        internal ReceivedItemsHelper(IArchipelagoSocketHelper socket, ILocationCheckHelper locationsHelper, IDataPackageCache dataPackageCache)
         {
             this.socket = socket;
             this.locationsHelper = locationsHelper;
@@ -77,7 +77,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         ///     Peek the name of next item on the queue to be handled.
         /// </summary>
         /// <returns>
-        ///     The name of the item.
+        ///     The name of the item as a string, or null if no such item is found.
         /// </returns>
         /// <exception cref="T:System.InvalidOperationException">
         ///     The <see cref="T:System.Collections.Generic.Queue`1" /> is empty.
@@ -117,30 +117,34 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// <returns>
         ///     The name of the item as a string, or null if no such item is found.
         /// </returns>
-        public string GetItemName(int id)
+        public string GetItemName(long id)
         {
             if (itemLookupCache.TryGetValue(id, out var name))
             {
                 return name;
             }
-            else
+
+            if (!dataPackageCache.TryGetDataPackageFromCache(out var dataPackage))
             {
-                if (!dataPackageCache.TryGetDataPackageFromCache(out var dataPackage))
-                {
-                    return null;
-                }
-
-                var gameDataContainingId = dataPackage.Games.Single(x => x.Value.ItemLookup.ContainsValue(id));
-                var gameDataItemLookup = gameDataContainingId.Value.ItemLookup.ToDictionary(x => x.Value, x => x.Key);
-                foreach (var kvp in gameDataItemLookup)
-                {
-                    itemLookupCache.Add(kvp.Key, kvp.Value);
-                }
-
-                return itemLookupCache.TryGetValue(id, out name)
-                    ? name
-                    : null;
+                return null;
             }
+
+            var gameDataContainingId = dataPackage.Games.SingleOrDefault(x => x.Value.ItemLookup.ContainsValue(id));
+
+            if (string.IsNullOrEmpty(gameDataContainingId.Key) || gameDataContainingId.Value == null)
+            {
+                return null;
+            }
+
+            var gameDataItemLookup = gameDataContainingId.Value.ItemLookup.ToDictionary(x => x.Value, x => x.Key);
+            foreach (var kvp in gameDataItemLookup)
+            {
+                itemLookupCache.Add(kvp.Key, kvp.Value);
+            }
+
+            return itemLookupCache.TryGetValue(id, out name)
+                ? name
+                : null;
         }
 
         private void Socket_PacketReceived(ArchipelagoPacketBase packet)
@@ -168,15 +172,12 @@ namespace Archipelago.MultiClient.Net.Helpers
                     {
                         foreach (var item in receivedItemsPacket.Items)
                         {
-                            if (!allItemsReceived.Contains(item))
-                            {
-                                allItemsReceived.Add(item);
-                                itemQueue.Enqueue(item);
+                            allItemsReceived.Add(item);
+                            itemQueue.Enqueue(item);
 
-                                if (ItemReceived != null)
-                                {
-                                    ItemReceived(this);
-                                }
+                            if (ItemReceived != null)
+                            {
+                                ItemReceived(this);
                             }
                         }
                     }

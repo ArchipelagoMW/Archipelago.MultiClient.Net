@@ -1,0 +1,41 @@
+name: Build Solution
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    
+    - uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '3.1.x'
+    
+    - name: setup-msbuild
+      uses: microsoft/setup-msbuild@v1.1
+      
+    - name: Setup NuGet.exe for use with actions
+      uses: NuGet/setup-nuget@v1.0.5
+      
+    - name: Restore NuGet Packages
+      run: nuget restore Archipelago.MultiClient.Net.sln
+      
+    - name: Build Library
+      run: msbuild Archipelago.MultiClient.Net.sln /property:Configuration=Release
+      
+    - name: Run Tests
+      run: dotnet test Archipelago.MultiClient.Net.Tests/bin/Release/Archipelago.MultiClient.Net.Tests.dll -l "trx;LogFileName=TestResults.trx"
+       
+    - name: Upload Test Results
+      uses: actions/upload-artifact@v2.3.1
+      with:
+        name: TestResults
+        path: TestResults/*.trx
+    

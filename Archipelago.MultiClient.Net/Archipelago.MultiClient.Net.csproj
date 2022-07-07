@@ -3,8 +3,19 @@
     <TargetFrameworks>net35;netstandard2.0;net472</TargetFrameworks>
     <AssemblyTitle>Archipelago.MultiClient.Net</AssemblyTitle>
     <Product>Archipelago.MultiClient.Net</Product>
-    <Copyright>Copyright ©  2021</Copyright>
+    <Copyright>Copyright ©  2022</Copyright>
     <OutputPath>bin\$(Configuration)\</OutputPath>
+    <Description>A client library for use with .NET based prog-langs for interfacing with Archipelago hosts.</Description>
+    <PackageProjectUrl>https://github.com/ArchipelagoMW/Archipelago.MultiClient.Net</PackageProjectUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RepositoryUrl>https://github.com/ArchipelagoMW/Archipelago.MultiClient.Net</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <AssemblyVersion>3.1.0.0</AssemblyVersion>
+    <FileVersion>3.1.0.0</FileVersion>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
+    <Version>3.1.0</Version>
+    <Company>Hussein Farran, Jarno Westhof, Zach Parks</Company>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugType>full</DebugType>
@@ -15,6 +26,12 @@
   <PropertyGroup Condition="'$(TargetFramework)' == 'net472'">
     <DefineConstants>USE_OCULUS_NEWTONSOFT</DefineConstants>
   </PropertyGroup>
+  <ItemGroup>
+    <None Include="..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
   <ItemGroup>
     <Reference Include="websocket-sharp">
       <HintPath>..\DLLs\websocket-sharp.dll</HintPath>

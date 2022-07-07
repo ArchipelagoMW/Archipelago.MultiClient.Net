@@ -16,18 +16,24 @@ namespace Archipelago.MultiClient.Net.Packets
         public override ArchipelagoPacketType PacketType => ArchipelagoPacketType.PrintJSON;
 
         [JsonProperty("data")]
-        public List<JsonMessagePart> Data { get; set; } = new List<JsonMessagePart>();
+        public JsonMessagePart[] Data { get; set; }
 
         [JsonProperty("type")]
         [JsonConverter(typeof(StringEnumConverter))]
         public JsonMessageType? MessageType { get; set; }
+    }
 
+    public class ItemPrintJsonPacket : PrintJsonPacket
+    {
         [JsonProperty("receiving")]
         public int ReceivingPlayer { get; set; }
 
         [JsonProperty("item")]
         public NetworkItem Item { get; set; }
+    }
 
+    public class HintPrintJsonPacket : ItemPrintJsonPacket
+    {
         [JsonProperty("found")]
         public bool? Found { get; set; }
     }

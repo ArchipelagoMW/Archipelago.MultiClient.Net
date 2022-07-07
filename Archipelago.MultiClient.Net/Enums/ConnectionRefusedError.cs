@@ -25,6 +25,11 @@
         /// <summary>
         /// InvalidPassword indicates the wrong, or no password when it was required, was sent.
         /// </summary>
-        InvalidPassword
+        InvalidPassword,
+
+        /// <summary>
+        /// InvalidItemsHandling indicates a wrong value type or flag combination was sent.
+        /// </summary>
+        InvalidItemsHandling
     }
 }

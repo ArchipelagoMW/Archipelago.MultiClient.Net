@@ -17,6 +17,6 @@ namespace Archipelago.MultiClient.Net.Packets
         public int Index { get; set; }
 
         [JsonProperty("items")]
-        public List<NetworkItem> Items { get; set; } = new List<NetworkItem>();
+        public NetworkItem[] Items { get; set; }
     }
 }

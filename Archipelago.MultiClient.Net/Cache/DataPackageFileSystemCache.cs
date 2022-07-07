@@ -9,24 +9,26 @@ using Newtonsoft.Json;
 #endif
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 
 namespace Archipelago.MultiClient.Net.Cache
 {
     internal class DataPackageFileSystemCache : IDataPackageCache
     {
-        private const string DataPackageFileName = "datapackagecache.archipelagocache";
-        private readonly ArchipelagoSocketHelper socket;
-        private readonly string CacheFolder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+        private readonly IArchipelagoSocketHelper socket;
+        private readonly IFileSystemDataPackageProvider fileSystemDataPackageProvider;
+
         private RoomInfoPacket roomInfoPacket;
         private DataPackage dataPackage;
 
-        private readonly object fileAccessLockObject = new object();
+        public DataPackageFileSystemCache(IArchipelagoSocketHelper socket) : this(socket, new FileSystemDataPackageProvider())
+        {
+        }
 
-        public DataPackageFileSystemCache(ArchipelagoSocketHelper socket)
+        internal DataPackageFileSystemCache(IArchipelagoSocketHelper socket, IFileSystemDataPackageProvider fileSystemDataPackageProvider)
         {
             this.socket = socket;
+            this.fileSystemDataPackageProvider = fileSystemDataPackageProvider;
 
             socket.PacketReceived += Socket_PacketReceived;
         }
@@ -44,14 +46,14 @@ namespace Archipelago.MultiClient.Net.Cache
 
                     socket.SendPacket(new GetDataPackagePacket()
                     {
-                        Exclusions = exclusions.ToList()
+                        Exclusions = exclusions.ToArray()
                     });
                 }
             }
             else if (packet.PacketType == ArchipelagoPacketType.DataPackage)
             {
                 var packagePacket = (DataPackagePacket)packet;
-                SaveDataPackageToCache(packagePacket.DataPackage);
+                UpdateDataPackageFromServer(packagePacket.DataPackage);
             }
         }
 
@@ -62,89 +64,53 @@ namespace Archipelago.MultiClient.Net.Cache
                 package = dataPackage;
                 return true;
             }
-            lock (fileAccessLockObject)
-            {
-                var dataPackagePath = Path.Combine(CacheFolder, DataPackageFileName);
-                try
-                {
-                    if (File.Exists(dataPackagePath))
-                    {
-                        string fileText = File.ReadAllText(dataPackagePath);
-                        package = JsonConvert.DeserializeObject<DataPackage>(fileText);
-                        dataPackage = package;
-                        return true;
-                    }
-                }
-                catch
-                {
-                    // ignored
-                }
 
-                package = null;
-                return false;
-            }
+            return fileSystemDataPackageProvider.TryGetDataPackage(out package);
         }
 
-        public bool SaveDataPackageToCache(DataPackage package)
+        internal void UpdateDataPackageFromServer(DataPackage package)
         {
-            try
+            if (TryGetDataPackageFromCache(out var combinedPackage))
             {
-                if (TryGetDataPackageFromCache(out var cachedPackage))
+                combinedPackage.Version = package.Version;
+
+                foreach (var game in package.Games)
                 {
-                    foreach (var item in cachedPackage.Games.Keys.ToList())
-                    {
-                        if (package.Games.ContainsKey(item))
-                        {
-                            if (cachedPackage.Games[item].Version != package.Games[item].Version)
-                            {
-                                if (package.Games[item].Version == 0)
-                                {
-                                    continue;
-                                }
-
-                                cachedPackage.Games[item] = package.Games[item];
-                            }
-                        }
-                    }
-
-                    foreach (var item in package.Games.Keys.ToList())
-                    {
-                        if (package.Games[item].Version == 0)
-                        {
-                            continue;
-                        }
-
-                        if (!cachedPackage.Games.ContainsKey(item))
-                        {
-                            cachedPackage.Games.Add(item, package.Games[item]);
-                        }
-                    }
-
-                    dataPackage = package;
-                    SaveDataPackageToFile(cachedPackage);
-                    return true;
-                }
-                else
-                {
-                    dataPackage = package;
-                    SaveDataPackageToFile(package);
-                    return true;
+                    combinedPackage.Games[game.Key] = game.Value;
                 }
             }
-            catch
+            else
             {
-                return false;
+                combinedPackage = package;
             }
+
+            dataPackage = combinedPackage;
+            SaveDataPackageToCache(combinedPackage);
+        }
+        
+        private void SaveDataPackageToCache(DataPackage package)
+        {
+            var dataPackageForSaving = PrepareDataPackageForSaving(package);
+
+            fileSystemDataPackageProvider.SaveDataPackageToFile(dataPackageForSaving);
         }
 
-        private void SaveDataPackageToFile(DataPackage package)
+        private DataPackage PrepareDataPackageForSaving(DataPackage package)
         {
-            lock (fileAccessLockObject)
+            var dataPackageForSaving = new DataPackage {
+                Version = package.Version,
+                Games = new Dictionary<string, GameData>(package.Games.Count)
+            };
+
+            foreach (var game in package.Games)
             {
-                var dataPackagePath = Path.Combine(CacheFolder, DataPackageFileName);
-                string contents = JsonConvert.SerializeObject(package);
-                File.WriteAllText(dataPackagePath, contents);
+                if(game.Value.Version == 0)
+                    continue;
+
+                dataPackageForSaving.Games[game.Key] = game.Value;
             }
+
+            return dataPackageForSaving;
         }
 
         private List<string> GetCacheInvalidatedGames(RoomInfoPacket packet)
