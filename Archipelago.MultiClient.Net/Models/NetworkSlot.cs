@@ -1,6 +1,12 @@
 ﻿using System.Collections.Generic;
 using Archipelago.MultiClient.Net.Enums;
+#if USE_OCULUS_NEWTONSOFT
+using Oculus.Newtonsoft.Json.Linq;
+using Oculus.Newtonsoft.Json;
+#else
+using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
+#endif
 
 namespace Archipelago.MultiClient.Net.Models
 {

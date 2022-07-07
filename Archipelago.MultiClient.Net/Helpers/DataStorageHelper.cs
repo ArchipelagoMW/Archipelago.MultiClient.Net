@@ -1,7 +1,11 @@
 ﻿using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
+#if USE_OCULUS_NEWTONSOFT
+using Oculus.Newtonsoft.Json.Linq;
+#else
 using Newtonsoft.Json.Linq;
+#endif
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -106,7 +110,11 @@ namespace Archipelago.MultiClient.Net.Helpers
                 Key = key,
                 DefaultValue = value,
                 Operations = new[] {
+#if USE_OCULUS_NEWTONSOFT
+                    new OperationSpecification { Operation = Operation.Default.ToString() }
+#else
                     new OperationSpecification { Operation = Operation.Default }
+#endif
                 }
             });
         }
@@ -143,7 +151,11 @@ namespace Archipelago.MultiClient.Net.Helpers
             {
                 e.Operations.Insert(0, new OperationSpecification
                 {
+#if USE_OCULUS_NEWTONSOFT
+                    Operation = "Replace",
+#else
                     Operation = Operation.Replace,
+#endif
                     Value = GetValue(e.Context.Key)
                 });
             }
