@@ -2,7 +2,11 @@
 using Archipelago.MultiClient.Net.Helpers;
 using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
+#if USE_OCULUS_NEWTONSOFT
+using Oculus.Newtonsoft.Json.Linq;
+#else
 using Newtonsoft.Json.Linq;
+#endif
 using NSubstitute;
 using NUnit.Framework;
 using System;
@@ -52,169 +56,169 @@ namespace Archipelago.MultiClient.Net.Tests
         public static TestCaseData[] CompoundAssignmentTests =>
             new TestCaseData[] {
                 new CompoundAssignmentTest<int>("Assignment", 30, (sut, key, value) => sut[key] = value,
-                    (p, key, value) => p.Key == key && (int)p.Operations[0].Value == value && p.Operations[0].Operation == Operation.Replace),
+                    (p, key, value) => p.Key == key && (int)p.Operations[0].Value == value && p.Operations[0].Operation == Operation.Replace.ToString().ToString()),
                 new CompoundAssignmentTest<long>("Assignment", 300L, (sut, key, value) => sut[key] = value,
-                    (p, key, value) => p.Key == key && (long)p.Operations[0].Value == value && p.Operations[0].Operation == Operation.Replace),
+                    (p, key, value) => p.Key == key && (long)p.Operations[0].Value == value && p.Operations[0].Operation == Operation.Replace.ToString()),
                 new CompoundAssignmentTest<decimal>("Assignment", 3.003m, (sut, key, value) => sut[key] = value,
-                    (p, key, value) => p.Key == key && (decimal)p.Operations[0].Value == value && p.Operations[0].Operation == Operation.Replace),
+                    (p, key, value) => p.Key == key && (decimal)p.Operations[0].Value == value && p.Operations[0].Operation == Operation.Replace.ToString()),
                 new CompoundAssignmentTest<double>("Assignment", 3.03d, (sut, key, value) => sut[key] = value,
-                    (p, key, value) => p.Key == key && (double)p.Operations[0].Value == value && p.Operations[0].Operation == Operation.Replace),
+                    (p, key, value) => p.Key == key && (double)p.Operations[0].Value == value && p.Operations[0].Operation == Operation.Replace.ToString()),
                 new CompoundAssignmentTest<float>("Assignment", 3f, (sut, key, value) => sut[key] = value,
-                    (p, key, value) => p.Key == key && (float)p.Operations[0].Value == value && p.Operations[0].Operation == Operation.Replace),
+                    (p, key, value) => p.Key == key && (float)p.Operations[0].Value == value && p.Operations[0].Operation == Operation.Replace.ToString()),
                 new CompoundAssignmentTest<string>("Assignment", "test", (sut, key, value) => sut[key] = value,
-                    (p, key, value) => p.Key == key && (string)p.Operations[0].Value == value && p.Operations[0].Operation == Operation.Replace),
+                    (p, key, value) => p.Key == key && (string)p.Operations[0].Value == value && p.Operations[0].Operation == Operation.Replace.ToString()),
                 new CompoundAssignmentTest<bool>("Assignment", true, (sut, key, value) => sut[key] = value,
-                    (p, key, value) => p.Key == key && (bool)p.Operations[0].Value == value && p.Operations[0].Operation == Operation.Replace),
+                    (p, key, value) => p.Key == key && (bool)p.Operations[0].Value == value && p.Operations[0].Operation == Operation.Replace.ToString()),
                 new CompoundAssignmentTest<bool[]>("Assignment", new []{ true, false }, (sut, key, value) => sut[key] = value,
-                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.Replace && p.Operations[0].Value is JArray),
+                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.Replace .ToString()&& p.Operations[0].Value is JArray),
                 new CompoundAssignmentTest<int[]>("Assignment", new []{ 101, 204 }, (sut, key, value) => sut[key] = value,
-                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.Replace && p.Operations[0].Value is JArray),
+                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.Replace .ToString()&& p.Operations[0].Value is JArray),
                 new CompoundAssignmentTest<long[]>("Assignment", new []{ 500L, 999L }, (sut, key, value) => sut[key] = value,
-                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.Replace && p.Operations[0].Value is JArray),
+                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.Replace .ToString()&& p.Operations[0].Value is JArray),
                 new CompoundAssignmentTest<decimal[]>("Assignment", new []{ 1m, 0.5m }, (sut, key, value) => sut[key] = value,
-                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.Replace && p.Operations[0].Value is JArray),
+                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.Replace .ToString()&& p.Operations[0].Value is JArray),
                 new CompoundAssignmentTest<double[]>("Assignment", new []{ 77d, 0.23d }, (sut, key, value) => sut[key] = value,
-                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.Replace && p.Operations[0].Value is JArray),
+                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.Replace .ToString()&& p.Operations[0].Value is JArray),
                 new CompoundAssignmentTest<float[]>("Assignment", new []{ 1f }, (sut, key, value) => sut[key] = value,
-                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.Replace && p.Operations[0].Value is JArray),
+                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.Replace .ToString()&& p.Operations[0].Value is JArray),
                 new CompoundAssignmentTest<string[]>("Assignment", new []{ "a", "b" }, (sut, key, value) => sut[key] = value,
-                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.Replace && p.Operations[0].Value is JArray),
+                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.Replace .ToString()&& p.Operations[0].Value is JArray),
                 new CompoundAssignmentTest<object[]>("Assignment", new object[]{ "A", 20 }, (sut, key, value) => sut[key] = value,
-                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.Replace && p.Operations[0].Value is JArray),
+                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.Replace .ToString()&& p.Operations[0].Value is JArray),
                 new CompoundAssignmentTest<ItemFlags[]>("Assignment", new []{ ItemFlags.Trap }, (sut, key, value) => sut[key] = value,
-                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.Replace && p.Operations[0].Value is JArray),
+                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.Replace .ToString()&& p.Operations[0].Value is JArray),
                 new CompoundAssignmentTest<List<bool>>("Assignment", new List<bool>() { true }, (sut, key, value) => sut[key] = value,
-                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.Replace && p.Operations[0].Value is JArray),
+                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.Replace .ToString()&& p.Operations[0].Value is JArray),
                 new CompoundAssignmentTest<List<int>>("Assignment", new List<int>() { 1 , 3 }, (sut, key, value) => sut[key] = value,
-                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.Replace && p.Operations[0].Value is JArray),
+                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.Replace .ToString()&& p.Operations[0].Value is JArray),
                 new CompoundAssignmentTest<List<long>>("Assignment", new List<long>() { 1L , 2L }, (sut, key, value) => sut[key] = value,
-                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.Replace && p.Operations[0].Value is JArray),
+                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.Replace .ToString()&& p.Operations[0].Value is JArray),
                 new CompoundAssignmentTest<List<decimal>>("Assignment", new List<decimal>() { 1.01m }, (sut, key, value) => sut[key] = value,
-                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.Replace && p.Operations[0].Value is JArray),
+                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.Replace .ToString()&& p.Operations[0].Value is JArray),
                 new CompoundAssignmentTest<List<double>>("Assignment", new List<double>() { 1.3d , 3.1d }, (sut, key, value) => sut[key] = value,
-                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.Replace && p.Operations[0].Value is JArray),
+                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.Replace .ToString()&& p.Operations[0].Value is JArray),
                 new CompoundAssignmentTest<List<float>>("Assignment", new List<float>() { 5f }, (sut, key, value) => sut[key] = value,
-                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.Replace && p.Operations[0].Value is JArray),
+                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.Replace .ToString()&& p.Operations[0].Value is JArray),
                 new CompoundAssignmentTest<List<string>>("Assignment", new List<string>() { "Hello", "Kitty" }, (sut, key, value) => sut[key] = value,
-                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.Replace && p.Operations[0].Value is JArray),
+                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.Replace .ToString()&& p.Operations[0].Value is JArray),
                 new CompoundAssignmentTest<List<object>>("Assignment", new List<object>() { "Hello", 101 }, (sut, key, value) => sut[key] = value,
-                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.Replace && p.Operations[0].Value is JArray),
+                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.Replace .ToString()&& p.Operations[0].Value is JArray),
                 new CompoundAssignmentTest<int>("Inplace Addition", 10, (sut, key, value) => sut[key] += value,
-                    (p, key, value) => p.Key == key && (int)p.Operations[0].Value == value && p.Operations[0].Operation == Operation.Add),
+                    (p, key, value) => p.Key == key && (int)p.Operations[0].Value == value && p.Operations[0].Operation == Operation.Add.ToString()),
                 new CompoundAssignmentTest<long>("Inplace Addition", 300L, (sut, key, value) => sut[key] += value,
-                    (p, key, value) => p.Key == key && (long)p.Operations[0].Value == value && p.Operations[0].Operation == Operation.Add),
+                    (p, key, value) => p.Key == key && (long)p.Operations[0].Value == value && p.Operations[0].Operation == Operation.Add.ToString()),
                 new CompoundAssignmentTest<decimal>("Inplace Addition", 3.003m, (sut, key, value) => sut[key] += value,
-                    (p, key, value) => p.Key == key && (decimal)p.Operations[0].Value == value && p.Operations[0].Operation == Operation.Add),
+                    (p, key, value) => p.Key == key && (decimal)p.Operations[0].Value == value && p.Operations[0].Operation == Operation.Add.ToString()),
                 new CompoundAssignmentTest<double>("Inplace Addition", 3.03d, (sut, key, value) => sut[key] += value,
-                    (p, key, value) => p.Key == key && (double)p.Operations[0].Value == value && p.Operations[0].Operation == Operation.Add),
+                    (p, key, value) => p.Key == key && (double)p.Operations[0].Value == value && p.Operations[0].Operation == Operation.Add.ToString()),
                 new CompoundAssignmentTest<float>("Inplace Addition", 3f, (sut, key, value) => sut[key] += value,
-                    (p, key, value) => p.Key == key && (float)p.Operations[0].Value == value && p.Operations[0].Operation == Operation.Add),
+                    (p, key, value) => p.Key == key && (float)p.Operations[0].Value == value && p.Operations[0].Operation == Operation.Add.ToString()),
                 new CompoundAssignmentTest<string>("Inplace Addition", "test", (sut, key, value) => sut[key] += value,
-                    (p, key, value) => p.Key == key && (string)p.Operations[0].Value == value && p.Operations[0].Operation == Operation.Add),
+                    (p, key, value) => p.Key == key && (string)p.Operations[0].Value == value && p.Operations[0].Operation == Operation.Add.ToString()),
                 new CompoundAssignmentTest<IList>("Inplace Addition", new []{ 1, 2 }, (sut, key, value) => sut[key] += value,
-                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.Add && p.Operations[0].Value is JArray),
+                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.Add .ToString()&& p.Operations[0].Value is JArray),
                 new CompoundAssignmentTest<bool[]>("Inplace Addition", new []{ true, false }, (sut, key, value) => sut[key] += value,
-                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.Add && p.Operations[0].Value is JArray),
+                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.Add .ToString()&& p.Operations[0].Value is JArray),
                 new CompoundAssignmentTest<int[]>("Inplace Addition", new []{ 101, 204 }, (sut, key, value) => sut[key] += value,
-                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.Add && p.Operations[0].Value is JArray),
+                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.Add .ToString()&& p.Operations[0].Value is JArray),
                 new CompoundAssignmentTest<long[]>("Inplace Addition", new []{ 500L, 999L }, (sut, key, value) => sut[key] += value,
-                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.Add && p.Operations[0].Value is JArray),
+                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.Add .ToString()&& p.Operations[0].Value is JArray),
                 new CompoundAssignmentTest<decimal[]>("Inplace Addition", new []{ 1m, 0.5m }, (sut, key, value) => sut[key] += value,
-                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.Add && p.Operations[0].Value is JArray),
+                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.Add .ToString()&& p.Operations[0].Value is JArray),
                 new CompoundAssignmentTest<double[]>("Inplace Addition", new []{ 77d, 0.23d }, (sut, key, value) => sut[key] += value,
-                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.Add && p.Operations[0].Value is JArray),
+                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.Add .ToString()&& p.Operations[0].Value is JArray),
                 new CompoundAssignmentTest<float[]>("Inplace Addition", new []{ 1f }, (sut, key, value) => sut[key] += value,
-                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.Add && p.Operations[0].Value is JArray),
+                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.Add .ToString()&& p.Operations[0].Value is JArray),
                 new CompoundAssignmentTest<string[]>("Inplace Addition", new []{ "a", "b" }, (sut, key, value) => sut[key] += value,
-                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.Add && p.Operations[0].Value is JArray),
+                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.Add .ToString()&& p.Operations[0].Value is JArray),
                 new CompoundAssignmentTest<object[]>("Inplace Addition", new object[]{ "A", 20 }, (sut, key, value) => sut[key] += value,
-                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.Add && p.Operations[0].Value is JArray),
+                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.Add .ToString()&& p.Operations[0].Value is JArray),
                 new CompoundAssignmentTest<ItemFlags[]>("Inplace Addition", new []{ ItemFlags.Trap }, (sut, key, value) => sut[key] += value,
-                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.Add && p.Operations[0].Value is JArray),
+                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.Add .ToString()&& p.Operations[0].Value is JArray),
                 new CompoundAssignmentTest<List<bool>>("Inplace Addition", new List<bool>() { true }, (sut, key, value) => sut[key] += value,
-                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.Add && p.Operations[0].Value is JArray),
+                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.Add .ToString()&& p.Operations[0].Value is JArray),
                 new CompoundAssignmentTest<List<int>>("Inplace Addition", new List<int>() { 1 , 3 }, (sut, key, value) => sut[key] += value,
-                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.Add && p.Operations[0].Value is JArray),
+                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.Add .ToString()&& p.Operations[0].Value is JArray),
                 new CompoundAssignmentTest<List<long>>("Inplace Addition", new List<long>() { 1L , 2L }, (sut, key, value) => sut[key] += value,
-                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.Add && p.Operations[0].Value is JArray),
+                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.Add .ToString()&& p.Operations[0].Value is JArray),
                 new CompoundAssignmentTest<List<decimal>>("Inplace Addition", new List<decimal>() { 1.01m }, (sut, key, value) => sut[key] += value,
-                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.Add && p.Operations[0].Value is JArray),
+                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.Add .ToString()&& p.Operations[0].Value is JArray),
                 new CompoundAssignmentTest<List<double>>("Inplace Addition", new List<double>() { 1.3d , 3.1d }, (sut, key, value) => sut[key] += value,
-                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.Add && p.Operations[0].Value is JArray),
+                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.Add .ToString()&& p.Operations[0].Value is JArray),
                 new CompoundAssignmentTest<List<float>>("Inplace Addition", new List<float>() { 5f }, (sut, key, value) => sut[key] += value,
-                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.Add && p.Operations[0].Value is JArray),
+                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.Add .ToString()&& p.Operations[0].Value is JArray),
                 new CompoundAssignmentTest<List<string>>("Inplace Addition", new List<string>() { "Hello", "Kitty" }, (sut, key, value) => sut[key] += value,
-                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.Add && p.Operations[0].Value is JArray),
+                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.Add .ToString()&& p.Operations[0].Value is JArray),
                 new CompoundAssignmentTest<List<object>>("Inplace Addition", new List<object>() { "Hello", 101 }, (sut, key, value) => sut[key] += value,
-                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.Add && p.Operations[0].Value is JArray),
+                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.Add .ToString()&& p.Operations[0].Value is JArray),
                 new CompoundAssignmentTest<OperationSpecification>("Inplace Addition", Bitwise.Xor(0xFF), (sut, key, value) => sut[key] += value,
-                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.Xor && p.Operations[0].Value == value.Value),
+                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.Xor .ToString()&& p.Operations[0].Value == value.Value),
                 new CompoundAssignmentTest<OperationSpecification>("Inplace Addition", Bitwise.Or(0x00F0), (sut, key, value) => sut[key] += value,
-                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.Or && p.Operations[0].Value == value.Value),
+                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.Or .ToString()&& p.Operations[0].Value == value.Value),
                 new CompoundAssignmentTest<OperationSpecification>("Inplace Addition", Bitwise.And(0b01011), (sut, key, value) => sut[key] += value,
-                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.And && p.Operations[0].Value == value.Value),
+                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.And .ToString()&& p.Operations[0].Value == value.Value),
                 new CompoundAssignmentTest<OperationSpecification>("Inplace Addition", Bitwise.LeftShift(4), (sut, key, value) => sut[key] += value,
-                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.LeftShift && p.Operations[0].Value == value.Value),
+                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.LeftShift .ToString()&& p.Operations[0].Value == value.Value),
                 new CompoundAssignmentTest<OperationSpecification>("Inplace Addition", Bitwise.RightShift(8), (sut, key, value) => sut[key] += value,
-                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.RightShift && p.Operations[0].Value == value.Value),
+                    (p, key, value) => p.Key == key && p.Operations[0].Operation == Operation.RightShift .ToString()&& p.Operations[0].Value == value.Value),
                 new CompoundAssignmentTest<int>("Inplace Subtraction", 10, (sut, key, value) => sut[key] -= value,
-                    (p, key, value) => p.Key == key && -(int)p.Operations[0].Value == value && p.Operations[0].Operation == Operation.Add),
+                    (p, key, value) => p.Key == key && -(int)p.Operations[0].Value == value && p.Operations[0].Operation == Operation.Add.ToString()),
                 new CompoundAssignmentTest<long>("Inplace Subtraction", 300L, (sut, key, value) => sut[key] -= value,
-                    (p, key, value) => p.Key == key && -(long)p.Operations[0].Value == value && p.Operations[0].Operation == Operation.Add),
+                    (p, key, value) => p.Key == key && -(long)p.Operations[0].Value == value && p.Operations[0].Operation == Operation.Add.ToString()),
                 new CompoundAssignmentTest<decimal>("Inplace Subtraction", 3.003m, (sut, key, value) => sut[key] -= value,
-                    (p, key, value) => p.Key == key && -(decimal)p.Operations[0].Value == value && p.Operations[0].Operation == Operation.Add),
+                    (p, key, value) => p.Key == key && -(decimal)p.Operations[0].Value == value && p.Operations[0].Operation == Operation.Add.ToString()),
                 new CompoundAssignmentTest<double>("Inplace Subtraction", 3.03d, (sut, key, value) => sut[key] -= value,
-                    (p, key, value) => p.Key == key && -(double)p.Operations[0].Value == value && p.Operations[0].Operation == Operation.Add),
+                    (p, key, value) => p.Key == key && -(double)p.Operations[0].Value == value && p.Operations[0].Operation == Operation.Add.ToString()),
                 new CompoundAssignmentTest<float>("Inplace Subtraction", 3f, (sut, key, value) => sut[key] -= value,
-                    (p, key, value) => p.Key == key && -(float)p.Operations[0].Value == value && p.Operations[0].Operation == Operation.Add),
+                    (p, key, value) => p.Key == key && -(float)p.Operations[0].Value == value && p.Operations[0].Operation == Operation.Add.ToString()),
                 new CompoundAssignmentTest<int>("Inplace Multiplication", 10, (sut, key, value) => sut[key] *= value,
-                    (p, key, value) => p.Key == key && (int)p.Operations[0].Value == value && p.Operations[0].Operation == Operation.Mul),
+                    (p, key, value) => p.Key == key && (int)p.Operations[0].Value == value && p.Operations[0].Operation == Operation.Mul.ToString()),
                 new CompoundAssignmentTest<long>("Inplace Multiplication", 300L, (sut, key, value) => sut[key] *= value,
-                    (p, key, value) => p.Key == key && (long)p.Operations[0].Value == value && p.Operations[0].Operation == Operation.Mul),
+                    (p, key, value) => p.Key == key && (long)p.Operations[0].Value == value && p.Operations[0].Operation == Operation.Mul.ToString()),
                 new CompoundAssignmentTest<decimal>("Inplace Multiplication", 3.003m, (sut, key, value) => sut[key] *= value,
-                    (p, key, value) => p.Key == key && (decimal)p.Operations[0].Value == value && p.Operations[0].Operation == Operation.Mul),
+                    (p, key, value) => p.Key == key && (decimal)p.Operations[0].Value == value && p.Operations[0].Operation == Operation.Mul.ToString()),
                 new CompoundAssignmentTest<double>("Inplace Multiplication", 3.03d, (sut, key, value) => sut[key] *= value,
-                    (p, key, value) => p.Key == key && (double)p.Operations[0].Value == value && p.Operations[0].Operation == Operation.Mul),
+                    (p, key, value) => p.Key == key && (double)p.Operations[0].Value == value && p.Operations[0].Operation == Operation.Mul.ToString()),
                 new CompoundAssignmentTest<float>("Inplace Multiplication", 3f, (sut, key, value) => sut[key] *= value,
-                    (p, key, value) => p.Key == key && (float)p.Operations[0].Value == value && p.Operations[0].Operation == Operation.Mul),
+                    (p, key, value) => p.Key == key && (float)p.Operations[0].Value == value && p.Operations[0].Operation == Operation.Mul.ToString()),
                 new CompoundAssignmentTest<int>("Inplace Division", 10, (sut, key, value) => sut[key] /= value,
-                    (p, key, value) => p.Key == key && (decimal)p.Operations[0].Value == 1m/value && p.Operations[0].Operation == Operation.Mul),
+                    (p, key, value) => p.Key == key && (decimal)p.Operations[0].Value == 1m/value && p.Operations[0].Operation == Operation.Mul.ToString()),
                 new CompoundAssignmentTest<long>("Inplace Division", 300L, (sut, key, value) => sut[key] /= value,
-                    (p, key, value) => p.Key == key && (decimal)p.Operations[0].Value == 1m/value && p.Operations[0].Operation == Operation.Mul),
+                    (p, key, value) => p.Key == key && (decimal)p.Operations[0].Value == 1m/value && p.Operations[0].Operation == Operation.Mul.ToString()),
                 new CompoundAssignmentTest<decimal>("Inplace Division", 3.003m, (sut, key, value) => sut[key] /= value,
-                    (p, key, value) => p.Key == key && (decimal)p.Operations[0].Value == 1m/value && p.Operations[0].Operation == Operation.Mul),
+                    (p, key, value) => p.Key == key && (decimal)p.Operations[0].Value == 1m/value && p.Operations[0].Operation == Operation.Mul.ToString()),
                 new CompoundAssignmentTest<double>("Inplace Division", 3.03d, (sut, key, value) => sut[key] /= value,
-                    (p, key, value) => p.Key == key && (double)p.Operations[0].Value == 1d/value && p.Operations[0].Operation == Operation.Mul),
+                    (p, key, value) => p.Key == key && (double)p.Operations[0].Value == 1d/value && p.Operations[0].Operation == Operation.Mul.ToString()),
                 new CompoundAssignmentTest<float>("Inplace Division", 3f, (sut, key, value) => sut[key] /= value,
-                    (p, key, value) => p.Key == key && (double)p.Operations[0].Value == 1d/value && p.Operations[0].Operation == Operation.Mul),
+                    (p, key, value) => p.Key == key && (double)p.Operations[0].Value == 1d/value && p.Operations[0].Operation == Operation.Mul.ToString()),
                 new CompoundAssignmentTest<int>("Inplace Modulus", 10, (sut, key, value) => sut[key] %= value,
-                    (p, key, value) => p.Key == key && (int)p.Operations[0].Value == value && p.Operations[0].Operation == Operation.Mod),
+                    (p, key, value) => p.Key == key && (int)p.Operations[0].Value == value && p.Operations[0].Operation == Operation.Mod.ToString()),
                 new CompoundAssignmentTest<long>("Inplace Modulus", 300L, (sut, key, value) => sut[key] %= value,
-                    (p, key, value) => p.Key == key && (long)p.Operations[0].Value == value && p.Operations[0].Operation == Operation.Mod),
+                    (p, key, value) => p.Key == key && (long)p.Operations[0].Value == value && p.Operations[0].Operation == Operation.Mod.ToString()),
                 new CompoundAssignmentTest<decimal>("Inplace Modulus", 3.003m, (sut, key, value) => sut[key] %= value,
-                    (p, key, value) => p.Key == key && (decimal)p.Operations[0].Value == value && p.Operations[0].Operation == Operation.Mod),
+                    (p, key, value) => p.Key == key && (decimal)p.Operations[0].Value == value && p.Operations[0].Operation == Operation.Mod.ToString()),
                 new CompoundAssignmentTest<double>("Inplace Modulus", 3.03d, (sut, key, value) => sut[key] %= value,
-                    (p, key, value) => p.Key == key && (double)p.Operations[0].Value == value && p.Operations[0].Operation == Operation.Mod),
+                    (p, key, value) => p.Key == key && (double)p.Operations[0].Value == value && p.Operations[0].Operation == Operation.Mod.ToString()),
                 new CompoundAssignmentTest<float>("Inplace Modulus", 3f, (sut, key, value) => sut[key] %= value,
-                    (p, key, value) => p.Key == key && (float)p.Operations[0].Value == value && p.Operations[0].Operation == Operation.Mod),
+                    (p, key, value) => p.Key == key && (float)p.Operations[0].Value == value && p.Operations[0].Operation == Operation.Mod.ToString()),
                 new CompoundAssignmentTest<int>("Inplace Exponentiation", 10, (sut, key, value) => sut[key] ^= value,
-                    (p, key, value) => p.Key == key && (int)p.Operations[0].Value == value && p.Operations[0].Operation == Operation.Pow),
+                    (p, key, value) => p.Key == key && (int)p.Operations[0].Value == value && p.Operations[0].Operation == Operation.Pow.ToString()),
                 new CompoundAssignmentTest<long>("Inplace Exponentiation", 300L, (sut, key, value) => sut[key] ^= value,
-                    (p, key, value) => p.Key == key && (long)p.Operations[0].Value == value && p.Operations[0].Operation == Operation.Pow),
+                    (p, key, value) => p.Key == key && (long)p.Operations[0].Value == value && p.Operations[0].Operation == Operation.Pow.ToString()),
                 new CompoundAssignmentTest<decimal>("Inplace Exponentiation", 3.003m, (sut, key, value) => sut[key] ^= value,
-                    (p, key, value) => p.Key == key && (decimal)p.Operations[0].Value == value && p.Operations[0].Operation == Operation.Pow),
+                    (p, key, value) => p.Key == key && (decimal)p.Operations[0].Value == value && p.Operations[0].Operation == Operation.Pow.ToString()),
                 new CompoundAssignmentTest<double>("Inplace Exponentiation", 3.03d, (sut, key, value) => sut[key] ^= value,
-                    (p, key, value) => p.Key == key && (double)p.Operations[0].Value == value && p.Operations[0].Operation == Operation.Pow),
+                    (p, key, value) => p.Key == key && (double)p.Operations[0].Value == value && p.Operations[0].Operation == Operation.Pow.ToString()),
                 new CompoundAssignmentTest<float>("Inplace Exponentiation", 3f, (sut, key, value) => sut[key] ^= value,
-                    (p, key, value) => p.Key == key && (float)p.Operations[0].Value == value && p.Operations[0].Operation == Operation.Pow),
+                    (p, key, value) => p.Key == key && (float)p.Operations[0].Value == value && p.Operations[0].Operation == Operation.Pow.ToString()),
                 new CompoundAssignmentTest<int>("Postfix Addition", 0, (sut, key, value) => sut[key]++,
-                    (p, key, value) => p.Key == key && (int)p.Operations[0].Value == 1 && p.Operations[0].Operation == Operation.Add),
+                    (p, key, value) => p.Key == key && (int)p.Operations[0].Value == 1 && p.Operations[0].Operation == Operation.Add.ToString()),
                 new CompoundAssignmentTest<int>("Postfix Subtraction", 0, (sut, key, value) => sut[key]--,
-                    (p, key, value) => p.Key == key && (int)p.Operations[0].Value == -1 && p.Operations[0].Operation == Operation.Add),
+                    (p, key, value) => p.Key == key && (int)p.Operations[0].Value == -1 && p.Operations[0].Operation == Operation.Add.ToString()),
                 new CompoundAssignmentTest<int>("Inplace Maximum", 10, (sut, key, value) => sut[key] <<= value,
-                    (p, key, value) => p.Key == key && (int)p.Operations[0].Value == value && p.Operations[0].Operation == Operation.Max),
+                    (p, key, value) => p.Key == key && (int)p.Operations[0].Value == value && p.Operations[0].Operation == Operation.Max.ToString()),
                 new CompoundAssignmentTest<int>("Inplace Minimum", 10, (sut, key, value) => sut[key] >>= value,
-                    (p, key, value) => p.Key == key && (int)p.Operations[0].Value == value && p.Operations[0].Operation == Operation.Min)
+                    (p, key, value) => p.Key == key && (int)p.Operations[0].Value == value && p.Operations[0].Operation == Operation.Min.ToString())
             };
 
         [TestCaseSource(nameof(CompoundAssignmentTests))]
@@ -489,13 +493,13 @@ namespace Archipelago.MultiClient.Net.Tests
             sut[Scope.Slot, "A"] = "slot";
 
             socket.Received().SendPacketAsync(Arg.Is<SetPacket>(
-                p => p.Key == "A" && p.Operations[0].Operation == Operation.Replace && (string)p.Operations[0].Value == "global"));
+                p => p.Key == "A" && p.Operations[0].Operation == Operation.Replace.ToString() && (string)p.Operations[0].Value == "global"));
             socket.Received().SendPacketAsync(Arg.Is<SetPacket>(
-                p => p.Key == "Game:UnitTest:A" && p.Operations[0].Operation == Operation.Replace && (string)p.Operations[0].Value == "game"));
+                p => p.Key == "Game:UnitTest:A" && p.Operations[0].Operation == Operation.Replace.ToString() && (string)p.Operations[0].Value == "game"));
             socket.Received().SendPacketAsync(Arg.Is<SetPacket>(
-                p => p.Key == "Team:5:A" && p.Operations[0].Operation == Operation.Replace && (string)p.Operations[0].Value == "team"));
+                p => p.Key == "Team:5:A" && p.Operations[0].Operation == Operation.Replace.ToString() && (string)p.Operations[0].Value == "team"));
             socket.Received().SendPacketAsync(Arg.Is<SetPacket>(
-                p => p.Key == "Slot:12:A" && p.Operations[0].Operation == Operation.Replace && (string)p.Operations[0].Value == "slot"));
+                p => p.Key == "Slot:12:A" && p.Operations[0].Operation == Operation.Replace.ToString() && (string)p.Operations[0].Value == "slot"));
 
             string global = default;
             string game = default;
@@ -553,12 +557,12 @@ namespace Archipelago.MultiClient.Net.Tests
 
             socket.Received().SendPacketAsync(Arg.Is<SetPacket>(
                 p => p.Key == "DP1" && p.WantReply == true && p.Operations.Length == 2
-                    && p.Operations[0].Operation == Operation.Add && (decimal)p.Operations[0].Value == 50m
-                    && p.Operations[1].Operation == Operation.Max && (int)p.Operations[1].Value == 0));
+                    && p.Operations[0].Operation == Operation.Add .ToString()&& (decimal)p.Operations[0].Value == 50m
+                    && p.Operations[1].Operation == Operation.Max .ToString()&& (int)p.Operations[1].Value == 0));
             socket.Received().SendPacketAsync(Arg.Is<SetPacket>(
                 p => p.Key == "DP2" && p.WantReply == true && p.Operations.Length == 2
-                     && p.Operations[0].Operation == Operation.Add && (decimal)p.Operations[0].Value == -11.53m
-                     && p.Operations[1].Operation == Operation.Max && (int)p.Operations[1].Value == 0));
+                     && p.Operations[0].Operation == Operation.Add .ToString()&& (decimal)p.Operations[0].Value == -11.53m
+                     && p.Operations[1].Operation == Operation.Max .ToString()&& (int)p.Operations[1].Value == 0));
 
             var setReplyPacketA = new SetReplyPacket()
             {
@@ -605,21 +609,21 @@ namespace Archipelago.MultiClient.Net.Tests
 
             socket.Received().SendPacketAsync(Arg.Is<SetPacket>(
                 p => p.Key == "A" && p.Operations.Length == 2
-                    && p.Operations[0].Operation == Operation.Add && (int)p.Operations[0].Value == -10
-                    && p.Operations[1].Operation == Operation.Max && (int)p.Operations[1].Value == 0));
+                    && p.Operations[0].Operation == Operation.Add .ToString()&& (int)p.Operations[0].Value == -10
+                    && p.Operations[1].Operation == Operation.Max .ToString()&& (int)p.Operations[1].Value == 0));
             socket.Received().SendPacketAsync(Arg.Is<SetPacket>(
                 p => p.Key == "B" && p.Operations.Length == 4
-                    && p.Operations[0].Operation == Operation.Add && (int)p.Operations[0].Value == 5
-                    && p.Operations[1].Operation == Operation.Mul && (int)p.Operations[1].Value == 8
-                    && p.Operations[2].Operation == Operation.Mul && (decimal)p.Operations[2].Value == 0.5m
-                    && p.Operations[3].Operation == Operation.Add && (int)p.Operations[3].Value == -3));
+                    && p.Operations[0].Operation == Operation.Add .ToString()&& (int)p.Operations[0].Value == 5
+                    && p.Operations[1].Operation == Operation.Mul .ToString()&& (int)p.Operations[1].Value == 8
+                    && p.Operations[2].Operation == Operation.Mul .ToString()&& (decimal)p.Operations[2].Value == 0.5m
+                    && p.Operations[3].Operation == Operation.Add .ToString()&& (int)p.Operations[3].Value == -3));
             socket.Received().SendPacketAsync(Arg.Is<SetPacket>(
                 p => p.Key == "C" && p.Operations.Length == 5
-                    && p.Operations[0].Operation == Operation.Replace && (int)p.Operations[0].Value == 100
-                    && p.Operations[1].Operation == Operation.And && (int)p.Operations[1].Value == 0xFF
-                    && p.Operations[2].Operation == Operation.Mul && (int)p.Operations[2].Value == 8
-                    && p.Operations[3].Operation == Operation.Mul && (decimal)p.Operations[3].Value == 0.5m
-                    && p.Operations[4].Operation == Operation.Add && (int)p.Operations[4].Value == -3));
+                    && p.Operations[0].Operation == Operation.Replace .ToString()&& (int)p.Operations[0].Value == 100
+                    && p.Operations[1].Operation == Operation.And .ToString()&& (int)p.Operations[1].Value == 0xFF
+                    && p.Operations[2].Operation == Operation.Mul .ToString()&& (int)p.Operations[2].Value == 8
+                    && p.Operations[3].Operation == Operation.Mul .ToString()&& (decimal)p.Operations[3].Value == 0.5m
+                    && p.Operations[4].Operation == Operation.Add .ToString()&& (int)p.Operations[4].Value == -3));
         }
 
         [Test]
@@ -634,9 +638,9 @@ namespace Archipelago.MultiClient.Net.Tests
             sut["Anonymous"] = JObject.FromObject(new { A = 10, B = "Hello" });
 
             socket.Received().SendPacketAsync(Arg.Is<SetPacket>(
-                p => p.Key == "Item" && p.Operations[0].Operation == Operation.Replace && p.Operations[0].Value is JObject));
+                p => p.Key == "Item" && p.Operations[0].Operation == Operation.Replace .ToString()&& p.Operations[0].Value is JObject));
             socket.Received().SendPacketAsync(Arg.Is<SetPacket>(
-                p => p.Key == "Anonymous" && p.Operations[0].Operation == Operation.Replace && p.Operations[0].Value is JObject));
+                p => p.Key == "Anonymous" && p.Operations[0].Operation == Operation.Replace .ToString()&& p.Operations[0].Value is JObject));
         }
 
         [Test]
@@ -687,13 +691,13 @@ namespace Archipelago.MultiClient.Net.Tests
             sut[Scope.Global, "D"].Initialize("");
 
             socket.Received().SendPacketAsync(Arg.Is<SetPacket>(
-                p => p.Key == "A" && p.Operations[0].Operation == Operation.Default && (int)p.DefaultValue == 20));
+                p => p.Key == "A" && p.Operations[0].Operation == Operation.Default .ToString()&& (int)p.DefaultValue == 20));
             socket.Received().SendPacketAsync(Arg.Is<SetPacket>(
-                p => p.Key == "B" && p.Operations[0].Operation == Operation.Default && p.DefaultValue is JArray));
+                p => p.Key == "B" && p.Operations[0].Operation == Operation.Default .ToString()&& p.DefaultValue is JArray));
             socket.Received().SendPacketAsync(Arg.Is<SetPacket>(
-                p => p.Key == "C" && p.Operations[0].Operation == Operation.Default && p.DefaultValue is JArray));
+                p => p.Key == "C" && p.Operations[0].Operation == Operation.Default .ToString()&& p.DefaultValue is JArray));
             socket.Received().SendPacketAsync(Arg.Is<SetPacket>(
-                p => p.Key == "D" && p.Operations[0].Operation == Operation.Default && (string)p.DefaultValue == ""));
+                p => p.Key == "D" && p.Operations[0].Operation == Operation.Default .ToString()&& (string)p.DefaultValue == ""));
         }
 
         [Test]
