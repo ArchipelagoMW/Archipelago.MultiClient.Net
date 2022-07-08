@@ -36,11 +36,9 @@ namespace Archipelago.MultiClient.Net.Cache
 
                 if (invalidated.Any())
                 {
-                    var exclusions = roomInfoPacket.DataPackageVersions.Select(x => x.Key).Except(invalidated);
-
                     socket.SendPacket(new GetDataPackagePacket()
                     {
-                        Exclusions = exclusions.ToArray()
+                        Games = invalidated.ToArray()
                     });
                 }
             }
