@@ -1,5 +1,7 @@
-﻿using Archipelago.MultiClient.Net.Models;
+﻿using Archipelago.MultiClient.Net.Enums;
+using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 
@@ -87,20 +89,13 @@ namespace Archipelago.MultiClient.Net.Helpers
                 case RoomUpdatePacket roomUpdatePacket:
 	                OnRoomUpdatedPacketReceived(roomUpdatePacket);
 	                break;
-                case RoomInfoPacket roomInfoPacket:
-                    OnRoomInfoPacketReceived(roomInfoPacket);
-                    break;
             }
-        }
-
-        private void OnRoomInfoPacketReceived(RoomInfoPacket packet)
-        {
-            UpdateGames(packet.Games);
         }
 
         private void OnConnectedPacketReceived(ConnectedPacket packet)
         {
             UpdatePlayerInfo(packet.Players);
+            AddSlotInformation(packet.Team, packet.SlotInfo);
         }
 
         private void OnRoomUpdatedPacketReceived(RoomUpdatePacket packet)
@@ -111,18 +106,25 @@ namespace Archipelago.MultiClient.Net.Helpers
             }
         }
 
-        private void UpdateGames(string[] games)
+        private void AddSlotInformation(int team, Dictionary<int, NetworkSlot> slotInfos)
         {
             if (players == null)
             {
-                players = games.Select(g => new PlayerInfo { Game = g }).ToArray();
+                return;
             }
-            else
+
+            foreach (var player in players)
             {
-                for (int i = 0; i < games.Length; i++)
+                if (player.Team != team)
                 {
-                    players[i].Game = games[i];
+                    continue;
                 }
+
+                var slotInfoForPlayer = slotInfos[player.Slot];
+
+                player.Game = slotInfoForPlayer.Game;
+                player.SlotType = slotInfoForPlayer.Type;
+                player.SlotName = slotInfoForPlayer.Name;
             }
         }
 
@@ -157,5 +159,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         public string Alias { get; internal set; }
         public string Name { get; internal set; }
         public string Game { get; internal set; }
+        public string SlotName { get; internal set; }
+        public SlotType SlotType { get; internal set; }
     }
 }
