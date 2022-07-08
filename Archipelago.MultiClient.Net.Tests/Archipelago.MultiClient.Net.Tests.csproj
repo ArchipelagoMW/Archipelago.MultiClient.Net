@@ -72,6 +72,7 @@
     <Compile Include="DeathLinkFixture.cs" />
     <Compile Include="GameStateHelperFixture.cs" />
     <Compile Include="LocationCheckHelperFixture.cs" />
+    <Compile Include="PlayerHelperFixture.cs" />
     <Compile Include="ReceivedItemsHelperFixture.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Stubs\TestGameData.cs" />
