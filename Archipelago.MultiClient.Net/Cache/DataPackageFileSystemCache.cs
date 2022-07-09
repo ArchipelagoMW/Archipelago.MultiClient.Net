@@ -1,8 +1,8 @@
-﻿using Archipelago.MultiClient.Net.Enums;
-using Archipelago.MultiClient.Net.Helpers;
+﻿using Archipelago.MultiClient.Net.Helpers;
 using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 
 namespace Archipelago.MultiClient.Net.Cache
@@ -12,8 +12,7 @@ namespace Archipelago.MultiClient.Net.Cache
         private readonly IArchipelagoSocketHelper socket;
         private readonly IFileSystemDataPackageProvider fileSystemDataPackageProvider;
 
-        private RoomInfoPacket roomInfoPacket;
-        private DataPackage dataPackage;
+        private readonly Dictionary<string, GameData> dataPackages = new Dictionary<string, GameData>();
 
         public DataPackageFileSystemCache(IArchipelagoSocketHelper socket) : this(socket, new FileSystemDataPackageProvider())
         {
@@ -29,107 +28,106 @@ namespace Archipelago.MultiClient.Net.Cache
 
         private void Socket_PacketReceived(ArchipelagoPacketBase packet)
         {
-            if (packet.PacketType == ArchipelagoPacketType.RoomInfo)
+            switch (packet)
             {
-                roomInfoPacket = (RoomInfoPacket)packet;
-                var invalidated = GetCacheInvalidatedGames(roomInfoPacket);
+                case RoomInfoPacket roomInfoPacket:
+                    AddArchipelagoGame(roomInfoPacket);
+                    LoadDataPackageFromFileCache(roomInfoPacket);
 
-                if (invalidated.Any())
-                {
-                    socket.SendPacket(new GetDataPackagePacket()
+                    var invalidated = GetCacheInvalidatedGames(roomInfoPacket);
+
+                    if (invalidated.Any())
                     {
-                        Games = invalidated.ToArray()
-                    });
+                        socket.SendPacket(new GetDataPackagePacket
+                        {
+                            Games = invalidated.ToArray()
+                        });
+                    }
+                    break;
+                case DataPackagePacket packagePacket:
+                    UpdateDataPackageFromServer(packagePacket.DataPackage);
+                    break;
+            }
+        }
+
+        private void AddArchipelagoGame(RoomInfoPacket roomInfoPacket)
+        {
+            roomInfoPacket.Games = roomInfoPacket.Games.Concat(new[] { "Archipelago" }).ToArray();
+        }
+
+        private void LoadDataPackageFromFileCache(RoomInfoPacket packet)
+        {
+            foreach (string game in packet.Games.Distinct())
+            {
+                if (TryGetGameDataFromFileCache(game, out var cachedPackage))
+                {
+                    dataPackages[game] = cachedPackage;
                 }
             }
-            else if (packet.PacketType == ArchipelagoPacketType.DataPackage)
+        }
+
+        private bool TryGetGameDataFromFileCache(string game, out GameData gameData)
+        {
+            if (fileSystemDataPackageProvider.TryGetDataPackage(game, out var cachedGameData))
             {
-                var packagePacket = (DataPackagePacket)packet;
-                UpdateDataPackageFromServer(packagePacket.DataPackage);
+                gameData = cachedGameData;
+                return true;
             }
+
+            gameData = null;
+            return false;
         }
 
         public bool TryGetDataPackageFromCache(out DataPackage package)
         {
-            if (dataPackage != null)
+            package = new DataPackage { Games = dataPackages };
+
+            return dataPackages.Count > 1;
+        }
+
+        public bool TryGetGameDataFromCache(string game, out GameData gameData)
+        {
+            if (dataPackages.TryGetValue(game, out var cachedGameData))
             {
-                package = dataPackage;
+                gameData = cachedGameData;
                 return true;
             }
 
-            return fileSystemDataPackageProvider.TryGetDataPackage(out package);
+            gameData = null;
+            return false;
         }
 
         internal void UpdateDataPackageFromServer(DataPackage package)
         {
-            if (TryGetDataPackageFromCache(out var combinedPackage))
+            foreach (KeyValuePair<string, GameData> packageGameData in package.Games)
             {
-                combinedPackage.Version = package.Version;
+                dataPackages[packageGameData.Key] = packageGameData.Value;
 
-                foreach (var game in package.Games)
-                {
-                    combinedPackage.Games[game.Key] = game.Value;
-                }
+                if (packageGameData.Value.Version != 0)
+                    fileSystemDataPackageProvider.SaveDataPackageToFile(packageGameData.Key, packageGameData.Value);
             }
-            else
-            {
-                combinedPackage = package;
-            }
-
-            dataPackage = combinedPackage;
-            SaveDataPackageToCache(combinedPackage);
         }
         
-        private void SaveDataPackageToCache(DataPackage package)
-        {
-            var dataPackageForSaving = PrepareDataPackageForSaving(package);
-
-            fileSystemDataPackageProvider.SaveDataPackageToFile(dataPackageForSaving);
-        }
-
-        private DataPackage PrepareDataPackageForSaving(DataPackage package)
-        {
-            var dataPackageForSaving = new DataPackage {
-                Version = package.Version,
-                Games = new Dictionary<string, GameData>(package.Games.Count)
-            };
-
-            foreach (var game in package.Games)
-            {
-                if(game.Value.Version == 0)
-                    continue;
-
-                dataPackageForSaving.Games[game.Key] = game.Value;
-            }
-
-            return dataPackageForSaving;
-        }
-
         private List<string> GetCacheInvalidatedGames(RoomInfoPacket packet)
         {
             var gamesNeedingUpdating = new List<string>();
 
-            if (TryGetDataPackageFromCache(out var cachedPackage))
+            foreach (string game in packet.Games.Distinct())
             {
-                foreach (var item in packet.DataPackageVersions)
+                if (dataPackages.TryGetValue(game, out var gameData))
                 {
-                    if (cachedPackage.Games.ContainsKey(item.Key))
+                    if (gameData.Version != packet.DataPackageVersions[game])
                     {
-                        GameData gameDataFromCache = cachedPackage.Games[item.Key];
-                        if (item.Value != gameDataFromCache.Version)
-                        {
-                            gamesNeedingUpdating.Add(item.Key);
-                        }
-                    }
-                    else
-                    {
-                        gamesNeedingUpdating.Add(item.Key);
+                        gamesNeedingUpdating.Add(game);
                     }
                 }
-                return gamesNeedingUpdating;
+                else
+                {
+                    gamesNeedingUpdating.Add(game);
+                }
             }
 
-            return packet.DataPackageVersions.Select(x => x.Key).ToList();
+            return gamesNeedingUpdating;
         }
     }
 }
