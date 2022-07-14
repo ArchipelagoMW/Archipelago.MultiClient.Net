@@ -32,7 +32,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// <summary>
         ///     The URL of the host that the socket is connected to.
         /// </summary>
-        public string Url { get; }
+        public Uri Uri { get; }
 
         /// <summary>
         ///     Returns true if the socket believes it is connected to the host.
@@ -42,10 +42,10 @@ namespace Archipelago.MultiClient.Net.Helpers
 
         private readonly WebSocket webSocket;
 
-        internal ArchipelagoSocketHelper(string hostUrl)
+        internal ArchipelagoSocketHelper(Uri hostUrl)
         {
-            Url = hostUrl;
-            webSocket = new WebSocket(hostUrl);
+            Uri = hostUrl;
+            webSocket = new WebSocket(Uri.ToString());
             webSocket.OnMessage += OnMessageReceived;
             webSocket.OnError += OnError;
             webSocket.OnClose += OnClose;

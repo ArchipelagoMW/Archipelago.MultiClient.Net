@@ -14,11 +14,7 @@ namespace Archipelago.MultiClient.Net
         /// </param>
         public static ArchipelagoSession CreateSession(Uri uri)
         {
-#if !NETSTANDARD2_0
-            var socket = new ArchipelagoSocketHelper(uri.ToString());
-#else
             var socket = new ArchipelagoSocketHelper(uri);
-#endif
             var dataPackageCache = new DataPackageFileSystemCache(socket);
             var locations = new LocationCheckHelper(socket, dataPackageCache);
             var items = new ReceivedItemsHelper(socket, locations, dataPackageCache);

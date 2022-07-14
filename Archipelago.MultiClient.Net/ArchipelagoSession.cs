@@ -92,8 +92,8 @@ namespace Archipelago.MultiClient.Net
 
             try
             {
-#if NETSTANDARD2_0
-                Socket.ConnectAsync().Wait(TimeSpan.FromSeconds(5));
+#if NETSTANDARD2_0 || NET6_0
+                Socket.ConnectAsync().Wait(TimeSpan.FromSeconds(ArchipelagoConnectionTimeoutInSeconds));
 #else
                 Socket.Connect();
 #endif
@@ -117,7 +117,7 @@ namespace Archipelago.MultiClient.Net
                 {
                     if (DateTime.UtcNow - connectedStartedTime > TimeSpan.FromSeconds(ArchipelagoConnectionTimeoutInSeconds))
                     {
-#if NETSTANDARD2_0
+#if NETSTANDARD2_0 || NET6_0
                         Socket.DisconnectAsync().Wait();
 #else
                         Socket.Connect();
