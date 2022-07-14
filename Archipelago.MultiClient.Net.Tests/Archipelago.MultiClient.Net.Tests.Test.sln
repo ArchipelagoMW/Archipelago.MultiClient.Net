@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.32328.378
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Archipelago.MultiClient.Net.Tests.Test", "Archipelago.MultiClient.Net.Tests.Test.csproj", "{D953FC8E-BDD0-4703-BCB6-D3A5C997077E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D953FC8E-BDD0-4703-BCB6-D3A5C997077E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D953FC8E-BDD0-4703-BCB6-D3A5C997077E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D953FC8E-BDD0-4703-BCB6-D3A5C997077E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D953FC8E-BDD0-4703-BCB6-D3A5C997077E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {4312F3A7-253E-45CA-9FFC-55281109159C}
+	EndGlobalSection
+EndGlobal

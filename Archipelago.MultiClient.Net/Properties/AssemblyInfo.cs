@@ -9,4 +9,5 @@ using System.Runtime.InteropServices;
 // The following GUID is for the ID of the typelib if this project is exposed to COM
 [assembly: Guid("35a803ad-85ed-42e9-b1e3-c6b72096f0c1")]
 [assembly: InternalsVisibleTo("Archipelago.MultiClient.Net.Tests")]
+[assembly: InternalsVisibleTo("Archipelago.MultiClient.Net.Tests.Test")]
 [assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
