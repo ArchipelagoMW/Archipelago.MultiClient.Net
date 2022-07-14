@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<TargetFrameworks>net471;net472;net48;net6.0</TargetFrameworks>
+		<TargetFrameworks>net6.0;net471;net472;net48</TargetFrameworks>
 		<IsPackable>false</IsPackable>
 	</PropertyGroup>
 
@@ -16,6 +16,22 @@
 		<PackageReference Include="NUnit3TestAdapter" Version="3.16.1" />
 		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.5.0" />
 		<PackageReference Include="NSubstitute" Version="4.2.2" />
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
+		<Reference Include="Newtonsoft.Json">
+			<HintPath>..\DLLs\netstandard2.0\Newtonsoft.Json.dll</HintPath>
+		</Reference>
+	</ItemGroup>
+	<ItemGroup Condition="'$(TargetFramework)' == 'net6.0' AND '$(Configuration)' == 'Debug'">
+		<Reference Include="Archipelago.MultiClient.Net">
+			<HintPath>..\Archipelago.MultiClient.Net\bin\Debug\net6.0\Archipelago.MultiClient.Net.dll</HintPath>
+		</Reference>
+	</ItemGroup>
+	<ItemGroup Condition="'$(TargetFramework)' == 'net6.0' AND '$(Configuration)' == 'Release'">
+		<Reference Include="Archipelago.MultiClient.Net">
+			<HintPath>..\Archipelago.MultiClient.Net\bin\Release\net6.0\Archipelago.MultiClient.Net.dll</HintPath>
+		</Reference>
 	</ItemGroup>
 
 	<ItemGroup Condition="'$(TargetFramework)' == 'net471'">
@@ -63,22 +79,6 @@
 	<ItemGroup Condition="'$(TargetFramework)' == 'net48' AND '$(Configuration)' == 'Release'">
 		<Reference Include="Archipelago.MultiClient.Net">
 			<HintPath>..\Archipelago.MultiClient.Net\bin\Release\netstandard2.0\Archipelago.MultiClient.Net.dll</HintPath>
-		</Reference>
-	</ItemGroup>
-
-	<ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
-		<Reference Include="Newtonsoft.Json">
-			<HintPath>..\DLLs\netstandard2.0\Newtonsoft.Json.dll</HintPath>
-		</Reference>
-	</ItemGroup>
-	<ItemGroup Condition="'$(TargetFramework)' == 'net6.0' AND '$(Configuration)' == 'Debug'">
-		<Reference Include="Archipelago.MultiClient.Net">
-			<HintPath>..\Archipelago.MultiClient.Net\bin\Debug\net6.0\Archipelago.MultiClient.Net.dll</HintPath>
-		</Reference>
-	</ItemGroup>
-	<ItemGroup Condition="'$(TargetFramework)' == 'net6.0' AND '$(Configuration)' == 'Release'">
-		<Reference Include="Archipelago.MultiClient.Net">
-			<HintPath>..\Archipelago.MultiClient.Net\bin\Release\net6.0\Archipelago.MultiClient.Net.dll</HintPath>
 		</Reference>
 	</ItemGroup>
 </Project>
