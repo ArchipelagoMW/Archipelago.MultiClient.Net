@@ -2,9 +2,9 @@ name: Build Solution
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, V4_development ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, V4_development ]
 
 jobs:
   build:
