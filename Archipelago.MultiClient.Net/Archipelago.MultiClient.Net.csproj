@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net35;net40;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net35;net40;netstandard2.0;net6.0</TargetFrameworks>
     <AssemblyTitle>Archipelago.MultiClient.Net</AssemblyTitle>
     <Product>Archipelago.MultiClient.Net</Product>
     <Copyright>Copyright ©  2022</Copyright>
@@ -45,6 +45,11 @@
 		</Reference>
 	</ItemGroup>
 	<ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+		<Reference Include="Newtonsoft.Json">
+			<HintPath>..\DLLs\netstandard2.0\Newtonsoft.Json.dll</HintPath>
+		</Reference>
+	</ItemGroup>
+	<ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
 		<Reference Include="Newtonsoft.Json">
 			<HintPath>..\DLLs\netstandard2.0\Newtonsoft.Json.dll</HintPath>
 		</Reference>
