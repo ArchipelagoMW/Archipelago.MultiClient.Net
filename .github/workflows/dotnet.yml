@@ -21,12 +21,15 @@ jobs:
     - name: setup-msbuild
       uses: microsoft/setup-msbuild@v1.1
       
+    - name: Info
+      run: dotnet --info
+
     - name: Setup NuGet.exe for use with actions
       uses: NuGet/setup-nuget@v1.0.5
-      
+
     - name: Restore NuGet Packages
       run: nuget restore Archipelago.MultiClient.Net.sln
-      
+
     - name: Build Library
       run: msbuild Archipelago.MultiClient.Net.sln /property:Configuration=Release
       
