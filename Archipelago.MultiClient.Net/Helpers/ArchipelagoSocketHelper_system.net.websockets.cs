@@ -47,6 +47,12 @@ namespace Archipelago.MultiClient.Net.Helpers
         {
             Uri = hostUri;
             webSocket = new ClientWebSocket();
+#if NET6_0
+            webSocket.Options.DangerousDeflateOptions = new WebSocketDeflateOptions {
+                ClientContextTakeover = true, 
+                ServerContextTakeover = true
+            };
+#endif
         }
 
         /// <summary>
