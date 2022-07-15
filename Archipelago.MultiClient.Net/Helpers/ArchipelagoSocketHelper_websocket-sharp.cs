@@ -15,19 +15,17 @@ namespace Archipelago.MultiClient.Net.Helpers
 {
     public class ArchipelagoSocketHelper : IArchipelagoSocketHelper
     {
-        public delegate void PacketReceivedHandler(ArchipelagoPacketBase packet);
-        public event PacketReceivedHandler PacketReceived;
+        public event ArchipelagoSocketHelperDelagates.PacketReceivedHandler PacketReceived;
+        public event ArchipelagoSocketHelperDelagates.PacketsSentHandler PacketsSent;
+        public event ArchipelagoSocketHelperDelagates.ErrorReceivedHandler ErrorReceived;
+        public event ArchipelagoSocketHelperDelagates.SocketClosedHandler SocketClosed;
+        public event ArchipelagoSocketHelperDelagates.SocketOpenedHandler SocketOpened;
 
-        public delegate void PacketsSentHandler(ArchipelagoPacketBase[] packets);
-        public event PacketsSentHandler PacketsSent;
+#if !NET35
+        private TaskCompletionSource<bool> connectAsyncTask;
+        private TaskCompletionSource<bool> disconnectAsyncTask;
 
-        public delegate void ErrorReceivedHandler(Exception e, string message);
-        public event ErrorReceivedHandler ErrorReceived;
-
-        public delegate void SocketClosedHandler(CloseEventArgs e);
-        public event SocketClosedHandler SocketClosed;
-
-        public event Action SocketOpened;
+#endif
 
         /// <summary>
         ///     The URL of the host that the socket is connected to.
@@ -60,14 +58,7 @@ namespace Archipelago.MultiClient.Net.Helpers
             webSocket.Connect();
         }
 
-        /// <summary>
-        ///     Initiates a connection to the host asynchronously.
-        ///     Handle the <see cref="SocketOpened"/> event to add a callback.
-        /// </summary>
-        public void ConnectAsync()
-        {
-            webSocket.ConnectAsync();
-        }
+
 
         /// <summary>
         ///     Disconnect from the host.
@@ -78,6 +69,16 @@ namespace Archipelago.MultiClient.Net.Helpers
             {
                 webSocket.Close();
             }
+        }
+
+#if NET35
+        /// <summary>
+        ///     Initiates a connection to the host asynchronously.
+        ///     Handle the <see cref="SocketOpened"/> event to add a callback.
+        /// </summary>
+        public void ConnectAsync()
+        {
+            webSocket.ConnectAsync();
         }
 
         /// <summary>
@@ -91,6 +92,38 @@ namespace Archipelago.MultiClient.Net.Helpers
                 webSocket.CloseAsync();
             }
         }
+#else
+        /// <summary>
+        ///     Initiates a connection to the host synchronously.
+        /// </summary>
+        public Task ConnectAsync()
+        {
+            connectAsyncTask = new TaskCompletionSource<bool>();
+
+            webSocket.ConnectAsync();
+
+            return connectAsyncTask.Task;
+        }
+
+        /// <summary>
+        ///     Disconnect from the host synchronously.
+        /// </summary>
+        public Task DisconnectAsync()
+        {
+            disconnectAsyncTask = new TaskCompletionSource<bool>();
+
+            if (webSocket.IsAlive)
+            {
+                webSocket.CloseAsync();
+            }
+            else
+            {
+                disconnectAsyncTask.SetResult(false);
+            }
+
+            return disconnectAsyncTask.Task;
+        }
+#endif
 
         /// <summary>
         ///     Send a single <see cref="ArchipelagoPacketBase"/> derived packet.
@@ -300,6 +333,10 @@ namespace Archipelago.MultiClient.Net.Helpers
 
         private void OnOpen(object sender, EventArgs e)
         {
+#if !NET35
+            connectAsyncTask.SetResult(true);
+#endif
+            
             if (SocketOpened != null)
             {
                 SocketOpened();
@@ -308,9 +345,12 @@ namespace Archipelago.MultiClient.Net.Helpers
 
         private void OnClose(object sender, CloseEventArgs e)
         {
+#if !NET35
+            disconnectAsyncTask.SetResult(true);
+#endif
             if (SocketClosed != null)
             {
-                SocketClosed(e);
+                SocketClosed(e.Reason);
             }
         }
 

@@ -16,19 +16,11 @@ namespace Archipelago.MultiClient.Net.Helpers
         private const int ReceiveChunkSize = 1024;
         private const int SendChunkSize = 1024;
 
-        public delegate void PacketReceivedHandler(ArchipelagoPacketBase packet);
-        public event PacketReceivedHandler PacketReceived;
-
-        public delegate void PacketsSentHandler(ArchipelagoPacketBase[] packets);
-        public event PacketsSentHandler PacketsSent;
-
-        public delegate void ErrorReceivedHandler(Exception e, string message);
-        public event ErrorReceivedHandler ErrorReceived;
-
-        public delegate void SocketClosedHandler();
-        public event SocketClosedHandler SocketClosed;
-
-        public event Action SocketOpened;
+        public event ArchipelagoSocketHelperDelagates.PacketReceivedHandler PacketReceived;
+        public event ArchipelagoSocketHelperDelagates.PacketsSentHandler PacketsSent;
+        public event ArchipelagoSocketHelperDelagates.ErrorReceivedHandler ErrorReceived;
+        public event ArchipelagoSocketHelperDelagates.SocketClosedHandler SocketClosed;
+        public event ArchipelagoSocketHelperDelagates.SocketOpenedHandler SocketOpened;
 
         /// <summary>
         ///     The URL of the host that the socket is connected to.
@@ -50,6 +42,14 @@ namespace Archipelago.MultiClient.Net.Helpers
 #if NET6_0
             webSocket.Options.DangerousDeflateOptions = new WebSocketDeflateOptions();
 #endif
+        }
+
+        /// <summary>
+        ///     Initiates a connection to the host synchronously.
+        /// </summary>
+        public void Connect()
+        {
+            ConnectAsync().Wait();
         }
 
         /// <summary>
@@ -111,6 +111,14 @@ namespace Archipelago.MultiClient.Net.Helpers
             } while (!result.EndOfMessage);
 
             return stringResult.ToString();
+        }
+
+        /// <summary>
+        ///     Disconnect from the host synchronously.
+        /// </summary>
+        public void Disconnect()
+        {
+            DisconnectAsync().Wait();
         }
 
         /// <summary>
@@ -265,7 +273,7 @@ namespace Archipelago.MultiClient.Net.Helpers
             {
                 if (SocketClosed != null)
                 {
-                    SocketClosed();
+                    SocketClosed("");
                 }
             }
             catch (Exception e)

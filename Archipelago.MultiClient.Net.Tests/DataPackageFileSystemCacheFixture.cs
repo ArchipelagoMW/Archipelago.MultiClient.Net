@@ -20,45 +20,84 @@ namespace Archipelago.MultiClient.Net.Tests
 
             _ = new DataPackageFileSystemCache(socket, fileSystemDataPackageProvider);
 
-            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(new RoomInfoPacket {
-                DataPackageVersion = 1,
-                DataPackageVersions = new Dictionary<string, int> {
-                    { "One", 1 }
-                }
+            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(new RoomInfoPacket {
+                Games = new []{ "One" }
             });
 
-            socket.Received().SendPacket(Arg.Any<GetDataPackagePacket>());
+            socket.Received().SendPacket(Arg.Is<GetDataPackagePacket>(p =>
+                p.Games.Length == 2 && p.Games[0] == "One" && p.Games[1] == "Archipelago"
+            ));
+        }
+
+        [Test]
+        public void Should_request_updates_for_archipelago_even_if_its_being_played()
+        {
+            var localDataPackage = new DataPackage
+            {
+                Games = new Dictionary<string, GameData> {
+                    { "One", new TestGameData(1) },
+                    { "Archipelago", new TestGameData(1) }
+                }
+            };
+
+            var roomInfo = new RoomInfoPacket
+            {
+                Games = new[] { "One" },
+                DataPackageVersions = new Dictionary<string, int> {
+                    { "One", 1 },
+                    { "Archipelago", 2 }
+                }
+            };
+
+            var socket = Substitute.For<IArchipelagoSocketHelper>();
+            var fileSystemDataPackageProvider = Substitute.For<IFileSystemDataPackageProvider>();
+            fileSystemDataPackageProvider.TryGetDataPackage(Arg.Any<string>(), out _)
+                .Returns(x => {
+                    x[1] = localDataPackage.Games[x.Arg<string>()];
+                    return true;
+                });
+
+            _ = new DataPackageFileSystemCache(socket, fileSystemDataPackageProvider);
+
+            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(roomInfo);
+
+            socket.Received().SendPacket(Arg.Is<GetDataPackagePacket>(p =>
+                p.Games.Length == 1 && p.Games[0] == "Archipelago"
+            ));
         }
 
         [Test]
         public void Should_not_request_data_when_local_version_is_same_as_server_version()
         {
             var localDataPackage = new DataPackage {
-                Version = 7, Games = new Dictionary<string, GameData> {
-                    { "One", new TestGameData(3) }, 
-                    { "Two", new TestGameData(4) }
+                Games = new Dictionary<string, GameData> {
+                    { "One", new TestGameData(3) },
+                    { "Two", new TestGameData(4) },
+                    { "Archipelago", new TestGameData(1) }
                 }
             };
 
             var roomInfo = new RoomInfoPacket {
-                DataPackageVersion = 7,
+                Games = new []{ "One", "Two" },
                 DataPackageVersions = new Dictionary<string, int> {
                     { "One", 3 },
-                    { "Two", 4 }
+                    { "Two", 4 },
+                    { "Five", 7 },
+                    { "Archipelago", 1 }
                 }
             };
 
             var socket = Substitute.For<IArchipelagoSocketHelper>();
             var fileSystemDataPackageProvider = Substitute.For<IFileSystemDataPackageProvider>();
-            fileSystemDataPackageProvider.TryGetDataPackage(out _)
+            fileSystemDataPackageProvider.TryGetDataPackage(Arg.Any<string>(), out _)
                 .Returns(x => {
-                    x[0] = localDataPackage;
+                    x[1] = localDataPackage.Games[x.Arg<string>()];
                     return true;
                 });
 
             _ = new DataPackageFileSystemCache(socket, fileSystemDataPackageProvider);
 
-            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(roomInfo);
+            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(roomInfo);
 
             socket.DidNotReceive().SendPacket(Arg.Any<GetDataPackagePacket>());
         }
@@ -68,38 +107,39 @@ namespace Archipelago.MultiClient.Net.Tests
         {
             var localDataPackage = new DataPackage
             {
-                Version = 15,
                 Games = new Dictionary<string, GameData> {
                     { "One", new TestGameData(3) },
                     { "Two", new TestGameData(7) },
-                    { "Three", new TestGameData(5) }
+                    { "Three", new TestGameData(5) },
+                    { "Archipelago", new TestGameData(1) }
                 }
             };
 
             var roomInfo = new RoomInfoPacket
             {
-                DataPackageVersion = 15,
+                Games = new[] { "One", "Two", "Three" },
                 DataPackageVersions = new Dictionary<string, int> {
                     { "One", 3 },
                     { "Two", 6 },
-                    { "Three", 6 }
+                    { "Three", 6 },
+                    { "Archipelago", 1 }
                 }
             };
 
             var socket = Substitute.For<IArchipelagoSocketHelper>();
             var fileSystemDataPackageProvider = Substitute.For<IFileSystemDataPackageProvider>();
-            fileSystemDataPackageProvider.TryGetDataPackage(out _)
+            fileSystemDataPackageProvider.TryGetDataPackage(Arg.Any<string>(), out _)
                 .Returns(x => {
-                    x[0] = localDataPackage;
+                    x[1] = localDataPackage.Games[x.Arg<string>()];
                     return true;
                 });
 
             _ = new DataPackageFileSystemCache(socket, fileSystemDataPackageProvider);
 
-            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(roomInfo);
+            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(roomInfo);
 
             socket.Received().SendPacket(Arg.Is<GetDataPackagePacket>(p =>
-                p.Exclusions.Length == 1 && p.Exclusions[0] == "One"
+                p.Games.Length == 2 && p.Games[0] == "Two" && p.Games[1] == "Three"
             ));
         }
 
@@ -108,7 +148,7 @@ namespace Archipelago.MultiClient.Net.Tests
         {
             var serverDataPackage = new DataPackagePacket {
                 DataPackage = new DataPackage {
-                    Version = 2, Games = new Dictionary<string, GameData> {
+                    Games = new Dictionary<string, GameData> {
                         { 
                             "One", new GameData {
                                 Version = 2,
@@ -130,34 +170,44 @@ namespace Archipelago.MultiClient.Net.Tests
 
             _ = new DataPackageFileSystemCache(socket, fileSystemDataPackageProvider);
 
-            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(serverDataPackage);
+            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(serverDataPackage);
 
-            fileSystemDataPackageProvider.Received().SaveDataPackageToFile(Arg.Is<DataPackage>(p => 
-                p.Version == 2 
-                    && p.Games.Count == 1
-                    && p.Games["One"].Version == 2
-                    && p.Games["One"].ItemLookup.Count == 1
-                    && p.Games["One"].ItemLookup["ItemOne"] == 101
-                    && p.Games["One"].LocationLookup.Count == 2
-                    && p.Games["One"].LocationLookup["LocationOne"] == 201
-                    && p.Games["One"].LocationLookup["LocationTwo"] == 202
+            fileSystemDataPackageProvider.Received().SaveDataPackageToFile("One", Arg.Is<GameData>(d => 
+                d.Version == 2
+                    && d.ItemLookup.Count == 1
+                    && d.ItemLookup["ItemOne"] == 101
+                    && d.LocationLookup.Count == 2
+                    && d.LocationLookup["LocationOne"] == 201
+                    && d.LocationLookup["LocationTwo"] == 202
             ));
         }
 
         [Test]
         public void Should_merge_received_datapackage_with_cached_version()
         {
-            var localDataPackage = new DataPackage {
-                Version = 4,
+            var localDataPackage = new DataPackage
+            {
                 Games = new Dictionary<string, GameData> {
-                    { "One", new TestGameData(1) }, 
-                    { "Two", new TestGameData(3) }
+                    { "One", new TestGameData(1) },
+                    { "Two", new TestGameData(3) },
+                    { "Archipelago", new TestGameData(3) },
                 }
             };
-            
-            var serverDataPackage = new DataPackagePacket {
-                DataPackage = new DataPackage {
-                    Version = 5,
+
+            var roomInfo = new RoomInfoPacket
+            {
+                Games = new[] { "One", "Two" },
+                DataPackageVersions = new Dictionary<string, int> {
+                    { "One", 1 },
+                    { "Two", 6 },
+                    { "Archipelago", 3 }
+                }
+            };
+
+            var serverDataPackage = new DataPackagePacket
+            {
+                DataPackage = new DataPackage
+                {
                     Games = new Dictionary<string, GameData> {
                         { "One", new TestGameData(2) }
                     }
@@ -166,29 +216,23 @@ namespace Archipelago.MultiClient.Net.Tests
 
             var socket = Substitute.For<IArchipelagoSocketHelper>();
             var fileSystemDataPackageProvider = Substitute.For<IFileSystemDataPackageProvider>();
-            fileSystemDataPackageProvider.TryGetDataPackage(out _)
+            fileSystemDataPackageProvider.TryGetDataPackage(Arg.Any<string>(), out _)
                 .Returns(x => {
-                    x[0] = localDataPackage;
+                    x[1] = localDataPackage.Games[x.Arg<string>()];
                     return true;
                 });
 
             var sut = new DataPackageFileSystemCache(socket, fileSystemDataPackageProvider);
 
-            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(serverDataPackage);
-
-            fileSystemDataPackageProvider.Received().SaveDataPackageToFile(Arg.Is<DataPackage>(p =>
-                p.Version == 5
-                && p.Games.Count == 2
-                && p.Games["One"].Version == 2
-                && p.Games["Two"].Version == 3
-            ));
+            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(roomInfo);
+            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(serverDataPackage);
 
             sut.TryGetDataPackageFromCache(out var inMemoryDataPackage);
 
-            Assert.IsTrue(inMemoryDataPackage.Version == 5
-                          && inMemoryDataPackage.Games.Count == 2
+            Assert.IsTrue(inMemoryDataPackage.Games.Count == 3
                           && inMemoryDataPackage.Games["One"].Version == 2
-                          && inMemoryDataPackage.Games["Two"].Version == 3);
+                          && inMemoryDataPackage.Games["Two"].Version == 3
+                          && inMemoryDataPackage.Games["Archipelago"].Version == 3);
         }
 
         [Test]
@@ -196,7 +240,6 @@ namespace Archipelago.MultiClient.Net.Tests
         {
             var localDataPackage = new DataPackage
             {
-                Version = 2,
                 Games = new Dictionary<string, GameData> {
                     { "One", new TestGameData(2) }
                 }
@@ -206,7 +249,6 @@ namespace Archipelago.MultiClient.Net.Tests
             {
                 DataPackage = new DataPackage
                 {
-                    Version = 0,
                     Games = new Dictionary<string, GameData> {
                         { "One", new TestGameData(3) },
                         { "Two", new TestGameData(0) }
@@ -216,27 +258,24 @@ namespace Archipelago.MultiClient.Net.Tests
 
             var socket = Substitute.For<IArchipelagoSocketHelper>();
             var fileSystemDataPackageProvider = Substitute.For<IFileSystemDataPackageProvider>();
-            fileSystemDataPackageProvider.TryGetDataPackage(out _)
+            fileSystemDataPackageProvider.TryGetDataPackage(Arg.Any<string>(), out _)
                 .Returns(x => {
-                    x[0] = localDataPackage;
+                    x[1] = localDataPackage.Games[x.Arg<string>()];
                     return true;
                 });
 
             var sut = new DataPackageFileSystemCache(socket, fileSystemDataPackageProvider);
 
-            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(serverDataPackage);
+            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(serverDataPackage);
 
-            fileSystemDataPackageProvider.Received().SaveDataPackageToFile(Arg.Is<DataPackage>(p =>
-                p.Games.Count == 1
-                && p.Games["One"].Version == 3
-            ));
+            fileSystemDataPackageProvider.Received().SaveDataPackageToFile("One", Arg.Is<GameData>(d => d.Version == 3));
+            fileSystemDataPackageProvider.DidNotReceive().SaveDataPackageToFile("Two", Arg.Any<GameData>());
 
-            sut.TryGetDataPackageFromCache(out var inMemoryDataPackage);
+            sut.TryGetGameDataFromCache("One", out var gameDataGameOne);
+            sut.TryGetGameDataFromCache("Two", out var gameDataGameTwo);
 
-            Assert.IsTrue(inMemoryDataPackage.Version == 0
-                          && inMemoryDataPackage.Games.Count == 2
-                          && inMemoryDataPackage.Games["One"].Version == 3
-                          && inMemoryDataPackage.Games["Two"].Version == 0);
+            Assert.That(gameDataGameOne.Version, Is.EqualTo(3));
+            Assert.That(gameDataGameTwo.Version, Is.EqualTo(0));
         }
     }
 }
