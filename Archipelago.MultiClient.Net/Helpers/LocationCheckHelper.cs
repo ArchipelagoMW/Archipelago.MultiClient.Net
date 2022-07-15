@@ -6,12 +6,21 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 
+#if !NET35
+using System.Threading.Tasks;
+#endif
+
 namespace Archipelago.MultiClient.Net.Helpers
 {
     public interface ILocationCheckHelper
     {
         void CompleteLocationChecks(params long[] ids);
+
+#if NET35
         void CompleteLocationChecksAsync(Action<bool> onComplete, params long[] ids);
+#else
+        Task<bool> CompleteLocationChecksAsync(params long[] ids);
+#endif
     }
 
     public class LocationCheckHelper : ILocationCheckHelper
@@ -28,7 +37,11 @@ namespace Archipelago.MultiClient.Net.Helpers
         private readonly object locationsCheckedLockObject = new object();
 
         private bool awaitingLocationInfoPacket;
+#if NET35
         private Action<LocationInfoPacket> locationInfoPacketCallback;
+#else
+        private TaskCompletionSource<LocationInfoPacket> locationInfoPacketCallbackTask;
+#endif
 
         private Dictionary<string, Dictionary<string, long>> gameLocationNameToIdMapping;
         private Dictionary<long, string> locationIdToNameMapping;
@@ -80,6 +93,7 @@ namespace Archipelago.MultiClient.Net.Helpers
                         CheckLocations(updatePacket.CheckedLocations);
                     }
                     break;
+#if NET35
                 case LocationInfoPacket locationInfoPacket:
                     if (awaitingLocationInfoPacket)
                     {
@@ -101,6 +115,29 @@ namespace Archipelago.MultiClient.Net.Helpers
                         locationInfoPacketCallback = null;
                     }
                     break;
+#else
+                case LocationInfoPacket locationInfoPacket:
+                    if (awaitingLocationInfoPacket)
+                    {
+                        if (locationInfoPacketCallbackTask != null)
+                        {
+                            locationInfoPacketCallbackTask.SetResult(locationInfoPacket);
+                        }
+
+                        awaitingLocationInfoPacket = false;
+                        locationInfoPacketCallbackTask = null;
+                    }
+                    break;
+                case InvalidPacketPacket invalidPacket:
+                    if (awaitingLocationInfoPacket && invalidPacket.OriginalCmd == ArchipelagoPacketType.LocationScouts)
+                    {
+                        locationInfoPacketCallbackTask.SetCanceled();
+
+                        awaitingLocationInfoPacket = false;
+                        locationInfoPacketCallbackTask = null;
+                    }
+                    break;
+#endif
             }
         }
 
@@ -126,6 +163,7 @@ namespace Archipelago.MultiClient.Net.Helpers
             }
         }
 
+#if NET35
         /// <summary>
         ///     Submit the provided location ids as checked locations.
         /// </summary>
@@ -153,7 +191,37 @@ namespace Archipelago.MultiClient.Net.Helpers
                 );
             }
         }
+#else
+        /// <summary>
+        ///     Submit the provided location ids as checked locations.
+        /// </summary>
+        /// <param name="ids">
+        ///     Location ids which have been checked.
+        /// </param>
+        /// <exception cref="T:Archipelago.MultiClient.Net.Exceptions.ArchipelagoSocketClosedException">
+        ///     The websocket connection is not alive.
+        /// </exception>
+        public Task<bool> CompleteLocationChecksAsync(params long[] ids)
+        {
+            long[] allCheckedLocations;
 
+            lock (locationsCheckedLockObject)
+            {
+                CheckLocations(ids);
+
+                allCheckedLocations = locationsChecked.ToArray();
+            }
+
+            return socket.SendPacketAsync(
+                new LocationChecksPacket()
+                {
+                    Locations = allCheckedLocations
+                });
+        }
+
+#endif
+
+#if NET35
         /// <summary>
         ///     Ask the server for the items which are present in the provided location ids.
         /// </summary>
@@ -209,6 +277,58 @@ namespace Archipelago.MultiClient.Net.Helpers
             // Maintain backwards compatibility if createAsHint parameter is not specified.
             ScoutLocationsAsync(callback, false, ids);
         }
+#else
+        /// <summary>
+        ///     Ask the server for the items which are present in the provided location ids.
+        /// </summary>
+        /// <param name="createAsHint">
+        ///     If true, creates a free hint for these locations.
+        /// </param>
+        /// <param name="ids">
+        ///     The locations ids which are to be scouted.
+        /// </param>
+        /// <remarks>
+        ///     Repeated calls of this method before a LocationInfo packet is received will cause the stored
+        ///     callback to be overwritten with the most recent call. It is recommended you chain calls to this method
+        ///     within the callbacks themselves or call this only once.
+        /// </remarks>
+        /// <exception cref="T:Archipelago.MultiClient.Net.Exceptions.ArchipelagoSocketClosedException">
+        ///     The websocket connection is not alive.
+        /// </exception>
+        public Task<LocationInfoPacket> ScoutLocationsAsync(bool createAsHint, params long[] ids)
+        {
+            locationInfoPacketCallbackTask = new TaskCompletionSource<LocationInfoPacket>();
+            awaitingLocationInfoPacket = true;
+
+            socket.SendPacket(new LocationScoutsPacket()
+            {
+                Locations = ids,
+                CreateAsHint = createAsHint
+            });
+
+            return locationInfoPacketCallbackTask.Task;
+        }
+
+        /// <summary>
+        ///     Ask the server for the items which are present in the provided location ids.
+        /// </summary>
+        /// <param name="ids">
+        ///     The locations ids which are to be scouted.
+        /// </param>
+        /// <remarks>
+        ///     Repeated calls of this method before a LocationInfo packet is received will cause the stored
+        ///     callback to be overwritten with the most recent call. It is recommended you chain calls to this method
+        ///     within the callbacks themselves or call this only once.
+        /// </remarks>
+        /// <exception cref="T:Archipelago.MultiClient.Net.Exceptions.ArchipelagoSocketClosedException">
+        ///     The websocket connection is not alive.
+        /// </exception>
+        public Task<LocationInfoPacket> ScoutLocationsAsync(params long[] ids)
+        {
+            // Maintain backwards compatibility if createAsHint parameter is not specified.
+            return ScoutLocationsAsync(false, ids);
+        }
+#endif
 
         /// <summary>
         ///     Get the Id of a location from its name. Useful when a game knows its locations by name but not by Archipelago Id.

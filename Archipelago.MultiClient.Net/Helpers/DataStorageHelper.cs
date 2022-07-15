@@ -4,7 +4,12 @@ using Archipelago.MultiClient.Net.Packets;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+
+#if NET35
 using System.Threading;
+#else
+using System.Threading.Tasks;
+#endif
 
 namespace Archipelago.MultiClient.Net.Helpers
 {
@@ -14,7 +19,11 @@ namespace Archipelago.MultiClient.Net.Helpers
 
         private readonly Dictionary<string, DataStorageUpdatedHandler> onValueChangedEventHandlers = new Dictionary<string, DataStorageUpdatedHandler>();
         private readonly Dictionary<Guid, DataStorageUpdatedHandler> operationSpecificCallbacks = new Dictionary<Guid, DataStorageUpdatedHandler>();
+#if NET35
         private readonly Dictionary<string, Action<JToken>> asyncRetrievalCallbacks = new Dictionary<string, Action<JToken>>();
+#else
+        private readonly Dictionary<string, TaskCompletionSource<JToken>> asyncRetrievalTasks = new Dictionary<string, TaskCompletionSource<JToken>>();
+#endif
 
         private readonly IArchipelagoSocketHelper socket;
         private readonly IConnectionInfoProvider connectionInfoProvider;
@@ -34,12 +43,21 @@ namespace Archipelago.MultiClient.Net.Helpers
                 case RetrievedPacket retrievedPacket:
                     foreach (var data in retrievedPacket.Data)
                     {
+#if NET35
                         if (asyncRetrievalCallbacks.TryGetValue(data.Key, out var asyncCallback))
                         {
                             asyncCallback(data.Value);
 
                             asyncRetrievalCallbacks.Remove(data.Key);
                         }
+#else
+                        if (asyncRetrievalTasks.TryGetValue(data.Key, out var asyncRetrievalTask))
+                        {
+                            asyncRetrievalTask.SetResult(data.Value);
+
+                            asyncRetrievalTasks.Remove(data.Key);
+                        }
+#endif
                     }
                     break;
                 case SetReplyPacket setReplyPacket:
@@ -85,6 +103,7 @@ namespace Archipelago.MultiClient.Net.Helpers
             set => SetValue(key, value);
         }
 
+#if NET35
         private void GetAsync(string key, Action<JToken> callback)
         {
             if (!asyncRetrievalCallbacks.ContainsKey(key))
@@ -98,6 +117,25 @@ namespace Archipelago.MultiClient.Net.Helpers
 
             socket.SendPacketAsync(new GetPacket { Keys = new[] { key } });
         }
+#else
+        private Task<JToken> GetAsync(string key)
+        {
+            if (asyncRetrievalTasks.TryGetValue(key, out var asyncRetrievalTask))
+            {
+                return asyncRetrievalTask.Task;
+            }
+            else
+            {
+                var newRetrievalTask = new TaskCompletionSource<JToken>();
+
+                asyncRetrievalTasks[key] = newRetrievalTask;
+
+                socket.SendPacketAsync(new GetPacket { Keys = new[] { key } });
+
+                return newRetrievalTask.Task;
+            }
+        }
+#endif
 
         private void Initialize(string key, JToken value)
         {
@@ -113,6 +151,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 
         private JToken GetValue(string key)
         {
+#if NET35
             JToken value = null;
 
             GetAsync(key, v => value = v);
@@ -120,8 +159,8 @@ namespace Archipelago.MultiClient.Net.Helpers
             int iterations = 0;
             while (value == null)
             {
-                Thread.Sleep(100);
-                if (++iterations > 10)
+                Thread.Sleep(10);
+                if (++iterations > 200)
                 {
                     throw new TimeoutException($"Timed out retrieving data for key `{key}`. " +
                         $"This may be due to an attempt to retrieve a value from the DataStorageHelper in a synchronous fashion from within a PacketReceived handler. " +
@@ -129,8 +168,13 @@ namespace Archipelago.MultiClient.Net.Helpers
                         $"Be aware that DataStorageHelper calls tend to cause packet responses, so making a call from within a PacketReceived handler may cause an infinite loop.");
                 }
             }
-
+            
             return value;
+#else
+            var t = GetAsync(key);
+            t.Wait(TimeSpan.FromSeconds(2));
+            return t.Result;
+#endif
         }
 
         private void SetValue(string key, DataStorageElement e)

@@ -5,6 +5,10 @@ using System;
 using System.Collections.Generic;
 using WebSocketSharp;
 
+#if !NET35
+using System.Threading.Tasks;
+#endif
+
 namespace Archipelago.MultiClient.Net.Helpers
 {
     public interface IArchipelagoSocketHelper
@@ -13,7 +17,11 @@ namespace Archipelago.MultiClient.Net.Helpers
 
         void SendPacket(ArchipelagoPacketBase packet);
 
+#if NET35
         void SendPacketAsync(ArchipelagoPacketBase packet, Action<bool> onComplete = null);
+#else
+        Task<bool> SendPacketAsync(ArchipelagoPacketBase packet);
+#endif
     }
 
 
@@ -157,6 +165,7 @@ namespace Archipelago.MultiClient.Net.Helpers
             }
         }
 
+#if NET35
         /// <summary>
         ///     Send a single <see cref="ArchipelagoPacketBase"/> derived packet asynchronously.
         /// </summary>
@@ -175,7 +184,7 @@ namespace Archipelago.MultiClient.Net.Helpers
             SendMultiplePacketsAsync(new List<ArchipelagoPacketBase> { packet }, onComplete);
         }
 
-        /// <summary>
+               /// <summary>
         ///     Send a single <see cref="ArchipelagoPacketBase"/> derived packet asynchronously.
         /// </summary>
         /// <param name="onComplete">
@@ -229,6 +238,74 @@ namespace Archipelago.MultiClient.Net.Helpers
                 throw new ArchipelagoSocketClosedException();
             }
         }
+#else
+        /// <summary>
+        ///     Send a single <see cref="ArchipelagoPacketBase"/> derived packet asynchronously.
+        /// </summary>
+        /// <param name="packet">
+        ///     The packet to send to the server.
+        /// </param>
+        /// <exception cref="T:Archipelago.MultiClient.Net.Exceptions.ArchipelagoSocketClosedException">
+        ///     The websocket connection is not alive.
+        /// </exception>
+        public Task<bool> SendPacketAsync(ArchipelagoPacketBase packet)
+        {
+            return SendMultiplePacketsAsync(new List<ArchipelagoPacketBase> { packet });
+        }
+
+        /// <summary>
+        ///     Send a single <see cref="ArchipelagoPacketBase"/> derived packet asynchronously.
+        /// </summary>
+        /// <param name="packets">
+        ///     The packets to send to the server.
+        /// </param>
+        /// <remarks>
+        ///     The packets will be sent in the order they are provided in the list.
+        /// </remarks>
+        /// <exception cref="T:Archipelago.MultiClient.Net.Exceptions.ArchipelagoSocketClosedException">
+        ///     The websocket connection is not alive.
+        /// </exception>
+        public Task<bool> SendMultiplePacketsAsync(List<ArchipelagoPacketBase> packets)
+        {
+            return SendMultiplePacketsAsync(packets.ToArray());
+        }
+
+        /// <summary>
+        ///     Send a single <see cref="ArchipelagoPacketBase"/> derived packet asynchronously.
+        /// </summary>
+        /// <param name="packets">
+        ///     The packets to send to the server.
+        /// </param>
+        /// <remarks>
+        ///     The packets will be sent in the order they are provided as arguments.
+        /// </remarks>
+        /// <exception cref="T:Archipelago.MultiClient.Net.Exceptions.ArchipelagoSocketClosedException">
+        ///     The websocket connection is not alive.
+        /// </exception>
+        public Task<bool> SendMultiplePacketsAsync(params ArchipelagoPacketBase[] packets)
+        {
+            var taskCompletionSource = new TaskCompletionSource<bool>();
+
+            if (webSocket.IsAlive)
+            {
+                var packetAsJson = JsonConvert.SerializeObject(packets);
+                webSocket.SendAsync(packetAsJson, success => {
+                    taskCompletionSource.SetResult(success);
+                });
+
+                if (PacketsSent != null)
+                {
+                    PacketsSent(packets);
+                }
+            }
+            else
+            {
+                taskCompletionSource.SetException(new ArchipelagoSocketClosedException());
+            }
+
+            return taskCompletionSource.Task;
+        }
+#endif
 
         private void OnOpen(object sender, EventArgs e)
         {
