@@ -1,50 +1,36 @@
-﻿using Archipelago.MultiClient.Net.Converters;
+﻿#if NET35 || NET40
+using Archipelago.MultiClient.Net.Converters;
 using Archipelago.MultiClient.Net.Exceptions;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using WebSocketSharp;
 
 #if !NET35
 using System.Threading.Tasks;
 #endif
 
+using WebSocketSharp;
+
 namespace Archipelago.MultiClient.Net.Helpers
 {
-    public interface IArchipelagoSocketHelper
-    {
-        event ArchipelagoSocketHelper.PacketReceivedHandler PacketReceived;
-
-        void SendPacket(ArchipelagoPacketBase packet);
-
-#if NET35
-        void SendPacketAsync(ArchipelagoPacketBase packet, Action<bool> onComplete = null);
-#else
-        Task<bool> SendPacketAsync(ArchipelagoPacketBase packet);
-#endif
-    }
-
-
     public class ArchipelagoSocketHelper : IArchipelagoSocketHelper
     {
-        public delegate void PacketReceivedHandler(ArchipelagoPacketBase packet);
-        public event PacketReceivedHandler PacketReceived;
+        public event ArchipelagoSocketHelperDelagates.PacketReceivedHandler PacketReceived;
+        public event ArchipelagoSocketHelperDelagates.PacketsSentHandler PacketsSent;
+        public event ArchipelagoSocketHelperDelagates.ErrorReceivedHandler ErrorReceived;
+        public event ArchipelagoSocketHelperDelagates.SocketClosedHandler SocketClosed;
+        public event ArchipelagoSocketHelperDelagates.SocketOpenedHandler SocketOpened;
 
-        public delegate void PacketsSentHandler(ArchipelagoPacketBase[] packets);
-        public event PacketsSentHandler PacketsSent;
+#if !NET35
+        private TaskCompletionSource<bool> connectAsyncTask;
+        private TaskCompletionSource<bool> disconnectAsyncTask;
 
-        public delegate void ErrorReceivedHandler(Exception e, string message);
-        public event ErrorReceivedHandler ErrorReceived;
-
-        public delegate void SocketClosedHandler(CloseEventArgs e);
-        public event SocketClosedHandler SocketClosed;
-
-        public event Action SocketOpened;
+#endif
 
         /// <summary>
         ///     The URL of the host that the socket is connected to.
         /// </summary>
-        public string Url { get; }
+        public Uri Uri { get; }
 
         /// <summary>
         ///     Returns true if the socket believes it is connected to the host.
@@ -54,10 +40,10 @@ namespace Archipelago.MultiClient.Net.Helpers
 
         private readonly WebSocket webSocket;
 
-        internal ArchipelagoSocketHelper(string hostUrl)
+        internal ArchipelagoSocketHelper(Uri hostUrl)
         {
-            Url = hostUrl;
-            webSocket = new WebSocket(hostUrl);
+            Uri = hostUrl;
+            webSocket = new WebSocket(Uri.ToString());
             webSocket.OnMessage += OnMessageReceived;
             webSocket.OnError += OnError;
             webSocket.OnClose += OnClose;
@@ -72,14 +58,7 @@ namespace Archipelago.MultiClient.Net.Helpers
             webSocket.Connect();
         }
 
-        /// <summary>
-        ///     Initiates a connection to the host asynchronously.
-        ///     Handle the <see cref="SocketOpened"/> event to add a callback.
-        /// </summary>
-        public void ConnectAsync()
-        {
-            webSocket.ConnectAsync();
-        }
+
 
         /// <summary>
         ///     Disconnect from the host.
@@ -90,6 +69,16 @@ namespace Archipelago.MultiClient.Net.Helpers
             {
                 webSocket.Close();
             }
+        }
+
+#if NET35
+        /// <summary>
+        ///     Initiates a connection to the host asynchronously.
+        ///     Handle the <see cref="SocketOpened"/> event to add a callback.
+        /// </summary>
+        public void ConnectAsync()
+        {
+            webSocket.ConnectAsync();
         }
 
         /// <summary>
@@ -103,6 +92,38 @@ namespace Archipelago.MultiClient.Net.Helpers
                 webSocket.CloseAsync();
             }
         }
+#else
+        /// <summary>
+        ///     Initiates a connection to the host synchronously.
+        /// </summary>
+        public Task ConnectAsync()
+        {
+            connectAsyncTask = new TaskCompletionSource<bool>();
+
+            webSocket.ConnectAsync();
+
+            return connectAsyncTask.Task;
+        }
+
+        /// <summary>
+        ///     Disconnect from the host synchronously.
+        /// </summary>
+        public Task DisconnectAsync()
+        {
+            disconnectAsyncTask = new TaskCompletionSource<bool>();
+
+            if (webSocket.IsAlive)
+            {
+                webSocket.CloseAsync();
+            }
+            else
+            {
+                disconnectAsyncTask.SetResult(false);
+            }
+
+            return disconnectAsyncTask.Task;
+        }
+#endif
 
         /// <summary>
         ///     Send a single <see cref="ArchipelagoPacketBase"/> derived packet.
@@ -248,7 +269,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// <exception cref="T:Archipelago.MultiClient.Net.Exceptions.ArchipelagoSocketClosedException">
         ///     The websocket connection is not alive.
         /// </exception>
-        public Task<bool> SendPacketAsync(ArchipelagoPacketBase packet)
+        public Task SendPacketAsync(ArchipelagoPacketBase packet)
         {
             return SendMultiplePacketsAsync(new List<ArchipelagoPacketBase> { packet });
         }
@@ -265,7 +286,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// <exception cref="T:Archipelago.MultiClient.Net.Exceptions.ArchipelagoSocketClosedException">
         ///     The websocket connection is not alive.
         /// </exception>
-        public Task<bool> SendMultiplePacketsAsync(List<ArchipelagoPacketBase> packets)
+        public Task SendMultiplePacketsAsync(List<ArchipelagoPacketBase> packets)
         {
             return SendMultiplePacketsAsync(packets.ToArray());
         }
@@ -282,7 +303,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// <exception cref="T:Archipelago.MultiClient.Net.Exceptions.ArchipelagoSocketClosedException">
         ///     The websocket connection is not alive.
         /// </exception>
-        public Task<bool> SendMultiplePacketsAsync(params ArchipelagoPacketBase[] packets)
+        public Task SendMultiplePacketsAsync(params ArchipelagoPacketBase[] packets)
         {
             var taskCompletionSource = new TaskCompletionSource<bool>();
 
@@ -290,7 +311,10 @@ namespace Archipelago.MultiClient.Net.Helpers
             {
                 var packetAsJson = JsonConvert.SerializeObject(packets);
                 webSocket.SendAsync(packetAsJson, success => {
-                    taskCompletionSource.SetResult(success);
+                    if (!success)
+                        taskCompletionSource.SetException(new Exception("Failed to send packets async"));
+                    else
+                        taskCompletionSource.SetResult(true);
                 });
 
                 if (PacketsSent != null)
@@ -309,6 +333,10 @@ namespace Archipelago.MultiClient.Net.Helpers
 
         private void OnOpen(object sender, EventArgs e)
         {
+#if !NET35
+            connectAsyncTask.SetResult(true);
+#endif
+            
             if (SocketOpened != null)
             {
                 SocketOpened();
@@ -317,9 +345,12 @@ namespace Archipelago.MultiClient.Net.Helpers
 
         private void OnClose(object sender, CloseEventArgs e)
         {
+#if !NET35
+            disconnectAsyncTask.SetResult(true);
+#endif
             if (SocketClosed != null)
             {
-                SocketClosed(e);
+                SocketClosed(e.Reason);
             }
         }
 
@@ -344,3 +375,4 @@ namespace Archipelago.MultiClient.Net.Helpers
         }
     }
 }
+#endif

@@ -72,7 +72,7 @@ namespace Archipelago.MultiClient.Net.Tests
             // ReSharper disable once AssignNullToNotNullAttribute
             var packet = JsonConvert.DeserializeObject<List<ArchipelagoPacketBase>>(json, new ArchipelagoPacketConverter()).First();
 
-            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(packet);
+            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(packet);
 
             Assert.That(receivedDeathLink, Is.Not.Null);
         }

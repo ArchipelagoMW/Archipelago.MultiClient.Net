@@ -24,7 +24,7 @@ namespace Archipelago.MultiClient.Net.Tests
             var sut = new ReceivedItemsHelper(socket, locationHelper, cache);
 
             socket.PacketReceived +=
-                Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(
+                Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(
                     new ReceivedItemsPacket {
                         Index = 0, 
                         Items = new [] {
@@ -48,7 +48,7 @@ namespace Archipelago.MultiClient.Net.Tests
             {
                 Thread.Sleep(1);
                 socket.PacketReceived +=
-                    Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(
+                    Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(
                         new ReceivedItemsPacket
                         {
                             Index = 3,
@@ -102,7 +102,7 @@ namespace Archipelago.MultiClient.Net.Tests
             };
 
             socket.PacketReceived +=
-            Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(
+            Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(
                 new ReceivedItemsPacket
                 {
                     Index = 0,
@@ -148,7 +148,7 @@ namespace Archipelago.MultiClient.Net.Tests
             };
 
             socket.PacketReceived +=
-            Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(
+            Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(
                 new ReceivedItemsPacket
                 {
                     Index = 0,
@@ -197,7 +197,7 @@ namespace Archipelago.MultiClient.Net.Tests
             };
 
             socket.PacketReceived +=
-            Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(
+            Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(
                 new ReceivedItemsPacket
                 {
                     Index = 0,
@@ -207,7 +207,7 @@ namespace Archipelago.MultiClient.Net.Tests
                 });
 
             socket.PacketReceived +=
-            Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(
+            Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(
                 new ReceivedItemsPacket
                 {
                     Index = 1,

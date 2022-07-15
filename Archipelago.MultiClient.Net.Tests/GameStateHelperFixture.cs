@@ -182,14 +182,14 @@ namespace Archipelago.MultiClient.Net.Tests
             Assert.That(getValue(sut), Is.EqualTo(default(T)),
                 $"initial value before the first RoomInfoPacket is received should be {default(T)} but is {getValue(sut)}");
 
-            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(firstPacket);
+            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(firstPacket);
 
             Assert.That(getValue(sut), Is.EqualTo(expectedValueAfterFirstPacket),
                 $"The initial value after the first packet should be {expectedValueAfterFirstPacket} but is {getValue(sut)}");
 
             if (secondPacket != null)
             {
-                socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(secondPacket);
+                socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(secondPacket);
 
                 Assert.That(getValue(sut), Is.EqualTo(expectedValueAfterSecondPacket),
                     $"The value after the second packet should be {expectedValueAfterSecondPacket} but is {getValue(sut)}");

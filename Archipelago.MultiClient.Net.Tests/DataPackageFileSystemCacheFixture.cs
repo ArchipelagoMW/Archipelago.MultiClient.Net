@@ -20,7 +20,7 @@ namespace Archipelago.MultiClient.Net.Tests
 
             _ = new DataPackageFileSystemCache(socket, fileSystemDataPackageProvider);
 
-            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(new RoomInfoPacket {
+            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(new RoomInfoPacket {
                 Games = new []{ "One" }
             });
 
@@ -59,7 +59,7 @@ namespace Archipelago.MultiClient.Net.Tests
 
             _ = new DataPackageFileSystemCache(socket, fileSystemDataPackageProvider);
 
-            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(roomInfo);
+            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(roomInfo);
 
             socket.Received().SendPacket(Arg.Is<GetDataPackagePacket>(p =>
                 p.Games.Length == 1 && p.Games[0] == "Archipelago"
@@ -97,7 +97,7 @@ namespace Archipelago.MultiClient.Net.Tests
 
             _ = new DataPackageFileSystemCache(socket, fileSystemDataPackageProvider);
 
-            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(roomInfo);
+            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(roomInfo);
 
             socket.DidNotReceive().SendPacket(Arg.Any<GetDataPackagePacket>());
         }
@@ -136,7 +136,7 @@ namespace Archipelago.MultiClient.Net.Tests
 
             _ = new DataPackageFileSystemCache(socket, fileSystemDataPackageProvider);
 
-            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(roomInfo);
+            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(roomInfo);
 
             socket.Received().SendPacket(Arg.Is<GetDataPackagePacket>(p =>
                 p.Games.Length == 2 && p.Games[0] == "Two" && p.Games[1] == "Three"
@@ -170,7 +170,7 @@ namespace Archipelago.MultiClient.Net.Tests
 
             _ = new DataPackageFileSystemCache(socket, fileSystemDataPackageProvider);
 
-            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(serverDataPackage);
+            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(serverDataPackage);
 
             fileSystemDataPackageProvider.Received().SaveDataPackageToFile("One", Arg.Is<GameData>(d => 
                 d.Version == 2
@@ -224,8 +224,8 @@ namespace Archipelago.MultiClient.Net.Tests
 
             var sut = new DataPackageFileSystemCache(socket, fileSystemDataPackageProvider);
 
-            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(roomInfo);
-            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(serverDataPackage);
+            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(roomInfo);
+            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(serverDataPackage);
 
             sut.TryGetDataPackageFromCache(out var inMemoryDataPackage);
 
@@ -266,7 +266,7 @@ namespace Archipelago.MultiClient.Net.Tests
 
             var sut = new DataPackageFileSystemCache(socket, fileSystemDataPackageProvider);
 
-            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(serverDataPackage);
+            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(serverDataPackage);
 
             fileSystemDataPackageProvider.Received().SaveDataPackageToFile("One", Arg.Is<GameData>(d => d.Version == 3));
             fileSystemDataPackageProvider.DidNotReceive().SaveDataPackageToFile("Two", Arg.Any<GameData>());

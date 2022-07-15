@@ -36,7 +36,7 @@ namespace Archipelago.MultiClient.Net.Tests
                 }
             };
 
-            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(connectedPacket);
+            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(connectedPacket);
 
             var playerOne = sut.AllPlayers.First(p => p.Slot == 1 && p.Team == 1);
             Assert.That(playerOne.Name, Is.EqualTo("1"));
@@ -70,7 +70,7 @@ namespace Archipelago.MultiClient.Net.Tests
                 }
             };
 
-            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(connectedPacket);
+            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(connectedPacket);
 
             var playerOne = sut.AllPlayers.First(p => p.Slot == 1 && p.Team == 1);
             Assert.That(playerOne.Game, Is.EqualTo("Game1"));
@@ -107,7 +107,7 @@ namespace Archipelago.MultiClient.Net.Tests
                 }
             };
 
-            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(connectedPacket);
+            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(connectedPacket);
 
             var playerOne = sut.AllPlayers.First(p => p.Slot == 1 && p.Team == 1);
             Assert.That(playerOne.Groups.Length, Is.EqualTo(1));
@@ -144,7 +144,7 @@ namespace Archipelago.MultiClient.Net.Tests
                 }
             };
 
-            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(connectedPacket);
+            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(connectedPacket);
 
             var playerOne = sut.AllPlayers.First(p => p.Slot == 1 && p.Team == 1);
             Assert.That(playerOne.Name, Is.EqualTo("1"));
@@ -161,7 +161,7 @@ namespace Archipelago.MultiClient.Net.Tests
                 }
             };
 
-            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(roomInfoUpdatedPacket);
+            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(roomInfoUpdatedPacket);
             
             var playerOneUpdated = sut.AllPlayers.First(p => p.Slot == 1 && p.Team == 1);
             Assert.That(playerOneUpdated.Name, Is.EqualTo("Henk"));
@@ -186,12 +186,12 @@ namespace Archipelago.MultiClient.Net.Tests
                 }
             };
 
-            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(connectedPacket);
+            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(connectedPacket);
 
             var roomInfoUpdatedPacket = new RoomUpdatePacket();
 
             Assert.DoesNotThrow(() => {
-                socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(roomInfoUpdatedPacket);
+                socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(roomInfoUpdatedPacket);
             });
 
             Assert.That(sut.AllPlayers.Count, Is.EqualTo(1));
