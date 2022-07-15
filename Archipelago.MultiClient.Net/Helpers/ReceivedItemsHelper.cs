@@ -128,22 +128,11 @@ namespace Archipelago.MultiClient.Net.Helpers
             {
                 return null;
             }
+            
+            itemLookupCache = dataPackage.Games.Select(x => x.Value).SelectMany(x => x.ItemLookup).ToDictionary(x => x.Value, x => x.Key);
 
-            var gameDataContainingId = dataPackage.Games.SingleOrDefault(x => x.Value.ItemLookup.ContainsValue(id));
-
-            if (string.IsNullOrEmpty(gameDataContainingId.Key) || gameDataContainingId.Value == null)
-            {
-                return null;
-            }
-
-            var gameDataItemLookup = gameDataContainingId.Value.ItemLookup.ToDictionary(x => x.Value, x => x.Key);
-            foreach (var kvp in gameDataItemLookup)
-            {
-                itemLookupCache.Add(kvp.Key, kvp.Value);
-            }
-
-            return itemLookupCache.TryGetValue(id, out name)
-                ? name
+            return itemLookupCache.TryGetValue(id, out var itemName)
+                ? itemName
                 : null;
         }
 
