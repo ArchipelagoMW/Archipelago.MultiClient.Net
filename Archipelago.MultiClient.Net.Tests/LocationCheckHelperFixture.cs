@@ -353,7 +353,7 @@ namespace Archipelago.MultiClient.Net.Tests
             Assert.That(sut.AllMissingLocations, Is.Empty);
         }
 
-#if !NET471
+#if !NET47
         [Test]
         public async Task Should_scout_locations_async()
         {

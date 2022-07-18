@@ -31,13 +31,16 @@ jobs:
       run: msbuild Archipelago.MultiClient.Net.sln /property:Configuration=Release
       
     - name: Run Tests (.net 3.5)
-      run: dotnet test Archipelago.MultiClient.Net.Tests/bin/Release/net471/Archipelago.MultiClient.Net.Tests.dll -l "trx;LogFileName=TestResults_net35.trx"
+      run: dotnet test Archipelago.MultiClient.Net.Tests/bin/Release/net47/Archipelago.MultiClient.Net.Tests.dll -l "trx;LogFileName=TestResults_net35.trx"
 
     - name: Run Tests (.net 4.0)
-      run: dotnet test Archipelago.MultiClient.Net.Tests/bin/Release/net472/Archipelago.MultiClient.Net.Tests.dll -l "trx;LogFileName=TestResults_net40.trx"
+      run: dotnet test Archipelago.MultiClient.Net.Tests/bin/Release/net471/Archipelago.MultiClient.Net.Tests.dll -l "trx;LogFileName=TestResults_net40.trx"
 
     - name: Run Tests (.net standard 2.0)
       run: dotnet test Archipelago.MultiClient.Net.Tests/bin/Release/net48/Archipelago.MultiClient.Net.Tests.dll -l "trx;LogFileName=TestResults_standard20.trx"
+
+    - name: Run Tests (.net 4.7.2 using Oculus Json)
+      run: dotnet test Archipelago.MultiClient.Net.Tests/bin/Release/net472/Archipelago.MultiClient.Net.Tests.dll -l "trx;LogFileName=TestResults_net472_oculus.trx"
        
     - name: Upload Test Results
       uses: actions/upload-artifact@v2.3.1
