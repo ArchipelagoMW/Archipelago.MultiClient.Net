@@ -1,9 +1,17 @@
 ﻿using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Helpers;
+using Archipelago.MultiClient.Net.Models;
+#if USE_OCULUS_NEWTONSOFT
+using Oculus.Newtonsoft.Json;
+using Oculus.Newtonsoft.Json.Converters;
+using Oculus.Newtonsoft.Json.Linq;
+using Oculus.Newtonsoft.Json.Serialization;
+#else
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
+#endif
 using System;
 
 namespace Archipelago.MultiClient.Net.Models
@@ -11,8 +19,14 @@ namespace Archipelago.MultiClient.Net.Models
     public class OperationSpecification
     {
         [JsonProperty("operation")]
+#if !USE_OCULUS_NEWTONSOFT
         [JsonConverter(typeof(StringEnumConverter), typeof(SnakeCaseNamingStrategy))]
+#endif
+#if USE_OCULUS_NEWTONSOFT
+        public string Operation;
+#else
         public Operation Operation;
+#endif
 
         [JsonProperty("value")]
         public JToken Value { get; set; }
@@ -26,19 +40,38 @@ namespace Archipelago.MultiClient.Net.Models
     public class Bitwise
     {
         public static OperationSpecification Xor(long i) =>
+#if USE_OCULUS_NEWTONSOFT
+            new OperationSpecification { Operation = Operation.Xor.ToString(), Value = i };
+#else
             new OperationSpecification { Operation = Operation.Xor, Value = i };
-
+#endif
         public static OperationSpecification Or(long i) =>
+#if USE_OCULUS_NEWTONSOFT
+            new OperationSpecification { Operation = Operation.Or.ToString(), Value = i };
+#else
             new OperationSpecification { Operation = Operation.Or, Value = i };
+#endif
 
         public static OperationSpecification And(long i) =>
+#if USE_OCULUS_NEWTONSOFT
+            new OperationSpecification { Operation = Operation.And.ToString(), Value = i };
+#else
             new OperationSpecification { Operation = Operation.And, Value = i };
+#endif
 
         public static OperationSpecification LeftShift(long i) =>
+#if USE_OCULUS_NEWTONSOFT
+            new OperationSpecification { Operation = Operation.LeftShift.ToString(), Value = i };
+#else
             new OperationSpecification { Operation = Operation.LeftShift, Value = i };
+#endif
 
         public static OperationSpecification RightShift(long i) =>
+#if USE_OCULUS_NEWTONSOFT
+            new OperationSpecification { Operation = Operation.RightShift.ToString(), Value = i };
+#else
             new OperationSpecification { Operation = Operation.RightShift, Value = i };
+#endif
     }
 
     public class Callback

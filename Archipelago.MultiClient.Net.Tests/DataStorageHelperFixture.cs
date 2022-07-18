@@ -1,4 +1,5 @@
-﻿using Archipelago.MultiClient.Net.Enums;
+﻿#if !USE_OCULUS_NEWTONSOFT
+using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Helpers;
 using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
@@ -219,7 +220,7 @@ namespace Archipelago.MultiClient.Net.Tests
 
         [TestCaseSource(nameof(CompoundAssignmentTests))]
         public void Should_handle_compound_Assignment_correctly<T>(
-            T value, Action<DataStorageHelper, string, T> action, 
+            T value, Action<DataStorageHelper, string, T> action,
             Func<SetPacket, string, T, bool> validatePacket)
         {
             var socket = Substitute.For<IArchipelagoSocketHelper>();
@@ -322,7 +323,7 @@ namespace Archipelago.MultiClient.Net.Tests
 
             ExecuteAsyncWithDelay(
                 () => Assert.Throws<InvalidOperationException>(() => { result = sut["StringValueA"] * 1.5d; }),
-                () => { 
+                () => {
                     Thread.Sleep(100);
                     RaiseRetrieved(socket, "StringValueA", "A");
                 });
@@ -419,7 +420,7 @@ namespace Archipelago.MultiClient.Net.Tests
             Assert.That(callbackCount, Is.EqualTo(1));
         }
 
-#if NET471
+#if NET47
         [Test]
         public void Should_retreive_values_async()
         {
@@ -457,10 +458,13 @@ namespace Archipelago.MultiClient.Net.Tests
                 d = (string)v;
             });
 
-            var retrievedPacketB = new RetrievedPacket { Data = new Dictionary<string, JToken> {
+            var retrievedPacketB = new RetrievedPacket
+            {
+                Data = new Dictionary<string, JToken> {
                 { "Key", 20 },
                 { "OtherKey", "yolo" },
-            } };
+            }
+            };
 
             socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(retrievedPacketB);
 
@@ -699,7 +703,8 @@ namespace Archipelago.MultiClient.Net.Tests
 
             ExecuteAsyncWithDelay(
                 () => networkItem = sut["Item"].To<NetworkItem>(),
-                () => RaiseRetrieved(socket, "Item", JObject.FromObject(new NetworkItem {
+                () => RaiseRetrieved(socket, "Item", JObject.FromObject(new NetworkItem
+                {
                     Item = 1337,
                     Location = 999,
                     Player = 2,
@@ -707,8 +712,9 @@ namespace Archipelago.MultiClient.Net.Tests
                 })));
             ExecuteAsyncWithDelay(
                 () => anonymousType = sut["Anonymous"].To<JObject>(),
-                () => RaiseRetrieved(socket, "Anonymous", JObject.FromObject(new { 
-                    A = 10, 
+                () => RaiseRetrieved(socket, "Anonymous", JObject.FromObject(new
+                {
+                    A = 10,
                     B = "Hello"
                 })));
 
@@ -751,15 +757,16 @@ namespace Archipelago.MultiClient.Net.Tests
 
             var sut = new DataStorageHelper(socket, connectionInfo);
 
-            var retrievedPacked = new RetrievedPacket() {
+            var retrievedPacked = new RetrievedPacket()
+            {
                 Data = new Dictionary<string, JToken> { { "Key", 10 } }
             };
 
-#if NET471
+#if NET47
             var addNewAsyncCallback = new Task(() =>
             {
                 Thread.Sleep(1);
-                sut["Key"].GetAsync(t => {});
+                sut["Key"].GetAsync(t => { });
             });
 
             sut["Key"].GetAsync(t => Thread.Sleep(1));
@@ -827,11 +834,11 @@ namespace Archipelago.MultiClient.Net.Tests
 
         public static void ExecuteAsyncWithDelay(Action retrieve, Action raiseEvent)
         {
-            Task.WaitAll( new [] {
+            Task.WaitAll(new[] {
                 Task.Factory.StartNew(() =>
                 {
                     retrieve();
-                }), 
+                }),
                 Task.Factory.StartNew(() =>
                 {
                     Thread.Sleep(100);
@@ -876,3 +883,5 @@ namespace Archipelago.MultiClient.Net.Tests
         }
     }
 }
+
+#endif

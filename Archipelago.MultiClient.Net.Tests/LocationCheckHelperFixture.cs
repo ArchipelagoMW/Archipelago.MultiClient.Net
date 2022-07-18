@@ -26,7 +26,7 @@ namespace Archipelago.MultiClient.Net.Tests
             Assert.DoesNotThrow(() => {
                 sut.CompleteLocationChecks(null);
                 sut.CompleteLocationChecks(Array.Empty<long>());
-#if NET471
+#if NET47
                 sut.CompleteLocationChecksAsync(b => { }, null);
                 sut.CompleteLocationChecksAsync(b => { }, Array.Empty<long>());
 #else
@@ -79,7 +79,7 @@ namespace Archipelago.MultiClient.Net.Tests
             socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(connectedPacket);
 
             sut.CompleteLocationChecks(2);
-#if NET471
+#if NET47
             sut.CompleteLocationChecksAsync(b => { }, 3);
 #else
             sut.CompleteLocationChecksAsync(3).Wait();
@@ -113,7 +113,7 @@ namespace Archipelago.MultiClient.Net.Tests
             socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(connectedPacket);
 
             sut.CompleteLocationChecks(1);
-#if NET471
+#if NET47
             sut.CompleteLocationChecksAsync(b => { }, 2);
 #else
             sut.CompleteLocationChecksAsync(2).Wait();
@@ -223,7 +223,7 @@ namespace Archipelago.MultiClient.Net.Tests
             };
 
             sut.CompleteLocationChecks(1, 2);
-#if NET471
+#if NET47
             sut.CompleteLocationChecksAsync(b => { }, 3);
 #else
             sut.CompleteLocationChecksAsync(3).Wait();
@@ -301,7 +301,7 @@ namespace Archipelago.MultiClient.Net.Tests
             sut.CompleteLocationChecks(null);
             sut.CompleteLocationChecks(Array.Empty<long>());
             sut.CompleteLocationChecks(1);
-#if NET471
+#if NET47
             sut.CompleteLocationChecksAsync(b => { }, null);
             sut.CompleteLocationChecksAsync(b => { }, Array.Empty<long>());
             sut.CompleteLocationChecksAsync(b => { }, 1);
@@ -336,7 +336,7 @@ namespace Archipelago.MultiClient.Net.Tests
             socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(roomUpdatePacket);
 
             sut.CompleteLocationChecks(1, 2);
-#if NET471
+#if NET47
             sut.CompleteLocationChecksAsync(b => { }, 1, 3);
 #else
             sut.CompleteLocationChecksAsync(1, 3).Wait();

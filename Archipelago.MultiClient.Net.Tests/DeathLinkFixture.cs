@@ -1,8 +1,13 @@
 ﻿using Archipelago.MultiClient.Net.BounceFeatures.DeathLink;
 using Archipelago.MultiClient.Net.Converters;
 using Archipelago.MultiClient.Net.Helpers;
+#if USE_OCULUS_NEWTONSOFT
+using Oculus.Newtonsoft.Json;
+using Oculus.Newtonsoft.Json.Linq;
+#else
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+#endif
 using NSubstitute;
 using NUnit.Framework;
 using System;

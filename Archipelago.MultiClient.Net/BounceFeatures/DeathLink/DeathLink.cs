@@ -1,5 +1,9 @@
 ﻿using Archipelago.MultiClient.Net.Converters;
+#if USE_OCULUS_NEWTONSOFT
+using Oculus.Newtonsoft.Json.Linq;
+#else
 using Newtonsoft.Json.Linq;
+#endif
 using System;
 using System.Collections.Generic;
 

@@ -1,15 +1,19 @@
-﻿#if NET35 || NET40
+﻿#if NET35 || NET40 || NET472
 using Archipelago.MultiClient.Net.Converters;
 using Archipelago.MultiClient.Net.Exceptions;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using WebSocketSharp;
+
+#if USE_OCULUS_NEWTONSOFT
+using Oculus.Newtonsoft.Json;
+#else
+using Newtonsoft.Json;
+#endif
 
 #if !NET35
 using System.Threading.Tasks;
 #endif
-
-using WebSocketSharp;
 
 namespace Archipelago.MultiClient.Net.Helpers
 {

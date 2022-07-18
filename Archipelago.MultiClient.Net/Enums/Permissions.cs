@@ -1,5 +1,9 @@
 ﻿using Archipelago.MultiClient.Net.Converters;
+#if USE_OCULUS_NEWTONSOFT
+using Oculus.Newtonsoft.Json;
+#else
 using Newtonsoft.Json;
+#endif
 using System;
 
 namespace Archipelago.MultiClient.Net.Enums

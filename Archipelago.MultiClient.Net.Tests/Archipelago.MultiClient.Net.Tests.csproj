@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<TargetFrameworks>net471;net472;net48</TargetFrameworks>
+		<TargetFrameworks>net47;net471;net472;net48</TargetFrameworks>
 		<IsPackable>false</IsPackable>
 	</PropertyGroup>
 
@@ -10,12 +10,31 @@
 	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
 		<DebugType>pdbonly</DebugType>
 	</PropertyGroup>
+	<PropertyGroup Condition="'$(TargetFramework)' == 'net472'">
+		<DefineConstants>USE_OCULUS_NEWTONSOFT</DefineConstants>
+	</PropertyGroup>
 
 	<ItemGroup>
 		<PackageReference Include="NUnit" Version="3.12.0" />
 		<PackageReference Include="NUnit3TestAdapter" Version="3.16.1" />
 		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.5.0" />
 		<PackageReference Include="NSubstitute" Version="4.2.2" />
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(TargetFramework)' == 'net47'">
+		<Reference Include="Newtonsoft.Json">
+			<HintPath>..\DLLs\net35\Newtonsoft.Json.dll</HintPath>
+		</Reference>
+	</ItemGroup>
+	<ItemGroup Condition="'$(TargetFramework)' == 'net47' AND '$(Configuration)' == 'Debug'">
+		<Reference Include="Archipelago.MultiClient.Net">
+			<HintPath>..\Archipelago.MultiClient.Net\bin\Debug\net35\Archipelago.MultiClient.Net.dll</HintPath>
+		</Reference>
+	</ItemGroup>
+	<ItemGroup Condition="'$(TargetFramework)' == 'net47' AND '$(Configuration)' == 'Release'">
+		<Reference Include="Archipelago.MultiClient.Net">
+			<HintPath>..\Archipelago.MultiClient.Net\bin\Release\net35\Archipelago.MultiClient.Net.dll</HintPath>
+		</Reference>
 	</ItemGroup>
 
 	<ItemGroup Condition="'$(TargetFramework)' == 'net471'">
@@ -25,26 +44,10 @@
 	</ItemGroup>
 	<ItemGroup Condition="'$(TargetFramework)' == 'net471' AND '$(Configuration)' == 'Debug'">
 		<Reference Include="Archipelago.MultiClient.Net">
-			<HintPath>..\Archipelago.MultiClient.Net\bin\Debug\net35\Archipelago.MultiClient.Net.dll</HintPath>
-		</Reference>
-	</ItemGroup>
-	<ItemGroup Condition="'$(TargetFramework)' == 'net471' AND '$(Configuration)' == 'Release'">
-		<Reference Include="Archipelago.MultiClient.Net">
-			<HintPath>..\Archipelago.MultiClient.Net\bin\Release\net35\Archipelago.MultiClient.Net.dll</HintPath>
-		</Reference>
-	</ItemGroup>
-
-	<ItemGroup Condition="'$(TargetFramework)' == 'net472'">
-		<Reference Include="Newtonsoft.Json">
-			<HintPath>..\DLLs\net35\Newtonsoft.Json.dll</HintPath>
-		</Reference>
-	</ItemGroup>
-	<ItemGroup Condition="'$(TargetFramework)' == 'net472' AND '$(Configuration)' == 'Debug'">
-		<Reference Include="Archipelago.MultiClient.Net">
 			<HintPath>..\Archipelago.MultiClient.Net\bin\Debug\net40\Archipelago.MultiClient.Net.dll</HintPath>
 		</Reference>
 	</ItemGroup>
-	<ItemGroup Condition="'$(TargetFramework)' == 'net472' AND '$(Configuration)' == 'Release'">
+	<ItemGroup Condition="'$(TargetFramework)' == 'net471' AND '$(Configuration)' == 'Release'">
 		<Reference Include="Archipelago.MultiClient.Net">
 			<HintPath>..\Archipelago.MultiClient.Net\bin\Release\net40\Archipelago.MultiClient.Net.dll</HintPath>
 		</Reference>
@@ -63,6 +66,22 @@
 	<ItemGroup Condition="'$(TargetFramework)' == 'net48' AND '$(Configuration)' == 'Release'">
 		<Reference Include="Archipelago.MultiClient.Net">
 			<HintPath>..\Archipelago.MultiClient.Net\bin\Release\netstandard2.0\Archipelago.MultiClient.Net.dll</HintPath>
+		</Reference>
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(TargetFramework)' == 'net472'">
+		<Reference Include="Newtonsoft.Json">
+			<HintPath>..\DLLs\net472_oculus\Newtonsoft.Json.dll</HintPath>
+		</Reference>
+	</ItemGroup>
+	<ItemGroup Condition="'$(TargetFramework)' == 'net472' AND '$(Configuration)' == 'Debug'">
+		<Reference Include="Archipelago.MultiClient.Net">
+			<HintPath>..\Archipelago.MultiClient.Net\bin\Debug\net472\Archipelago.MultiClient.Net.dll</HintPath>
+		</Reference>
+	</ItemGroup>
+	<ItemGroup Condition="'$(TargetFramework)' == 'net472' AND '$(Configuration)' == 'Release'">
+		<Reference Include="Archipelago.MultiClient.Net">
+			<HintPath>..\Archipelago.MultiClient.Net\bin\Release\net472\Archipelago.MultiClient.Net.dll</HintPath>
 		</Reference>
 	</ItemGroup>
 </Project>

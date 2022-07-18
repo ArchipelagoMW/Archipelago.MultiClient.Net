@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<TargetFrameworks>net35;net40;netstandard2.0;net6.0</TargetFrameworks>
+		<TargetFrameworks>net35;net40;netstandard2.0;net6.0;net472</TargetFrameworks>
 		<AssemblyTitle>Archipelago.MultiClient.Net</AssemblyTitle>
 		<Product>Archipelago.MultiClient.Net</Product>
 		<Copyright>Copyright ©  2022</Copyright>
@@ -23,6 +23,9 @@
 	</PropertyGroup>
 	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
 		<DebugType>pdbonly</DebugType>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(TargetFramework)' == 'net472'">
+		<DefineConstants>USE_OCULUS_NEWTONSOFT</DefineConstants>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -59,6 +62,15 @@
 	<ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
 		<Reference Include="Newtonsoft.Json">
 			<HintPath>..\DLLs\netstandard2.0\Newtonsoft.Json.dll</HintPath>
+		</Reference>
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(TargetFramework)' == 'net472'">
+		<Reference Include="Newtonsoft.Json">
+			<HintPath>..\DLLs\net472_oculus\Newtonsoft.Json.dll</HintPath>
+		</Reference>
+		<Reference Include="websocket-sharp">
+			<HintPath>..\DLLs\websocket-sharp.dll</HintPath>
 		</Reference>
 	</ItemGroup>
 </Project>
