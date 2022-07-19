@@ -3,7 +3,9 @@ using Archipelago.MultiClient.Net.Converters;
 using Archipelago.MultiClient.Net.Exceptions;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
@@ -21,6 +23,8 @@ namespace Archipelago.MultiClient.Net.Helpers
         public event ArchipelagoSocketHelperDelagates.ErrorReceivedHandler ErrorReceived;
         public event ArchipelagoSocketHelperDelagates.SocketClosedHandler SocketClosed;
         public event ArchipelagoSocketHelperDelagates.SocketOpenedHandler SocketOpened;
+
+        private readonly ConcurrentQueue<ArchipelagoPacketBase> sendQueue = new ConcurrentQueue<ArchipelagoPacketBase>();
 
         /// <summary>
         ///     The URL of the host that the socket is connected to.
@@ -66,6 +70,7 @@ namespace Archipelago.MultiClient.Net.Helpers
             }
 
             _ = Task.Run(PollingLoop);
+            _ = Task.Run(SendLoop);
         }
 
         private async Task PollingLoop()
@@ -86,6 +91,21 @@ namespace Archipelago.MultiClient.Net.Helpers
                 }
 
                 OnMessageReceived(message);
+            }
+        }
+
+        private async Task SendLoop()
+        {
+            while (webSocket.State == WebSocketState.Open)
+            {
+                try
+                {
+                    await HandleSendBuffer();
+                }
+                catch (Exception e)
+                {
+                    OnError(e);
+                }
             }
         }
 
@@ -226,11 +246,33 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// </exception>
         public async Task SendMultiplePacketsAsync(params ArchipelagoPacketBase[] packets)
         {
+            foreach (var packet in packets)
+            {
+                sendQueue.Enqueue(packet);
+            }
+        }
+
+        private async Task HandleSendBuffer()
+        {
+            List<ArchipelagoPacketBase> packetList = new List<ArchipelagoPacketBase>();
+
+            while (sendQueue.TryDequeue(out var packet))
+            {
+                packetList.Add(packet);
+            }
+
+            if (!packetList.Any())
+            {
+                return;
+            }
+
             if (webSocket.State != WebSocketState.Open)
             {
                 throw new ArchipelagoSocketClosedException();
             }
-
+            
+            ArchipelagoPacketBase[] packets = packetList.ToArray();
+            
             var packetAsJson = JsonConvert.SerializeObject(packets);
             var messageBuffer = Encoding.UTF8.GetBytes(packetAsJson);
             var messagesCount = (int)Math.Ceiling((double)messageBuffer.Length / SendChunkSize);
