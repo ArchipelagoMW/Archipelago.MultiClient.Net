@@ -778,7 +778,7 @@ namespace Archipelago.MultiClient.Net.Models
                         break;
 
 #if USE_OCULUS_NEWTONSOFT
-                    case "LeftShift":
+                    case "left_shift":
 #else
                     case Operation.LeftShift:
 #endif
@@ -786,7 +786,7 @@ namespace Archipelago.MultiClient.Net.Models
                         break;
 
 #if USE_OCULUS_NEWTONSOFT
-                    case "RightShift":
+                    case "right_shift":
 #else
                     case Operation.RightShift:
 #endif

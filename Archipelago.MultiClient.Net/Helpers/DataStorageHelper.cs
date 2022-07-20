@@ -8,6 +8,7 @@ using Newtonsoft.Json.Linq;
 #endif
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 #if NET35
 using System.Threading;
@@ -149,7 +150,7 @@ namespace Archipelago.MultiClient.Net.Helpers
                 DefaultValue = value,
                 Operations = new[] {
 #if USE_OCULUS_NEWTONSOFT
-                    new OperationSpecification { Operation = Operation.Default.ToString() }
+                    new OperationSpecification { Operation = Operation.Default.ToString().ToLower() }
 #else
                     new OperationSpecification { Operation = Operation.Default }
 #endif
@@ -202,13 +203,20 @@ namespace Archipelago.MultiClient.Net.Helpers
                 e.Operations.Insert(0, new OperationSpecification
                 {
 #if USE_OCULUS_NEWTONSOFT
-                    Operation = "Replace",
+                    Operation = Operation.Replace.ToString(),
 #else
                     Operation = Operation.Replace,
 #endif
                     Value = GetValue(e.Context.Key)
                 });
             }
+
+#if USE_OCULUS_NEWTONSOFT
+            e.Operations = e.Operations.Select(o => new OperationSpecification {
+                Operation = o.Operation.ToLower(), 
+                Value = o.Value
+            }).ToList();
+#endif
 
             if (e.Callbacks != null)
             {
