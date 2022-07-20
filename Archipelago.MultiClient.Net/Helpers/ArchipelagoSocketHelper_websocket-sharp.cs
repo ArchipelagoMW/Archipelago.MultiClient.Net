@@ -334,7 +334,10 @@ namespace Archipelago.MultiClient.Net.Helpers
         private void OnOpen(object sender, EventArgs e)
         {
 #if !NET35
-            connectAsyncTask.SetResult(true);
+            if (connectAsyncTask != null)
+            {
+                connectAsyncTask.SetResult(true);
+            }
 #endif
             
             if (SocketOpened != null)
@@ -346,8 +349,12 @@ namespace Archipelago.MultiClient.Net.Helpers
         private void OnClose(object sender, CloseEventArgs e)
         {
 #if !NET35
-            disconnectAsyncTask.SetResult(true);
+            if (disconnectAsyncTask != null)
+            {
+                disconnectAsyncTask.SetResult(true);
+            }
 #endif
+
             if (SocketClosed != null)
             {
                 SocketClosed(e.Reason);
