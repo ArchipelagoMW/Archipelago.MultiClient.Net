@@ -15,8 +15,6 @@ namespace Archipelago.MultiClient.Net.Helpers
 {
     public class ArchipelagoSocketHelper : IArchipelagoSocketHelper
     {
-        private const int PollingDelayInMilliseconds = 16;
-
         private const int ReceiveChunkSize = 1024;
         private const int SendChunkSize = 1024;
 
@@ -94,8 +92,6 @@ namespace Archipelago.MultiClient.Net.Helpers
                 }
 
                 OnMessageReceived(message);
-
-                await Task.Delay(PollingDelayInMilliseconds);
             }
         }
 
@@ -111,8 +107,6 @@ namespace Archipelago.MultiClient.Net.Helpers
                 {
                     OnError(e);
                 }
-
-                await Task.Delay(PollingDelayInMilliseconds);
             }
         }
 
