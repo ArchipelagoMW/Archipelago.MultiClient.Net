@@ -24,7 +24,8 @@ namespace Archipelago.MultiClient.Net.Helpers
         public event ArchipelagoSocketHelperDelagates.SocketClosedHandler SocketClosed;
         public event ArchipelagoSocketHelperDelagates.SocketOpenedHandler SocketOpened;
 
-        private readonly ConcurrentQueue<ArchipelagoPacketBase> sendQueue = new ConcurrentQueue<ArchipelagoPacketBase>();
+        private readonly ConcurrentQueue<Tuple<ArchipelagoPacketBase, TaskCompletionSource<bool>>> sendQueue
+            = new ConcurrentQueue<Tuple<ArchipelagoPacketBase, TaskCompletionSource<bool>>>();
 
         /// <summary>
         ///     The URL of the host that the socket is connected to.
@@ -244,21 +245,27 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// <exception cref="T:Archipelago.MultiClient.Net.Exceptions.ArchipelagoSocketClosedException">
         ///     The websocket connection is not alive.
         /// </exception>
-        public async Task SendMultiplePacketsAsync(params ArchipelagoPacketBase[] packets)
+        public Task SendMultiplePacketsAsync(params ArchipelagoPacketBase[] packets)
         {
+            var task = new TaskCompletionSource<bool>();
+
             foreach (var packet in packets)
             {
-                sendQueue.Enqueue(packet);
+                sendQueue.Enqueue(new Tuple<ArchipelagoPacketBase, TaskCompletionSource<bool>>(packet, task));
             }
+
+            return task.Task;
         }
 
         private async Task HandleSendBuffer()
         {
             List<ArchipelagoPacketBase> packetList = new List<ArchipelagoPacketBase>();
+            List<TaskCompletionSource<bool>> tasks = new List<TaskCompletionSource<bool>>();
 
-            while (sendQueue.TryDequeue(out var packet))
+            while (sendQueue.TryDequeue(out var packetTuple))
             {
-                packetList.Add(packet);
+                packetList.Add(packetTuple.Item1);
+                tasks.Add(packetTuple.Item2);
             }
 
             if (!packetList.Any())
@@ -289,6 +296,11 @@ namespace Archipelago.MultiClient.Net.Helpers
                 }
 
                 await webSocket.SendAsync(new ArraySegment<byte>(messageBuffer, offset, count), WebSocketMessageType.Text, lastMessage, CancellationToken.None);
+            }
+
+            foreach (var task in tasks)
+            {
+                task.TrySetResult(true);
             }
 
             OnPacketSend(packets);
