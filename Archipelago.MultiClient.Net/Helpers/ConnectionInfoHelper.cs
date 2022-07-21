@@ -30,10 +30,31 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// The Uniquely Identifiable string under which you client is connected or an empty string otherwise
         /// </summary>
         string Uuid { get; }
+
+        /// <summary>
+        ///     Send a ConnectUpdate packet and set the tags and ItemsHandlingFlags for the current connection to the provided params.
+        /// </summary>
+        /// <param name="tags">New tags for the current connection.</param>
+        void UpdateConnectionOptions(string[] tags);
+
+        /// <summary>
+        ///     Send a ConnectUpdate packet and set the tags and ItemsHandlingFlags for the current connection to the provided params.
+        /// </summary>
+        /// <param name="itemsHandlingFlags">New ItemsHandlingFlags for the current connection.</param>
+        void UpdateConnectionOptions(ItemsHandlingFlags itemsHandlingFlags);
+
+        /// <summary>
+        ///     Send a ConnectUpdate packet and set the tags and ItemsHandlingFlags for the current connection to the provided params.
+        /// </summary>
+        /// <param name="tags">New tags for the current connection.</param>
+        /// <param name="itemsHandlingFlags">New ItemsHandlingFlags for the current connection.</param>
+        void UpdateConnectionOptions(string[] tags, ItemsHandlingFlags itemsHandlingFlags);
     }
 
     public class ConnectionInfoHelper : IConnectionInfoProvider
     {
+        private readonly IArchipelagoSocketHelper socket;
+
         public string Game { get; private set; }
         public int Team { get; private set; }
         public int Slot { get; private set; }
@@ -43,6 +64,8 @@ namespace Archipelago.MultiClient.Net.Helpers
 
         public ConnectionInfoHelper(IArchipelagoSocketHelper socket)
         {
+            this.socket = socket;
+
             Reset();
 
             socket.PacketReceived += PacketReceived;
@@ -78,6 +101,40 @@ namespace Archipelago.MultiClient.Net.Helpers
             Tags = new string[0];
             ItemsHandlingFlags = ItemsHandlingFlags.NoItems;
             Uuid = null;
+        }
+
+        /// <summary>
+        ///     Send a ConnectUpdate packet and set the tags and ItemsHandlingFlags for the current connection to the provided params.
+        /// </summary>
+        /// <param name="tags">New tags for the current connection.</param>
+        public void UpdateConnectionOptions(string[] tags)
+        {
+            UpdateConnectionOptions(tags, ItemsHandlingFlags);
+        }
+
+        /// <summary>
+        ///     Send a ConnectUpdate packet and set the tags and ItemsHandlingFlags for the current connection to the provided params.
+        /// </summary>
+        /// <param name="itemsHandlingFlags">New ItemsHandlingFlags for the current connection.</param>
+        public void UpdateConnectionOptions(ItemsHandlingFlags itemsHandlingFlags)
+        {
+            UpdateConnectionOptions(Tags, ItemsHandlingFlags);
+        }
+
+        /// <summary>
+        ///     Send a ConnectUpdate packet and set the tags and ItemsHandlingFlags for the current connection to the provided params.
+        /// </summary>
+        /// <param name="tags">New tags for the current connection.</param>
+        /// <param name="itemsHandlingFlags">New ItemsHandlingFlags for the current connection.</param>
+        public void UpdateConnectionOptions(string[] tags, ItemsHandlingFlags itemsHandlingFlags)
+        {
+            SetConnectionParameters(Game, tags, itemsHandlingFlags, Uuid);
+
+            socket.SendPacket(new ConnectUpdatePacket
+            {
+                Tags = Tags,
+                ItemsHandling = ItemsHandlingFlags
+            });
         }
     }
 }
