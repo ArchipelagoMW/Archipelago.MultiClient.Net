@@ -139,21 +139,5 @@ namespace Archipelago.MultiClient.Net
                 return new LoginFailure("Socket closed unexpectedly.");
             }
         }
-
-        /// <summary>
-        ///     Send a ConnectUpdate packet and set the tags and ItemsHandlingFlags for the current connection to the provided params.
-        /// </summary>
-        /// <param name="tags">New tags for the current connection.</param>
-        /// <param name="itemsHandlingFlags">New ItemsHandlingFlags for the current connection.</param>
-        public void UpdateConnectionOptions(string[] tags, ItemsHandlingFlags itemsHandlingFlags)
-        {
-            ConnectionInfo.SetConnectionParameters(ConnectionInfo.Game, tags, itemsHandlingFlags, ConnectionInfo.Uuid);
-
-            Socket.SendPacket(new ConnectUpdatePacket
-            {
-                Tags = ConnectionInfo.Tags,
-                ItemsHandling = ConnectionInfo.ItemsHandlingFlags
-            });
-        }
     }
 }
