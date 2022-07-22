@@ -91,7 +91,6 @@ namespace Archipelago.MultiClient.Net.BounceFeatures.DeathLink
             {
                 var hashCode = Timestamp.GetHashCode();
                 hashCode = (hashCode * 397) ^ (Source != null ? Source.GetHashCode() : 0);
-                hashCode = (hashCode * 397) ^ (Cause != null ? Cause.GetHashCode() : 0);
                 return hashCode;
             }
         }
