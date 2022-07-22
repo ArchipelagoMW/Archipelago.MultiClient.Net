@@ -84,13 +84,15 @@ namespace Archipelago.MultiClient.Net.Converters
                             return obj.ToObject<ItemPrintJsonPacket>();
                     }
                 }
+
+                obj["type"] = null;
             }
 
             return obj.ToObject<PrintJsonPacket>();
         }
 
 #if NET35
-        static bool EnumTryParse<TEnum>(string value, out TEnum result)
+        private static bool EnumTryParse<TEnum>(string value, out TEnum result)
             where TEnum : struct, IConvertible
         {
             if (value == null || !Enum.IsDefined(typeof(TEnum), value))
