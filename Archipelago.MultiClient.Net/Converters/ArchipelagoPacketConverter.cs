@@ -65,14 +65,15 @@ namespace Archipelago.MultiClient.Net.Converters
         {
             if (obj.TryGetValue("type", out var token))
             {
-                var type = (JsonMessageType)Enum.Parse(typeof(JsonMessageType), token.ToString());
-
-                switch (type)
+                if (Enum.TryParse(token.ToString(), out JsonMessageType type))
                 {
-                    case JsonMessageType.Hint:
-                        return obj.ToObject<HintPrintJsonPacket>();
-                    case JsonMessageType.ItemSend:
-                        return obj.ToObject<ItemPrintJsonPacket>();
+                    switch (type)
+                    {
+                        case JsonMessageType.Hint:
+                            return obj.ToObject<HintPrintJsonPacket>();
+                        case JsonMessageType.ItemSend:
+                            return obj.ToObject<ItemPrintJsonPacket>();
+                    }
                 }
             }
 
