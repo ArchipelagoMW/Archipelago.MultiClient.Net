@@ -19,6 +19,8 @@ namespace Archipelago.MultiClient.Net.Helpers
 {
     public class ArchipelagoSocketHelper : IArchipelagoSocketHelper
     {
+        private static readonly ArchipelagoPacketConverter converter = new ArchipelagoPacketConverter();
+
         public event ArchipelagoSocketHelperDelagates.PacketReceivedHandler PacketReceived;
         public event ArchipelagoSocketHelperDelagates.PacketsSentHandler PacketsSent;
         public event ArchipelagoSocketHelperDelagates.ErrorReceivedHandler ErrorReceived;
@@ -369,7 +371,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         {
             if (e.IsText && PacketReceived != null)
             {
-                var packets = JsonConvert.DeserializeObject<List<ArchipelagoPacketBase>>(e.Data, new ArchipelagoPacketConverter());
+                var packets = JsonConvert.DeserializeObject<List<ArchipelagoPacketBase>>(e.Data, converter);
                 foreach (var packet in packets)
                 {
                     PacketReceived(packet);
