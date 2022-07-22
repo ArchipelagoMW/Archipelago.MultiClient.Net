@@ -15,6 +15,8 @@ namespace Archipelago.MultiClient.Net.Helpers
 {
     public class ArchipelagoSocketHelper : IArchipelagoSocketHelper
     {
+        private static readonly ArchipelagoPacketConverter converter = new ArchipelagoPacketConverter();
+
         private const int ReceiveChunkSize = 1024;
         private const int SendChunkSize = 1024;
 
@@ -342,7 +344,7 @@ namespace Archipelago.MultiClient.Net.Helpers
             {
                 if (!string.IsNullOrEmpty(message) && PacketReceived != null)
                 {
-                    var packets = JsonConvert.DeserializeObject<List<ArchipelagoPacketBase>>(message, new ArchipelagoPacketConverter());
+                    var packets = JsonConvert.DeserializeObject<List<ArchipelagoPacketBase>>(message, converter);
                     if (packets == null)
                         return;
 
