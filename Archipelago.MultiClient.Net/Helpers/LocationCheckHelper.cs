@@ -1,6 +1,7 @@
 ﻿using Archipelago.MultiClient.Net.Cache;
 using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Packets;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -132,7 +133,7 @@ namespace Archipelago.MultiClient.Net.Helpers
                 case InvalidPacketPacket invalidPacket:
                     if (awaitingLocationInfoPacket && invalidPacket.OriginalCmd == ArchipelagoPacketType.LocationScouts)
                     {
-                        locationInfoPacketCallbackTask.SetCanceled();
+                        locationInfoPacketCallbackTask.TrySetException(new Exception("location scout rejected by the server"));
 
                         awaitingLocationInfoPacket = false;
                         locationInfoPacketCallbackTask = null;

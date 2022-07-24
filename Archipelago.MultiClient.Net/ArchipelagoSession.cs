@@ -78,14 +78,22 @@ namespace Archipelago.MultiClient.Net
 #if !NET35
         /// <summary>
         /// Connect the websocket to the server
+        /// Will wait a few seconds to retrieve the RoomInfoPacket, if the request timesout the task will be canceled
         /// </summary>
         /// <returns>The roominfo send from the server</returns>
         public Task<RoomInfoPacket> ConnectAsync()
         {
             roomInfoPacketTask = new TaskCompletionSource<RoomInfoPacket>();
 
-            Socket.ConnectAsync().Wait(TimeSpan.FromSeconds(ArchipelagoConnectionTimeoutInSeconds));
+            Task.Factory.StartNew(() =>
+            {
+                var task = Socket.ConnectAsync();
+                task.Wait(TimeSpan.FromSeconds(ArchipelagoConnectionTimeoutInSeconds));
 
+                if (!task.IsCompleted)
+                    roomInfoPacketTask.TrySetCanceled();
+            });
+            
             return roomInfoPacketTask.Task;
         }
         
@@ -140,19 +148,19 @@ namespace Archipelago.MultiClient.Net
                 return loginResultTask.Task;
             }
 
-            loginResultTask = CancelAfterTask<LoginResult>(ArchipelagoConnectionTimeoutInSeconds);
+            loginResultTask = SetResultAfterTimeout<LoginResult>(ArchipelagoConnectionTimeoutInSeconds, new LoginFailure("Connection timed out."));
             return loginResultTask.Task;
         }
 
-        private static TaskCompletionSource<T> CancelAfterTask<T>(int timeoutInSeconds)
+        private static TaskCompletionSource<T> SetResultAfterTimeout<T>(int timeoutInSeconds, T result)
         {
             var task = new TaskCompletionSource<T>();
 #if NET40
-            var timer = new Timer(_ => task.TrySetCanceled());
+            var timer = new Timer(_ => task.TrySetResult(result));
             timer.Change(TimeSpan.FromSeconds(timeoutInSeconds), TimeSpan.FromMilliseconds(-1));
 #else
             var tokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(timeoutInSeconds));
-            tokenSource.Token.Register(() => task.TrySetCanceled());
+            tokenSource.Token.Register(() => task.TrySetResult(result));
 #endif
             return task;
         }
@@ -224,7 +232,22 @@ namespace Archipelago.MultiClient.Net
                 return new LoginFailure("Socket closed unexpectedly.");
             }
 #else
-            ConnectAsync().Wait();
+            var task = ConnectAsync();
+
+            try
+            {
+                task.Wait();
+            }
+            catch (AggregateException e)
+            {
+                if (e.GetBaseException() is OperationCanceledException)
+                {
+                    return new LoginFailure("Connection timed out.");
+                }
+
+                return new LoginFailure(e.GetBaseException().Message);
+            }
+
             return LoginAsync(game, name, itemsHandlingFlags, version, tags, uuid, password).Result;
 #endif
         }
