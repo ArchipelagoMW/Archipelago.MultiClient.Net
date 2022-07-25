@@ -95,7 +95,7 @@ namespace Archipelago.MultiClient.Net.BounceFeatures.DeathLink
             socket.SendPacketAsync(bouncePacket);
         }
 
-        public void EnabledDeathLink()
+        public void EnableDeathLink()
         {
             if (Array.IndexOf(connectionInfoProvider.Tags, "DeathLink") == -1)
             {
