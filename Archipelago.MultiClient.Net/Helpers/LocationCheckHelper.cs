@@ -6,10 +6,9 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 
-#if NET35
-using System;
-#else
+#if !NET35
 using System.Threading.Tasks;
+using Archipelago.MultiClient.Net.Exceptions;
 #endif
 
 namespace Archipelago.MultiClient.Net.Helpers
@@ -133,7 +132,10 @@ namespace Archipelago.MultiClient.Net.Helpers
                 case InvalidPacketPacket invalidPacket:
                     if (awaitingLocationInfoPacket && invalidPacket.OriginalCmd == ArchipelagoPacketType.LocationScouts)
                     {
-                        locationInfoPacketCallbackTask.TrySetException(new Exception("location scout rejected by the server"));
+                        locationInfoPacketCallbackTask.TrySetException(
+                            new ArchipelagoServerRejectedPacketException(
+                                invalidPacket.OriginalCmd, invalidPacket.ErrorType, 
+                                $"location scout rejected by the server: {invalidPacket.ErrorText}"));
 
                         awaitingLocationInfoPacket = false;
                         locationInfoPacketCallbackTask = null;
