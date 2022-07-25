@@ -1,4 +1,5 @@
 ﻿using Archipelago.MultiClient.Net.Cache;
+using Archipelago.MultiClient.Net.ConcurrentCollection;
 using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Packets;
 using System.Collections.Generic;
@@ -29,13 +30,12 @@ namespace Archipelago.MultiClient.Net.Helpers
         public delegate void CheckedLocationsUpdatedHandler(ReadOnlyCollection<long> newCheckedLocations);
         public event CheckedLocationsUpdatedHandler CheckedLocationsUpdated;
 
-        private readonly HashSet<long> allLocations = new HashSet<long>();
-        private readonly HashSet<long> locationsChecked = new HashSet<long>();
+        private readonly IConcurrentHashSet<long> allLocations = new ConcurrentHashSet<long>();
+        private readonly IConcurrentHashSet<long> locationsChecked = new ConcurrentHashSet<long>();
+        private ReadOnlyCollection<long> missingLocations = new ReadOnlyCollection<long>(new long[0]);
 
         private readonly IArchipelagoSocketHelper socket;
         private readonly IDataPackageCache cache;
-
-        private readonly object locationsCheckedLockObject = new object();
 
         private bool awaitingLocationInfoPacket;
 #if NET35
@@ -47,25 +47,9 @@ namespace Archipelago.MultiClient.Net.Helpers
         private Dictionary<string, Dictionary<string, long>> gameLocationNameToIdMapping;
         private Dictionary<long, string> locationIdToNameMapping;
 
-        public ReadOnlyCollection<long> AllLocations => new ReadOnlyCollection<long>(allLocations.ToArray());
-        public ReadOnlyCollection<long> AllLocationsChecked => GetCheckedLocations();
-        public ReadOnlyCollection<long> AllMissingLocations => GetMissingLocations();
-
-        private ReadOnlyCollection<long> GetCheckedLocations()
-        {
-            lock (locationsCheckedLockObject)
-            {
-                return new ReadOnlyCollection<long>(locationsChecked.ToArray());
-            }
-        }
-
-        private ReadOnlyCollection<long> GetMissingLocations()
-        {
-            lock (locationsCheckedLockObject)
-            {
-                return new ReadOnlyCollection<long>(allLocations.Where(l => !locationsChecked.Contains(l)).ToArray());
-            }
-        }
+        public ReadOnlyCollection<long> AllLocations => allLocations.AsToReadOnlyCollection();
+        public ReadOnlyCollection<long> AllLocationsChecked => locationsChecked.AsToReadOnlyCollection();
+        public ReadOnlyCollection<long> AllMissingLocations => missingLocations;
 
         internal LocationCheckHelper(IArchipelagoSocketHelper socket, IDataPackageCache cache)
         {
@@ -83,16 +67,10 @@ namespace Archipelago.MultiClient.Net.Helpers
                     allLocations.UnionWith(connectedPacket.LocationsChecked);
                     allLocations.UnionWith(connectedPacket.MissingChecks);
 
-                    lock (locationsCheckedLockObject)
-                    {
-                        CheckLocations(connectedPacket.LocationsChecked);
-                    }
+                     CheckLocations(connectedPacket.LocationsChecked);
                     break;
                 case RoomUpdatePacket updatePacket:
-                    lock (locationsCheckedLockObject)
-                    {
-                        CheckLocations(updatePacket.CheckedLocations);
-                    }
+                    CheckLocations(updatePacket.CheckedLocations);
                     break;
 #if NET35
                 case LocationInfoPacket locationInfoPacket:
@@ -153,15 +131,12 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// </exception>
         public void CompleteLocationChecks(params long[] ids)
         {
-            lock (locationsCheckedLockObject)
-            {
-                CheckLocations(ids);
+            CheckLocations(ids);
 
-                socket.SendPacket(new LocationChecksPacket()
-                {
-                    Locations = locationsChecked.ToArray()
-                });
-            }
+            socket.SendPacket(new LocationChecksPacket()
+            {
+                Locations = locationsChecked.ToArray()
+            });
         }
 
 #if NET35
@@ -179,18 +154,15 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// </exception>
         public void CompleteLocationChecksAsync(Action<bool> onComplete, params long[] ids)
         {
-            lock (locationsCheckedLockObject)
-            {
-                CheckLocations(ids);
+            CheckLocations(ids);
 
-                socket.SendPacketAsync(
-                    new LocationChecksPacket()
-                    {
-                        Locations = locationsChecked.ToArray()
-                    },
-                    onComplete
-                );
-            }
+            socket.SendPacketAsync(
+                new LocationChecksPacket()
+                {
+                    Locations = locationsChecked.ToArray()
+                },
+                onComplete
+            );
         }
 #else
         /// <summary>
@@ -204,19 +176,12 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// </exception>
         public Task CompleteLocationChecksAsync(params long[] ids)
         {
-            long[] allCheckedLocations;
-
-            lock (locationsCheckedLockObject)
-            {
-                CheckLocations(ids);
-
-                allCheckedLocations = locationsChecked.ToArray();
-            }
+            CheckLocations(ids);
 
             return socket.SendPacketAsync(
                 new LocationChecksPacket()
                 {
-                    Locations = allCheckedLocations
+                    Locations = locationsChecked.ToArray()
                 });
         }
 
@@ -397,17 +362,15 @@ namespace Archipelago.MultiClient.Net.Helpers
 
             foreach (long locationId in locationIds)
             {
-                if (!locationsChecked.Contains(locationId))
+                allLocations.TryAdd(locationId);
+
+                if (locationsChecked.TryAdd(locationId))
                 {
-                    locationsChecked.Add(locationId);
                     newLocations.Add(locationId);
                 }
-
-                if (!allLocations.Contains(locationId))
-                {
-                    allLocations.Add(locationId);
-                }
             }
+
+            missingLocations = allLocations.AsToReadOnlyCollectionExcept(locationsChecked);
 
             if (newLocations.Any())
             {

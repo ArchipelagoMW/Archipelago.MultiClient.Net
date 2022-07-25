@@ -1,10 +1,15 @@
 ﻿using Archipelago.MultiClient.Net.Cache;
+using Archipelago.MultiClient.Net.ConcurrentCollection;
 using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+
+#if !NET35
+using System.Collections.Concurrent;
+#endif
 
 namespace Archipelago.MultiClient.Net.Helpers
 {
@@ -13,21 +18,15 @@ namespace Archipelago.MultiClient.Net.Helpers
         private readonly IArchipelagoSocketHelper socket;
         private readonly ILocationCheckHelper locationsHelper;
         private readonly IDataPackageCache dataPackageCache;
-        private Queue<NetworkItem> itemQueue = new Queue<NetworkItem>();
-        private List<NetworkItem> allItemsReceived = new List<NetworkItem>();
+
+        private ConcurrentQueue<NetworkItem> itemQueue = new ConcurrentQueue<NetworkItem>();
+
+        private readonly IConcurrentList<NetworkItem> allItemsReceived = new ConcurrentList<NetworkItem>();
+
         private Dictionary<long, string> itemLookupCache = new Dictionary<long, string>();
-        private object itemQueueLockObject = new object();
-
+        
         public int Index => allItemsReceived.Count;
-        public ReadOnlyCollection<NetworkItem> AllItemsReceived => GetReceivedItems();
-
-        ReadOnlyCollection<NetworkItem> GetReceivedItems()
-        {
-            lock (itemQueueLockObject)
-            {
-                return new ReadOnlyCollection<NetworkItem>(allItemsReceived.ToArray());
-            }
-        }
+        public ReadOnlyCollection<NetworkItem> AllItemsReceived => allItemsReceived.AsReadOnlyCollection();
 
         public delegate void ItemReceivedHandler(ReceivedItemsHelper helper);
         public event ItemReceivedHandler ItemReceived;
@@ -49,10 +48,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// </returns>
         public bool Any()
         {
-            lock (itemQueueLockObject)
-            {
-                return itemQueue.Count > 0;
-            }
+            return !itemQueue.IsEmpty;
         }
 
         /// <summary>
@@ -60,17 +56,15 @@ namespace Archipelago.MultiClient.Net.Helpers
         ///     The item will remain on the queue until dequeued with <see cref="DequeueItem"/>.
         /// </summary>
         /// <returns>
-        ///     The next item to be handled as a <see cref="NetworkItem"/>.
+        ///     The next item to be handled as a <see cref="NetworkItem"/>, or null if no such item is found.
         /// </returns>
         /// <exception cref="T:System.InvalidOperationException">
         ///     The <see cref="T:System.Collections.Generic.Queue`1" /> is empty.
         /// </exception>
         public NetworkItem PeekItem()
         {
-            lock (itemQueueLockObject)
-            {
-                return itemQueue.Peek();
-            }
+            itemQueue.TryPeek(out var item);
+            return item;
         }
 
         /// <summary>
@@ -84,11 +78,8 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// </exception>
         public string PeekItemName()
         {
-            lock (itemQueueLockObject)
-            {
-                var item = itemQueue.Peek();
-                return GetItemName(item.Item);
-            }
+            itemQueue.TryPeek(out var item);
+            return GetItemName(item.Item);
         }
 
         /// <summary>
@@ -102,10 +93,8 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// </exception>
         public NetworkItem DequeueItem()
         {
-            lock (itemQueueLockObject)
-            {
-                return itemQueue.Dequeue();
-            }
+            itemQueue.TryDequeue(out var item);
+            return item;
         }
 
         /// <summary>
@@ -157,17 +146,14 @@ namespace Archipelago.MultiClient.Net.Helpers
                         break;
                     }
 
-                    lock (itemQueueLockObject)
+                    foreach (var item in receivedItemsPacket.Items)
                     {
-                        foreach (var item in receivedItemsPacket.Items)
-                        {
-                            allItemsReceived.Add(item);
-                            itemQueue.Enqueue(item);
+                        allItemsReceived.Add(item);
+                        itemQueue.Enqueue(item);
 
-                            if (ItemReceived != null)
-                            {
-                                ItemReceived(this);
-                            }
+                        if (ItemReceived != null)
+                        {
+                            ItemReceived(this);
                         }
                     }
                     break;
@@ -177,21 +163,23 @@ namespace Archipelago.MultiClient.Net.Helpers
 
         private void PerformResynchronization(ReceivedItemsPacket receivedItemsPacket)
         {
-            lock (itemQueueLockObject)
+            var previouslyReceived = allItemsReceived.AsReadOnlyCollection();
+
+#if NET35
+            itemQueue.Clear();
+#else
+            itemQueue = new ConcurrentQueue<NetworkItem>();
+#endif
+            allItemsReceived.Clear();
+
+            foreach (var item in receivedItemsPacket.Items)
             {
-                var previouslyReceived = new List<NetworkItem>(allItemsReceived);
+                itemQueue.Enqueue(item);
+                allItemsReceived.Add(item);
 
-                itemQueue.Clear();
-                allItemsReceived.Clear();
-                foreach (var item in receivedItemsPacket.Items)
+                if (ItemReceived != null && !previouslyReceived.Contains(item))
                 {
-                    itemQueue.Enqueue(item);
-                    allItemsReceived.Add(item);
-
-                    if (ItemReceived != null && !previouslyReceived.Contains(item))
-                    {
-                        ItemReceived(this);
-                    }
+                    ItemReceived(this);
                 }
             }
         }
