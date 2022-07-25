@@ -58,7 +58,7 @@ namespace Archipelago.MultiClient.Net
 
                 case ConnectedPacket _:
                 case ConnectionRefusedPacket _:
-#if NET35           
+#if NET35
                     if (expectingLoginResult)
                     {
                         expectingLoginResult = false;
@@ -87,16 +87,23 @@ namespace Archipelago.MultiClient.Net
 
             Task.Factory.StartNew(() =>
             {
-                var task = Socket.ConnectAsync();
-                task.Wait(TimeSpan.FromSeconds(ArchipelagoConnectionTimeoutInSeconds));
+                try
+                {
+                    var task = Socket.ConnectAsync();
+                    task.Wait(TimeSpan.FromSeconds(ArchipelagoConnectionTimeoutInSeconds));
 
-                if (!task.IsCompleted)
+                    if (!task.IsCompleted)
+                        roomInfoPacketTask.TrySetCanceled();
+                }
+                catch (AggregateException e)
+                {
                     roomInfoPacketTask.TrySetCanceled();
+                }
             });
-            
+
             return roomInfoPacketTask.Task;
         }
-        
+
         // ReSharper disable once UnusedMember.Global
         /// <summary>
         ///     Attempt to log in to the Archipelago server by opening a websocket connection and sending a Connect packet.
