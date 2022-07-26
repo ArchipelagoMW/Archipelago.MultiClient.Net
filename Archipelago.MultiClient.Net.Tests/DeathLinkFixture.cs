@@ -151,7 +151,7 @@ namespace Archipelago.MultiClient.Net.Tests
 
             var sut = new DeathLinkService(socket, connectionInfo, new DataStorageHelper(socket, connectionInfo));
 
-            sut.EnabledDeathLink();
+            sut.EnableDeathLink();
 
             socket.Received().SendPacket(Arg.Is<ConnectUpdatePacket>(p => p.Tags.Length == 1 && p.Tags[0] == "DeathLink"));
             
@@ -169,7 +169,7 @@ namespace Archipelago.MultiClient.Net.Tests
 
             var sut = new DeathLinkService(socket, connectionInfo, new DataStorageHelper(socket, connectionInfo));
 
-            sut.EnabledDeathLink();
+            sut.EnableDeathLink();
 
             socket.DidNotReceive().SendPacket(Arg.Any<ConnectUpdatePacket>());
 
