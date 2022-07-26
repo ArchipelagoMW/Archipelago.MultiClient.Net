@@ -2,9 +2,9 @@ name: Build Solution
 
 on:
   push:
-    branches: [ main, V4_development ]
+    branches: [ main, oculus_newtonsoft_json ]
   pull_request:
-    branches: [ main, V4_development ]
+    branches: [ main, oculus_newtonsoft_json ]
 
 jobs:
   build:
