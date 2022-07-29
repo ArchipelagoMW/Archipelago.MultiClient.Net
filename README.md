@@ -195,3 +195,66 @@ var number = (int)obj["Number"]; //Get value for anonymous object key `Number`
 var text = (string)obj["Text"]; //Get value for anonymous object key `Text`
 
 ```
+
+### Message Logging
+
+The Archipelago server can send messages to client to be displayed on screen as a sort of log, this is done by handling the `PrintPacket` and `PrintJsonPacket` packets.
+```csharp
+using Archipelago.MultiClient.Net.Converters;
+
+var session = ArchipelagoSessionFactory.CreateSession("localhost", 38281);
+session.Socket.PacketReceived += PackageReceived;
+session.TryConnectAndLogin("Timespinner", "Jarno", new Version(2,6,0));
+
+static void PackageReceived(ArchipelagoPacketBase packet)
+{
+	if (packet is IPrintJsonPacket printJsonPacket)
+		DisplayOnScreen(printJsonPacket.ToString(session));
+}
+```
+
+In some cased you might want extra information that is provided by the server in such cases you can use type checking
+
+```csharp
+switch (packet)
+{
+	case ItemPrintJsonPacket itemPrintJsonPacket: 
+		var reveiver = itemPrintJsonPacket.ReceivingPlayer;
+		var sender = itemPrintJsonPacket.Item.Player;
+		var networkItem = itemPrintJsonPacket.Item;
+		break;
+	case HintPrintJsonPacket hintPrintJsonPacket:
+		var found = hintPrintJsonPacket.Found.HasValue && hintPrintJsonPacket.Found.Value;
+		break;
+	case IPrintJsonPacket printJsonPacket: 
+		DisplayOnScreen(printJsonPacket.ToString(session));
+		break;
+}
+```
+
+If you want more controll over how the message is displayed, like for example you might want to color certain parts of the message,
+Then you can use `GetParsedData` method. This method returns each part of the message in order with the `Text` to be displayed and also the `Color` it would normally be diplayed in.
+If `IsBackgroundColor` is true, then the color should be applied to the message background instead.
+The parsed message can also contain additional information that can be retreived by type checking.
+
+```csharp
+foreach (part in printJsonPacket.GetParsedData(session))
+{
+	switch (part)
+	{
+		case ItemMessagePart itemMessagePart: 
+			var itemId = itemMessagePart.ItemId;
+			var flags = itemMessagePart.Flags;
+			break;
+		case LocationMessagePart locationMessagePart:
+			var locationId = locationMessagePart.LocationId;
+			break;
+		case PlayerMessagePart playerMessagePart:
+			var slotId = playerMessagePart.SlotId;
+			var isCurrentPlayer = playerMessagePart.IsActivePlayer;
+			break;
+	}
+
+	DisplayOnScreen(part.Text, part.Color, part.IsBackgroundColor);
+}
+```
