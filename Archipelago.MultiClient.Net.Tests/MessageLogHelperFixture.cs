@@ -274,5 +274,83 @@ namespace Archipelago.MultiClient.Net.Tests
             Assert.That(parts[1].Color, Is.EqualTo(expectedColor));
             Assert.That(parts[1].IsBackgroundColor, Is.EqualTo(false));
         }
+
+        [Test]
+        public void Should_preserve_extra_properties_on_ItemPrintJsonPacket()
+        {
+            var socket = Substitute.For<IArchipelagoSocketHelper>();
+            var locations = Substitute.For<ILocationCheckHelper>();
+            var items = Substitute.For<IReceivedItemsHelper>();
+            var players = Substitute.For<IPlayerHelper>();
+            players.GetPlayerAlias(4).Returns("LocalPlayer");
+            var connectionInfo = Substitute.For<IConnectionInfoProvider>();
+            connectionInfo.Slot.Returns(4);
+
+            var sut = new MessageLogHelper(socket, items, locations, players, connectionInfo);
+
+            ItemSendLogMessage logMessage = null;
+
+            sut.OnMessageReceived += (message) =>
+            {
+                logMessage = message as ItemSendLogMessage;
+            };
+
+            var packet = new ItemPrintJsonPacket
+            {
+                Data = new[] {
+                    new JsonMessagePart { Text = "" }
+                },
+                Item = new NetworkItem { Flags = ItemFlags.None, Player = 2, Item = 100, Location = 1000 },
+                ReceivingPlayer = 1,
+                MessageType = JsonMessageType.ItemSend
+            };
+
+            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(packet);
+
+            Assert.That(logMessage, Is.Not.Null);
+            Assert.That(logMessage.Item, Is.EqualTo(packet.Item));
+            Assert.That(logMessage.ReceivingPlayerSlot, Is.EqualTo(1));
+            Assert.That(logMessage.SendingPlayerSlot, Is.EqualTo(2));
+        }
+
+        [Test]
+        public void Should_preserve_extra_properties_on_HintPrintJsonPacket()
+        {
+            var socket = Substitute.For<IArchipelagoSocketHelper>();
+            var locations = Substitute.For<ILocationCheckHelper>();
+            var items = Substitute.For<IReceivedItemsHelper>();
+            var players = Substitute.For<IPlayerHelper>();
+            players.GetPlayerAlias(4).Returns("LocalPlayer");
+            var connectionInfo = Substitute.For<IConnectionInfoProvider>();
+            connectionInfo.Slot.Returns(4);
+
+            var sut = new MessageLogHelper(socket, items, locations, players, connectionInfo);
+
+            HintItemSendLogMessage logMessage = null;
+
+            sut.OnMessageReceived += (message) =>
+            {
+                logMessage = message as HintItemSendLogMessage;
+            };
+
+            var packet = new HintPrintJsonPacket
+            {
+                Data = new[] {
+                    new JsonMessagePart { Text = "" }
+                },
+                Item = new NetworkItem { Flags = ItemFlags.None, Player = 2, Item = 100, Location = 1000 },
+                ReceivingPlayer = 1,
+                Found = true,
+                MessageType = JsonMessageType.ItemSend
+            };
+
+            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(packet);
+
+            Assert.That(logMessage, Is.Not.Null);
+            Assert.That(logMessage.Item, Is.EqualTo(packet.Item));
+            Assert.That(logMessage.ReceivingPlayerSlot, Is.EqualTo(1));
+            Assert.That(logMessage.SendingPlayerSlot, Is.EqualTo(2));
+            Assert.That(logMessage.IsFound, Is.EqualTo(true));
+        }
     }
 }
