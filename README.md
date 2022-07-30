@@ -198,7 +198,7 @@ var text = (string)obj["Text"]; //Get value for anonymous object key `Text`
 
 ### Message Logging
 
-The Archipelago server can send messages to client to be displayed on screen as a sort of log, this is done by handling the `PrintPacket` and `PrintJsonPacket` packets.
+The Archipelago server can send messages to client to be displayed on screen as sort of a log, this is done by handling the `PrintPacket` and `PrintJsonPacket` packets.
 ```csharp
 using Archipelago.MultiClient.Net.Converters;
 
@@ -233,7 +233,7 @@ switch (packet)
 ```
 
 If you want more controll over how the message is displayed, like for example you might want to color certain parts of the message,
-Then you can use `GetParsedData` method. This method returns each part of the message in order with the `Text` to be displayed and also the `Color` it would normally be diplayed in.
+Then you can use the `GetParsedData` method. This method returns each part of the message in order with the `Text` to be displayed and also the `Color` it would normally be diplayed in.
 If `IsBackgroundColor` is true, then the color should be applied to the message background instead.
 The parsed message can also contain additional information that can be retreived by type checking.
 

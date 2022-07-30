@@ -18,6 +18,7 @@ namespace Archipelago.MultiClient.Net
         public DataStorageHelper DataStorage { get; }
         public ConnectionInfoHelper ConnectionInfo { get; }
         public RoomStateHelper RoomState { get; }
+        public MessageLogHelper MessageLog { get; }
 
         volatile bool expectingLoginResult;
         private LoginResult loginResult;
@@ -28,7 +29,8 @@ namespace Archipelago.MultiClient.Net
                                     PlayerHelper players,
                                     RoomStateHelper roomState,
                                     ConnectionInfoHelper connectionInfo,
-                                    DataStorageHelper dataStorage)
+                                    DataStorageHelper dataStorage,
+                                    MessageLogHelper messageLog)
         {
             Socket = socket;
             Items = items;
@@ -37,7 +39,8 @@ namespace Archipelago.MultiClient.Net
             RoomState = roomState;
             ConnectionInfo = connectionInfo;
             DataStorage = dataStorage;
-
+            MessageLog = messageLog;
+            
             socket.PacketReceived += Socket_PacketReceived;
         }
 

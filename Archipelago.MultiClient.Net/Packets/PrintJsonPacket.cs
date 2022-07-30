@@ -5,12 +5,7 @@ using Newtonsoft.Json.Converters;
 
 namespace Archipelago.MultiClient.Net.Packets
 {
-    public interface IPrintJsonPacket
-    {
-        JsonMessagePart[] Data { get; }
-    }
-
-    public class PrintJsonPacket : ArchipelagoPacketBase, IPrintJsonPacket
+    public class PrintJsonPacket : ArchipelagoPacketBase
     {
         public override ArchipelagoPacketType PacketType => ArchipelagoPacketType.PrintJSON;
 

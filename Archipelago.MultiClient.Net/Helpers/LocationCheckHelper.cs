@@ -12,6 +12,31 @@ namespace Archipelago.MultiClient.Net.Helpers
     {
         void CompleteLocationChecks(params long[] ids);
         void CompleteLocationChecksAsync(Action<bool> onComplete, params long[] ids);
+
+        /// <summary>
+        ///     Get the Id of a location from its name. Useful when a game knows its locations by name but not by Archipelago Id.
+        /// </summary>
+        /// <param name="game">
+        ///     The game to look up the locations from
+        /// </param>
+        /// <param name="locationName">
+        ///     The name of the location to check the Id for. Must match the contents of the datapackage.
+        /// </param>
+        /// <returns>
+        ///     Returns the locationId for the location name that was given or -1 if no location was found.
+        /// </returns>
+        long GetLocationIdFromName(string game, string locationName);
+
+        /// <summary>
+        ///     Get the name of a location from its id. Useful when receiving a packet and it is necessary to find the name of the location.
+        /// </summary>
+        /// <param name="locationId">
+        ///     The Id of the location to look up the name for. Must match the contents of the datapackage.
+        /// </param>
+        /// <returns>
+        ///     Returns the locationName for the provided locationId, or null if no such location is found.
+        /// </returns>
+        string GetLocationNameFromId(long locationId);
     }
 
     public class LocationCheckHelper : ILocationCheckHelper
