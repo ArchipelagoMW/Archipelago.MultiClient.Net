@@ -200,34 +200,33 @@ var text = (string)obj["Text"]; //Get value for anonymous object key `Text`
 
 The Archipelago server can send messages to client to be displayed on screen as sort of a log, this is done by handling the `PrintPacket` and `PrintJsonPacket` packets.
 ```csharp
-using Archipelago.MultiClient.Net.Converters;
-
 var session = ArchipelagoSessionFactory.CreateSession("localhost", 38281);
-session.Socket.PacketReceived += PackageReceived;
-session.TryConnectAndLogin("Timespinner", "Jarno", new Version(2,6,0));
+session.MessageLog.OnMessageReceived += OnMessageReceived;
+session.TryConnectAndLogin("Timespinner", "Jarno", new Version(0,3,5));
 
-static void PackageReceived(ArchipelagoPacketBase packet)
+static void OnMessageReceived(LogMessage message)
 {
-	if (packet is IPrintJsonPacket printJsonPacket)
-		DisplayOnScreen(printJsonPacket.ToString(session));
+	DisplayOnScreen(message.ToString());
 }
 ```
 
 In some cased you might want extra information that is provided by the server in such cases you can use type checking
 
 ```csharp
-switch (packet)
+switch (message)
 {
-	case ItemPrintJsonPacket itemPrintJsonPacket: 
-		var reveiver = itemPrintJsonPacket.ReceivingPlayer;
-		var sender = itemPrintJsonPacket.Item.Player;
-		var networkItem = itemPrintJsonPacket.Item;
+	case ItemSendLogMessage itemSendLogMessage: 
+		var reveiver = itemSendLogMessage.ReceivingPlayerSlot;
+		var sender = itemSendLogMessage.SendingPlayerSlot;
+		var networkItem = itemSendLogMessage.Item;
+		DisplayOnScreen(message.ToString());
 		break;
-	case HintPrintJsonPacket hintPrintJsonPacket:
-		var found = hintPrintJsonPacket.Found.HasValue && hintPrintJsonPacket.Found.Value;
+	case ItemHintLogMessage hintLogMessage:
+		var found = hintLogMessage.IsFound;
+		DisplayOnScreen(message.ToString());
 		break;
-	case IPrintJsonPacket printJsonPacket: 
-		DisplayOnScreen(printJsonPacket.ToString(session));
+	default: 
+		DisplayOnScreen(message.ToString());
 		break;
 }
 ```
@@ -238,7 +237,7 @@ If `IsBackgroundColor` is true, then the color should be applied to the message 
 The parsed message can also contain additional information that can be retreived by type checking.
 
 ```csharp
-foreach (part in printJsonPacket.GetParsedData(session))
+foreach (part in message.Parts)
 {
 	switch (part)
 	{

@@ -54,11 +54,29 @@ namespace Archipelago.MultiClient.Net.Helpers
 
         private void TriggerOnMessageReceived(PrintJsonPacket printJsonPacket)
         {
-            var logMessage = new LogMessage(GetParsedData(printJsonPacket));
+            LogMessage message;
+
+            var parts = GetParsedData(printJsonPacket);
+
+            switch (printJsonPacket)
+            {
+                case HintPrintJsonPacket hintPrintJson:
+                    message = new HintItemSendLogMessage(parts, 
+                        hintPrintJson.ReceivingPlayer, hintPrintJson.Item.Player, 
+                        hintPrintJson.Item, hintPrintJson.Found.HasValue && hintPrintJson.Found.Value);
+                    break;
+                case ItemPrintJsonPacket itemPrintJson:
+                    message = new ItemSendLogMessage(parts,
+                        itemPrintJson.ReceivingPlayer, itemPrintJson.Item.Player, itemPrintJson.Item);
+                    break;
+                default:
+                    message = new LogMessage(parts);
+                    break;
+            }
 
             if (OnMessageReceived != null)
             {
-                OnMessageReceived(logMessage);
+                OnMessageReceived(message);
             }
         }
 
@@ -115,6 +133,31 @@ namespace Archipelago.MultiClient.Net.Helpers
         }
     }
     
+    public class ItemSendLogMessage : LogMessage
+    {
+        public int ReceivingPlayerSlot { get; }
+        public int SendingPlayerSlot { get; }
+        public NetworkItem Item { get; }
+
+        internal ItemSendLogMessage(MessagePart[] parts, int receiver, int sender, NetworkItem item) : base(parts)
+        {
+            ReceivingPlayerSlot = receiver;
+            SendingPlayerSlot = sender;
+            Item = item;
+        }
+    }
+
+    public class HintItemSendLogMessage : ItemSendLogMessage
+    {
+        public bool IsFound { get; }
+
+        internal HintItemSendLogMessage(MessagePart[] parts, int receiver, int sender, NetworkItem item, bool found) 
+            : base(parts, receiver, sender, item)
+        {
+            IsFound = found;
+        }
+    }
+
     public enum MessagePartType
     {
         Text,
