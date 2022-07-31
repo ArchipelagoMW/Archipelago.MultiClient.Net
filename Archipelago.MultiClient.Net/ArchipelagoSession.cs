@@ -98,7 +98,7 @@ namespace Archipelago.MultiClient.Net
                     if (!task.IsCompleted)
                         roomInfoPacketTask.TrySetCanceled();
                 }
-                catch (AggregateException e)
+                catch (AggregateException)
                 {
                     roomInfoPacketTask.TrySetCanceled();
                 }
