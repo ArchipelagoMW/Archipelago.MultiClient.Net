@@ -33,7 +33,7 @@ namespace Archipelago.MultiClient.Net.Tests
                 Text = "Some message that really does not add value to the test at hand"
             };
 
-            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(printPacket);
+            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(printPacket);
             
             Assert.That(toStringResult, Is.EqualTo("Some message that really does not add value to the test at hand"));
         }
@@ -75,7 +75,7 @@ namespace Archipelago.MultiClient.Net.Tests
                 }
             };
 
-            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(packet);
+            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(packet);
 
             Assert.That(toStringResult, Is.EqualTo("Text1Text2Text3Text4Text5Text6Text7Text8Text9Text10"));
         }
@@ -103,7 +103,7 @@ namespace Archipelago.MultiClient.Net.Tests
                 Text = "Some message that really does not add value to the test at hand"
             };
 
-            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(printPacket);
+            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(printPacket);
 
             Assert.That(parts.Length, Is.EqualTo(1));
             Assert.That(parts[0].Text, Is.EqualTo("Some message that really does not add value to the test at hand"));
@@ -149,7 +149,7 @@ namespace Archipelago.MultiClient.Net.Tests
                 }
             };
 
-            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(packet);
+            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(packet);
 
             Assert.That(parts.Length, Is.EqualTo(10));
             Assert.That(parts[0].Text, Is.EqualTo("Text1"));
@@ -220,7 +220,7 @@ namespace Archipelago.MultiClient.Net.Tests
                 }
             };
 
-            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(packet);
+            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(packet);
 
             Assert.That(parts[0].Text, Is.EqualTo("LocalPlayer"));
             Assert.That(parts[0].Color, Is.EqualTo(Color.Magenta));
@@ -264,7 +264,7 @@ namespace Archipelago.MultiClient.Net.Tests
                 }
             };
 
-            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(packet);
+            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(packet);
 
             Assert.That(parts[0].Text, Is.EqualTo("ItemFour"));
             Assert.That(parts[0].Color, Is.EqualTo(expectedColor));
@@ -305,7 +305,7 @@ namespace Archipelago.MultiClient.Net.Tests
                 MessageType = JsonMessageType.ItemSend
             };
 
-            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(packet);
+            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(packet);
 
             Assert.That(logMessage, Is.Not.Null);
             Assert.That(logMessage.Item, Is.EqualTo(packet.Item));
@@ -344,7 +344,7 @@ namespace Archipelago.MultiClient.Net.Tests
                 MessageType = JsonMessageType.ItemSend
             };
 
-            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(packet);
+            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(packet);
 
             Assert.That(logMessage, Is.Not.Null);
             Assert.That(logMessage.Item, Is.EqualTo(packet.Item));
