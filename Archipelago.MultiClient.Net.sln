@@ -5,17 +5,17 @@ VisualStudioVersion = 16.0.31829.152
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Archipelago.MultiClient.Net", "Archipelago.MultiClient.Net\Archipelago.MultiClient.Net.csproj", "{35A803AD-85ED-42E9-B1E3-C6B72096F0C1}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Archipelago.MultiClient.Net.Tests", "Archipelago.MultiClient.Net.Tests\Archipelago.MultiClient.Net.Tests.csproj", "{BD1C42B9-FCAF-41FB-8682-65DD4AED3C62}"
+	ProjectSection(ProjectDependencies) = postProject
+		{35A803AD-85ED-42E9-B1E3-C6B72096F0C1} = {35A803AD-85ED-42E9-B1E3-C6B72096F0C1}
+	EndProjectSection
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{91CC2CBA-B904-460F-A030-52056922E300}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
 		.gitignore = .gitignore
 		LICENSE.txt = LICENSE.txt
 		README.md = README.md
-	EndProjectSection
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Archipelago.MultiClient.Net.Tests", "Archipelago.MultiClient.Net.Tests\Archipelago.MultiClient.Net.Tests.csproj", "{68BD9355-156C-454F-A475-9653988BBACC}"
-	ProjectSection(ProjectDependencies) = postProject
-		{35A803AD-85ED-42E9-B1E3-C6B72096F0C1} = {35A803AD-85ED-42E9-B1E3-C6B72096F0C1}
 	EndProjectSection
 EndProject
 Global
@@ -28,10 +28,10 @@ Global
 		{35A803AD-85ED-42E9-B1E3-C6B72096F0C1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{35A803AD-85ED-42E9-B1E3-C6B72096F0C1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{35A803AD-85ED-42E9-B1E3-C6B72096F0C1}.Release|Any CPU.Build.0 = Release|Any CPU
-		{68BD9355-156C-454F-A475-9653988BBACC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{68BD9355-156C-454F-A475-9653988BBACC}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{68BD9355-156C-454F-A475-9653988BBACC}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{68BD9355-156C-454F-A475-9653988BBACC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BD1C42B9-FCAF-41FB-8682-65DD4AED3C62}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BD1C42B9-FCAF-41FB-8682-65DD4AED3C62}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BD1C42B9-FCAF-41FB-8682-65DD4AED3C62}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BD1C42B9-FCAF-41FB-8682-65DD4AED3C62}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

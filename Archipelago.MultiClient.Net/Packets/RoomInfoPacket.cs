@@ -36,9 +36,6 @@ namespace Archipelago.MultiClient.Net.Packets
         [JsonProperty("games")]
         public string[] Games { get; set; }
 
-        [JsonProperty("datapackage_version")]
-        public int DataPackageVersion { get; set; }
-
         [JsonProperty("datapackage_versions")]
         public Dictionary<string, int> DataPackageVersions { get; set; }
 

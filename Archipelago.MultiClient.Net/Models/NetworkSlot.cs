@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using Archipelago.MultiClient.Net.Enums;
+﻿using Archipelago.MultiClient.Net.Enums;
 using Newtonsoft.Json;
 
 namespace Archipelago.MultiClient.Net.Models
@@ -13,6 +12,6 @@ namespace Archipelago.MultiClient.Net.Models
         [JsonProperty("type")]
         public SlotType Type { get; set; }
         [JsonProperty("group_members")]
-        public List<int> GroupMembers { get; set; }
+        public int[] GroupMembers { get; set; }
     }
 }

@@ -1,5 +1,7 @@
-﻿using Archipelago.MultiClient.Net.Models;
+﻿using Archipelago.MultiClient.Net.Enums;
+using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 
@@ -39,7 +41,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// <summary>
         /// A collection of PlayerInfo's where the index is the player their slot
         /// </summary>
-        public ReadOnlyCollection<PlayerInfo> AllPlayers => new ReadOnlyCollection<PlayerInfo>(players);
+        public ReadOnlyCollection<PlayerInfo> AllPlayers => new ReadOnlyCollection<PlayerInfo>(players ?? new PlayerInfo[0]);
 
         internal PlayerHelper(IArchipelagoSocketHelper socket)
         {
@@ -109,62 +111,39 @@ namespace Archipelago.MultiClient.Net.Helpers
             switch (packet)
             {
                 case ConnectedPacket connectedPacket:
-                    OnConnectedPacketReceived(connectedPacket);
+                    CreatePlayerInfo(connectedPacket.Players, connectedPacket.SlotInfo);
                     break;
                 case RoomUpdatePacket roomUpdatePacket:
-	                OnRoomUpdatedPacketReceived(roomUpdatePacket);
+                    UpdatePlayerInfo(roomUpdatePacket.Players);
 	                break;
-                case RoomInfoPacket roomInfoPacket:
-                    OnRoomInfoPacketReceived(roomInfoPacket);
-                    break;
             }
         }
 
-        private void OnRoomInfoPacketReceived(RoomInfoPacket packet)
+        private void CreatePlayerInfo(NetworkPlayer[] networkPlayers, Dictionary<int, NetworkSlot> slotInfos)
         {
-            UpdateGames(packet.Games);
-        }
-
-        private void OnConnectedPacketReceived(ConnectedPacket packet)
-        {
-            UpdatePlayerInfo(packet.Players);
-        }
-
-        private void OnRoomUpdatedPacketReceived(RoomUpdatePacket packet)
-        {
-            if (packet.Players != null && packet.Players.Length > 0)
+            NetworkSlot[] groups;
+            if (slotInfos == null)
             {
-                UpdatePlayerInfo(packet.Players);
-            }
-        }
-
-        private void UpdateGames(string[] games)
-        {
-            if (players == null)
-            {
-                players = games.Select(g => new PlayerInfo { Game = g }).ToArray();
+                groups = new NetworkSlot[0];
             }
             else
             {
-                for (int i = 0; i < games.Length; i++)
-                {
-                    players[i].Game = games[i];
-                }
+                groups = slotInfos.Values.Where(s => s.Type == SlotType.Group).ToArray();
             }
+
+            players = networkPlayers.Select(p => new PlayerInfo {
+                Team = p.Team,
+                Slot = p.Slot,
+                Name = p.Name,
+                Alias = p.Alias,
+                Game = slotInfos?[p.Slot].Game,
+                Groups = groups.Where(g => g.GroupMembers.Contains(p.Slot)).ToArray()
+            }).ToArray();
         }
 
         private void UpdatePlayerInfo(NetworkPlayer[] networkPlayers)
         {
-            if (players == null)
-            {
-                players = networkPlayers.Select(p => new PlayerInfo {
-                    Team = p.Team,
-                    Slot = p.Slot,
-                    Name = p.Name,
-                    Alias = p.Alias
-                }).ToArray();
-            }
-            else
+            if (networkPlayers != null && networkPlayers.Length > 0)
             {
                 for (int i = 0; i < networkPlayers.Length; i++)
                 {
@@ -184,5 +163,6 @@ namespace Archipelago.MultiClient.Net.Helpers
         public string Alias { get; internal set; }
         public string Name { get; internal set; }
         public string Game { get; internal set; }
+        public NetworkSlot[] Groups { get; internal set; }
     }
 }

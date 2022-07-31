@@ -1,35 +1,41 @@
 ﻿using Archipelago.MultiClient.Net.Models;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace Archipelago.MultiClient.Net.Cache
 {
     internal interface IFileSystemDataPackageProvider
     {
-        bool TryGetDataPackage(out DataPackage package);
-        void SaveDataPackageToFile(DataPackage package);
+        bool TryGetDataPackage(string game, out GameData gameData);
+        void SaveDataPackageToFile(string game, GameData gameData);
     }
 
     class FileSystemDataPackageProvider : IFileSystemDataPackageProvider
     {
-        private const string DataPackageFileName = "datapackagecache.archipelagocache";
-        private readonly string CacheFolder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+        private const string DataPackageFolderName = "ArchipelagoDatapackageCache";
+        private readonly string cacheFolder = 
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), DataPackageFolderName);
+        private string GetFilePath(string game) => Path.Combine(cacheFolder, $"{GetFileSystemSafeFileName(game)}.json");
 
-        private readonly object fileAccessLockObject = new object();
+        private readonly object fileAccessLockObjectsLock = new object();
+        private readonly Dictionary<string, object> fileAccessLockObjects = new Dictionary<string, object>();
 
-        public bool TryGetDataPackage(out DataPackage package)
+        public bool TryGetDataPackage(string game, out GameData gameData)
         {
-            lock (fileAccessLockObject)
+            var filePath = GetFilePath(game);
+
+            lock (GetFileLock(game))
             {
-                var dataPackagePath = Path.Combine(CacheFolder, DataPackageFileName);
+
                 try
                 {
-                    if (File.Exists(dataPackagePath))
+                    if (File.Exists(filePath))
                     {
-                        string fileText = File.ReadAllText(dataPackagePath);
-                        package = JsonConvert.DeserializeObject<DataPackage>(fileText);
-                        return package != null;
+                        string fileText = File.ReadAllText(filePath);
+                        gameData = JsonConvert.DeserializeObject<GameData>(fileText);
+                        return gameData != null;
                     }
                 }
                 catch
@@ -37,25 +43,51 @@ namespace Archipelago.MultiClient.Net.Cache
                     // ignored
                 }
 
-                package = null;
+                gameData = null;
                 return false;
             }
         }
 
-        public void SaveDataPackageToFile(DataPackage package)
+        public void SaveDataPackageToFile(string game, GameData gameData)
         {
-            lock (fileAccessLockObject)
+            Directory.CreateDirectory(cacheFolder);
+
+            lock (GetFileLock(game))
             {
                 try
                 {
-                    var dataPackagePath = Path.Combine(CacheFolder, DataPackageFileName);
-                    string contents = JsonConvert.SerializeObject(package);
-                    File.WriteAllText(dataPackagePath, contents);
+                    string contents = JsonConvert.SerializeObject(gameData);
+                    File.WriteAllText(GetFilePath(game), contents);
                 }
                 catch
                 {
                     // ignored
                 }
+            }
+        }
+
+        private string GetFileSystemSafeFileName(string gameName)
+        {
+            string safeName = gameName;
+
+            foreach (char c in Path.GetInvalidFileNameChars())
+            {
+                gameName = gameName.Replace(c, '_');
+            }
+
+            return safeName;
+        }
+
+        private object GetFileLock(string game)
+        {
+            lock (fileAccessLockObjectsLock)
+            {
+                if (fileAccessLockObjects.TryGetValue(game, out var lockObject))
+                {
+                    return lockObject;
+                }
+
+                return fileAccessLockObjects[game] = new object();
             }
         }
     }

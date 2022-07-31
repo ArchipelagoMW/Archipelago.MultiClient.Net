@@ -380,8 +380,8 @@ namespace Archipelago.MultiClient.Net.Tests
             var setReplyPacketA = new SetReplyPacket { Key = "Key", OriginalValue = 10, Value = 20 };
             var setReplyPacketB = new SetReplyPacket { Key = "KeyB", OriginalValue = "Ola", Value = "Yeeh" };
 
-            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(setReplyPacketA);
-            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(setReplyPacketB);
+            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(setReplyPacketA);
+            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(setReplyPacketB);
 
             Assert.That(oldValueA, Is.EqualTo(10));
             Assert.That(newValueA, Is.EqualTo(20));
@@ -408,17 +408,18 @@ namespace Archipelago.MultiClient.Net.Tests
 
             var setReplyPacketA = new SetReplyPacket { Key = "Key", OriginalValue = 10, Value = 20 };
 
-            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(setReplyPacketA);
+            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(setReplyPacketA);
 
             sut["Key"].OnValueChanged -= OnValueChanged;
 
             var setReplyPacketB = new SetReplyPacket { Key = "Key", OriginalValue = 20, Value = 30 };
 
-            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(setReplyPacketB);
+            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(setReplyPacketB);
 
             Assert.That(callbackCount, Is.EqualTo(1));
         }
 
+#if NET471
         [Test]
         public void Should_retreive_values_async()
         {
@@ -445,7 +446,7 @@ namespace Archipelago.MultiClient.Net.Tests
 
             var retrievedPacketA = new RetrievedPacket { Data = new Dictionary<string, JToken> { { "Key", 10 } } };
 
-            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(retrievedPacketA);
+            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(retrievedPacketA);
 
             sut["Key"].GetAsync(v =>
             {
@@ -461,7 +462,7 @@ namespace Archipelago.MultiClient.Net.Tests
                 { "OtherKey", "yolo" },
             } };
 
-            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(retrievedPacketB);
+            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(retrievedPacketB);
 
             socket.Received(3).SendPacketAsync(Arg.Is<GetPacket>(p => p.Keys[0] == "Key"));
             socket.Received().SendPacketAsync(Arg.Is<GetPacket>(p => p.Keys[0] == "OtherKey"));
@@ -471,6 +472,52 @@ namespace Archipelago.MultiClient.Net.Tests
             Assert.That(c, Is.EqualTo(20));
             Assert.That(d, Is.EqualTo("yolo"));
         }
+#else
+        [Test]
+        public async Task Should_retreive_values_async()
+        {
+            var socket = Substitute.For<IArchipelagoSocketHelper>();
+            var connectionInfo = Substitute.For<IConnectionInfoProvider>();
+
+            var sut = new DataStorageHelper(socket, connectionInfo);
+
+            object a = null;
+            object b = null;
+            object c = null;
+            object d = null;
+
+            var t1 = sut["Key"].GetAsync<int>().ContinueWith(v => { a = v.Result; });
+            var t2 = sut[Scope.Global, "Key"].GetAsync<int>().ContinueWith(v => { b = v.Result; });
+
+            await socket.Received(1).SendPacketAsync(Arg.Is<GetPacket>(p => p.Keys[0] == "Key"));
+            
+            var retrievedPacketA = new RetrievedPacket { Data = new Dictionary<string, JToken> { { "Key", 10 } } };
+
+            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(retrievedPacketA);
+
+            await Task.WhenAll(t1, t2);
+
+            var t3 = sut["Key"].GetAsync().ContinueWith(v => { c = (int)v.Result; });
+            var t4 = sut[Scope.Global, "OtherKey"].GetAsync().ContinueWith(v => { d = (string)v.Result; });
+
+            var retrievedPacketB = new RetrievedPacket { Data = new Dictionary<string, JToken> {
+                { "Key", 20 },
+                { "OtherKey", "yolo" },
+            } };
+
+            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(retrievedPacketB);
+
+            await Task.WhenAll(t3, t4);
+
+            await socket.Received(2).SendPacketAsync(Arg.Is<GetPacket>(p => p.Keys[0] == "Key"));
+            await socket.Received().SendPacketAsync(Arg.Is<GetPacket>(p => p.Keys[0] == "OtherKey"));
+
+            Assert.That(a, Is.EqualTo(10));
+            Assert.That(b, Is.EqualTo(10));
+            Assert.That(c, Is.EqualTo(20));
+            Assert.That(d, Is.EqualTo("yolo"));
+        }
+#endif
 
         [Test]
         public void Different_scopes_should_not_interfere()
@@ -580,9 +627,9 @@ namespace Archipelago.MultiClient.Net.Tests
                 OriginalValue = 10.36m,
                 Reference = callback2Reference
             };
-            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(setReplyPacketA);
-            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(setReplyPacketB);
-            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(setReplyPacketC);
+            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(setReplyPacketA);
+            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(setReplyPacketB);
+            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(setReplyPacketC);
 
             Assert.That(actualDepleteValue1, Is.EqualTo(50m));
             Assert.That(actualDepleteValue2, Is.EqualTo(-10.36m));
@@ -708,6 +755,7 @@ namespace Archipelago.MultiClient.Net.Tests
                 Data = new Dictionary<string, JToken> { { "Key", 10 } }
             };
 
+#if NET471
             var addNewAsyncCallback = new Task(() =>
             {
                 Thread.Sleep(1);
@@ -717,10 +765,21 @@ namespace Archipelago.MultiClient.Net.Tests
             sut["Key"].GetAsync(t => Thread.Sleep(1));
             sut["Key"].GetAsync(t => Thread.Sleep(1));
             sut["Key"].GetAsync(t => Thread.Sleep(1));
+#else
+            var addNewAsyncCallback = new Task(() =>
+            {
+                Thread.Sleep(1);
+                _ = sut["Key"].GetAsync();
+            });
+
+            _ = sut["Key"].GetAsync().ContinueWith(t => Task.Delay(1));
+            _ = sut["Key"].GetAsync().ContinueWith(t => Task.Delay(1));
+            _ = sut["Key"].GetAsync().ContinueWith(t => Task.Delay(1));
+#endif
 
             addNewAsyncCallback.Start();
 
-            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(retrievedPacked);
+            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(retrievedPacked);
 
             Assert.DoesNotThrow(() =>
             {
@@ -755,7 +814,7 @@ namespace Archipelago.MultiClient.Net.Tests
                 Data = new Dictionary<string, JToken> { { "Key", 10 } }
             };
 
-            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(oldRetrievedPacket);
+            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(oldRetrievedPacket);
 
             int result = default;
 
@@ -785,7 +844,7 @@ namespace Archipelago.MultiClient.Net.Tests
         {
             var packet = new RetrievedPacket() { Data = new Dictionary<string, JToken> { { key, value } } };
 
-            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(packet);
+            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(packet);
         }
 
         class GetValueTest<T> : TestCaseData
