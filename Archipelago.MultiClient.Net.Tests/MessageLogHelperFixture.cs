@@ -4,6 +4,7 @@ using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
 using NSubstitute;
 using NUnit.Framework;
+using System.Collections.Generic;
 using System.Drawing;
 
 namespace Archipelago.MultiClient.Net.Tests
@@ -155,42 +156,52 @@ namespace Archipelago.MultiClient.Net.Tests
             Assert.That(parts[0].Text, Is.EqualTo("Text1"));
             Assert.That(parts[0].Color, Is.EqualTo(Color.White));
             Assert.That(parts[0].IsBackgroundColor, Is.EqualTo(false));
+            Assert.That(parts[0].Type, Is.EqualTo(MessagePartType.Text));
 
             Assert.That(parts[1].Text, Is.EqualTo("Text2"));
             Assert.That(parts[1].Color, Is.EqualTo(Color.White));
             Assert.That(parts[1].IsBackgroundColor, Is.EqualTo(false));
+            Assert.That(parts[1].Type, Is.EqualTo(MessagePartType.Text));
 
             Assert.That(parts[2].Text, Is.EqualTo("Text3"));
             Assert.That(parts[2].Color, Is.EqualTo(Color.Blue));
             Assert.That(parts[2].IsBackgroundColor, Is.EqualTo(true));
-
+            Assert.That(parts[2].Type, Is.EqualTo(MessagePartType.Text));
+            
             Assert.That(parts[3].Text, Is.EqualTo("Text4"));
             Assert.That(parts[3].Color, Is.EqualTo(Color.Cyan));
             Assert.That(parts[3].IsBackgroundColor, Is.EqualTo(false));
+            Assert.That(parts[3].Type, Is.EqualTo(MessagePartType.Item));
 
             Assert.That(parts[4].Text, Is.EqualTo("Text5"));
             Assert.That(parts[4].Color, Is.EqualTo(Color.Cyan));
             Assert.That(parts[4].IsBackgroundColor, Is.EqualTo(false));
+            Assert.That(parts[4].Type, Is.EqualTo(MessagePartType.Item));
 
             Assert.That(parts[5].Text, Is.EqualTo("Text6"));
             Assert.That(parts[5].Color, Is.EqualTo(Color.Green));
             Assert.That(parts[5].IsBackgroundColor, Is.EqualTo(false));
+            Assert.That(parts[5].Type, Is.EqualTo(MessagePartType.Location));
 
             Assert.That(parts[6].Text, Is.EqualTo("Text7"));
             Assert.That(parts[6].Color, Is.EqualTo(Color.Green));
             Assert.That(parts[6].IsBackgroundColor, Is.EqualTo(false));
-
+            Assert.That(parts[6].Type, Is.EqualTo(MessagePartType.Location));
+            
             Assert.That(parts[7].Text, Is.EqualTo("Text8"));
             Assert.That(parts[7].Color, Is.EqualTo(Color.Yellow));
             Assert.That(parts[7].IsBackgroundColor, Is.EqualTo(false));
+            Assert.That(parts[7].Type, Is.EqualTo(MessagePartType.Player));
 
             Assert.That(parts[8].Text, Is.EqualTo("Text9"));
             Assert.That(parts[8].Color, Is.EqualTo(Color.Yellow));
             Assert.That(parts[8].IsBackgroundColor, Is.EqualTo(false));
-
+            Assert.That(parts[8].Type, Is.EqualTo(MessagePartType.Player));
+            
             Assert.That(parts[9].Text, Is.EqualTo("Text10"));
             Assert.That(parts[9].Color, Is.EqualTo(Color.Blue));
             Assert.That(parts[9].IsBackgroundColor, Is.EqualTo(false));
+            Assert.That(parts[9].Type, Is.EqualTo(MessagePartType.Entrance));
         }
 
         [Test]
@@ -351,6 +362,82 @@ namespace Archipelago.MultiClient.Net.Tests
             Assert.That(logMessage.ReceivingPlayerSlot, Is.EqualTo(1));
             Assert.That(logMessage.SendingPlayerSlot, Is.EqualTo(2));
             Assert.That(logMessage.IsFound, Is.EqualTo(true));
+        }
+
+        [Test]
+        public void Should_split_new_lines_in_separate_messages_for_print_package()
+        {
+            var socket = Substitute.For<IArchipelagoSocketHelper>();
+            var locations = Substitute.For<ILocationCheckHelper>();
+            var items = Substitute.For<IReceivedItemsHelper>();
+            var players = Substitute.For<IPlayerHelper>();
+            var connectionInfo = Substitute.For<IConnectionInfoProvider>();
+
+            var sut = new MessageLogHelper(socket, items, locations, players, connectionInfo);
+
+            List<LogMessage> logMessage = new List<LogMessage>(6);
+
+            sut.OnMessageReceived += (message) =>
+            {
+                logMessage.Add(message);
+            };
+
+            var packet = new PrintPacket
+            {
+                Text = "!help \n    Returns the help listing\n!license \n    Returns the licensing information\n!countdown seconds = 10 \n    Start a countdown in seconds"
+            };
+
+            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(packet);
+
+            Assert.That(logMessage.Count, Is.EqualTo(6));
+            Assert.That(logMessage[0].ToString(), Is.EqualTo("!help "));
+            Assert.That(logMessage[1].ToString(), Is.EqualTo("    Returns the help listing"));
+            Assert.That(logMessage[2].ToString(), Is.EqualTo("!license "));
+            Assert.That(logMessage[3].ToString(), Is.EqualTo("    Returns the licensing information"));
+            Assert.That(logMessage[4].ToString(), Is.EqualTo("!countdown seconds = 10 "));
+            Assert.That(logMessage[5].ToString(), Is.EqualTo("    Start a countdown in seconds"));
+        }
+
+        [Test]
+        public void Should_split_new_lines_in_separate_messages_for_print_json_package()
+        {
+            var socket = Substitute.For<IArchipelagoSocketHelper>();
+            var locations = Substitute.For<ILocationCheckHelper>();
+            var items = Substitute.For<IReceivedItemsHelper>();
+            var players = Substitute.For<IPlayerHelper>();
+            var connectionInfo = Substitute.For<IConnectionInfoProvider>();
+
+            var sut = new MessageLogHelper(socket, items, locations, players, connectionInfo);
+
+            List<LogMessage> logMessage = new List<LogMessage>(3);
+
+            sut.OnMessageReceived += (message) =>
+            {
+                logMessage.Add(message);
+            };
+
+            var packet = new PrintJsonPacket
+            {
+                Data = new [] {
+                    new JsonMessagePart { Type = JsonMessagePartType.Color, Color = JsonMessagePartColor.Red, Text = "Some text\nover multiple "},
+                    new JsonMessagePart { Text = "lines"}
+                }
+            };
+
+            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(packet);
+
+            Assert.That(logMessage.Count, Is.EqualTo(2));
+            Assert.That(logMessage[0].Parts.Length, Is.EqualTo(1));
+            Assert.That(logMessage[0].Parts[0].Text, Is.EqualTo("Some text"));
+            Assert.That(logMessage[0].Parts[0].Color, Is.EqualTo(Color.Red));
+
+            Assert.That(logMessage[1].Parts.Length, Is.EqualTo(2));
+            Assert.That(logMessage[1].Parts[0].Text, Is.EqualTo("over multiple "));
+            Assert.That(logMessage[1].Parts[0].Color, Is.EqualTo(Color.Red));
+
+            Assert.That(logMessage[1].Parts[1].Text, Is.EqualTo("lines"));
+            Assert.That(logMessage[1].Parts[1].Type, Is.EqualTo(MessagePartType.Text));
+            Assert.That(logMessage[1].Parts[1].Color, Is.EqualTo(Color.White));
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Text;
@@ -54,29 +55,100 @@ namespace Archipelago.MultiClient.Net.Helpers
 
         private void TriggerOnMessageReceived(PrintJsonPacket printJsonPacket)
         {
-            LogMessage message;
-
-            var parts = GetParsedData(printJsonPacket);
-
-            switch (printJsonPacket)
+            foreach (var linePacket in SplitPacketsPerLine(printJsonPacket))
             {
-                case HintPrintJsonPacket hintPrintJson:
-                    message = new HintItemSendLogMessage(parts, 
-                        hintPrintJson.ReceivingPlayer, hintPrintJson.Item.Player, 
-                        hintPrintJson.Item, hintPrintJson.Found.HasValue && hintPrintJson.Found.Value);
-                    break;
-                case ItemPrintJsonPacket itemPrintJson:
-                    message = new ItemSendLogMessage(parts,
-                        itemPrintJson.ReceivingPlayer, itemPrintJson.Item.Player, itemPrintJson.Item);
-                    break;
-                default:
-                    message = new LogMessage(parts);
-                    break;
+                LogMessage message;
+
+                var parts = GetParsedData(linePacket);
+
+                switch (linePacket)
+                {
+                    case HintPrintJsonPacket hintPrintJson:
+                        message = new HintItemSendLogMessage(parts,
+                            hintPrintJson.ReceivingPlayer, hintPrintJson.Item.Player,
+                            hintPrintJson.Item, hintPrintJson.Found.HasValue && hintPrintJson.Found.Value);
+                        break;
+                    case ItemPrintJsonPacket itemPrintJson:
+                        message = new ItemSendLogMessage(parts,
+                            itemPrintJson.ReceivingPlayer, itemPrintJson.Item.Player, itemPrintJson.Item);
+                        break;
+                    default:
+                        message = new LogMessage(parts);
+                        break;
+                }
+
+                if (OnMessageReceived != null)
+                {
+                    OnMessageReceived(message);
+                }
+            }
+        }
+
+        private IEnumerable<PrintJsonPacket> SplitPacketsPerLine(PrintJsonPacket printJsonPacket)
+        {
+            List<PrintJsonPacket> packetsPerLine = new List<PrintJsonPacket>();
+
+            List<JsonMessagePart> messageParts = new List<JsonMessagePart>();
+
+            foreach (var part in printJsonPacket.Data)
+            {
+                var lines = part.Text.Split('\n');
+
+                for (int i = 0; i < lines.Length; i++)
+                {
+                    var line = lines[i];
+
+                    messageParts.Add(new JsonMessagePart {
+                        Text = line,
+                        Type = part.Type,
+                        Color = part.Color,
+                        Flags = part.Flags,
+                        Player = part.Player
+                    });
+
+                    if (i < (lines.Length -1))
+                    {
+                        var splittedPrintJsonPacket = CloneWithoutData(printJsonPacket);
+                        splittedPrintJsonPacket.Data = messageParts.ToArray();
+
+                        packetsPerLine.Add(splittedPrintJsonPacket);
+
+                        messageParts = new List<JsonMessagePart>();
+                    }
+                }
             }
 
-            if (OnMessageReceived != null)
+            var lastPrintJsonPacket = CloneWithoutData(printJsonPacket);
+            lastPrintJsonPacket.Data = messageParts.ToArray();
+
+            packetsPerLine.Add(lastPrintJsonPacket);
+
+            return packetsPerLine;
+        }
+
+        private static PrintJsonPacket CloneWithoutData(PrintJsonPacket source)
+        {
+            switch (source)
             {
-                OnMessageReceived(message);
+                case HintPrintJsonPacket hintPrintJsonPacket:
+                    return new HintPrintJsonPacket {
+                        MessageType = hintPrintJsonPacket.MessageType,
+                        ReceivingPlayer = hintPrintJsonPacket.ReceivingPlayer,
+                        Item = hintPrintJsonPacket.Item,
+                        Found = hintPrintJsonPacket.Found
+                    };
+                case ItemPrintJsonPacket itemPrintJson:
+                    return new ItemPrintJsonPacket
+                    {
+                        MessageType = itemPrintJson.MessageType,
+                        ReceivingPlayer = itemPrintJson.ReceivingPlayer,
+                        Item = itemPrintJson.Item,
+                    };
+                default:
+                    return new PrintJsonPacket
+                    {
+                        MessageType = source.MessageType,
+                    };
             }
         }
 
