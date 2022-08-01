@@ -63,6 +63,56 @@ namespace Archipelago.MultiClient.Net.Tests
         }
 
         [Test]
+        public void Should_also_load_initial_missing_locations_send_by_server_if_no_location_has_been_checked_yet()
+        {
+            var socket = Substitute.For<IArchipelagoSocketHelper>();
+            var cache = Substitute.For<IDataPackageCache>();
+
+            var sut = new LocationCheckHelper(socket, cache);
+
+            var connectedPacket = new ConnectedPacket
+            {
+                LocationsChecked = Array.Empty<long>(),
+                MissingChecks = new long[] { 1, 2 }
+            };
+
+            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(connectedPacket);
+
+            Assert.Contains(1, sut.AllLocations);
+            Assert.Contains(2, sut.AllLocations);
+
+            Assert.IsEmpty(sut.AllLocationsChecked);
+
+            Assert.Contains(1, sut.AllMissingLocations);
+            Assert.Contains(2, sut.AllMissingLocations);
+        }
+
+        [Test]
+        public void Should_also_load_initial_checked_locations_send_by_server_if_no_location_is_missing()
+        {
+            var socket = Substitute.For<IArchipelagoSocketHelper>();
+            var cache = Substitute.For<IDataPackageCache>();
+
+            var sut = new LocationCheckHelper(socket, cache);
+
+            var connectedPacket = new ConnectedPacket
+            {
+                LocationsChecked = new long[] { 1, 2 },
+                MissingChecks = Array.Empty<long>()
+            };
+
+            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(connectedPacket);
+
+            Assert.Contains(1, sut.AllLocations);
+            Assert.Contains(2, sut.AllLocations);
+
+            Assert.Contains(1, sut.AllLocationsChecked);
+            Assert.Contains(2, sut.AllLocationsChecked);
+
+            Assert.IsEmpty(sut.AllMissingLocations);
+        }
+
+        [Test]
         public void Should_add_locations_checked_by_client()
         {
             var socket = Substitute.For<IArchipelagoSocketHelper>();
