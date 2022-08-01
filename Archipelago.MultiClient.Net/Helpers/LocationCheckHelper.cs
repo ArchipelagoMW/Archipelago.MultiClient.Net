@@ -67,6 +67,8 @@ namespace Archipelago.MultiClient.Net.Helpers
                     allLocations.UnionWith(connectedPacket.LocationsChecked);
                     allLocations.UnionWith(connectedPacket.MissingChecks);
 
+                    missingLocations = new ReadOnlyCollection<long>(connectedPacket.MissingChecks);
+
                      CheckLocations(connectedPacket.LocationsChecked);
                     break;
                 case RoomUpdatePacket updatePacket:
