@@ -195,3 +195,65 @@ var number = (int)obj["Number"]; //Get value for anonymous object key `Number`
 var text = (string)obj["Text"]; //Get value for anonymous object key `Text`
 
 ```
+
+### Message Logging
+
+The Archipelago server can send messages to client to be displayed on screen as sort of a log, this is done by handling the `PrintPacket` and `PrintJsonPacket` packets.
+```csharp
+var session = ArchipelagoSessionFactory.CreateSession("localhost", 38281);
+session.MessageLog.OnMessageReceived += OnMessageReceived;
+session.TryConnectAndLogin("Timespinner", "Jarno", new Version(0,3,5));
+
+static void OnMessageReceived(LogMessage message)
+{
+	DisplayOnScreen(message.ToString());
+}
+```
+
+In some cased you might want extra information that is provided by the server in such cases you can use type checking
+
+```csharp
+switch (message)
+{
+	case ItemSendLogMessage itemSendLogMessage: 
+		var reveiver = itemSendLogMessage.ReceivingPlayerSlot;
+		var sender = itemSendLogMessage.SendingPlayerSlot;
+		var networkItem = itemSendLogMessage.Item;
+		DisplayOnScreen(message.ToString());
+		break;
+	case ItemHintLogMessage hintLogMessage:
+		var found = hintLogMessage.IsFound;
+		DisplayOnScreen(message.ToString());
+		break;
+	default: 
+		DisplayOnScreen(message.ToString());
+		break;
+}
+```
+
+If you want more controll over how the message is displayed, like for example you might want to color certain parts of the message,
+Then you can use the `GetParsedData` method. This method returns each part of the message in order with the `Text` to be displayed and also the `Color` it would normally be diplayed in.
+If `IsBackgroundColor` is true, then the color should be applied to the message background instead.
+The parsed message can also contain additional information that can be retreived by type checking.
+
+```csharp
+foreach (part in message.Parts)
+{
+	switch (part)
+	{
+		case ItemMessagePart itemMessagePart: 
+			var itemId = itemMessagePart.ItemId;
+			var flags = itemMessagePart.Flags;
+			break;
+		case LocationMessagePart locationMessagePart:
+			var locationId = locationMessagePart.LocationId;
+			break;
+		case PlayerMessagePart playerMessagePart:
+			var slotId = playerMessagePart.SlotId;
+			var isCurrentPlayer = playerMessagePart.IsActivePlayer;
+			break;
+	}
+
+	DisplayOnScreen(part.Text, part.Color, part.IsBackgroundColor);
+}
+```

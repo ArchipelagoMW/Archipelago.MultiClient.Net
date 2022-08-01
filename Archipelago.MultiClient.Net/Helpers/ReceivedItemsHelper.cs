@@ -13,7 +13,12 @@ using System.Collections.Concurrent;
 
 namespace Archipelago.MultiClient.Net.Helpers
 {
-    public class ReceivedItemsHelper
+    public interface IReceivedItemsHelper
+    {
+        string GetItemName(long id);
+    }
+
+    public class ReceivedItemsHelper : IReceivedItemsHelper
     {
         private readonly IArchipelagoSocketHelper socket;
         private readonly ILocationCheckHelper locationsHelper;

@@ -23,6 +23,9 @@ namespace Archipelago.MultiClient.Net.Helpers
 #else
         Task CompleteLocationChecksAsync(params long[] ids);
 #endif
+
+        long GetLocationIdFromName(string game, string locationName);
+        string GetLocationNameFromId(long locationId);
     }
 
     public class LocationCheckHelper : ILocationCheckHelper
