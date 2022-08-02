@@ -198,7 +198,7 @@ var text = (string)obj["Text"]; //Get value for anonymous object key `Text`
 
 ### Message Logging
 
-The Archipelago server can send messages to client to be displayed on screen as sort of a log, this is done by handling the `PrintPacket` and `PrintJsonPacket` packets.
+The Archipelago server can send messages to client to be displayed on screen as sort of a log, this is done by handling the `PrintPacket` and `PrintJsonPacket` packets. This library simplifies this process into a single handler for you to handle both kinds of messages.
 ```csharp
 var session = ArchipelagoSessionFactory.CreateSession("localhost", 38281);
 session.MessageLog.OnMessageReceived += OnMessageReceived;
@@ -213,28 +213,30 @@ static void OnMessageReceived(LogMessage message)
 In some cased you might want extra information that is provided by the server in such cases you can use type checking
 
 ```csharp
-switch (message)
+static void OnMessageReceived(LogMessage message)
 {
-	case ItemSendLogMessage itemSendLogMessage: 
-		var reveiver = itemSendLogMessage.ReceivingPlayerSlot;
-		var sender = itemSendLogMessage.SendingPlayerSlot;
-		var networkItem = itemSendLogMessage.Item;
-		DisplayOnScreen(message.ToString());
-		break;
-	case ItemHintLogMessage hintLogMessage:
-		var found = hintLogMessage.IsFound;
-		DisplayOnScreen(message.ToString());
-		break;
-	default: 
-		DisplayOnScreen(message.ToString());
-		break;
+	switch (message)
+	{
+		case ItemSendLogMessage itemSendLogMessage: 
+			var reveiver = itemSendLogMessage.ReceivingPlayerSlot;
+			var sender = itemSendLogMessage.SendingPlayerSlot;
+			var networkItem = itemSendLogMessage.Item;
+			break;
+		case ItemHintLogMessage hintLogMessage:
+			var reveiver = itemSendLogMessage.ReceivingPlayerSlot;
+			var sender = itemSendLogMessage.SendingPlayerSlot;
+			var networkItem = itemSendLogMessage.Item;
+			var found = hintLogMessage.IsFound;
+			break;
+	}
+	DisplayOnScreen(message.ToString());
 }
 ```
 
-If you want more controll over how the message is displayed, like for example you might want to color certain parts of the message,
-Then you can use the `GetParsedData` method. This method returns each part of the message in order with the `Text` to be displayed and also the `Color` it would normally be diplayed in.
+If you want more control over how the message is displayed, like for example you might want to color certain parts of the message,
+Then you can use the `Parts` property. This returns each part of the message in order of appearnce with the `Text` to be displayed and also the `Color` it would normally be diplayed in.
 If `IsBackgroundColor` is true, then the color should be applied to the message background instead.
-The parsed message can also contain additional information that can be retreived by type checking.
+The MessagePart message can also contain additional information that can be retreived by type checking.
 
 ```csharp
 foreach (part in message.Parts)
