@@ -93,12 +93,12 @@ session.Socket.SendPacket(new SayPacket(){Text = "Woof woof!"});
 
 ### DeathLink
 
-DeathLink support is included in the library. You may enable it by using the `CreateDeathLinkServiceAndEnable` in the `DeathLinkProvider` class. This method is also an extension method so you may enable it more easily.
+DeathLink support is included in the library. You may enable it by using the `CreateDeathLinkService` in the `DeathLinkProvider` class, and the `EnableDeathlink` method on the service. Deathlink can be toggled on an off by the the `EnableDeathlink` and `DisableDeathlink` methods on the service
 
 ```csharp
 var session = ArchipelagoSessionFactory.CreateSession("localhost", 38281);
 
-var deathLinkService = session.CreateDeathLinkServiceAndEnable();
+var deathLinkService = session.CreateDeathLinkService().EnableDeathlink();
 session.TryConnectAndLogin("Risk of Rain 2", "Ijwu", new Version(2,1,0));
 
 deathLinkService.OnDeathLinkReceived += (deathLinkObject) => {
@@ -117,7 +117,7 @@ The DataStorage provides an interface based on keys and their scope. By assignin
 Assigning and reading values from the store can be done using simple assignments `=`:
 * `= session.DataStorage["Key"]`, read value from the data storage synchronously
 * `session.DataStorage["Key"] =`, write value to the data storage asynchronously
-  * Complex objects need to be stored and retrieved in the form of a `JObject`, therefor you must wrap them into a `JObject.FromObject()`
+* Complex objects need to be stored and retrieved in the form of a `JObject`, therefor you must wrap them into a `JObject.FromObject()`
 
 The DataStorage also provides methods to retrieve the value of a key asynchronously using `[key].GetAsync`. 
 To set the initial value of a key without overriding any existing value the `[key].Initialize` method can be used.
