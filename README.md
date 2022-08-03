@@ -218,12 +218,14 @@ static void OnMessageReceived(LogMessage message)
 	switch (message)
 	{
 		case ItemSendLogMessage itemSendLogMessage: 
-			var reveiver = itemSendLogMessage.ReceivingPlayerSlot;
+			var receiver = itemSendLogMessage.ReceivingPlayerSlot;
+
 			var sender = itemSendLogMessage.SendingPlayerSlot;
 			var networkItem = itemSendLogMessage.Item;
 			break;
 		case ItemHintLogMessage hintLogMessage:
-			var reveiver = itemSendLogMessage.ReceivingPlayerSlot;
+			var receiver = itemSendLogMessage.ReceivingPlayerSlot;
+
 			var sender = itemSendLogMessage.SendingPlayerSlot;
 			var networkItem = itemSendLogMessage.Item;
 			var found = hintLogMessage.IsFound;
@@ -236,7 +238,8 @@ static void OnMessageReceived(LogMessage message)
 If you want more control over how the message is displayed, like for example you might want to color certain parts of the message,
 Then you can use the `Parts` property. This returns each part of the message in order of appearnce with the `Text` to be displayed and also the `Color` it would normally be diplayed in.
 If `IsBackgroundColor` is true, then the color should be applied to the message background instead.
-The MessagePart message can also contain additional information that can be retreived by type checking.
+The MessagePart message can also contain additional information that can be retrieved by type checking.
+
 
 ```csharp
 foreach (part in message.Parts)
