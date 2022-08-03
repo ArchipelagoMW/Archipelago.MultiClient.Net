@@ -319,7 +319,7 @@ namespace Archipelago.MultiClient.Net.Helpers
             {
                 case JsonMessagePartType.ItemId:
                     ItemId = long.Parse(part.Text);
-                    Text = items.GetItemName(ItemId);
+                    Text = items.GetItemName(ItemId) ?? $"Item: {ItemId}";
                     break; 
                 case JsonMessagePartType.ItemName:
                     ItemId = 0; // we are not going to try to reverse lookup this value based on the game of the receiving player
@@ -368,7 +368,7 @@ namespace Archipelago.MultiClient.Net.Helpers
                 case JsonMessagePartType.PlayerId:
                     SlotId = int.Parse(part.Text);
                     IsActivePlayer = SlotId == connectionInfo.Slot;
-                    Text = players.GetPlayerAlias(SlotId);
+                    Text = players.GetPlayerAlias(SlotId) ?? $"Player {SlotId}";
                     break;
                 case JsonMessagePartType.PlayerName:
                     SlotId = 0; // value is not slot resolvable according to docs
@@ -402,7 +402,7 @@ namespace Archipelago.MultiClient.Net.Helpers
             {
                 case JsonMessagePartType.LocationId:
                     LocationId = long.Parse(part.Text);
-                    Text = locations.GetLocationNameFromId(LocationId);
+                    Text = locations.GetLocationNameFromId(LocationId) ?? $"Location: {LocationId}";
                     break;
                 case JsonMessagePartType.PlayerName:
                     LocationId = 0; // we are not going to try to reverse lookup as we don't know the game this location belongs to

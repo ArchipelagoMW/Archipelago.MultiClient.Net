@@ -35,7 +35,7 @@ namespace Archipelago.MultiClient.Net.Tests
             };
 
             socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(printPacket);
-            
+
             Assert.That(toStringResult, Is.EqualTo("Some message that really does not add value to the test at hand"));
         }
 
@@ -60,12 +60,13 @@ namespace Archipelago.MultiClient.Net.Tests
                 toStringResult = message.ToString();
             };
 
-            var packet = new PrintJsonPacket
-            {
+            var packet = new PrintJsonPacket {
                 Data = new[] {
                     new JsonMessagePart { Type = null, Text = "Text1" },
                     new JsonMessagePart { Type = JsonMessagePartType.Text, Text = "Text2" },
-                    new JsonMessagePart { Type = JsonMessagePartType.Color, Text = "Text3", Color = JsonMessagePartColor.Blue },
+                    new JsonMessagePart {
+                        Type = JsonMessagePartType.Color, Text = "Text3", Color = JsonMessagePartColor.Blue
+                    },
                     new JsonMessagePart { Type = JsonMessagePartType.ItemId, Text = "4", Flags = ItemFlags.None },
                     new JsonMessagePart { Type = JsonMessagePartType.ItemName, Text = "Text5" },
                     new JsonMessagePart { Type = JsonMessagePartType.LocationId, Text = "6" },
@@ -99,10 +100,7 @@ namespace Archipelago.MultiClient.Net.Tests
                 parts = message.Parts;
             };
 
-            var printPacket = new PrintPacket
-            {
-                Text = "Some message that really does not add value to the test at hand"
-            };
+            var printPacket = new PrintPacket { Text = "Some message that really does not add value to the test at hand" };
 
             socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(printPacket);
 
@@ -134,12 +132,13 @@ namespace Archipelago.MultiClient.Net.Tests
                 parts = message.Parts;
             };
 
-            var packet = new PrintJsonPacket
-            {
+            var packet = new PrintJsonPacket {
                 Data = new[] {
                     new JsonMessagePart { Type = null, Text = "Text1" },
                     new JsonMessagePart { Type = JsonMessagePartType.Text, Text = "Text2" },
-                    new JsonMessagePart { Type = JsonMessagePartType.Color, Text = "Text3", Color = JsonMessagePartColor.BlueBg },
+                    new JsonMessagePart {
+                        Type = JsonMessagePartType.Color, Text = "Text3", Color = JsonMessagePartColor.BlueBg
+                    },
                     new JsonMessagePart { Type = JsonMessagePartType.ItemId, Text = "4", Flags = ItemFlags.None },
                     new JsonMessagePart { Type = JsonMessagePartType.ItemName, Text = "Text5" },
                     new JsonMessagePart { Type = JsonMessagePartType.LocationId, Text = "6" },
@@ -167,7 +166,7 @@ namespace Archipelago.MultiClient.Net.Tests
             Assert.That(parts[2].Color, Is.EqualTo(Color.Blue));
             Assert.That(parts[2].IsBackgroundColor, Is.EqualTo(true));
             Assert.That(parts[2].Type, Is.EqualTo(MessagePartType.Text));
-            
+
             Assert.That(parts[3].Text, Is.EqualTo("Text4"));
             Assert.That(parts[3].Color, Is.EqualTo(Color.Cyan));
             Assert.That(parts[3].IsBackgroundColor, Is.EqualTo(false));
@@ -187,7 +186,7 @@ namespace Archipelago.MultiClient.Net.Tests
             Assert.That(parts[6].Color, Is.EqualTo(Color.Green));
             Assert.That(parts[6].IsBackgroundColor, Is.EqualTo(false));
             Assert.That(parts[6].Type, Is.EqualTo(MessagePartType.Location));
-            
+
             Assert.That(parts[7].Text, Is.EqualTo("Text8"));
             Assert.That(parts[7].Color, Is.EqualTo(Color.Yellow));
             Assert.That(parts[7].IsBackgroundColor, Is.EqualTo(false));
@@ -197,7 +196,7 @@ namespace Archipelago.MultiClient.Net.Tests
             Assert.That(parts[8].Color, Is.EqualTo(Color.Yellow));
             Assert.That(parts[8].IsBackgroundColor, Is.EqualTo(false));
             Assert.That(parts[8].Type, Is.EqualTo(MessagePartType.Player));
-            
+
             Assert.That(parts[9].Text, Is.EqualTo("Text10"));
             Assert.That(parts[9].Color, Is.EqualTo(Color.Blue));
             Assert.That(parts[9].IsBackgroundColor, Is.EqualTo(false));
@@ -224,11 +223,8 @@ namespace Archipelago.MultiClient.Net.Tests
                 parts = message.Parts;
             };
 
-            var packet = new PrintJsonPacket
-            {
-                Data = new[] {
-                    new JsonMessagePart { Type = JsonMessagePartType.PlayerId, Text = "4" }
-                }
+            var packet = new PrintJsonPacket {
+                Data = new[] { new JsonMessagePart { Type = JsonMessagePartType.PlayerId, Text = "4" } }
             };
 
             socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(packet);
@@ -244,8 +240,7 @@ namespace Archipelago.MultiClient.Net.Tests
             new object[] { ItemFlags.Advancement | ItemFlags.Trap, Color.Plum },
             new object[] { ItemFlags.NeverExclude, Color.SlateBlue },
             new object[] { ItemFlags.NeverExclude | ItemFlags.Trap, Color.SlateBlue },
-            new object[] { ItemFlags.Trap, Color.Salmon },
-            new object[] { ItemFlags.None, Color.Cyan }
+            new object[] { ItemFlags.Trap, Color.Salmon }, new object[] { ItemFlags.None, Color.Cyan }
         };
 
         [TestCaseSource(nameof(ItemColorTestCases))]
@@ -267,8 +262,7 @@ namespace Archipelago.MultiClient.Net.Tests
                 parts = message.Parts;
             };
 
-            var packet = new PrintJsonPacket
-            {
+            var packet = new PrintJsonPacket {
                 Data = new[] {
                     new JsonMessagePart { Type = JsonMessagePartType.ItemId, Text = "1", Flags = itemFlags },
                     new JsonMessagePart { Type = JsonMessagePartType.ItemName, Text = "ItemFive", Flags = itemFlags }
@@ -306,11 +300,8 @@ namespace Archipelago.MultiClient.Net.Tests
                 logMessage = message as ItemSendLogMessage;
             };
 
-            var packet = new ItemPrintJsonPacket
-            {
-                Data = new[] {
-                    new JsonMessagePart { Text = "" }
-                },
+            var packet = new ItemPrintJsonPacket {
+                Data = new[] { new JsonMessagePart { Text = "" } },
                 Item = new NetworkItem { Flags = ItemFlags.None, Player = 2, Item = 100, Location = 1000 },
                 ReceivingPlayer = 1,
                 MessageType = JsonMessageType.ItemSend
@@ -344,11 +335,8 @@ namespace Archipelago.MultiClient.Net.Tests
                 logMessage = message as HintItemSendLogMessage;
             };
 
-            var packet = new HintPrintJsonPacket
-            {
-                Data = new[] {
-                    new JsonMessagePart { Text = "" }
-                },
+            var packet = new HintPrintJsonPacket {
+                Data = new[] { new JsonMessagePart { Text = "" } },
                 Item = new NetworkItem { Flags = ItemFlags.None, Player = 2, Item = 100, Location = 1000 },
                 ReceivingPlayer = 1,
                 Found = true,
@@ -382,9 +370,9 @@ namespace Archipelago.MultiClient.Net.Tests
                 logMessage.Add(message);
             };
 
-            var packet = new PrintPacket
-            {
-                Text = "!help \n    Returns the help listing\n!license \n    Returns the licensing information\n!countdown seconds = 10 \n    Start a countdown in seconds"
+            var packet = new PrintPacket {
+                Text =
+                    "!help \n    Returns the help listing\n!license \n    Returns the licensing information\n!countdown seconds = 10 \n    Start a countdown in seconds"
             };
 
             socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(packet);
@@ -416,11 +404,14 @@ namespace Archipelago.MultiClient.Net.Tests
                 logMessage.Add(message);
             };
 
-            var packet = new PrintJsonPacket
-            {
-                Data = new [] {
-                    new JsonMessagePart { Type = JsonMessagePartType.Color, Color = JsonMessagePartColor.Red, Text = "Some text\nover multiple "},
-                    new JsonMessagePart { Text = "lines"}
+            var packet = new PrintJsonPacket {
+                Data = new[] {
+                    new JsonMessagePart {
+                        Type = JsonMessagePartType.Color,
+                        Color = JsonMessagePartColor.Red,
+                        Text = "Some text\nover multiple "
+                    },
+                    new JsonMessagePart { Text = "lines" }
                 }
             };
 
@@ -438,6 +429,55 @@ namespace Archipelago.MultiClient.Net.Tests
             Assert.That(logMessage[1].Parts[1].Text, Is.EqualTo("lines"));
             Assert.That(logMessage[1].Parts[1].Type, Is.EqualTo(MessagePartType.Text));
             Assert.That(logMessage[1].Parts[1].Color, Is.EqualTo(Color.White));
+        }
+
+        [Test]
+        public void Should_not_go_boom_when_datapackage_doesnt_know_certain_values()
+        {
+            var socket = Substitute.For<IArchipelagoSocketHelper>();
+            var locations = Substitute.For<ILocationCheckHelper>();
+            locations.GetLocationNameFromId(Arg.Any<long>()).Returns((string)null);
+            var items = Substitute.For<IReceivedItemsHelper>();
+            items.GetItemName(Arg.Any<long>()).Returns((string)null);
+            var players = Substitute.For<IPlayerHelper>();
+            players.GetPlayerAlias(Arg.Any<int>()).Returns((string)null);
+            var connectionInfo = Substitute.For<IConnectionInfoProvider>();
+
+            var sut = new MessageLogHelper(socket, items, locations, players, connectionInfo);
+
+            MessagePart[] parts = null;
+
+            sut.OnMessageReceived += (message) =>
+            {
+                parts = message.Parts;
+            };
+
+            var packet = new PrintJsonPacket
+            {
+                Data = new[] {
+                    new JsonMessagePart { Type = JsonMessagePartType.ItemId, Text = "123", Flags = ItemFlags.Trap },
+                    new JsonMessagePart { Type = JsonMessagePartType.LocationId, Text = "456" },
+                    new JsonMessagePart { Type = JsonMessagePartType.PlayerId, Text = "69" },
+                }
+            };
+
+            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(packet);
+
+            Assert.That(parts.Length, Is.EqualTo(3));
+            Assert.That(parts[0].Text, Is.EqualTo("Item: 123"));
+            Assert.That(parts[0].Color, Is.EqualTo(Color.Salmon));
+            Assert.That(parts[0].IsBackgroundColor, Is.EqualTo(false));
+            Assert.That(parts[0].Type, Is.EqualTo(MessagePartType.Item));
+
+            Assert.That(parts[1].Text, Is.EqualTo("Location: 456"));
+            Assert.That(parts[1].Color, Is.EqualTo(Color.Green));
+            Assert.That(parts[1].IsBackgroundColor, Is.EqualTo(false));
+            Assert.That(parts[1].Type, Is.EqualTo(MessagePartType.Location));
+
+            Assert.That(parts[2].Text, Is.EqualTo("Player 69"));
+            Assert.That(parts[2].Color, Is.EqualTo(Color.Yellow));
+            Assert.That(parts[2].IsBackgroundColor, Is.EqualTo(false));
+            Assert.That(parts[2].Type, Is.EqualTo(MessagePartType.Player));
         }
     }
 }
