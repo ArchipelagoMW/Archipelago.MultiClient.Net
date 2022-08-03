@@ -283,7 +283,7 @@ namespace Archipelago.MultiClient.Net.Helpers
                 case JsonMessagePartColor.BlueBg:
                     return Color.Blue;
                 case JsonMessagePartColor.Magenta:
-                case JsonMessagePartColor.PurpleBg:
+                case JsonMessagePartColor.MagentaBg:
                     return Color.Magenta;
                 case JsonMessagePartColor.Cyan:
                 case JsonMessagePartColor.CyanBg:
