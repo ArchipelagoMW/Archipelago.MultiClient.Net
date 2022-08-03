@@ -7,7 +7,34 @@ using System.Linq;
 
 namespace Archipelago.MultiClient.Net.Helpers
 {
-    public class PlayerHelper
+    public interface IPlayerHelper
+    {
+        /// <summary>
+        /// Returns the Alias corresponding to the provided player slot
+        /// Alias defaults to the player's name until a different alias is specifically set
+        /// </summary>
+        /// <param name="slot">The slot of which to retrieve the alias</param>
+        /// <returns>The player's alias, or null if no such player is found</returns>
+        string GetPlayerAlias(int slot);
+
+        /// <summary>
+        /// Returns the Name corresponding to the provided player slot
+        /// </summary>
+        /// <param name="slot">The slot of which to retrieve the name</param>
+        /// <returns>The player's name, or null if no such player is found</returns>
+        string GetPlayerName(int slot);
+
+        /// <summary>
+        /// Returns the Alias and Name corresponding to the provided player slot
+        /// Alias defaults to the player's name until a different alias is specifically set
+        /// The result is returned in the format of "Alias (Name)"
+        /// </summary>
+        /// <param name="slot">The slot of which to retrieve the alias</param>
+        /// <returns>The player's alias and name in the following format of "Alias (Name)", or null if no such player is found</returns>
+        string GetPlayerAliasAndName(int slot);
+    }
+
+    public class PlayerHelper : IPlayerHelper
     {
         private PlayerInfo[] players;
 

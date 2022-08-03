@@ -22,6 +22,7 @@ namespace Archipelago.MultiClient.Net
         public DataStorageHelper DataStorage { get; }
         public ConnectionInfoHelper ConnectionInfo { get; }
         public RoomStateHelper RoomState { get; }
+        public MessageLogHelper MessageLog { get; }
 
 #if NET35
         volatile bool expectingLoginResult;
@@ -37,7 +38,8 @@ namespace Archipelago.MultiClient.Net
                                     PlayerHelper players,
                                     RoomStateHelper roomState,
                                     ConnectionInfoHelper connectionInfo,
-                                    DataStorageHelper dataStorage)
+                                    DataStorageHelper dataStorage,
+                                    MessageLogHelper messageLog)
         {
             Socket = socket;
             Items = items;
@@ -46,7 +48,8 @@ namespace Archipelago.MultiClient.Net
             RoomState = roomState;
             ConnectionInfo = connectionInfo;
             DataStorage = dataStorage;
-
+            MessageLog = messageLog;
+            
             socket.PacketReceived += Socket_PacketReceived;
         }
 
@@ -95,7 +98,7 @@ namespace Archipelago.MultiClient.Net
                     if (!task.IsCompleted)
                         roomInfoPacketTask.TrySetCanceled();
                 }
-                catch (AggregateException e)
+                catch (AggregateException)
                 {
                     roomInfoPacketTask.TrySetCanceled();
                 }

@@ -2,7 +2,6 @@
 using Archipelago.MultiClient.Net.Models;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-using System.Collections.Generic;
 
 namespace Archipelago.MultiClient.Net.Packets
 {
