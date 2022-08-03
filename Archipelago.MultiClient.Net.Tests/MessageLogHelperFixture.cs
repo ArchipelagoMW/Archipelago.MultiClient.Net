@@ -490,5 +490,62 @@ namespace Archipelago.MultiClient.Net.Tests
             Assert.That(logMessage[1].Parts[1].Type, Is.EqualTo(MessagePartType.Text));
             Assert.That(logMessage[1].Parts[1].Color, Is.EqualTo(Color.White));
         }
+
+        [Test]
+        public void Should_not_go_boom_when_datapackage_doesnt_know_certain_values()
+        {
+            var socket = Substitute.For<IArchipelagoSocketHelper>();
+            var locations = Substitute.For<ILocationCheckHelper>();
+            locations.GetLocationNameFromId(Arg.Any<long>()).Returns((string)null);
+            var items = Substitute.For<IReceivedItemsHelper>();
+            items.GetItemName(Arg.Any<long>()).Returns((string)null);
+            var players = Substitute.For<IPlayerHelper>();
+            players.GetPlayerAlias(Arg.Any<int>()).Returns((string)null);
+            var connectionInfo = Substitute.For<IConnectionInfoProvider>();
+
+            var sut = new MessageLogHelper(socket, items, locations, players, connectionInfo);
+
+            MessagePart[] parts = null;
+
+            sut.OnMessageReceived += (message) =>
+            {
+                parts = message.Parts;
+            };
+
+            var packet = new PrintJsonPacket
+            {
+#if NET472
+                Data = new[] {
+                    new JsonMessagePart { Type = "item_id", Text = "123", Flags = ItemFlags.Trap },
+                    new JsonMessagePart { Type = "location_id", Text = "456" },
+                    new JsonMessagePart { Type = "player_id", Text = "69" },
+                }
+#else
+                Data = new[] {
+                    new JsonMessagePart { Type = JsonMessagePartType.ItemId, Text = "123", Flags = ItemFlags.Trap },
+                    new JsonMessagePart { Type = JsonMessagePartType.LocationId, Text = "456" },
+                    new JsonMessagePart { Type = JsonMessagePartType.PlayerId, Text = "69" },
+                }
+#endif
+            };
+
+            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(packet);
+
+            Assert.That(parts.Length, Is.EqualTo(3));
+            Assert.That(parts[0].Text, Is.EqualTo("Item: 123"));
+            Assert.That(parts[0].Color, Is.EqualTo(Color.Salmon));
+            Assert.That(parts[0].IsBackgroundColor, Is.EqualTo(false));
+            Assert.That(parts[0].Type, Is.EqualTo(MessagePartType.Item));
+
+            Assert.That(parts[1].Text, Is.EqualTo("Location: 456"));
+            Assert.That(parts[1].Color, Is.EqualTo(Color.Green));
+            Assert.That(parts[1].IsBackgroundColor, Is.EqualTo(false));
+            Assert.That(parts[1].Type, Is.EqualTo(MessagePartType.Location));
+
+            Assert.That(parts[2].Text, Is.EqualTo("Player 69"));
+            Assert.That(parts[2].Color, Is.EqualTo(Color.Yellow));
+            Assert.That(parts[2].IsBackgroundColor, Is.EqualTo(false));
+            Assert.That(parts[2].Type, Is.EqualTo(MessagePartType.Player));
+        }
     }
 }

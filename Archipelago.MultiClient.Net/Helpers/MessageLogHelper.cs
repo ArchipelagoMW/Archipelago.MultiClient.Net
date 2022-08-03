@@ -311,7 +311,7 @@ namespace Archipelago.MultiClient.Net.Helpers
                 case "blue_bg":
                     return Color.Blue;
                 case "magenta":
-                case "purple_bg":
+                case "magenta_bg":
                     return Color.Magenta;
                 case "cyan":
                 case "cyan_bg":
@@ -344,7 +344,7 @@ namespace Archipelago.MultiClient.Net.Helpers
                 case JsonMessagePartColor.BlueBg:
                     return Color.Blue;
                 case JsonMessagePartColor.Magenta:
-                case JsonMessagePartColor.PurpleBg:
+                case JsonMessagePartColor.MagentaBg:
                     return Color.Magenta;
                 case JsonMessagePartColor.Cyan:
                 case JsonMessagePartColor.CyanBg:
@@ -385,7 +385,7 @@ namespace Archipelago.MultiClient.Net.Helpers
                 case JsonMessagePartType.ItemId:
 #endif
                     ItemId = long.Parse(part.Text);
-                    Text = items.GetItemName(ItemId);
+                    Text = items.GetItemName(ItemId) ?? $"Item: {ItemId}";
                     break;
 #if USE_OCULUS_NEWTONSOFT
                 case "item_name":
@@ -442,7 +442,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 #endif
                     SlotId = int.Parse(part.Text);
                     IsActivePlayer = SlotId == connectionInfo.Slot;
-                    Text = players.GetPlayerAlias(SlotId);
+                    Text = players.GetPlayerAlias(SlotId) ?? $"Player {SlotId}";
                     break;
 #if USE_OCULUS_NEWTONSOFT
                 case "player_name":
@@ -484,7 +484,7 @@ namespace Archipelago.MultiClient.Net.Helpers
                 case JsonMessagePartType.LocationId:
 #endif
                     LocationId = long.Parse(part.Text);
-                    Text = locations.GetLocationNameFromId(LocationId);
+                    Text = locations.GetLocationNameFromId(LocationId) ?? $"Location: {LocationId}";
                     break;
 #if USE_OCULUS_NEWTONSOFT
                 case "location_name":
