@@ -21,7 +21,7 @@ namespace Archipelago.MultiClient.Net.Tests
 
             var packet = new ConnectedPacket { Team = 23, Slot = 578 };
 
-            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(packet);
+            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(packet);
 
             Assert.That(sut.Team, Is.EqualTo(23));
             Assert.That(sut.Slot, Is.EqualTo(578));
@@ -66,11 +66,11 @@ namespace Archipelago.MultiClient.Net.Tests
 
             var connectedPacket = new ConnectedPacket { Team = 23, Slot = 578 };
 
-            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(connectedPacket);
+            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(connectedPacket);
 
             sut.SetConnectionParameters("SomeGame", new[] { "TAGS" }, ItemsHandlingFlags.IncludeOwnItems, "MyId");
 
-            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelper.PacketReceivedHandler>(new ConnectionRefusedPacket());
+            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(new ConnectionRefusedPacket());
 
             Assert.That(sut.Game, Is.Null);
             Assert.That(sut.Team, Is.EqualTo(-1));

@@ -1,20 +1,49 @@
-﻿using Archipelago.MultiClient.Net.Models;
+﻿using Archipelago.MultiClient.Net.Enums;
+using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 
 namespace Archipelago.MultiClient.Net.Helpers
 {
-    public class PlayerHelper
+    public interface IPlayerHelper
+    {
+        /// <summary>
+        /// Returns the Alias corresponding to the provided player slot
+        /// Alias defaults to the player's name until a different alias is specifically set
+        /// </summary>
+        /// <param name="slot">The slot of which to retrieve the alias</param>
+        /// <returns>The player's alias, or null if no such player is found</returns>
+        string GetPlayerAlias(int slot);
+
+        /// <summary>
+        /// Returns the Name corresponding to the provided player slot
+        /// </summary>
+        /// <param name="slot">The slot of which to retrieve the name</param>
+        /// <returns>The player's name, or null if no such player is found</returns>
+        string GetPlayerName(int slot);
+
+        /// <summary>
+        /// Returns the Alias and Name corresponding to the provided player slot
+        /// Alias defaults to the player's name until a different alias is specifically set
+        /// The result is returned in the format of "Alias (Name)"
+        /// </summary>
+        /// <param name="slot">The slot of which to retrieve the alias</param>
+        /// <returns>The player's alias and name in the following format of "Alias (Name)", or null if no such player is found</returns>
+        string GetPlayerAliasAndName(int slot);
+    }
+
+    public class PlayerHelper : IPlayerHelper
     {
         private PlayerInfo[] players;
 
         /// <summary>
         /// A collection of PlayerInfo's where the index is the player their slot
         /// </summary>
-        public ReadOnlyCollection<PlayerInfo> AllPlayers => new ReadOnlyCollection<PlayerInfo>(players);
+        public ReadOnlyCollection<PlayerInfo> AllPlayers => new ReadOnlyCollection<PlayerInfo>(players ?? new PlayerInfo[0]);
 
-        internal PlayerHelper(ArchipelagoSocketHelper socket)
+        internal PlayerHelper(IArchipelagoSocketHelper socket)
         {
             socket.PacketReceived += PacketReceived;
         }
@@ -82,62 +111,39 @@ namespace Archipelago.MultiClient.Net.Helpers
             switch (packet)
             {
                 case ConnectedPacket connectedPacket:
-                    OnConnectedPacketReceived(connectedPacket);
+                    CreatePlayerInfo(connectedPacket.Players, connectedPacket.SlotInfo);
                     break;
                 case RoomUpdatePacket roomUpdatePacket:
-	                OnRoomUpdatedPacketReceived(roomUpdatePacket);
+                    UpdatePlayerInfo(roomUpdatePacket.Players);
 	                break;
-                case RoomInfoPacket roomInfoPacket:
-                    OnRoomInfoPacketReceived(roomInfoPacket);
-                    break;
             }
         }
 
-        private void OnRoomInfoPacketReceived(RoomInfoPacket packet)
+        private void CreatePlayerInfo(NetworkPlayer[] networkPlayers, Dictionary<int, NetworkSlot> slotInfos)
         {
-            UpdateGames(packet.Games);
-        }
-
-        private void OnConnectedPacketReceived(ConnectedPacket packet)
-        {
-            UpdatePlayerInfo(packet.Players);
-        }
-
-        private void OnRoomUpdatedPacketReceived(RoomUpdatePacket packet)
-        {
-            if (packet.Players != null && packet.Players.Length > 0)
+            NetworkSlot[] groups;
+            if (slotInfos == null)
             {
-                UpdatePlayerInfo(packet.Players);
-            }
-        }
-
-        private void UpdateGames(string[] games)
-        {
-            if (players == null)
-            {
-                players = games.Select(g => new PlayerInfo { Game = g }).ToArray();
+                groups = new NetworkSlot[0];
             }
             else
             {
-                for (int i = 0; i < games.Length; i++)
-                {
-                    players[i].Game = games[i];
-                }
+                groups = slotInfos.Values.Where(s => s.Type == SlotType.Group).ToArray();
             }
+
+            players = networkPlayers.Select(p => new PlayerInfo {
+                Team = p.Team,
+                Slot = p.Slot,
+                Name = p.Name,
+                Alias = p.Alias,
+                Game = slotInfos?[p.Slot].Game,
+                Groups = groups.Where(g => g.GroupMembers.Contains(p.Slot)).ToArray()
+            }).ToArray();
         }
 
         private void UpdatePlayerInfo(NetworkPlayer[] networkPlayers)
         {
-            if (players == null)
-            {
-                players = networkPlayers.Select(p => new PlayerInfo {
-                    Team = p.Team,
-                    Slot = p.Slot,
-                    Name = p.Name,
-                    Alias = p.Alias
-                }).ToArray();
-            }
-            else
+            if (networkPlayers != null && networkPlayers.Length > 0)
             {
                 for (int i = 0; i < networkPlayers.Length; i++)
                 {
@@ -157,5 +163,6 @@ namespace Archipelago.MultiClient.Net.Helpers
         public string Alias { get; internal set; }
         public string Name { get; internal set; }
         public string Game { get; internal set; }
+        public NetworkSlot[] Groups { get; internal set; }
     }
 }

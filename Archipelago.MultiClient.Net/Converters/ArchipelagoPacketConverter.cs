@@ -70,19 +70,41 @@ namespace Archipelago.MultiClient.Net.Converters
         {
             if (obj.TryGetValue("type", out var token))
             {
-                var type = (JsonMessageType)Enum.Parse(typeof(JsonMessageType), token.ToString());
-
-                switch (type)
+#if NET35
+                if (EnumTryParse(token.ToString(), out JsonMessageType type))
+#else
+                if (Enum.TryParse(token.ToString(), out JsonMessageType type))
+#endif
                 {
-                    case JsonMessageType.Hint:
-                        return obj.ToObject<HintPrintJsonPacket>();
-                    case JsonMessageType.ItemSend:
-                        return obj.ToObject<ItemPrintJsonPacket>();
+                    switch (type)
+                    {
+                        case JsonMessageType.Hint:
+                            return obj.ToObject<HintPrintJsonPacket>();
+                        case JsonMessageType.ItemSend:
+                            return obj.ToObject<ItemPrintJsonPacket>();
+                    }
                 }
+
+                obj["type"] = null;
             }
 
             return obj.ToObject<PrintJsonPacket>();
         }
+
+#if NET35
+        private static bool EnumTryParse<TEnum>(string value, out TEnum result)
+            where TEnum : struct, IConvertible
+        {
+            if (value == null || !Enum.IsDefined(typeof(TEnum), value))
+            {
+                result = default;
+                return false;
+            }
+
+            result = (TEnum)Enum.Parse(typeof(TEnum), value);
+            return true;
+        }
+#endif
 
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {

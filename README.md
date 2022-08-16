@@ -23,7 +23,7 @@ session.TryConnectAndLogin("Risk of Rain 2", "Ijwu", new Version(2,1,0));
 session.Locations.CompleteLocationChecks(42);
 
 string locationName = session.Locations.GetLocationNameFromId(42) ?? $"Location: {locationId}";
-int locationId = session.Locations.GetLocationIdFromName(locationName);
+long locationId = session.Locations.GetLocationIdFromName(locationName);
 
 session.Locations.ScoutLocationsAsync(locationInfoPacket => Console.WriteLine(locationInfoPacket.Locations.Count));
 ```
@@ -93,12 +93,12 @@ session.Socket.SendPacket(new SayPacket(){Text = "Woof woof!"});
 
 ### DeathLink
 
-DeathLink support is included in the library. You may enable it by using the `CreateDeathLinkServiceAndEnable` in the `DeathLinkProvider` class. This method is also an extension method so you may enable it more easily.
+DeathLink support is included in the library. You may enable it by using the `CreateDeathLinkService` in the `DeathLinkProvider` class, and the `EnableDeathlink` method on the service. Deathlink can be toggled on an off by the the `EnableDeathlink` and `DisableDeathlink` methods on the service
 
 ```csharp
 var session = ArchipelagoSessionFactory.CreateSession("localhost", 38281);
 
-var deathLinkService = session.CreateDeathLinkServiceAndEnable();
+var deathLinkService = session.CreateDeathLinkService().EnableDeathlink();
 session.TryConnectAndLogin("Risk of Rain 2", "Ijwu", new Version(2,1,0));
 
 deathLinkService.OnDeathLinkReceived += (deathLinkObject) => {
@@ -117,7 +117,7 @@ The DataStorage provides an interface based on keys and their scope. By assignin
 Assigning and reading values from the store can be done using simple assignments `=`:
 * `= session.DataStorage["Key"]`, read value from the data storage synchronously
 * `session.DataStorage["Key"] =`, write value to the data storage asynchronously
-  * Complex objects need to be stored and retrieved in the form of a `JObject`, therefor you must wrap them into a `JObject.FromObject()`
+* Complex objects need to be stored and retrieved in the form of a `JObject`, therefor you must wrap them into a `JObject.FromObject()`
 
 The DataStorage also provides methods to retrieve the value of a key asynchronously using `[key].GetAsync`. 
 To set the initial value of a key without overriding any existing value the `[key].Initialize` method can be used.
@@ -194,4 +194,71 @@ var obj = session.DataStorage["Anonymous"].To<JObject>(); //Retrieve value for `
 var number = (int)obj["Number"]; //Get value for anonymous object key `Number`
 var text = (string)obj["Text"]; //Get value for anonymous object key `Text`
 
+```
+
+### Message Logging
+
+The Archipelago server can send messages to client to be displayed on screen as sort of a log, this is done by handling the `PrintPacket` and `PrintJsonPacket` packets. This library simplifies this process into a single handler for you to handle both kinds of messages.
+```csharp
+var session = ArchipelagoSessionFactory.CreateSession("localhost", 38281);
+session.MessageLog.OnMessageReceived += OnMessageReceived;
+session.TryConnectAndLogin("Timespinner", "Jarno", new Version(0,3,5));
+
+static void OnMessageReceived(LogMessage message)
+{
+	DisplayOnScreen(message.ToString());
+}
+```
+
+In some cased you might want extra information that is provided by the server in such cases you can use type checking
+
+```csharp
+static void OnMessageReceived(LogMessage message)
+{
+	switch (message)
+	{
+		case ItemSendLogMessage itemSendLogMessage: 
+			var receiver = itemSendLogMessage.ReceivingPlayerSlot;
+
+			var sender = itemSendLogMessage.SendingPlayerSlot;
+			var networkItem = itemSendLogMessage.Item;
+			break;
+		case ItemHintLogMessage hintLogMessage:
+			var receiver = itemSendLogMessage.ReceivingPlayerSlot;
+
+			var sender = itemSendLogMessage.SendingPlayerSlot;
+			var networkItem = itemSendLogMessage.Item;
+			var found = hintLogMessage.IsFound;
+			break;
+	}
+	DisplayOnScreen(message.ToString());
+}
+```
+
+If you want more control over how the message is displayed, like for example you might want to color certain parts of the message,
+Then you can use the `Parts` property. This returns each part of the message in order of appearnce with the `Text` to be displayed and also the `Color` it would normally be diplayed in.
+If `IsBackgroundColor` is true, then the color should be applied to the message background instead.
+The MessagePart message can also contain additional information that can be retrieved by type checking.
+
+
+```csharp
+foreach (part in message.Parts)
+{
+	switch (part)
+	{
+		case ItemMessagePart itemMessagePart: 
+			var itemId = itemMessagePart.ItemId;
+			var flags = itemMessagePart.Flags;
+			break;
+		case LocationMessagePart locationMessagePart:
+			var locationId = locationMessagePart.LocationId;
+			break;
+		case PlayerMessagePart playerMessagePart:
+			var slotId = playerMessagePart.SlotId;
+			var isCurrentPlayer = playerMessagePart.IsActivePlayer;
+			break;
+	}
+
+	DisplayOnScreen(part.Text, part.Color, part.IsBackgroundColor);
+}
 ```

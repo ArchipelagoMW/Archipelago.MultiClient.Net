@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using Archipelago.MultiClient.Net.Enums;
+﻿using Archipelago.MultiClient.Net.Enums;
 #if USE_OCULUS_NEWTONSOFT
 using Oculus.Newtonsoft.Json.Linq;
 using Oculus.Newtonsoft.Json;
@@ -19,6 +18,7 @@ namespace Archipelago.MultiClient.Net.Models
         [JsonProperty("type")]
         public SlotType Type { get; set; }
         [JsonProperty("group_members")]
-        public List<int> GroupMembers { get; set; }
+
+        public int[] GroupMembers { get; set; }
     }
 }

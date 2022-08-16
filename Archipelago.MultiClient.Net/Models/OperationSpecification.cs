@@ -61,14 +61,14 @@ namespace Archipelago.MultiClient.Net.Models
 
         public static OperationSpecification LeftShift(long i) =>
 #if USE_OCULUS_NEWTONSOFT
-            new OperationSpecification { Operation = Operation.LeftShift.ToString(), Value = i };
+            new OperationSpecification { Operation = "left_shift", Value = i };
 #else
             new OperationSpecification { Operation = Operation.LeftShift, Value = i };
 #endif
 
         public static OperationSpecification RightShift(long i) =>
 #if USE_OCULUS_NEWTONSOFT
-            new OperationSpecification { Operation = Operation.RightShift.ToString(), Value = i };
+            new OperationSpecification { Operation = "right_shift", Value = i };
 #else
             new OperationSpecification { Operation = Operation.RightShift, Value = i };
 #endif

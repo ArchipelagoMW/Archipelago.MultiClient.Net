@@ -12,7 +12,7 @@ namespace Archipelago.MultiClient.Net.Packets
     {
         public override ArchipelagoPacketType PacketType => ArchipelagoPacketType.GetDataPackage;
 
-        [JsonProperty("exclusions")]
-        public string[] Exclusions { get; set; }
+        [JsonProperty("games")]
+        public string[] Games { get; set; }
     }
 }

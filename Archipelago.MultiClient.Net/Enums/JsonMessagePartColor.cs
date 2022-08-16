@@ -17,7 +17,7 @@
         GreenBg,
         YellowBg,
         BlueBg,
-        PurpleBg,
+        MagentaBg,
         CyanBg,
         WhiteBg
     }
