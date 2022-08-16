@@ -2,9 +2,9 @@ name: Build Solution
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, V4_development ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, V4_development ]
 
 jobs:
   build:
@@ -16,7 +16,7 @@ jobs:
     
     - uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: '3.1.x'
+        dotnet-version: '6.0.x'
     
     - name: setup-msbuild
       uses: microsoft/setup-msbuild@v1.1
@@ -30,8 +30,14 @@ jobs:
     - name: Build Library
       run: msbuild Archipelago.MultiClient.Net.sln /property:Configuration=Release
       
-    - name: Run Tests
-      run: dotnet test Archipelago.MultiClient.Net.Tests/bin/Release/Archipelago.MultiClient.Net.Tests.dll -l "trx;LogFileName=TestResults.trx"
+    - name: Run Tests (.net 3.5)
+      run: dotnet test Archipelago.MultiClient.Net.Tests/bin/Release/net471/Archipelago.MultiClient.Net.Tests.dll -l "trx;LogFileName=TestResults_net35.trx"
+
+    - name: Run Tests (.net 4.0)
+      run: dotnet test Archipelago.MultiClient.Net.Tests/bin/Release/net472/Archipelago.MultiClient.Net.Tests.dll -l "trx;LogFileName=TestResults_net40.trx"
+
+    - name: Run Tests (.net standard 2.0)
+      run: dotnet test Archipelago.MultiClient.Net.Tests/bin/Release/net48/Archipelago.MultiClient.Net.Tests.dll -l "trx;LogFileName=TestResults_standard20.trx"
        
     - name: Upload Test Results
       uses: actions/upload-artifact@v2.3.1

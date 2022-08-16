@@ -1,5 +1,6 @@
 ﻿using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Packets;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -8,6 +9,19 @@ namespace Archipelago.MultiClient.Net
     public abstract class LoginResult
     {
         public abstract bool Successful { get; }
+
+        public static LoginResult FromPacket(ArchipelagoPacketBase packet)
+        {
+            switch (packet)
+            {
+                case ConnectedPacket connectedPacket:
+                    return new LoginSuccessful(connectedPacket);
+                case ConnectionRefusedPacket connectionRefusedPacket:
+                    return new LoginFailure(connectionRefusedPacket);
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(packet), "packet is not a connection result packet");
+            }
+        }
     }
 
     public class LoginSuccessful : LoginResult

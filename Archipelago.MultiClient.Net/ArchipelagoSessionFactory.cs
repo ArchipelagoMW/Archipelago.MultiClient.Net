@@ -14,7 +14,7 @@ namespace Archipelago.MultiClient.Net
         /// </param>
         public static ArchipelagoSession CreateSession(Uri uri)
         {
-            var socket = new ArchipelagoSocketHelper(uri.ToString());
+            var socket = new ArchipelagoSocketHelper(uri);
             var dataPackageCache = new DataPackageFileSystemCache(socket);
             var locations = new LocationCheckHelper(socket, dataPackageCache);
             var items = new ReceivedItemsHelper(socket, locations, dataPackageCache);
@@ -22,8 +22,9 @@ namespace Archipelago.MultiClient.Net
             var roomState = new RoomStateHelper(socket);
             var connectionInfo = new ConnectionInfoHelper(socket);
             var dataStorage = new DataStorageHelper(socket, connectionInfo);
+            var messageLog = new MessageLogHelper(socket, items, locations, players, connectionInfo);
 
-            return new ArchipelagoSession(socket, items, locations, players, roomState, connectionInfo, dataStorage);
+            return new ArchipelagoSession(socket, items, locations, players, roomState, connectionInfo, dataStorage, messageLog);
         }
 
         /// <summary>
