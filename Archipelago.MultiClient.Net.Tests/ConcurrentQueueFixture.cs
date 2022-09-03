@@ -5,7 +5,7 @@ using NUnit.Framework;
 namespace Archipelago.MultiClient.Net.Tests
 {
     [TestFixture]
-    public class ConcurrentCollectionsFixture
+    public class ConcurrentQueueFixture
     {
         [Test]
         public void ConcurrentQueue_EnqueueSingleItem_ItemIsEnqueued()

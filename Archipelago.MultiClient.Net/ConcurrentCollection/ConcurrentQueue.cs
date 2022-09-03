@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Archipelago.MultiClient.Net.ConcurrentCollection
 {
-    class ConcurrentQueue<T>
+    internal class ConcurrentQueue<T>
     {
         public int Count => queue.Count;
 
