@@ -5,6 +5,8 @@ namespace Archipelago.MultiClient.Net.ConcurrentCollection
 {
     class ConcurrentQueue<T>
     {
+        public int Count => queue.Count;
+
         private readonly Queue<T> queue = new Queue<T>();
 
         private readonly object lockObject = new object();
@@ -24,6 +26,12 @@ namespace Archipelago.MultiClient.Net.ConcurrentCollection
         {
             lock (lockObject)
             {
+                if (IsEmpty)
+                {
+                    item = default;
+                    return false;
+                }
+
                 item = queue.Peek();
                 return true;
             }
@@ -33,6 +41,12 @@ namespace Archipelago.MultiClient.Net.ConcurrentCollection
         {
             lock (lockObject)
             {
+                if (IsEmpty)
+                {
+                    item = default;
+                    return false;
+                }
+
                 item = queue.Dequeue();
                 return true;
             }
