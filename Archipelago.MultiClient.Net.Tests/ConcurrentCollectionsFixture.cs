@@ -1,11 +1,8 @@
-﻿using Archipelago.MultiClient.Net.ConcurrentCollection;
+﻿#if NET471
+using Archipelago.MultiClient.Net.ConcurrentCollection;
 using NUnit.Framework;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
-namespace Archipelago.MultiClient.Net35.Tests
+namespace Archipelago.MultiClient.Net.Tests
 {
     [TestFixture]
     public class ConcurrentCollectionsFixture
@@ -28,3 +25,4 @@ namespace Archipelago.MultiClient.Net35.Tests
         }
     }
 }
+#endif
