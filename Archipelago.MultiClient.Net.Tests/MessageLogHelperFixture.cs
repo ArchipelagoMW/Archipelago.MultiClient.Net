@@ -2,10 +2,10 @@
 using Archipelago.MultiClient.Net.Helpers;
 using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
+using Archipelago.MultiClient.Net.Colors;
 using NSubstitute;
 using NUnit.Framework;
 using System.Collections.Generic;
-using System.Drawing;
 
 namespace Archipelago.MultiClient.Net.Tests
 {
