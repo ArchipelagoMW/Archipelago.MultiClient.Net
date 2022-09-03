@@ -15,7 +15,7 @@ namespace Archipelago.MultiClient.Net.ConcurrentCollection
             {
                 lock (lockObject)
                 {
-                    return queue.Count > 0;
+                    return queue.Count == 0;
                 }
             }
         }
