@@ -1,8 +1,8 @@
 ﻿using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
+using Archipelago.MultiClient.Net.Colors;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 using System.Text;
 
