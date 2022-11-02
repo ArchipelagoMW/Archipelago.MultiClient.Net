@@ -2,9 +2,9 @@
 
 A client library for use with .NET based applications for interfacing with Archipelago hosts. This client conforms with the latest stable [Archipelago Network Protocol Specification](https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md).
 
-## Documentation
+# Documentation
 
-### Create Session Instance
+## Create Session Instance
 
 ```csharp
 var session = ArchipelagoSessionFactory.CreateSession("localhost", 38281);
@@ -14,9 +14,9 @@ var session = ArchipelagoSessionFactory.CreateSession("localhost", 38281);
 var session = ArchipelagoSessionFactory.CreateSession(new Uri("ws://localhost:38281"));
 ```
 
-The freshly created `ArchipelagoSession` object is the entrypoint for all incomming and outgoing interactions with the server. Keep it in scope for at least the lifetime of the connection. If the room changes ports, or the user needs to connect to a different room, then a new session needs to be created at the new host and port.
+The freshly created `ArchipelagoSession` object is the entrypoint for all incoming and outgoing interactions with the server. Keep it in scope for at least the lifetime of the connection. If the room changes ports, or the user needs to connect to a different room, then a new session needs to be created at the new host and port.
 
-### Connect to Room
+## Connect to Room
 
 Connect to a server at a specific room slot using the following method:
 
@@ -52,11 +52,11 @@ LoginResult result = session.TryConnectAndLogin("Risk of Rain 2", "Ijwu", new Ve
 
 Would attempt to connect to a password-less room at the slot `Ijwu`, and report the game `Risk of Rain 2` with a minimum apworld version of `v2.1.0`.
 
-Once connected you have access to a suite of helper objects which provide an interface for sending/receiving information with the server.
+Once connected, you have access to a suite of helper objects which provide an interface for sending/receiving information with the server.
 
 ## Asynchronous Connection and Error Handling
 
-Note that `TryConnectAndLogin` issues an outgoing websocket connection attempt which can block the curretn thread for up to multiple seconds. If the client is implemented via code-injection (e.g. harmony), the best practice is to handle large network operations in a separate thread to avoid game from hitching/freezing. For example:
+Note that `TryConnectAndLogin` issues an outgoing websocket connection attempt which can block the current thread for up to multiple seconds. If the client is implemented via code-injection (e.g. harmony), the best practice is to handle large network operations in a separate thread to prevent the game from hitching/freezing. For example:
 
 ```csharp
 public static void ConnectAsync(string server, string user, string pass)
