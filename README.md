@@ -143,16 +143,16 @@ session.Locations.CompleteLocationChecks(3);
 
 The location ID used is of that defined in the AP world.
 
-### Locaiton ID <--> Name
+### Location ID <--> Name
 
 ```csharp
 string locationName = session.Locations.GetLocationNameFromId(42) ?? $"Location: {locationId}";
 long locationId = session.Locations.GetLocationIdFromName(locationName);
 ```
 
-### Sout Location Checks
+### Scout Location Checks
 
-Souting means asking the server what is stored in a specific location *without* collecting it:
+Scouting means asking the server what is stored in a specific location *without* collecting it:
 
 ```csharp
 session.Locations.ScoutLocationsAsync(locationInfoPacket => Console.WriteLine(locationInfoPacket.Locations.Count));
@@ -175,9 +175,9 @@ foreach(NetworkItem item in session.Items.AllItemsReceived)
 {
     long itemId = item.Item;
 }
-``` 
+```
 
-*Note: The list of received items will never shrink and the collection is garunteed to be in the order that the server sent the items. Because of this, it is safe to assume that if the size of this collection has changed it's because new items were received and appended to the end of the collection.*
+*Note: The list of received items will never shrink and the collection is guaranteed to be in the order that the server sent the items. Because of this, it is safe to assume that if the size of this collection has changed it's because new items were received and appended to the end of the collection.*
 
 ### Received Item Callback Handler (Asynchronous)
 
