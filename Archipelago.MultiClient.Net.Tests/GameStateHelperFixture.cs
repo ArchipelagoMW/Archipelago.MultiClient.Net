@@ -1,6 +1,7 @@
 ﻿using Archipelago.MultiClient.Net.Converters;
 using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Helpers;
+using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
 using NSubstitute;
 using NUnit.Framework;
@@ -153,7 +154,7 @@ namespace Archipelago.MultiClient.Net.Tests
                 // Version
                 new RoomStateHelperTest<Version>(
                     "Should_read_version",
-                    new RoomInfoPacket { Version = new Version(1, 2, 3) },
+                    new RoomInfoPacket { Version = new NetworkVersion(1, 2, 3) },
                     s => s.Version, new Version(1, 2, 3)),
 
                 // Seed

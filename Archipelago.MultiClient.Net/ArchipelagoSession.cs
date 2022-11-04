@@ -1,6 +1,7 @@
 ﻿using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Exceptions;
 using Archipelago.MultiClient.Net.Helpers;
+using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
 using System;
 using System.Threading;
@@ -147,7 +148,7 @@ namespace Archipelago.MultiClient.Net
                     Password = password,
                     Tags = ConnectionInfo.Tags,
                     Uuid = ConnectionInfo.Uuid,
-                    Version = version ?? new Version(0,3,3),
+                    Version = version != null ? new NetworkVersion(version) : new NetworkVersion(0,3,3),
                     ItemsHandling = ConnectionInfo.ItemsHandlingFlags
                 });
             }
@@ -215,7 +216,7 @@ namespace Archipelago.MultiClient.Net
                     Password = password,
                     Tags = ConnectionInfo.Tags,
                     Uuid = ConnectionInfo.Uuid,
-                    Version = version ?? new Version(0,3,3),
+                    Version = version != null ? new NetworkVersion(version) : new NetworkVersion(0,3,3),
                     ItemsHandling = ConnectionInfo.ItemsHandlingFlags
                 });
 

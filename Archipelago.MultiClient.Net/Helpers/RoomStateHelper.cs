@@ -81,7 +81,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         {
             HintCost = packet.HintCost;
             LocationCheckPoints = packet.LocationCheckPoints;
-            Version = packet.Version;
+            Version = packet.Version?.ToVersion();
             HasPassword = packet.Password;
             Seed = packet.SeedName;
             RoomInfoSendTime = UnixTimeConverter.UnixTimeStampToDateTime(packet.Timestamp);

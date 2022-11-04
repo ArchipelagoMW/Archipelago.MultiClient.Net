@@ -1,7 +1,6 @@
-﻿using Archipelago.MultiClient.Net.Converters;
-using Archipelago.MultiClient.Net.Enums;
+﻿using Archipelago.MultiClient.Net.Enums;
+using Archipelago.MultiClient.Net.Models;
 using Newtonsoft.Json;
-using System;
 
 namespace Archipelago.MultiClient.Net.Packets
 {
@@ -22,8 +21,7 @@ namespace Archipelago.MultiClient.Net.Packets
         public string Uuid { get; set; }
 
         [JsonProperty("version")]
-        [JsonConverter(typeof(NamedTupleInterchangeConverter))]
-        public Version Version { get; set; }
+        public NetworkVersion Version { get; set; }
 
         [JsonProperty("tags")]
         public string[] Tags { get; set; }
