@@ -6,10 +6,10 @@ namespace Archipelago.MultiClient.Net.Converters
 {
     public class PermissionsEnumConverter : JsonConverter
     {
-        public override bool CanConvert(Type objectType)
-        {
-            return objectType == typeof(string) || objectType == typeof(Permissions) || objectType == typeof(int);
-        }
+        public override bool CanConvert(Type objectType) => 
+	        objectType == typeof(string) 
+	        || objectType == typeof(Permissions) 
+	        || objectType == typeof(int);
 
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
@@ -17,26 +17,18 @@ namespace Archipelago.MultiClient.Net.Converters
             var isInt = int.TryParse(value, out var intValue);
 
             if (isInt)
-            {
                 return (Permissions)intValue;
-            }
 
             var returnValue = Permissions.Disabled;
 
             if (value.Contains("enabled"))
-            {
                 returnValue |= Permissions.Enabled;
-            }
 
             if (value.Contains("auto"))
-            {
                 returnValue |= Permissions.Auto;
-            }
 
             if (value.Contains("goal"))
-            {
                 returnValue |= Permissions.Goal;
-            }
 
             return returnValue;
         }

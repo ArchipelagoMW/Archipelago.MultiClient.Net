@@ -19,9 +19,6 @@ namespace Archipelago.MultiClient.Net.Converters
             return UtcEpoch.AddSeconds(unixTimeStamp);
         }
 
-        public static double ToUnixTimeStamp(this DateTime dateTime)
-        {
-            return (dateTime - UtcEpoch).TotalMilliseconds / 1000;
-        }
+        public static double ToUnixTimeStamp(this DateTime dateTime) => (dateTime - UtcEpoch).TotalMilliseconds / 1000;
     }
 }

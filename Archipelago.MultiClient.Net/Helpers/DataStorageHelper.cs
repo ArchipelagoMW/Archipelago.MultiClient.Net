@@ -70,9 +70,7 @@ namespace Archipelago.MultiClient.Net.Helpers
                     }
 
                     if (onValueChangedEventHandlers.TryGetValue(setReplyPacket.Key, out var handler))
-                    {
                         handler(setReplyPacket.OriginalValue, setReplyPacket.Value);
-                    }
                     break;
             }
         }
@@ -107,13 +105,9 @@ namespace Archipelago.MultiClient.Net.Helpers
         private void GetAsync(string key, Action<JToken> callback)
         {
             if (!asyncRetrievalCallbacks.ContainsKey(key))
-            {
                 asyncRetrievalCallbacks[key] = callback;
-            }
             else
-            {
                 asyncRetrievalCallbacks[key] += callback;
-            }
 
             socket.SendPacketAsync(new GetPacket { Keys = new[] { key } });
         }
@@ -137,17 +131,15 @@ namespace Archipelago.MultiClient.Net.Helpers
         }
 #endif
 
-        private void Initialize(string key, JToken value)
-        {
-            socket.SendPacketAsync(new SetPacket
-            {
-                Key = key,
-                DefaultValue = value,
-                Operations = new[] {
-                    new OperationSpecification { Operation = Operation.Default }
-                }
-            });
-        }
+        private void Initialize(string key, JToken value) =>
+	        socket.SendPacketAsync(new SetPacket
+	        {
+		        Key = key,
+		        DefaultValue = value,
+		        Operations = new[] {
+			        new OperationSpecification { Operation = Operation.Default }
+		        }
+	        });
 
         private JToken GetValue(string key)
         {
@@ -222,29 +214,23 @@ namespace Archipelago.MultiClient.Net.Helpers
             }
         }
 
-        private DataStorageElementContext GetContextForKey(string key)
-        {
-            return new DataStorageElementContext
-            {
-                Key = key,
-                GetData = GetValue,
-                GetAsync = GetAsync,
-                Initialize = Initialize,
-                AddHandler = AddHandler,
-                RemoveHandler = RemoveHandler
-            };
-        }
+        private DataStorageElementContext GetContextForKey(string key) =>
+	        new DataStorageElementContext
+	        {
+		        Key = key,
+		        GetData = GetValue,
+		        GetAsync = GetAsync,
+		        Initialize = Initialize,
+		        AddHandler = AddHandler,
+		        RemoveHandler = RemoveHandler
+	        };
 
         private void AddHandler(string key, DataStorageUpdatedHandler handler)
         {
             if (onValueChangedEventHandlers.ContainsKey(key))
-            {
                 onValueChangedEventHandlers[key] += handler;
-            }
             else
-            {
                 onValueChangedEventHandlers[key] = handler;
-            }
 
             socket.SendPacketAsync(new SetNotifyPacket { Keys = new[] { key } });
         }
@@ -256,9 +242,7 @@ namespace Archipelago.MultiClient.Net.Helpers
                 onValueChangedEventHandlers[key] -= handler;
 
                 if (onValueChangedEventHandlers[key] == null)
-                {
                     onValueChangedEventHandlers.Remove(key);
-                }
             }
         }
 

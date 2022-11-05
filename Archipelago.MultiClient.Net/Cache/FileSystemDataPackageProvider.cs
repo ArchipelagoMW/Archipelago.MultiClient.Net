@@ -33,7 +33,7 @@ namespace Archipelago.MultiClient.Net.Cache
                 {
                     if (File.Exists(filePath))
                     {
-                        string fileText = File.ReadAllText(filePath);
+                        var fileText = File.ReadAllText(filePath);
                         gameData = JsonConvert.DeserializeObject<GameData>(fileText);
                         return gameData != null;
                     }
@@ -56,7 +56,7 @@ namespace Archipelago.MultiClient.Net.Cache
             {
                 try
                 {
-                    string contents = JsonConvert.SerializeObject(gameData);
+                    var contents = JsonConvert.SerializeObject(gameData);
                     File.WriteAllText(GetFilePath(game), contents);
                 }
                 catch
@@ -68,12 +68,10 @@ namespace Archipelago.MultiClient.Net.Cache
 
         private string GetFileSystemSafeFileName(string gameName)
         {
-            string safeName = gameName;
+            var safeName = gameName;
 
-            foreach (char c in Path.GetInvalidFileNameChars())
-            {
+            foreach (var c in Path.GetInvalidFileNameChars())
                 gameName = gameName.Replace(c, '_');
-            }
 
             return safeName;
         }
@@ -83,9 +81,7 @@ namespace Archipelago.MultiClient.Net.Cache
             lock (fileAccessLockObjectsLock)
             {
                 if (fileAccessLockObjects.TryGetValue(game, out var lockObject))
-                {
                     return lockObject;
-                }
 
                 return fileAccessLockObjects[game] = new object();
             }

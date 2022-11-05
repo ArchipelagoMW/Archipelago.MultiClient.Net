@@ -252,9 +252,7 @@ namespace Archipelago.MultiClient.Net
             catch (AggregateException e)
             {
                 if (e.GetBaseException() is OperationCanceledException)
-                {
                     return new LoginFailure("Connection timed out.");
-                }
 
                 return new LoginFailure(e.GetBaseException().Message);
             }

@@ -1,7 +1,6 @@
 ﻿using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
-using Archipelago.MultiClient.Net.Colors;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -33,9 +32,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         private void Socket_PacketReceived(ArchipelagoPacketBase packet)
         {
             if (OnMessageReceived == null)
-            {
                 return;
-            }
 
             switch (packet)
             {
@@ -48,10 +45,8 @@ namespace Archipelago.MultiClient.Net.Helpers
             }
         }
 
-        private static PrintJsonPacket ToPrintJson(PrintPacket printPacket)
-        {
-            return new PrintJsonPacket { Data = new [] { new JsonMessagePart { Text = printPacket.Text } } };
-        }
+        private static PrintJsonPacket ToPrintJson(PrintPacket printPacket) => 
+	        new PrintJsonPacket { Data = new [] { new JsonMessagePart { Text = printPacket.Text } } };
 
         private void TriggerOnMessageReceived(PrintJsonPacket printJsonPacket)
         {
@@ -78,23 +73,20 @@ namespace Archipelago.MultiClient.Net.Helpers
                 }
 
                 if (OnMessageReceived != null)
-                {
                     OnMessageReceived(message);
-                }
             }
         }
 
         private IEnumerable<PrintJsonPacket> SplitPacketsPerLine(PrintJsonPacket printJsonPacket)
         {
-            List<PrintJsonPacket> packetsPerLine = new List<PrintJsonPacket>();
-
-            List<JsonMessagePart> messageParts = new List<JsonMessagePart>();
+            var packetsPerLine = new List<PrintJsonPacket>();
+            var messageParts = new List<JsonMessagePart>();
 
             foreach (var part in printJsonPacket.Data)
             {
                 var lines = part.Text.Split('\n');
 
-                for (int i = 0; i < lines.Length; i++)
+                for (var i = 0; i < lines.Length; i++)
                 {
                     var line = lines[i];
 
@@ -152,10 +144,8 @@ namespace Archipelago.MultiClient.Net.Helpers
             }
         }
 
-        internal MessagePart[] GetParsedData(PrintJsonPacket packet)
-        {
-            return packet.Data.Select(GetMessagePart).ToArray();
-        }
+        internal MessagePart[] GetParsedData(PrintJsonPacket packet) => 
+	        packet.Data.Select(GetMessagePart).ToArray();
 
         private MessagePart GetMessagePart(JsonMessagePart part)
         {
@@ -190,16 +180,12 @@ namespace Archipelago.MultiClient.Net.Helpers
         public override string ToString()
         {
             if (Parts.Length == 1)
-            {
                 return Parts[0].Text;
-            }
 
             var builder = new StringBuilder(Parts.Length);
 
             foreach (var part in Parts)
-            {
                 builder.Append(part.Text);
-            }
 
             return builder.ToString();
         }
@@ -299,10 +285,7 @@ namespace Archipelago.MultiClient.Net.Helpers
             }
         }
 
-        public override string ToString()
-        {
-            return Text;
-        }
+        public override string ToString() => Text;
     }
     
     public class ItemMessagePart : MessagePart
@@ -331,29 +314,21 @@ namespace Archipelago.MultiClient.Net.Helpers
         private static Color GetColor(ItemFlags flags)
         {
             if (HasFlag(flags, ItemFlags.Advancement))
-            {
                 return Color.Plum;
-            }
             if (HasFlag(flags, ItemFlags.NeverExclude))
-            {
                 return Color.SlateBlue;
-            }
             if (HasFlag(flags, ItemFlags.Trap))
-            {
                 return Color.Salmon;
-            }
 
             return Color.Cyan;
         }
 
-        private static bool HasFlag(ItemFlags flags, ItemFlags flag)
-        {
+        private static bool HasFlag(ItemFlags flags, ItemFlags flag) =>
 #if NET35
-            return (flags & flag) > 0;
+            (flags & flag) > 0;
 #else
-            return flags.HasFlag(flag);
+            flags.HasFlag(flag);
 #endif
-        }
     }
 
     public class PlayerMessagePart : MessagePart
@@ -383,9 +358,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         private static Color GetColor(bool isActivePlayer)
         {
             if (isActivePlayer)
-            {
                 return Color.Magenta;
-            }
 
             return Color.Yellow;
         }

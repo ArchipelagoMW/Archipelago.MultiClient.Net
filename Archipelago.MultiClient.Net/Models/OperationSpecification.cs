@@ -4,7 +4,6 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
-using System;
 
 namespace Archipelago.MultiClient.Net.Models
 {
@@ -17,10 +16,7 @@ namespace Archipelago.MultiClient.Net.Models
         [JsonProperty("value")]
         public JToken Value { get; set; }
 
-        public override string ToString()
-        {
-            return $"{Operation}: {Value}";
-        }
+        public override string ToString() => $"{Operation}: {Value}";
     }
 
     public class Bitwise

@@ -46,17 +46,13 @@ namespace Archipelago.MultiClient.Net.Converters
             var token = JObject.Load(reader);
 
             var commandType = token["cmd"].ToString();
-            ArchipelagoPacketType packetType = (ArchipelagoPacketType)Enum.Parse(typeof(ArchipelagoPacketType), commandType);
+            var packetType = (ArchipelagoPacketType)Enum.Parse(typeof(ArchipelagoPacketType), commandType);
             
             ArchipelagoPacketBase ret = null;
             if (PacketDeserializationMap.ContainsKey(packetType))
-            {
                 ret = PacketDeserializationMap[packetType](token);
-            }
             else
-            {
                 throw new InvalidOperationException("Received an unknown packet.");
-            }
 
             return ret;
         }
@@ -101,9 +97,6 @@ namespace Archipelago.MultiClient.Net.Converters
         }
 #endif
 
-        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
-        {
-            throw new NotImplementedException();
-        }
+        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer) => throw new NotImplementedException();
     }
 }

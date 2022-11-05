@@ -51,10 +51,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// <returns>
         ///     True if the queue is not empty, otherwise false.
         /// </returns>
-        public bool Any()
-        {
-            return !itemQueue.IsEmpty;
-        }
+        public bool Any() => !itemQueue.IsEmpty;
 
         /// <summary>
         ///     Peek the next item on the queue to be handled. 
@@ -114,16 +111,15 @@ namespace Archipelago.MultiClient.Net.Helpers
         public string GetItemName(long id)
         {
             if (itemLookupCache.TryGetValue(id, out var name))
-            {
                 return name;
-            }
 
             if (!dataPackageCache.TryGetDataPackageFromCache(out var dataPackage))
-            {
                 return null;
-            }
             
-            itemLookupCache = dataPackage.Games.Select(x => x.Value).SelectMany(x => x.ItemLookup).ToDictionary(x => x.Value, x => x.Key);
+            itemLookupCache = dataPackage.Games
+	            .Select(x => x.Value)
+	            .SelectMany(x => x.ItemLookup)
+	            .ToDictionary(x => x.Value, x => x.Key);
 
             return itemLookupCache.TryGetValue(id, out var itemName)
                 ? itemName
@@ -156,10 +152,7 @@ namespace Archipelago.MultiClient.Net.Helpers
                         allItemsReceived.Add(item);
                         itemQueue.Enqueue(item);
 
-                        if (ItemReceived != null)
-                        {
-                            ItemReceived(this);
-                        }
+                        ItemReceived?.Invoke(this);
                     }
                     break;
                 }
@@ -183,9 +176,7 @@ namespace Archipelago.MultiClient.Net.Helpers
                 allItemsReceived.Add(item);
 
                 if (ItemReceived != null && !previouslyReceived.Contains(item))
-                {
                     ItemReceived(this);
-                }
             }
         }
     }

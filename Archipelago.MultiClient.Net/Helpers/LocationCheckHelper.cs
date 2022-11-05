@@ -82,9 +82,7 @@ namespace Archipelago.MultiClient.Net.Helpers
                     if (awaitingLocationInfoPacket)
                     {
                         if (locationInfoPacketCallback != null)
-                        {
                             locationInfoPacketCallback(locationInfoPacket);
-                        }
 
                         awaitingLocationInfoPacket = false;
                         locationInfoPacketCallback = null;
@@ -104,9 +102,7 @@ namespace Archipelago.MultiClient.Net.Helpers
                     if (awaitingLocationInfoPacket)
                     {
                         if (locationInfoPacketCallbackTask != null)
-                        {
                             locationInfoPacketCallbackTask.SetResult(locationInfoPacket);
-                        }
 
                         awaitingLocationInfoPacket = false;
                         locationInfoPacketCallbackTask = null;
@@ -246,11 +242,9 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// <exception cref="T:Archipelago.MultiClient.Net.Exceptions.ArchipelagoSocketClosedException">
         ///     The websocket connection is not alive.
         /// </exception>
-        public void ScoutLocationsAsync(Action<LocationInfoPacket> callback = null, params long[] ids)
-        {
-            // Maintain backwards compatibility if createAsHint parameter is not specified.
-            ScoutLocationsAsync(callback, false, ids);
-        }
+        public void ScoutLocationsAsync(Action<LocationInfoPacket> callback = null, params long[] ids) =>
+	        // Maintain backwards compatibility if createAsHint parameter is not specified.
+	        ScoutLocationsAsync(callback, false, ids);
 #else
         /// <summary>
         ///     Ask the server for the items which are present in the provided location ids.
@@ -319,14 +313,12 @@ namespace Archipelago.MultiClient.Net.Helpers
         public long GetLocationIdFromName(string game, string locationName)
         {
             if (!cache.TryGetDataPackageFromCache(out var dataPackage))
-            {
                 return -1;
-            }
 
             if (gameLocationNameToIdMapping == null)
-            {
-                gameLocationNameToIdMapping = dataPackage.Games.ToDictionary(x => x.Key, x => x.Value.LocationLookup.ToDictionary(y => y.Key, y => y.Value));
-            }
+                gameLocationNameToIdMapping = dataPackage.Games.ToDictionary(
+	                x => x.Key, x => x.Value.LocationLookup.ToDictionary(
+		                y => y.Key, y => y.Value));
 
             return gameLocationNameToIdMapping.TryGetValue(game, out var locationNameToIdLookup)
                 ? locationNameToIdLookup.TryGetValue(locationName, out var locationId)
@@ -347,14 +339,13 @@ namespace Archipelago.MultiClient.Net.Helpers
         public string GetLocationNameFromId(long locationId)
         {
             if (!cache.TryGetDataPackageFromCache(out var dataPackage))
-            {
                 return null;
-            }
 
             if (locationIdToNameMapping == null)
-            {
-                locationIdToNameMapping = dataPackage.Games.Select(x => x.Value).SelectMany(x => x.LocationLookup).ToDictionary(x => x.Value, x => x.Key);
-            }
+                locationIdToNameMapping = dataPackage.Games
+	                .Select(x => x.Value)
+	                .SelectMany(x => x.LocationLookup)
+	                .ToDictionary(x => x.Value, x => x.Key);
 
             return locationIdToNameMapping.TryGetValue(locationId, out var locationName)
                 ? locationName
@@ -366,24 +357,20 @@ namespace Archipelago.MultiClient.Net.Helpers
             if (locationIds == null || !locationIds.Any())
                 return;
 
-            List<long> newLocations = new List<long>();
+            var newLocations = new List<long>();
 
-            foreach (long locationId in locationIds)
+            foreach (var locationId in locationIds)
             {
                 allLocations.TryAdd(locationId);
 
                 if (locationsChecked.TryAdd(locationId))
-                {
                     newLocations.Add(locationId);
-                }
             }
 
             missingLocations = allLocations.AsToReadOnlyCollectionExcept(locationsChecked);
 
             if (newLocations.Any())
-            {
                 CheckedLocationsUpdated?.Invoke(new ReadOnlyCollection<long>(newLocations));
-            }
         }
     }
 }

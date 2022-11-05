@@ -2,7 +2,6 @@
 using Archipelago.MultiClient.Net.Helpers;
 using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
-using Archipelago.MultiClient.Net.Colors;
 using NSubstitute;
 using NUnit.Framework;
 using System.Collections.Generic;
@@ -25,10 +24,7 @@ namespace Archipelago.MultiClient.Net.Tests
 
             string toStringResult = null;
 
-            sut.OnMessageReceived += (message) =>
-            {
-                toStringResult = message.ToString();
-            };
+            sut.OnMessageReceived += (message) => toStringResult = message.ToString();
 
             var printPacket = new PrintPacket {
                 Text = "Some message that really does not add value to the test at hand"
@@ -55,10 +51,7 @@ namespace Archipelago.MultiClient.Net.Tests
 
             string toStringResult = null;
 
-            sut.OnMessageReceived += (message) =>
-            {
-                toStringResult = message.ToString();
-            };
+            sut.OnMessageReceived += (message) => toStringResult = message.ToString();
 
             var packet = new PrintJsonPacket {
                 Data = new[] {
@@ -95,10 +88,7 @@ namespace Archipelago.MultiClient.Net.Tests
 
             MessagePart[] parts = null;
 
-            sut.OnMessageReceived += (message) =>
-            {
-                parts = message.Parts;
-            };
+            sut.OnMessageReceived += (message) => parts = message.Parts;
 
             var printPacket = new PrintPacket { Text = "Some message that really does not add value to the test at hand" };
 
@@ -127,10 +117,7 @@ namespace Archipelago.MultiClient.Net.Tests
 
             MessagePart[] parts = null;
 
-            sut.OnMessageReceived += (message) =>
-            {
-                parts = message.Parts;
-            };
+            sut.OnMessageReceived += (message) => parts = message.Parts;
 
             var packet = new PrintJsonPacket {
                 Data = new[] {
@@ -218,10 +205,7 @@ namespace Archipelago.MultiClient.Net.Tests
 
             MessagePart[] parts = null;
 
-            sut.OnMessageReceived += (message) =>
-            {
-                parts = message.Parts;
-            };
+            sut.OnMessageReceived += (message) => parts = message.Parts;
 
             var packet = new PrintJsonPacket {
                 Data = new[] { new JsonMessagePart { Type = JsonMessagePartType.PlayerId, Text = "4" } }
@@ -257,10 +241,7 @@ namespace Archipelago.MultiClient.Net.Tests
 
             MessagePart[] parts = null;
 
-            sut.OnMessageReceived += (message) =>
-            {
-                parts = message.Parts;
-            };
+            sut.OnMessageReceived += (message) => parts = message.Parts;
 
             var packet = new PrintJsonPacket {
                 Data = new[] {
@@ -295,10 +276,7 @@ namespace Archipelago.MultiClient.Net.Tests
 
             ItemSendLogMessage logMessage = null;
 
-            sut.OnMessageReceived += (message) =>
-            {
-                logMessage = message as ItemSendLogMessage;
-            };
+            sut.OnMessageReceived += (message) => logMessage = message as ItemSendLogMessage;
 
             var packet = new ItemPrintJsonPacket {
                 Data = new[] { new JsonMessagePart { Text = "" } },
@@ -330,10 +308,7 @@ namespace Archipelago.MultiClient.Net.Tests
 
             HintItemSendLogMessage logMessage = null;
 
-            sut.OnMessageReceived += (message) =>
-            {
-                logMessage = message as HintItemSendLogMessage;
-            };
+            sut.OnMessageReceived += (message) => logMessage = message as HintItemSendLogMessage;
 
             var packet = new HintPrintJsonPacket {
                 Data = new[] { new JsonMessagePart { Text = "" } },
@@ -365,10 +340,7 @@ namespace Archipelago.MultiClient.Net.Tests
 
             List<LogMessage> logMessage = new List<LogMessage>(6);
 
-            sut.OnMessageReceived += (message) =>
-            {
-                logMessage.Add(message);
-            };
+            sut.OnMessageReceived += (message) => logMessage.Add(message);
 
             var packet = new PrintPacket {
                 Text =
@@ -399,10 +371,7 @@ namespace Archipelago.MultiClient.Net.Tests
 
             List<LogMessage> logMessage = new List<LogMessage>(3);
 
-            sut.OnMessageReceived += (message) =>
-            {
-                logMessage.Add(message);
-            };
+            sut.OnMessageReceived += (message) => logMessage.Add(message);
 
             var packet = new PrintJsonPacket {
                 Data = new[] {
@@ -447,10 +416,7 @@ namespace Archipelago.MultiClient.Net.Tests
 
             MessagePart[] parts = null;
 
-            sut.OnMessageReceived += (message) =>
-            {
-                parts = message.Parts;
-            };
+            sut.OnMessageReceived += (message) => parts = message.Parts;
 
             var packet = new PrintJsonPacket
             {

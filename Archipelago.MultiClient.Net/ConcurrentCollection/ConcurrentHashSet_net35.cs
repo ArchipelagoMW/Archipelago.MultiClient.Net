@@ -51,10 +51,7 @@ namespace Archipelago.MultiClient.Net.ConcurrentCollection
             }
         }
 
-        public ReadOnlyCollection<T> AsToReadOnlyCollection()
-        {
-            return new ReadOnlyCollection<T>(ToArray());
-        }
+        public ReadOnlyCollection<T> AsToReadOnlyCollection() => new ReadOnlyCollection<T>(ToArray());
 
         public ReadOnlyCollection<T> AsToReadOnlyCollectionExcept(IConcurrentHashSet<T> otherSet)
         {
@@ -63,12 +60,8 @@ namespace Archipelago.MultiClient.Net.ConcurrentCollection
                 var itemsToKeep = new List<T>(set.Count);
 
                 foreach (T item in set)
-                {
                     if (!otherSet.Contains(item))
-                    {
                         itemsToKeep.Add(item);
-                    }
-                }
 
                 return new ReadOnlyCollection<T>(itemsToKeep);
             }

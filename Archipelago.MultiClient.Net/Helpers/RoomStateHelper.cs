@@ -90,64 +90,42 @@ namespace Archipelago.MultiClient.Net.Helpers
 
             if (packet.Permissions != null)
             {
-                if (packet.Permissions.TryGetValue("forfeit", out Permissions forfeitPermissions))
-                {
+                if (packet.Permissions.TryGetValue("forfeit", out var forfeitPermissions))
                     ForfeitPermissions = forfeitPermissions;
-                }
-                if (packet.Permissions.TryGetValue("collect", out Permissions collectPermissions))
-                {
+                if (packet.Permissions.TryGetValue("collect", out var collectPermissions))
                     CollectPermissions = collectPermissions;
-                }
-                if (packet.Permissions.TryGetValue("remaining", out Permissions remainingPermissions))
-                {
+                if (packet.Permissions.TryGetValue("remaining", out var remainingPermissions))
                     RemainingPermissions = remainingPermissions;
-                }
             }
         }
 
         private void OnRoomUpdatedPacketReceived(RoomUpdatePacket packet)
         {
             if(packet.HintCost.HasValue)
-            {
                 HintCost = packet.HintCost.Value;
-            }
 
             if (packet.LocationCheckPoints.HasValue)
-            {
                 LocationCheckPoints = packet.LocationCheckPoints.Value;
-            }
 
             if (packet.HintPoints.HasValue)
-            {
                 HintPoints = packet.HintPoints.Value;
-            }
 
             if (packet.Tags != null)
-            {
                 tags = packet.Tags;
-            }
 
             if (packet.Password.HasValue)
-            {
                 HasPassword = packet.Password.Value;
-            }
 
             if (packet.Permissions != null)
             {
-                if (packet.Permissions.TryGetValue("forfeit", out Permissions forfeitPermissions))
-                {
+                if (packet.Permissions.TryGetValue("forfeit", out var forfeitPermissions))
                     ForfeitPermissions = forfeitPermissions;
-                }
 
-                if (packet.Permissions.TryGetValue("collect", out Permissions collectPermissions))
-                {
+                if (packet.Permissions.TryGetValue("collect", out var collectPermissions))
                     CollectPermissions = collectPermissions;
-                }
 
-                if (packet.Permissions.TryGetValue("remaining", out Permissions remainingPermissions))
-                {
+                if (packet.Permissions.TryGetValue("remaining", out var remainingPermissions))
                     RemainingPermissions = remainingPermissions;
-                }
             }
         }
     }

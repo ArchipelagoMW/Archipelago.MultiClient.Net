@@ -7,7 +7,7 @@
 #Core editorconfig formatting - indentation
 
 #use soft tabs (spaces) for indentation
-indent_style = space
+indent_style = tabs
 
 #Formatting - indentation options
 
@@ -30,6 +30,8 @@ csharp_new_line_before_members_in_object_initializers = true
 csharp_new_line_before_open_brace = lambdas, types, anonymous_types, accessors, methods, control_blocks, object_collection_array_initializers, properties
 #require elements of query expression clauses to be on separate lines
 csharp_new_line_between_query_expression_clauses = true
+
+csharp_style_implicit_object_creation_when_type_is_apparent = false:error
 
 #Formatting - organize using options
 
@@ -65,7 +67,7 @@ csharp_preserve_single_line_blocks = true
 #Style - Code block preferences
 
 #prefer curly braces even for one line of code
-csharp_prefer_braces = true:suggestion
+csharp_prefer_braces = false:suggestion
 
 #Style - expression bodied member options
 
@@ -76,7 +78,7 @@ csharp_style_expression_bodied_constructors = false:suggestion
 #prefer expression-bodied members for indexers
 csharp_style_expression_bodied_indexers = true:suggestion
 #prefer block bodies for methods
-csharp_style_expression_bodied_methods = false:suggestion
+csharp_style_expression_bodied_methods =when_on_single_line:suggestion
 #prefer expression-bodied members for properties
 csharp_style_expression_bodied_properties = true:suggestion
 
@@ -99,11 +101,11 @@ dotnet_style_prefer_inferred_anonymous_type_member_names = false:suggestion
 #Style - implicit and explicit types
 
 #prefer explicit type over var in all cases, unless overridden by another code style rule
-csharp_style_var_elsewhere = false:suggestion
+csharp_style_var_elsewhere =true:suggestion
 #prefer explicit type over var to declare variables with built-in system types such as int
-csharp_style_var_for_built_in_types = false:suggestion
+csharp_style_var_for_built_in_types =true:suggestion
 #prefer explicit type over var when the type is already mentioned on the right-hand side of a declaration
-csharp_style_var_when_type_is_apparent = false:suggestion
+csharp_style_var_when_type_is_apparent =true:suggestion
 
 #Style - language keyword and framework type options
 
@@ -118,12 +120,12 @@ csharp_style_pattern_local_over_anonymous_function = false:suggestion
 #Style - modifier options
 
 #prefer accessibility modifiers to be declared except for public interface members. This will currently not differ from always and will act as future proofing for if C# adds default interface methods.
-dotnet_style_require_accessibility_modifiers = for_non_interface_members:suggestion
+dotnet_style_require_accessibility_modifiers = omit_if_default:suggestion
 
 #Style - Modifier preferences
 
 #when this rule is set to a list of modifiers, prefer the specified ordering.
-csharp_preferred_modifier_order = public,private,internal,protected,override,static,readonly,new:suggestion
+csharp_preferred_modifier_order = public,private,internal,protected,override,static,readonly,abstract,virtual,override,async,new:suggestion
 
 #Style - Pattern matching
 
@@ -141,3 +143,10 @@ dotnet_style_qualification_for_property = false:suggestion
 
 # IDE0055: Fix formatting
 dotnet_diagnostic.IDE0055.severity = none
+csharp_style_expression_bodied_operators=false:suggestion
+csharp_style_expression_bodied_local_functions=false:suggestion
+csharp_style_unused_value_expression_statement_preference=discard_variable:suggestion
+csharp_style_expression_bodied_lambdas=true:suggestion
+
+[*.{cs,vb}]
+indent_style=tab

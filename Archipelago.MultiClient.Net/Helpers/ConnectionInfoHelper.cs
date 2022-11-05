@@ -107,19 +107,13 @@ namespace Archipelago.MultiClient.Net.Helpers
         ///     Send a ConnectUpdate packet and set the tags and ItemsHandlingFlags for the current connection to the provided params.
         /// </summary>
         /// <param name="tags">New tags for the current connection.</param>
-        public void UpdateConnectionOptions(string[] tags)
-        {
-            UpdateConnectionOptions(tags, ItemsHandlingFlags);
-        }
+        public void UpdateConnectionOptions(string[] tags) => UpdateConnectionOptions(tags, ItemsHandlingFlags);
 
         /// <summary>
         ///     Send a ConnectUpdate packet and set the tags and ItemsHandlingFlags for the current connection to the provided params.
         /// </summary>
         /// <param name="itemsHandlingFlags">New ItemsHandlingFlags for the current connection.</param>
-        public void UpdateConnectionOptions(ItemsHandlingFlags itemsHandlingFlags)
-        {
-            UpdateConnectionOptions(Tags, ItemsHandlingFlags);
-        }
+        public void UpdateConnectionOptions(ItemsHandlingFlags itemsHandlingFlags) => UpdateConnectionOptions(Tags, ItemsHandlingFlags);
 
         /// <summary>
         ///     Send a ConnectUpdate packet and set the tags and ItemsHandlingFlags for the current connection to the provided params.

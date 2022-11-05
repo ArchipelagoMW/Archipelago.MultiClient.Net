@@ -27,19 +27,31 @@ namespace Archipelago.MultiClient.Net
             return new ArchipelagoSession(socket, items, locations, players, roomState, connectionInfo, dataStorage, messageLog);
         }
 
-        /// <summary>
-        ///     Creates an <see cref="ArchipelagoSession"/> object which facilitates all communication to the Archipelago server.            
-        /// </summary>
-        /// <param name="hostname">
-        ///     The hostname of the Archipelago server. Ex: `archipelago.gg` or `localhost`
-        /// </param>
-        /// <param name="port">
-        ///     The port number which the Archipelago server is hosted on. Defaults to: 38281
-        /// </param>
-        public static ArchipelagoSession CreateSession(string hostname, int port = 38281)
+		/// <summary>
+		///     Creates an <see cref="ArchipelagoSession"/> object which facilitates all communication to the Archipelago server.            
+		/// </summary>
+		/// <param name="hostname">
+		///     The hostname of the Archipelago server, can include protocol and port.
+		///			Ex: `archipelago.gg`, `localhost`, `localhost:38281` or `ws://archipelago.gg:46376`
+		/// </param>
+		/// <param name="port">
+		///     (Optional) The port number which the Archipelago server is hosted on. Defaults to: 38281,
+		///			will be ignored if the port is added to the hostname
+		/// </param>
+		public static ArchipelagoSession CreateSession(string hostname, int port = 38281) => CreateSession(ParseUri(hostname, port));
+
+        internal static Uri ParseUri(string hostname, int port)
         {
-            var uriBuilder = new UriBuilder("ws", hostname, port);
-            return CreateSession(uriBuilder.Uri);
+	        var uri = hostname;
+
+	        if (!uri.StartsWith("ws://") && !uri.StartsWith("wss://"))
+		        uri = "ws://" + uri;
+			if (!uri.Substring(4).Contains(":"))
+		        uri += $":{port}";
+	        if (uri.EndsWith(":"))
+		        uri += port;
+			
+	        return new Uri(uri);
         }
     }
 }

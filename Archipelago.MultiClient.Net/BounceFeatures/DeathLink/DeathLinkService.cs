@@ -43,14 +43,10 @@ namespace Archipelago.MultiClient.Net.BounceFeatures.DeathLink
                         logger[Scope.Slot, "DeathLinkReceived"] += new [] { $"Parsed on {DateTime.UtcNow:u}: {JObject.FromObject(bouncedPacket)}" };
 
                         if (lastSendDeathLink != null && lastSendDeathLink == deathLink)
-                        {
                             return;
-                        }
 
                         if (OnDeathLinkReceived != null)
-                        {
                             OnDeathLinkReceived(deathLink);
-                        }
                     }
                     else
                     {
@@ -84,9 +80,7 @@ namespace Archipelago.MultiClient.Net.BounceFeatures.DeathLink
             };
 
             if (deathLink.Cause != null)
-            {
                 bouncePacket.Data.Add("cause", deathLink.Cause);
-            }
 
             logger[Scope.Slot, "DeathLinkSend"] += new[] { $"Send on {DateTime.UtcNow:u}: {JObject.FromObject(bouncePacket)}" };
 
@@ -98,18 +92,14 @@ namespace Archipelago.MultiClient.Net.BounceFeatures.DeathLink
         public void EnableDeathLink()
         {
             if (Array.IndexOf(connectionInfoProvider.Tags, "DeathLink") == -1)
-            {
                 connectionInfoProvider.UpdateConnectionOptions(
                     connectionInfoProvider.Tags.Concat(new[] { "DeathLink" }).ToArray());
-            }
         }
 
         public void DisableDeathLink()
         {
             if (Array.IndexOf(connectionInfoProvider.Tags, "DeathLink") == -1)
-            {
                 return;
-            }
 
             connectionInfoProvider.UpdateConnectionOptions(
                 connectionInfoProvider.Tags.Where(t => t != "DeathLink").ToArray());

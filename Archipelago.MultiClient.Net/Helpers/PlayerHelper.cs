@@ -57,11 +57,9 @@ namespace Archipelago.MultiClient.Net.Helpers
         public string GetPlayerAlias(int slot)
         {
             if (players == null)
-            {
                 return null;
-            }
 
-            PlayerInfo playerInfo = players.FirstOrDefault(p => p.Slot == slot);
+            var playerInfo = players.FirstOrDefault(p => p.Slot == slot);
 
             return playerInfo?.Alias;
         }
@@ -74,11 +72,9 @@ namespace Archipelago.MultiClient.Net.Helpers
         public string GetPlayerName(int slot)
         {
             if (players == null)
-            {
                 return null;
-            }
 
-            PlayerInfo playerInfo = players.FirstOrDefault(p => p.Slot == slot);
+            var playerInfo = players.FirstOrDefault(p => p.Slot == slot);
 
             return playerInfo?.Name;
         }
@@ -93,15 +89,11 @@ namespace Archipelago.MultiClient.Net.Helpers
         public string GetPlayerAliasAndName(int slot)
         {
             if (players == null)
-            {
                 return null;
-            }
 
-            PlayerInfo playerInfo = players.FirstOrDefault(p => p.Slot == slot);
+            var playerInfo = players.FirstOrDefault(p => p.Slot == slot);
             if (playerInfo == null)
-            {
                 return null;
-            }
 
             return $"{playerInfo.Alias} ({playerInfo.Name})";
         }
@@ -123,13 +115,9 @@ namespace Archipelago.MultiClient.Net.Helpers
         {
             NetworkSlot[] groups;
             if (slotInfos == null)
-            {
                 groups = new NetworkSlot[0];
-            }
             else
-            {
                 groups = slotInfos.Values.Where(s => s.Type == SlotType.Group).ToArray();
-            }
 
             players = networkPlayers.Select(p => new PlayerInfo {
                 Team = p.Team,

@@ -2,7 +2,6 @@
 using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 
 namespace Archipelago.MultiClient.Net.Cache
@@ -57,7 +56,7 @@ namespace Archipelago.MultiClient.Net.Cache
 
         private void LoadDataPackageFromFileCache(RoomInfoPacket packet)
         {
-            foreach (string game in packet.Games.Distinct())
+            foreach (var game in packet.Games.Distinct())
             {
                 if (TryGetGameDataFromFileCache(game, out var cachedPackage))
                 {
@@ -112,7 +111,7 @@ namespace Archipelago.MultiClient.Net.Cache
         {
             var gamesNeedingUpdating = new List<string>();
 
-            foreach (string game in packet.Games.Distinct())
+            foreach (var game in packet.Games.Distinct())
             {
                 if (dataPackages.TryGetValue(game, out var gameData))
                 {
