@@ -369,7 +369,7 @@ namespace Archipelago.MultiClient.Net.Tests
 
             var sut = new MessageLogHelper(socket, items, locations, players, connectionInfo);
 
-            List<LogMessage> logMessage = new List<LogMessage>(3);
+            var logMessage = new List<LogMessage>(3);
 
             sut.OnMessageReceived += (message) => logMessage.Add(message);
 

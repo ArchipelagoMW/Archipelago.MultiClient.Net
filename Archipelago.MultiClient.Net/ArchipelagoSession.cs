@@ -14,7 +14,7 @@ namespace Archipelago.MultiClient.Net
 {
     public class ArchipelagoSession
     {
-        private const int ArchipelagoConnectionTimeoutInSeconds = 5;
+        const int ArchipelagoConnectionTimeoutInSeconds = 5;
 
         public ArchipelagoSocketHelper Socket { get; }
         public ReceivedItemsHelper Items { get; }
@@ -27,10 +27,10 @@ namespace Archipelago.MultiClient.Net
 
 #if NET35
         volatile bool expectingLoginResult;
-        private LoginResult loginResult;
+        LoginResult loginResult;
 #else
-        private TaskCompletionSource<LoginResult> loginResultTask = new TaskCompletionSource<LoginResult>();
-        private TaskCompletionSource<RoomInfoPacket> roomInfoPacketTask = new TaskCompletionSource<RoomInfoPacket>();
+        TaskCompletionSource<LoginResult> loginResultTask = new TaskCompletionSource<LoginResult>();
+        TaskCompletionSource<RoomInfoPacket> roomInfoPacketTask = new TaskCompletionSource<RoomInfoPacket>();
 #endif
 
         internal ArchipelagoSession(ArchipelagoSocketHelper socket,
@@ -55,7 +55,7 @@ namespace Archipelago.MultiClient.Net
         }
 
 
-        private void Socket_PacketReceived(ArchipelagoPacketBase packet)
+        void Socket_PacketReceived(ArchipelagoPacketBase packet)
         {
             switch (packet)
             {

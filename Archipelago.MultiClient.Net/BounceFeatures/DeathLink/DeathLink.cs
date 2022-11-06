@@ -79,7 +79,8 @@ namespace Archipelago.MultiClient.Net.BounceFeatures.DeathLink
         {
             unchecked
             {
-                var hashCode = Timestamp.GetHashCode();
+	            // ReSharper disable once NonReadonlyMemberInGetHashCode
+	            var hashCode = Timestamp.GetHashCode();
                 hashCode = (hashCode * 397) ^ (Source != null ? Source.GetHashCode() : 0);
                 return hashCode;
             }

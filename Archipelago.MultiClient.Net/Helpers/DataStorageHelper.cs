@@ -17,16 +17,16 @@ namespace Archipelago.MultiClient.Net.Helpers
     {
         public delegate void DataStorageUpdatedHandler(JToken originalValue, JToken newValue);
 
-        private readonly Dictionary<string, DataStorageUpdatedHandler> onValueChangedEventHandlers = new Dictionary<string, DataStorageUpdatedHandler>();
-        private readonly Dictionary<Guid, DataStorageUpdatedHandler> operationSpecificCallbacks = new Dictionary<Guid, DataStorageUpdatedHandler>();
+        readonly Dictionary<string, DataStorageUpdatedHandler> onValueChangedEventHandlers = new Dictionary<string, DataStorageUpdatedHandler>();
+        readonly Dictionary<Guid, DataStorageUpdatedHandler> operationSpecificCallbacks = new Dictionary<Guid, DataStorageUpdatedHandler>();
 #if NET35
-        private readonly Dictionary<string, Action<JToken>> asyncRetrievalCallbacks = new Dictionary<string, Action<JToken>>();
+        readonly Dictionary<string, Action<JToken>> asyncRetrievalCallbacks = new Dictionary<string, Action<JToken>>();
 #else
-        private readonly Dictionary<string, TaskCompletionSource<JToken>> asyncRetrievalTasks = new Dictionary<string, TaskCompletionSource<JToken>>();
+        readonly Dictionary<string, TaskCompletionSource<JToken>> asyncRetrievalTasks = new Dictionary<string, TaskCompletionSource<JToken>>();
 #endif
 
-        private readonly IArchipelagoSocketHelper socket;
-        private readonly IConnectionInfoProvider connectionInfoProvider;
+        readonly IArchipelagoSocketHelper socket;
+        readonly IConnectionInfoProvider connectionInfoProvider;
 
         internal DataStorageHelper(IArchipelagoSocketHelper socket, IConnectionInfoProvider connectionInfoProvider)
         {
@@ -36,7 +36,7 @@ namespace Archipelago.MultiClient.Net.Helpers
             socket.PacketReceived += OnPacketReceived;
         }
 
-        private void OnPacketReceived(ArchipelagoPacketBase packet)
+        void OnPacketReceived(ArchipelagoPacketBase packet)
         {
             switch (packet)
             {
@@ -102,7 +102,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         }
 
 #if NET35
-        private void GetAsync(string key, Action<JToken> callback)
+        void GetAsync(string key, Action<JToken> callback)
         {
             if (!asyncRetrievalCallbacks.ContainsKey(key))
                 asyncRetrievalCallbacks[key] = callback;
@@ -112,7 +112,7 @@ namespace Archipelago.MultiClient.Net.Helpers
             socket.SendPacketAsync(new GetPacket { Keys = new[] { key } });
         }
 #else
-        private Task<JToken> GetAsync(string key)
+        Task<JToken> GetAsync(string key)
         {
             if (asyncRetrievalTasks.TryGetValue(key, out var asyncRetrievalTask))
             {
@@ -131,7 +131,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         }
 #endif
 
-        private void Initialize(string key, JToken value) =>
+        void Initialize(string key, JToken value) =>
 	        socket.SendPacketAsync(new SetPacket
 	        {
 		        Key = key,
@@ -141,7 +141,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 		        }
 	        });
 
-        private JToken GetValue(string key)
+        JToken GetValue(string key)
         {
 #if NET35
             JToken value = null;
@@ -175,7 +175,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 #endif
         }
 
-        private void SetValue(string key, DataStorageElement e)
+        void SetValue(string key, DataStorageElement e)
         {
             if (e.Context == null)
             {
@@ -225,7 +225,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 		        RemoveHandler = RemoveHandler
 	        };
 
-        private void AddHandler(string key, DataStorageUpdatedHandler handler)
+        void AddHandler(string key, DataStorageUpdatedHandler handler)
         {
             if (onValueChangedEventHandlers.ContainsKey(key))
                 onValueChangedEventHandlers[key] += handler;
@@ -235,7 +235,7 @@ namespace Archipelago.MultiClient.Net.Helpers
             socket.SendPacketAsync(new SetNotifyPacket { Keys = new[] { key } });
         }
 
-        private void RemoveHandler(string key, DataStorageUpdatedHandler handler)
+        void RemoveHandler(string key, DataStorageUpdatedHandler handler)
         {
             if (onValueChangedEventHandlers.ContainsKey(key))
             {
@@ -246,7 +246,7 @@ namespace Archipelago.MultiClient.Net.Helpers
             }
         }
 
-        private string AddScope(Scope scope, string key)
+        string AddScope(Scope scope, string key)
         {
             switch (scope)
             {

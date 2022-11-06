@@ -12,10 +12,10 @@ namespace Archipelago.MultiClient.Net.Helpers
         public delegate void MessageReceivedHandler(LogMessage message);
         public event MessageReceivedHandler OnMessageReceived;
 
-        private readonly IReceivedItemsHelper items;
-        private readonly ILocationCheckHelper locations;
-        private readonly IPlayerHelper players;
-        private readonly IConnectionInfoProvider connectionInfo;
+        readonly IReceivedItemsHelper items;
+        readonly ILocationCheckHelper locations;
+        readonly IPlayerHelper players;
+        readonly IConnectionInfoProvider connectionInfo;
 
         internal MessageLogHelper(IArchipelagoSocketHelper socket,
             IReceivedItemsHelper items, ILocationCheckHelper locations,
@@ -29,7 +29,7 @@ namespace Archipelago.MultiClient.Net.Helpers
             socket.PacketReceived += Socket_PacketReceived;
         }
 
-        private void Socket_PacketReceived(ArchipelagoPacketBase packet)
+        void Socket_PacketReceived(ArchipelagoPacketBase packet)
         {
             if (OnMessageReceived == null)
                 return;
@@ -45,10 +45,10 @@ namespace Archipelago.MultiClient.Net.Helpers
             }
         }
 
-        private static PrintJsonPacket ToPrintJson(PrintPacket printPacket) => 
+        static PrintJsonPacket ToPrintJson(PrintPacket printPacket) => 
 	        new PrintJsonPacket { Data = new [] { new JsonMessagePart { Text = printPacket.Text } } };
 
-        private void TriggerOnMessageReceived(PrintJsonPacket printJsonPacket)
+        void TriggerOnMessageReceived(PrintJsonPacket printJsonPacket)
         {
             foreach (var linePacket in SplitPacketsPerLine(printJsonPacket))
             {
@@ -77,7 +77,7 @@ namespace Archipelago.MultiClient.Net.Helpers
             }
         }
 
-        private IEnumerable<PrintJsonPacket> SplitPacketsPerLine(PrintJsonPacket printJsonPacket)
+        IEnumerable<PrintJsonPacket> SplitPacketsPerLine(PrintJsonPacket printJsonPacket)
         {
             var packetsPerLine = new List<PrintJsonPacket>();
             var messageParts = new List<JsonMessagePart>();
@@ -118,7 +118,7 @@ namespace Archipelago.MultiClient.Net.Helpers
             return packetsPerLine;
         }
 
-        private static PrintJsonPacket CloneWithoutData(PrintJsonPacket source)
+        static PrintJsonPacket CloneWithoutData(PrintJsonPacket source)
         {
             switch (source)
             {
@@ -147,7 +147,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         internal MessagePart[] GetParsedData(PrintJsonPacket packet) => 
 	        packet.Data.Select(GetMessagePart).ToArray();
 
-        private MessagePart GetMessagePart(JsonMessagePart part)
+        MessagePart GetMessagePart(JsonMessagePart part)
         {
             switch (part.Type)
             {
@@ -252,7 +252,7 @@ namespace Archipelago.MultiClient.Net.Helpers
             }
         }
 
-        private static Color GetColor(JsonMessagePartColor color)
+        static Color GetColor(JsonMessagePartColor color)
         {
             switch (color)
             {
@@ -311,7 +311,7 @@ namespace Archipelago.MultiClient.Net.Helpers
             }
         }
 
-        private static Color GetColor(ItemFlags flags)
+        static Color GetColor(ItemFlags flags)
         {
             if (HasFlag(flags, ItemFlags.Advancement))
                 return Color.Plum;
@@ -323,7 +323,7 @@ namespace Archipelago.MultiClient.Net.Helpers
             return Color.Cyan;
         }
 
-        private static bool HasFlag(ItemFlags flags, ItemFlags flag) =>
+        static bool HasFlag(ItemFlags flags, ItemFlags flag) =>
 #if NET35
             (flags & flag) > 0;
 #else
@@ -355,7 +355,7 @@ namespace Archipelago.MultiClient.Net.Helpers
             Color = GetColor(IsActivePlayer);
         }
 
-        private static Color GetColor(bool isActivePlayer)
+        static Color GetColor(bool isActivePlayer)
         {
             if (isActivePlayer)
                 return Color.Magenta;

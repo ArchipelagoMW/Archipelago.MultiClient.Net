@@ -11,11 +11,11 @@ namespace Archipelago.MultiClient.Net.BounceFeatures.DeathLink
 {
     public class DeathLinkService
     {
-        private readonly IArchipelagoSocketHelper socket;
-        private readonly IConnectionInfoProvider connectionInfoProvider;
-        private readonly DataStorageHelper logger;
+        readonly IArchipelagoSocketHelper socket;
+        readonly IConnectionInfoProvider connectionInfoProvider;
+        readonly DataStorageHelper logger;
 
-        private DeathLink lastSendDeathLink;
+        DeathLink lastSendDeathLink;
 
         public delegate void DeathLinkReceivedHandler(DeathLink deathLink);
         public event DeathLinkReceivedHandler OnDeathLinkReceived;
@@ -33,7 +33,7 @@ namespace Archipelago.MultiClient.Net.BounceFeatures.DeathLink
             logger["FailedDeathLinks"].Initialize(new string[0]);
         }
 
-        private void OnPacketReceived(ArchipelagoPacketBase packet)
+        void OnPacketReceived(ArchipelagoPacketBase packet)
         {
             switch (packet)
             {

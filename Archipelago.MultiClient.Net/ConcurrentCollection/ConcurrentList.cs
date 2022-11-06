@@ -6,7 +6,7 @@ namespace Archipelago.MultiClient.Net.ConcurrentCollection
 {
     class ConcurrentList<T> : IConcurrentList<T>
     {
-        private readonly ConcurrentDictionary<int, T> list = new ConcurrentDictionary<int, T>();
+        readonly ConcurrentDictionary<int, T> list = new ConcurrentDictionary<int, T>();
 
         public int Count => list.Count;
 

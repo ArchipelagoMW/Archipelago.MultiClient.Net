@@ -20,15 +20,15 @@ namespace Archipelago.MultiClient.Net.Helpers
 
     public class ReceivedItemsHelper : IReceivedItemsHelper
     {
-        private readonly IArchipelagoSocketHelper socket;
-        private readonly ILocationCheckHelper locationsHelper;
-        private readonly IDataPackageCache dataPackageCache;
+        readonly IArchipelagoSocketHelper socket;
+        readonly ILocationCheckHelper locationsHelper;
+        readonly IDataPackageCache dataPackageCache;
 
-        private ConcurrentQueue<NetworkItem> itemQueue = new ConcurrentQueue<NetworkItem>();
+        ConcurrentQueue<NetworkItem> itemQueue = new ConcurrentQueue<NetworkItem>();
 
-        private readonly IConcurrentList<NetworkItem> allItemsReceived = new ConcurrentList<NetworkItem>();
+        readonly IConcurrentList<NetworkItem> allItemsReceived = new ConcurrentList<NetworkItem>();
 
-        private Dictionary<long, string> itemLookupCache = new Dictionary<long, string>();
+        Dictionary<long, string> itemLookupCache = new Dictionary<long, string>();
         
         public int Index => allItemsReceived.Count;
         public ReadOnlyCollection<NetworkItem> AllItemsReceived => allItemsReceived.AsReadOnlyCollection();
@@ -126,7 +126,7 @@ namespace Archipelago.MultiClient.Net.Helpers
                 : null;
         }
 
-        private void Socket_PacketReceived(ArchipelagoPacketBase packet)
+        void Socket_PacketReceived(ArchipelagoPacketBase packet)
         {
             switch (packet.PacketType)
             {
@@ -159,7 +159,7 @@ namespace Archipelago.MultiClient.Net.Helpers
             }
         }
 
-        private void PerformResynchronization(ReceivedItemsPacket receivedItemsPacket)
+        void PerformResynchronization(ReceivedItemsPacket receivedItemsPacket)
         {
             var previouslyReceived = allItemsReceived.AsReadOnlyCollection();
 

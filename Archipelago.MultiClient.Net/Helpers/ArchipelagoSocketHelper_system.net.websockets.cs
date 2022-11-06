@@ -15,10 +15,10 @@ namespace Archipelago.MultiClient.Net.Helpers
 {
     public class ArchipelagoSocketHelper : IArchipelagoSocketHelper
     {
-        private static readonly ArchipelagoPacketConverter Converter = new ArchipelagoPacketConverter();
+        static readonly ArchipelagoPacketConverter Converter = new ArchipelagoPacketConverter();
 
-        private const int ReceiveChunkSize = 1024;
-        private const int SendChunkSize = 1024;
+        const int ReceiveChunkSize = 1024;
+        const int SendChunkSize = 1024;
 
         public event ArchipelagoSocketHelperDelagates.PacketReceivedHandler PacketReceived;
         public event ArchipelagoSocketHelperDelagates.PacketsSentHandler PacketsSent;
@@ -26,7 +26,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         public event ArchipelagoSocketHelperDelagates.SocketClosedHandler SocketClosed;
         public event ArchipelagoSocketHelperDelagates.SocketOpenedHandler SocketOpened;
 
-        private readonly ConcurrentQueue<Tuple<ArchipelagoPacketBase, TaskCompletionSource<bool>>> sendQueue =
+        readonly ConcurrentQueue<Tuple<ArchipelagoPacketBase, TaskCompletionSource<bool>>> sendQueue =
 	        new ConcurrentQueue<Tuple<ArchipelagoPacketBase, TaskCompletionSource<bool>>>();
 
         /// <summary>
@@ -40,7 +40,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// </summary>
         public bool Connected => webSocket.State == WebSocketState.Open || webSocket.State == WebSocketState.CloseReceived;
 
-        private readonly ClientWebSocket webSocket;
+        readonly ClientWebSocket webSocket;
 
         internal ArchipelagoSocketHelper(Uri hostUri)
         {
@@ -73,7 +73,7 @@ namespace Archipelago.MultiClient.Net.Helpers
             _ = Task.Run(SendLoop);
         }
 
-        private async Task PollingLoop()
+        async Task PollingLoop()
         {
             var buffer = new byte[ReceiveChunkSize];
 
@@ -94,7 +94,7 @@ namespace Archipelago.MultiClient.Net.Helpers
             }
         }
 
-        private async Task SendLoop()
+        async Task SendLoop()
         {
             while (webSocket.State == WebSocketState.Open)
             {
@@ -109,7 +109,7 @@ namespace Archipelago.MultiClient.Net.Helpers
             }
         }
 
-        private async Task<string> ReadMessageAsync(byte[] buffer)
+        async Task<string> ReadMessageAsync(byte[] buffer)
         {
             var stringResult = new StringBuilder();
 
@@ -239,7 +239,7 @@ namespace Archipelago.MultiClient.Net.Helpers
             return task.Task;
         }
 
-        private async Task HandleSendBuffer()
+        async Task HandleSendBuffer()
         {
             var packetList = new List<ArchipelagoPacketBase>();
             var tasks = new List<TaskCompletionSource<bool>>();
@@ -251,14 +251,10 @@ namespace Archipelago.MultiClient.Net.Helpers
             }
 
             if (!packetList.Any())
-            {
                 return;
-            }
 
             if (webSocket.State != WebSocketState.Open)
-            {
                 throw new ArchipelagoSocketClosedException();
-            }
             
             var packets = packetList.ToArray();
             
@@ -285,7 +281,7 @@ namespace Archipelago.MultiClient.Net.Helpers
             OnPacketSend(packets);
         }
 
-        private void OnPacketSend(ArchipelagoPacketBase[] packets)
+        void OnPacketSend(ArchipelagoPacketBase[] packets)
         {
             try
             {
@@ -298,7 +294,7 @@ namespace Archipelago.MultiClient.Net.Helpers
             }
         }
 
-        private void OnSocketClosed()
+        void OnSocketClosed()
         {
             try
             {
@@ -311,7 +307,7 @@ namespace Archipelago.MultiClient.Net.Helpers
             }
         }
 
-        private void OnMessageReceived(string message)
+        void OnMessageReceived(string message)
         {
             try
             {
@@ -331,7 +327,7 @@ namespace Archipelago.MultiClient.Net.Helpers
             }
         }
 
-        private void OnError(Exception e)
+        void OnError(Exception e)
         {
             try
             {

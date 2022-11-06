@@ -9,7 +9,7 @@ namespace Archipelago.MultiClient.Net.Converters
 {
     public class ArchipelagoPacketConverter : JsonConverter
     {
-        public static Dictionary<ArchipelagoPacketType, Func<JObject, ArchipelagoPacketBase>> PacketDeserializationMap = new Dictionary<ArchipelagoPacketType, Func<JObject, ArchipelagoPacketBase>>()
+        static readonly Dictionary<ArchipelagoPacketType, Func<JObject, ArchipelagoPacketBase>> PacketDeserializationMap = new Dictionary<ArchipelagoPacketType, Func<JObject, ArchipelagoPacketBase>>()
         {
             [ArchipelagoPacketType.RoomInfo]          = obj => obj.ToObject<RoomInfoPacket>(),
             [ArchipelagoPacketType.ConnectionRefused] = obj => obj.ToObject<ConnectionRefusedPacket>(),
@@ -57,7 +57,7 @@ namespace Archipelago.MultiClient.Net.Converters
             return ret;
         }
 
-        private static ArchipelagoPacketBase DeserializePrintJsonPacket(JObject obj)
+        static ArchipelagoPacketBase DeserializePrintJsonPacket(JObject obj)
         {
             if (obj.TryGetValue("type", out var token))
             {
@@ -83,8 +83,7 @@ namespace Archipelago.MultiClient.Net.Converters
         }
 
 #if NET35
-        private static bool EnumTryParse<TEnum>(string value, out TEnum result)
-            where TEnum : struct, IConvertible
+        static bool EnumTryParse<TEnum>(string value, out TEnum result) where TEnum : struct, IConvertible
         {
             if (value == null || !Enum.IsDefined(typeof(TEnum), value))
             {

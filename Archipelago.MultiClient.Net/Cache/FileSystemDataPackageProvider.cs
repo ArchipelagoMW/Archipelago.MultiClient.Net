@@ -6,7 +6,7 @@ using System.IO;
 
 namespace Archipelago.MultiClient.Net.Cache
 {
-    internal interface IFileSystemDataPackageProvider
+    interface IFileSystemDataPackageProvider
     {
         bool TryGetDataPackage(string game, out GameData gameData);
         void SaveDataPackageToFile(string game, GameData gameData);
@@ -14,13 +14,13 @@ namespace Archipelago.MultiClient.Net.Cache
 
     class FileSystemDataPackageProvider : IFileSystemDataPackageProvider
     {
-        private const string DataPackageFolderName = "ArchipelagoDatapackageCache";
-        private readonly string cacheFolder = 
+        const string DataPackageFolderName = "ArchipelagoDatapackageCache";
+        readonly string cacheFolder = 
             Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), DataPackageFolderName);
-        private string GetFilePath(string game) => Path.Combine(cacheFolder, $"{GetFileSystemSafeFileName(game)}.json");
+        string GetFilePath(string game) => Path.Combine(cacheFolder, $"{GetFileSystemSafeFileName(game)}.json");
 
-        private readonly object fileAccessLockObjectsLock = new object();
-        private readonly Dictionary<string, object> fileAccessLockObjects = new Dictionary<string, object>();
+        readonly object fileAccessLockObjectsLock = new object();
+        readonly Dictionary<string, object> fileAccessLockObjects = new Dictionary<string, object>();
 
         public bool TryGetDataPackage(string game, out GameData gameData)
         {
@@ -66,7 +66,7 @@ namespace Archipelago.MultiClient.Net.Cache
             }
         }
 
-        private string GetFileSystemSafeFileName(string gameName)
+        string GetFileSystemSafeFileName(string gameName)
         {
             var safeName = gameName;
 
@@ -76,7 +76,7 @@ namespace Archipelago.MultiClient.Net.Cache
             return safeName;
         }
 
-        private object GetFileLock(string game)
+        object GetFileLock(string game)
         {
             lock (fileAccessLockObjectsLock)
             {

@@ -15,7 +15,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 {
     public class ArchipelagoSocketHelper : IArchipelagoSocketHelper
     {
-        private static readonly ArchipelagoPacketConverter converter = new ArchipelagoPacketConverter();
+        static readonly ArchipelagoPacketConverter Converter = new ArchipelagoPacketConverter();
 
         public event ArchipelagoSocketHelperDelagates.PacketReceivedHandler PacketReceived;
         public event ArchipelagoSocketHelperDelagates.PacketsSentHandler PacketsSent;
@@ -24,9 +24,8 @@ namespace Archipelago.MultiClient.Net.Helpers
         public event ArchipelagoSocketHelperDelagates.SocketOpenedHandler SocketOpened;
 
 #if !NET35
-        private TaskCompletionSource<bool> connectAsyncTask;
-        private TaskCompletionSource<bool> disconnectAsyncTask;
-
+        TaskCompletionSource<bool> connectAsyncTask;
+        TaskCompletionSource<bool> disconnectAsyncTask;
 #endif
 
         /// <summary>
@@ -40,7 +39,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// </summary>
         public bool Connected => webSocket.ReadyState == WebSocketState.Open || webSocket.ReadyState == WebSocketState.Closing;
 
-        private readonly WebSocket webSocket;
+        readonly WebSocket webSocket;
 
         internal ArchipelagoSocketHelper(Uri hostUrl)
         {
@@ -296,7 +295,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         }
 #endif
 
-        private void OnOpen(object sender, EventArgs e)
+        void OnOpen(object sender, EventArgs e)
         {
 #if !NET35
             if (connectAsyncTask != null)
@@ -307,7 +306,7 @@ namespace Archipelago.MultiClient.Net.Helpers
                 SocketOpened();
         }
 
-        private void OnClose(object sender, CloseEventArgs e)
+        void OnClose(object sender, CloseEventArgs e)
         {
 #if !NET35
             if (disconnectAsyncTask != null)
@@ -318,17 +317,17 @@ namespace Archipelago.MultiClient.Net.Helpers
                 SocketClosed(e.Reason);
         }
 
-        private void OnMessageReceived(object sender, MessageEventArgs e)
+        void OnMessageReceived(object sender, MessageEventArgs e)
         {
 	        if (!e.IsText || PacketReceived == null) return;
 
-	        var packets = JsonConvert.DeserializeObject<List<ArchipelagoPacketBase>>(e.Data, converter);
+	        var packets = JsonConvert.DeserializeObject<List<ArchipelagoPacketBase>>(e.Data, Converter);
 
 	        foreach (var packet in packets)
 		        PacketReceived(packet);
         }
 
-        private void OnError(object sender, ErrorEventArgs e)
+        void OnError(object sender, ErrorEventArgs e)
         {
             if (ErrorReceived != null)
                 ErrorReceived(e.Exception, e.Message);

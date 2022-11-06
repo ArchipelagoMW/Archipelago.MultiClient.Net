@@ -6,12 +6,12 @@ using System.Linq;
 
 namespace Archipelago.MultiClient.Net.Cache
 {
-    internal class DataPackageFileSystemCache : IDataPackageCache
+    class DataPackageFileSystemCache : IDataPackageCache
     {
-        private readonly IArchipelagoSocketHelper socket;
-        private readonly IFileSystemDataPackageProvider fileSystemDataPackageProvider;
+        readonly IArchipelagoSocketHelper socket;
+        readonly IFileSystemDataPackageProvider fileSystemDataPackageProvider;
 
-        private readonly Dictionary<string, GameData> dataPackages = new Dictionary<string, GameData>();
+        readonly Dictionary<string, GameData> dataPackages = new Dictionary<string, GameData>();
 
         public DataPackageFileSystemCache(IArchipelagoSocketHelper socket) : this(socket, new FileSystemDataPackageProvider())
         {
@@ -25,7 +25,7 @@ namespace Archipelago.MultiClient.Net.Cache
             socket.PacketReceived += Socket_PacketReceived;
         }
 
-        private void Socket_PacketReceived(ArchipelagoPacketBase packet)
+        void Socket_PacketReceived(ArchipelagoPacketBase packet)
         {
             switch (packet)
             {
@@ -49,23 +49,17 @@ namespace Archipelago.MultiClient.Net.Cache
             }
         }
 
-        private void AddArchipelagoGame(RoomInfoPacket roomInfoPacket)
-        {
-            roomInfoPacket.Games = roomInfoPacket.Games.Concat(new[] { "Archipelago" }).ToArray();
-        }
+        void AddArchipelagoGame(RoomInfoPacket roomInfoPacket) => 
+	        roomInfoPacket.Games = roomInfoPacket.Games.Concat(new[] { "Archipelago" }).ToArray();
 
-        private void LoadDataPackageFromFileCache(RoomInfoPacket packet)
+        void LoadDataPackageFromFileCache(RoomInfoPacket packet)
         {
             foreach (var game in packet.Games.Distinct())
-            {
                 if (TryGetGameDataFromFileCache(game, out var cachedPackage))
-                {
                     dataPackages[game] = cachedPackage;
-                }
-            }
         }
 
-        private bool TryGetGameDataFromFileCache(string game, out GameData gameData)
+        bool TryGetGameDataFromFileCache(string game, out GameData gameData)
         {
             if (fileSystemDataPackageProvider.TryGetDataPackage(game, out var cachedGameData))
             {
@@ -107,7 +101,7 @@ namespace Archipelago.MultiClient.Net.Cache
             }
         }
         
-        private List<string> GetCacheInvalidatedGames(RoomInfoPacket packet)
+        List<string> GetCacheInvalidatedGames(RoomInfoPacket packet)
         {
             var gamesNeedingUpdating = new List<string>();
 
@@ -116,9 +110,7 @@ namespace Archipelago.MultiClient.Net.Cache
                 if (dataPackages.TryGetValue(game, out var gameData))
                 {
                     if (gameData.Version != packet.DataPackageVersions[game])
-                    {
                         gamesNeedingUpdating.Add(game);
-                    }
                 }
                 else
                 {

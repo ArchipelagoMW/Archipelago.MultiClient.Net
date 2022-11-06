@@ -198,7 +198,7 @@ namespace Archipelago.MultiClient.Net.Tests
         }
     }
 
-    internal class RoomStateHelperTest : TestCaseData
+    class RoomStateHelperTest : TestCaseData
     {
         public RoomStateHelperTest(
             ArchipelagoPacketBase firstPacket, ArchipelagoPacketBase secondPacket,
@@ -209,7 +209,7 @@ namespace Archipelago.MultiClient.Net.Tests
         }
     }
 
-    internal class RoomStateHelperTest<T> : RoomStateHelperTest
+    class RoomStateHelperTest<T> : RoomStateHelperTest
     {
         public RoomStateHelperTest(
             string testName,

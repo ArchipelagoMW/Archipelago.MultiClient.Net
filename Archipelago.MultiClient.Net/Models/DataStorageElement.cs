@@ -27,7 +27,7 @@ namespace Archipelago.MultiClient.Net.Models
         internal List<OperationSpecification> Operations = new List<OperationSpecification>(0);
         internal DataStorageHelper.DataStorageUpdatedHandler Callbacks;
 
-        private JToken cachedValue;
+        JToken cachedValue;
 
         internal DataStorageElement(DataStorageElementContext context)
         {
@@ -156,7 +156,7 @@ namespace Archipelago.MultiClient.Net.Models
         public Task<JToken> GetAsync() => Context.GetAsync(Context.Key);
 #endif
 
-        private static T RetrieveAndReturnArrayValue<T>(DataStorageElement e)
+        static T RetrieveAndReturnArrayValue<T>(DataStorageElement e)
         {
             if (e.cachedValue != null)
                 return ((JArray)e.cachedValue).ToObject<T>();
@@ -192,7 +192,7 @@ namespace Archipelago.MultiClient.Net.Models
             return value.ToObject<T>();
         }
 
-        private static string RetrieveAndReturnStringValue(DataStorageElement e)
+        static string RetrieveAndReturnStringValue(DataStorageElement e)
         {
             if (e.cachedValue != null)
                 return (string)e.cachedValue;
@@ -228,7 +228,7 @@ namespace Archipelago.MultiClient.Net.Models
             return Convert.ToString(e.cachedValue);
         }
 
-        private static T RetrieveAndReturnDecimalValue<T>(DataStorageElement e) where T : struct
+        static T RetrieveAndReturnDecimalValue<T>(DataStorageElement e) where T : struct
         {
             if (e.cachedValue != null)
                 return e.cachedValue.ToObject<T>();
@@ -317,7 +317,7 @@ namespace Archipelago.MultiClient.Net.Models
 
         public override string ToString() => $"{Context?.ToString() ?? "(null)"}, ({ListOperations()})";
 
-        private string ListOperations() => Operations == null 
+        string ListOperations() => Operations == null 
 	        ? "none" 
 	        : string.Join(", ", Operations.Select(o => o.ToString()).ToArray());
     }

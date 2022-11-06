@@ -3,13 +3,13 @@ using System.Collections.Generic;
 
 namespace Archipelago.MultiClient.Net.ConcurrentCollection
 {
-    internal class ConcurrentQueue<T>
+    class ConcurrentQueue<T>
     {
         public int Count => queue.Count;
 
-        private readonly Queue<T> queue = new Queue<T>();
+        readonly Queue<T> queue = new Queue<T>();
 
-        private readonly object lockObject = new object();
+        readonly object lockObject = new object();
 
         public bool IsEmpty
         {

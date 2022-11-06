@@ -8,7 +8,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 {
     public class RoomStateHelper
     {
-        private string[] tags;
+        string[] tags;
 
         /// <summary>
         /// The amount of points it costs to receive a hint from the server.
@@ -64,7 +64,7 @@ namespace Archipelago.MultiClient.Net.Helpers
             socket.PacketReceived += PacketReceived;
         }
 
-        private void PacketReceived(ArchipelagoPacketBase packet)
+        void PacketReceived(ArchipelagoPacketBase packet)
         {
             switch (packet)
             {
@@ -77,7 +77,7 @@ namespace Archipelago.MultiClient.Net.Helpers
             }
         }
 
-        private void OnRoomInfoPacketReceived(RoomInfoPacket packet)
+        void OnRoomInfoPacketReceived(RoomInfoPacket packet)
         {
             HintCost = packet.HintCost;
             LocationCheckPoints = packet.LocationCheckPoints;
@@ -99,7 +99,7 @@ namespace Archipelago.MultiClient.Net.Helpers
             }
         }
 
-        private void OnRoomUpdatedPacketReceived(RoomUpdatePacket packet)
+        void OnRoomUpdatedPacketReceived(RoomUpdatePacket packet)
         {
             if(packet.HintCost.HasValue)
                 HintCost = packet.HintCost.Value;

@@ -6,9 +6,9 @@ using System.Linq;
 
 namespace Archipelago.MultiClient.Net.ConcurrentCollection
 {
-    internal class ConcurrentHashSet<T> : IConcurrentHashSet<T>
+    class ConcurrentHashSet<T> : IConcurrentHashSet<T>
     {
-        private readonly ConcurrentDictionary<T, byte> set = new ConcurrentDictionary<T, byte>();
+        readonly ConcurrentDictionary<T, byte> set = new ConcurrentDictionary<T, byte>();
 
         public bool TryAdd(T item) => set.TryAdd(item, 0);
 

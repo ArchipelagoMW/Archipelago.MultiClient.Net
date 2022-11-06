@@ -36,7 +36,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 
     public class PlayerHelper : IPlayerHelper
     {
-        private PlayerInfo[] players;
+        PlayerInfo[] players;
 
         /// <summary>
         /// A collection of PlayerInfo's where the index is the player their slot
@@ -98,7 +98,7 @@ namespace Archipelago.MultiClient.Net.Helpers
             return $"{playerInfo.Alias} ({playerInfo.Name})";
         }
 
-        private void PacketReceived(ArchipelagoPacketBase packet)
+        void PacketReceived(ArchipelagoPacketBase packet)
         {
             switch (packet)
             {
@@ -111,7 +111,7 @@ namespace Archipelago.MultiClient.Net.Helpers
             }
         }
 
-        private void CreatePlayerInfo(NetworkPlayer[] networkPlayers, Dictionary<int, NetworkSlot> slotInfos)
+        void CreatePlayerInfo(NetworkPlayer[] networkPlayers, Dictionary<int, NetworkSlot> slotInfos)
         {
             NetworkSlot[] groups;
             if (slotInfos == null)
@@ -129,7 +129,7 @@ namespace Archipelago.MultiClient.Net.Helpers
             }).ToArray();
         }
 
-        private void UpdatePlayerInfo(NetworkPlayer[] networkPlayers)
+        void UpdatePlayerInfo(NetworkPlayer[] networkPlayers)
         {
             if (networkPlayers != null && networkPlayers.Length > 0)
             {

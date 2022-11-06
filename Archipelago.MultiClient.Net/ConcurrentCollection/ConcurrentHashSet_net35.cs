@@ -5,11 +5,11 @@ using System.Linq;
 
 namespace Archipelago.MultiClient.Net.ConcurrentCollection
 {
-    internal class ConcurrentHashSet<T> : IConcurrentHashSet<T>
+    class ConcurrentHashSet<T> : IConcurrentHashSet<T>
     {
-        private readonly HashSet<T> set = new HashSet<T>();
+        readonly HashSet<T> set = new HashSet<T>();
 
-        private readonly object lockObject = new object();
+        readonly object lockObject = new object();
 
         public bool TryAdd(T item)
         {

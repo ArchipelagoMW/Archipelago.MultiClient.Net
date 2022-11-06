@@ -4,7 +4,7 @@ namespace Archipelago.MultiClient.Net.Converters
 {
     public static class UnixTimeConverter
     {
-        private static DateTime UtcEpoch =>
+        static DateTime UtcEpoch =>
 #if !NET6_0
             new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
 #else

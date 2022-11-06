@@ -53,7 +53,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 
     public class ConnectionInfoHelper : IConnectionInfoProvider
     {
-        private readonly IArchipelagoSocketHelper socket;
+        readonly IArchipelagoSocketHelper socket;
 
         public string Game { get; private set; }
         public int Team { get; private set; }
@@ -71,7 +71,7 @@ namespace Archipelago.MultiClient.Net.Helpers
             socket.PacketReceived += PacketReceived;
         }
 
-        private void PacketReceived(ArchipelagoPacketBase packet)
+        void PacketReceived(ArchipelagoPacketBase packet)
         {
             switch (packet)
             {
@@ -93,7 +93,7 @@ namespace Archipelago.MultiClient.Net.Helpers
             Uuid = uuid ?? Guid.NewGuid().ToString();
         }
 
-        private void Reset()
+        void Reset()
         {
             Game = null;
             Team = -1;
