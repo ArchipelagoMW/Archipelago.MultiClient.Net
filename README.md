@@ -54,16 +54,9 @@ Would attempt to connect to a password-less room at the slot `Ijwu`, and report 
 
 Once connected, you have access to a suite of helper objects which provide an interface for sending/receiving information with the server.
 
-## Asynchronous Connection and Error Handling
-
-Note that `TryConnectAndLogin` issues an outgoing websocket connection attempt which can block the current thread for up to multiple seconds. If the client is implemented via code-injection (e.g. harmony), the best practice is to handle large network operations in a separate thread to prevent the game from hitching/freezing. For example:
+### Example Connection
 
 ```csharp
-public static void ConnectAsync(string server, string user, string pass)
-{
-    ThreadPool.QueueUserWorkItem((o) => Connect(server, user, pass));
-}
-
 private static void Connect(string server, string user, string pass)
 {
     LoginResult result;
@@ -97,6 +90,8 @@ private static void Connect(string server, string user, string pass)
     var loginSuccess = (LoginSuccessful)result;
 }
 ```
+
+If using .net 4.0 or higher, you can use `ConnectAsync` and `LoginAsync` to prevent hitching for injection-based implementations like harmony.
 
 ## Helper Overview
 
@@ -300,19 +295,19 @@ session.DataStorage["C"] = ((session.DataStorage["C"] - 6) + Bitwise.RightShift(
 
 //Update callbacks
 //EnergyLink deplete pattern, subtract 50, then set value to 0 if its lower than 0
-session.DataStorage["EnergyLink"] = ((session.DataStorage["EnergyLink"] - 50) << 0) + Callback.Add((_old, _new) => {
-    var actualDepleted = (float)_new - (float)_old; //calculate the actual change, might differ if there was less than 50 left on the server
+session.DataStorage["EnergyLink"] = ((session.DataStorage["EnergyLink"] - 50) << 0) + Callback.Add((oldData, newData) => {
+    var actualDepleted = (float)newData - (float)oldData; //calculate the actual change, might differ if there was less than 50 left on the server
 });
 
 //Keeping track of changes
-session.DataStorage["OnChangeHandler"].OnValueChanged += (_old, _new) => {
-	var changed = (int)_new - (int)_old; //Keep track of changes made to `OnChangeHandler` by any client, and calculate the difference
+session.DataStorage["OnChangeHandler"].OnValueChanged += (oldData, newData) => {
+	var changed = (int)newData - (int)oldData; //Keep track of changes made to `OnChangeHandler` by any client, and calculate the difference
 };
 
 //Keeping track of change (but for more complex data structures)
-session.DataStorage["OnChangeHandler"].OnValueChanged += (_old, _new) => {
-    var old_dict = _old.ToObject<Dictionary<int, int>>();
-    var new_dict = _new.ToObject<Dictionary<int, int>>();
+session.DataStorage["OnChangeHandler"].OnValueChanged += (oldData, newData) => {
+    var old_dict = oldData.ToObject<Dictionary<int, int>>();
+    var new_dict = newData.ToObject<Dictionary<int, int>>();
 };
 
 //Retrieving
