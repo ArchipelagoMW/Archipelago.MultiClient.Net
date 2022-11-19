@@ -54,7 +54,17 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// <summary>
         ///     Initiates a connection to the host synchronously.
         /// </summary>
-        public void Connect() => ConnectAsync().Wait();
+        public void Connect()
+        {
+	        try
+	        {
+		        ConnectAsync().Wait(5100);
+	        }
+	        catch (AggregateException ae)
+	        {
+		        throw ae.InnerException ?? ae.InnerExceptions.First();
+	        }
+        }
 
         /// <summary>
         ///     Initiates a connection to the host asynchronously.
@@ -138,7 +148,14 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// </summary>
         public void Disconnect()
         {
-            DisconnectAsync().Wait();
+	        try
+	        {
+				DisconnectAsync().Wait(5100);
+			}
+	        catch (AggregateException ae)
+	        {
+		        throw ae.InnerException ?? ae.InnerExceptions.First();
+			}
         }
 
         /// <summary>

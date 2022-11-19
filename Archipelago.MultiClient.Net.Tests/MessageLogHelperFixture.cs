@@ -328,6 +328,35 @@ namespace Archipelago.MultiClient.Net.Tests
         }
 
         [Test]
+        public void Should_preserve_extra_properties_on_CountdownPrintJsonPacket()
+        {
+	        var socket = Substitute.For<IArchipelagoSocketHelper>();
+	        var locations = Substitute.For<ILocationCheckHelper>();
+	        var items = Substitute.For<IReceivedItemsHelper>();
+	        var players = Substitute.For<IPlayerHelper>();
+	        var connectionInfo = Substitute.For<IConnectionInfoProvider>();
+
+	        var sut = new MessageLogHelper(socket, items, locations, players, connectionInfo);
+
+	        CountdownLogMessage logMessage = null;
+
+	        sut.OnMessageReceived += (message) => 
+		        logMessage = message as CountdownLogMessage;
+
+	        var packet = new CountdownPrintJsonPacket
+	        {
+		        Data = new[] { new JsonMessagePart { Text = "" } },
+				RemainingSeconds = 8,
+		        MessageType = JsonMessageType.Countdown
+	        };
+
+	        socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(packet);
+
+	        Assert.That(logMessage, Is.Not.Null);
+	        Assert.That(logMessage.RemainingSeconds, Is.EqualTo(8));
+        }
+
+		[Test]
         public void Should_split_new_lines_in_separate_messages_for_print_package()
         {
             var socket = Substitute.For<IArchipelagoSocketHelper>();

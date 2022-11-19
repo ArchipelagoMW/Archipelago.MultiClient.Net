@@ -4,13 +4,6 @@ using System;
 
 namespace Archipelago.MultiClient.Net
 {
-	/* TODO:
-	 * Stop Disconnect form crashing or hanging
-	 * Add support for Countdown PrintJson Message
-	 * Retrieve Datapackage at the correct time
-	 * 	 
-	 */
-
     public static class ArchipelagoSessionFactory
     {
         /// <summary>

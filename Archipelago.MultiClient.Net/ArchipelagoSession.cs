@@ -148,7 +148,7 @@ namespace Archipelago.MultiClient.Net
                     Password = password,
                     Tags = ConnectionInfo.Tags,
                     Uuid = ConnectionInfo.Uuid,
-                    Version = version != null ? new NetworkVersion(version) : new NetworkVersion(0,3,3),
+                    Version = version != null ? new NetworkVersion(version) : new NetworkVersion(0,3,5),
                     ItemsHandling = ConnectionInfo.ItemsHandlingFlags
                 });
             }

@@ -3,6 +3,7 @@
     public enum JsonMessageType
     {
         Hint,
-        ItemSend
-    }
+        ItemSend,
+        Countdown
+	}
 }

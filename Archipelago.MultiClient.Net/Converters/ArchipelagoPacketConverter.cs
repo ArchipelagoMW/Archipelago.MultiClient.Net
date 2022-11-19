@@ -73,7 +73,9 @@ namespace Archipelago.MultiClient.Net.Converters
                             return obj.ToObject<HintPrintJsonPacket>();
                         case JsonMessageType.ItemSend:
                             return obj.ToObject<ItemPrintJsonPacket>();
-                    }
+                        case JsonMessageType.Countdown:
+	                        return obj.ToObject<CountdownPrintJsonPacket>();
+}
                 }
 
                 obj["type"] = null;

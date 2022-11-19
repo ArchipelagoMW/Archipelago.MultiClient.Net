@@ -67,17 +67,19 @@ namespace Archipelago.MultiClient.Net.Helpers
                         message = new ItemSendLogMessage(parts,
                             itemPrintJson.ReceivingPlayer, itemPrintJson.Item.Player, itemPrintJson.Item);
                         break;
+					case CountdownPrintJsonPacket countdownPrintJson:
+						message = new CountdownLogMessage(parts, countdownPrintJson.RemainingSeconds);
+						break;
                     default:
                         message = new LogMessage(parts);
                         break;
                 }
 
-                if (OnMessageReceived != null)
-                    OnMessageReceived(message);
+                OnMessageReceived?.Invoke(message);
             }
         }
 
-        IEnumerable<PrintJsonPacket> SplitPacketsPerLine(PrintJsonPacket printJsonPacket)
+        static IEnumerable<PrintJsonPacket> SplitPacketsPerLine(PrintJsonPacket printJsonPacket)
         {
             var packetsPerLine = new List<PrintJsonPacket>();
             var messageParts = new List<JsonMessagePart>();
@@ -134,9 +136,14 @@ namespace Archipelago.MultiClient.Net.Helpers
                     {
                         MessageType = itemPrintJson.MessageType,
                         ReceivingPlayer = itemPrintJson.ReceivingPlayer,
-                        Item = itemPrintJson.Item,
+                        Item = itemPrintJson.Item
                     };
-                default:
+				case CountdownPrintJsonPacket countdownPrintJson:
+					return new CountdownPrintJsonPacket
+					{
+						RemainingSeconds = countdownPrintJson.RemainingSeconds
+					};
+				default:
                     return new PrintJsonPacket
                     {
                         MessageType = source.MessageType,
@@ -216,7 +223,17 @@ namespace Archipelago.MultiClient.Net.Helpers
         }
     }
 
-    public enum MessagePartType
+    public class CountdownLogMessage : LogMessage
+    {
+	    public int RemainingSeconds { get; }
+
+	    internal CountdownLogMessage(MessagePart[] parts, int remainingSeconds) : base(parts)
+	    {
+		    RemainingSeconds = remainingSeconds;
+	    }
+    }
+
+	public enum MessagePartType
     {
         Text,
         Player,
