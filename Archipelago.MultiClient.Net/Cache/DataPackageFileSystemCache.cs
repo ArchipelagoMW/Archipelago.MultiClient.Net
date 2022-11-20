@@ -31,7 +31,7 @@ namespace Archipelago.MultiClient.Net.Cache
             {
                 case RoomInfoPacket roomInfoPacket:
                     AddArchipelagoGame(roomInfoPacket);
-                    LoadDataPackageFromFileCache(roomInfoPacket);
+                    LoadDataPackageFromFileCache(roomInfoPacket.Games);
 
                     var invalidated = GetCacheInvalidatedGames(roomInfoPacket);
 
@@ -50,11 +50,14 @@ namespace Archipelago.MultiClient.Net.Cache
         }
 
         void AddArchipelagoGame(RoomInfoPacket roomInfoPacket) => 
-	        roomInfoPacket.Games = roomInfoPacket.Games.Concat(new[] { "Archipelago" }).ToArray();
+	        roomInfoPacket.Games = roomInfoPacket.Games
+		        .Concat(new[] { "Archipelago" })
+		        .Distinct()
+		        .ToArray();
 
-        void LoadDataPackageFromFileCache(RoomInfoPacket packet)
+        void LoadDataPackageFromFileCache(string[] games)
         {
-            foreach (var game in packet.Games.Distinct())
+            foreach (var game in games)
                 if (TryGetGameDataFromFileCache(game, out var cachedPackage))
                     dataPackages[game] = cachedPackage;
         }
@@ -92,7 +95,7 @@ namespace Archipelago.MultiClient.Net.Cache
 
         internal void UpdateDataPackageFromServer(DataPackage package)
         {
-            foreach (KeyValuePair<string, GameData> packageGameData in package.Games)
+            foreach (var packageGameData in package.Games)
             {
                 dataPackages[packageGameData.Key] = packageGameData.Value;
 
@@ -105,7 +108,7 @@ namespace Archipelago.MultiClient.Net.Cache
         {
             var gamesNeedingUpdating = new List<string>();
 
-            foreach (var game in packet.Games.Distinct())
+            foreach (var game in packet.Games)
             {
                 if (dataPackages.TryGetValue(game, out var gameData))
                 {

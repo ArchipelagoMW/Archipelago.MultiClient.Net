@@ -1,5 +1,4 @@
 ﻿using Archipelago.MultiClient.Net.Converters;
-using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
 using Newtonsoft.Json;
 using NUnit.Framework;

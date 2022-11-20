@@ -16,7 +16,7 @@ namespace Archipelago.MultiClient.Net
     {
         const int ArchipelagoConnectionTimeoutInSeconds = 5;
 
-        public ArchipelagoSocketHelper Socket { get; }
+        public IArchipelagoSocketHelper Socket { get; }
         public ReceivedItemsHelper Items { get; }
         public LocationCheckHelper Locations { get; }
         public PlayerHelper Players { get; }
@@ -26,14 +26,15 @@ namespace Archipelago.MultiClient.Net
         public MessageLogHelper MessageLog { get; }
 
 #if NET35
-        volatile bool expectingLoginResult;
+	    volatile bool awaitingRoomInfo;
+		volatile bool expectingLoginResult;
         LoginResult loginResult;
 #else
         TaskCompletionSource<LoginResult> loginResultTask = new TaskCompletionSource<LoginResult>();
         TaskCompletionSource<RoomInfoPacket> roomInfoPacketTask = new TaskCompletionSource<RoomInfoPacket>();
 #endif
 
-        internal ArchipelagoSession(ArchipelagoSocketHelper socket,
+		internal ArchipelagoSession(IArchipelagoSocketHelper socket,
                                     ReceivedItemsHelper items,
                                     LocationCheckHelper locations,
                                     PlayerHelper players,
@@ -59,7 +60,6 @@ namespace Archipelago.MultiClient.Net
         {
             switch (packet)
             {
-
                 case ConnectedPacket _:
                 case ConnectionRefusedPacket _:
 #if NET35
@@ -72,10 +72,15 @@ namespace Archipelago.MultiClient.Net
 #else
                     loginResultTask.TrySetResult(LoginResult.FromPacket(packet));
                     break;
-                case RoomInfoPacket roomInfoPacket:
-                    roomInfoPacketTask.TrySetResult(roomInfoPacket);
-                    break;
 #endif
+				case RoomInfoPacket roomInfoPacket:
+#if NET35
+					awaitingRoomInfo = false;
+#else
+					roomInfoPacketTask.TrySetResult(roomInfoPacket);
+#endif
+					break;
+
             }
         }
 
@@ -204,12 +209,16 @@ namespace Archipelago.MultiClient.Net
 
             try
             {
+				awaitingRoomInfo = true;
                 expectingLoginResult = true;
                 loginResult = null;
 
                 Socket.Connect();
 
-                Socket.SendPacket(new ConnectPacket
+                while (awaitingRoomInfo)
+	                Thread.Sleep(25);
+
+				Socket.SendPacket(new ConnectPacket
                 {
                     Game = ConnectionInfo.Game,
                     Name = name,

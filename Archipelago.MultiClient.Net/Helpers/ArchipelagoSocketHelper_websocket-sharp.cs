@@ -120,7 +120,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// <exception cref="T:Archipelago.MultiClient.Net.Exceptions.ArchipelagoSocketClosedException">
         ///     The websocket connection is not alive.
         /// </exception>
-        public void SendPacket(ArchipelagoPacketBase packet) => SendMultiplePackets(new List<ArchipelagoPacketBase> { packet });
+        public void SendPacket(ArchipelagoPacketBase packet) => SendMultiplePackets(packet);
 
         /// <summary>
         ///     Send multiple <see cref="ArchipelagoPacketBase"/> derived packets.

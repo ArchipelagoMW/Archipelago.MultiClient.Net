@@ -58,8 +58,16 @@ namespace Archipelago.MultiClient.Net
 
         public LoginFailure(ConnectionRefusedPacket connectionRefusedPacket)
         {
-            ErrorCodes = connectionRefusedPacket.Errors.ToArray();
-            Errors = ErrorCodes.Select(GetErrorMessage).ToArray();
+	        if (connectionRefusedPacket.Errors != null)
+	        {
+		        ErrorCodes = connectionRefusedPacket.Errors.ToArray();
+		        Errors = ErrorCodes.Select(GetErrorMessage).ToArray();
+			}
+	        else
+	        {
+		        ErrorCodes = new ConnectionRefusedError[0];
+		        Errors = new string[0];
+			}
         }
 
         public LoginFailure(string message)
