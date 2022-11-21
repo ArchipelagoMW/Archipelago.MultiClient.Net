@@ -136,7 +136,9 @@ namespace Archipelago.MultiClient.Net
         public Task<LoginResult> LoginAsync(string game, string name, ItemsHandlingFlags itemsHandlingFlags,
             Version version = null, string[] tags = null, string uuid = null, string password = null)
         {
-            if (!roomInfoPacketTask.Task.IsCompleted)
+	        loginResultTask = new TaskCompletionSource<LoginResult>();
+
+			if (!roomInfoPacketTask.Task.IsCompleted)
             {
                 loginResultTask = new TaskCompletionSource<LoginResult>();
                 loginResultTask.SetResult(new LoginFailure("You are not connected, run ConnectAsync() first"));
@@ -147,7 +149,7 @@ namespace Archipelago.MultiClient.Net
 
             try
             {
-                Socket.SendPacket(new ConnectPacket {
+				Socket.SendPacket(new ConnectPacket {
                     Game = ConnectionInfo.Game,
                     Name = name,
                     Password = password,
@@ -159,18 +161,18 @@ namespace Archipelago.MultiClient.Net
             }
             catch (ArchipelagoSocketClosedException)
             {
-                loginResultTask = new TaskCompletionSource<LoginResult>();
                 loginResultTask.SetResult(new LoginFailure("You are not connected, run ConnectAsync() first"));
                 return loginResultTask.Task;
             }
 
-            loginResultTask = SetResultAfterTimeout<LoginResult>(ArchipelagoConnectionTimeoutInSeconds, new LoginFailure("Connection timed out."));
+            SetResultAfterTimeout<LoginResult>(loginResultTask, ArchipelagoConnectionTimeoutInSeconds, 
+	            new LoginFailure("Connection timed out."));
+
             return loginResultTask.Task;
         }
 
-        private static TaskCompletionSource<T> SetResultAfterTimeout<T>(int timeoutInSeconds, T result)
+        static void SetResultAfterTimeout<T>(TaskCompletionSource<T> task, int timeoutInSeconds, T result)
         {
-            var task = new TaskCompletionSource<T>();
 #if NET40
             var timer = new Timer(_ => task.TrySetResult(result));
             timer.Change(TimeSpan.FromSeconds(timeoutInSeconds), TimeSpan.FromMilliseconds(-1));
@@ -178,7 +180,6 @@ namespace Archipelago.MultiClient.Net
             var tokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(timeoutInSeconds));
             tokenSource.Token.Register(() => task.TrySetResult(result));
 #endif
-            return task;
         }
 #endif
 
@@ -215,8 +216,18 @@ namespace Archipelago.MultiClient.Net
 
                 Socket.Connect();
 
-                while (awaitingRoomInfo)
-	                Thread.Sleep(25);
+                var connectedStartedTime = DateTime.UtcNow;
+				while (awaitingRoomInfo)
+				{
+					if (DateTime.UtcNow - connectedStartedTime > TimeSpan.FromSeconds(ArchipelagoConnectionTimeoutInSeconds))
+					{
+						Socket.Disconnect();
+
+						return new LoginFailure("Connection timed out.");
+					}
+
+					Thread.Sleep(25);
+				}
 
 				Socket.SendPacket(new ConnectPacket
                 {
@@ -229,7 +240,7 @@ namespace Archipelago.MultiClient.Net
                     ItemsHandling = ConnectionInfo.ItemsHandlingFlags
                 });
 
-                var connectedStartedTime = DateTime.UtcNow;
+                connectedStartedTime = DateTime.UtcNow;
                 while (expectingLoginResult)
                 {
                     if (DateTime.UtcNow - connectedStartedTime > TimeSpan.FromSeconds(ArchipelagoConnectionTimeoutInSeconds))
@@ -256,17 +267,20 @@ namespace Archipelago.MultiClient.Net
 
             try
             {
-                task.Wait();
+	            task.Wait(TimeSpan.FromSeconds(ArchipelagoConnectionTimeoutInSeconds));
             }
             catch (AggregateException e)
             {
-                if (e.GetBaseException() is OperationCanceledException)
-                    return new LoginFailure("Connection timed out.");
+	            if (e.GetBaseException() is OperationCanceledException)
+		            return new LoginFailure("Connection timed out.");
 
-                return new LoginFailure(e.GetBaseException().Message);
+	            return new LoginFailure(e.GetBaseException().Message);
             }
 
-            return LoginAsync(game, name, itemsHandlingFlags, version, tags, uuid, password).Result;
+			if (!task.IsCompleted)
+				return new LoginFailure("Connection timed out.");
+			
+			return LoginAsync(game, name, itemsHandlingFlags, version, tags, uuid, password).Result;
 #endif
         }
     }
