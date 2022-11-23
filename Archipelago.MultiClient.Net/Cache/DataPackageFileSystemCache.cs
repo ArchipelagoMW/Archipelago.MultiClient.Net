@@ -110,7 +110,9 @@ namespace Archipelago.MultiClient.Net.Cache
 
             foreach (var game in packet.Games)
             {
-                if (dataPackages.TryGetValue(game, out var gameData))
+                if (packet.DataPackageVersions != null 
+                    && packet.DataPackageVersions.ContainsKey(game) 
+                    && dataPackages.TryGetValue(game, out var gameData))
                 {
                     if (gameData.Version != packet.DataPackageVersions[game])
                         gamesNeedingUpdating.Add(game);

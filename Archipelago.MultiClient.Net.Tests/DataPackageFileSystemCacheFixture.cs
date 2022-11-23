@@ -17,8 +17,14 @@ namespace Archipelago.MultiClient.Net.Tests
         {
             var socket = Substitute.For<IArchipelagoSocketHelper>();
             var fileSystemDataPackageProvider = Substitute.For<IFileSystemDataPackageProvider>();
+            fileSystemDataPackageProvider.TryGetDataPackage(Arg.Any<string>(), out _)
+	            .Returns(x =>
+	            {
+		            x[1] = null;
+		            return false;
+	            });
 
-            _ = new DataPackageFileSystemCache(socket, fileSystemDataPackageProvider);
+			_ = new DataPackageFileSystemCache(socket, fileSystemDataPackageProvider);
 
             socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(new RoomInfoPacket {
                 Games = new []{ "One" }
@@ -276,6 +282,60 @@ namespace Archipelago.MultiClient.Net.Tests
 
             Assert.That(gameDataGameOne.Version, Is.EqualTo(3));
             Assert.That(gameDataGameTwo.Version, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void Should_request_data_package_for_all_games_when_versions_are_not_provided_on_the_roominfo()
+        {
+	        var roomInfo = new RoomInfoPacket
+	        {
+		        Games = new[] { "One", "Two" },
+		        DataPackageVersions = null
+	        };
+
+			var socket = Substitute.For<IArchipelagoSocketHelper>();
+	        var fileSystemDataPackageProvider = Substitute.For<IFileSystemDataPackageProvider>();
+	        fileSystemDataPackageProvider.TryGetDataPackage(Arg.Any<string>(), out _)
+		        .Returns(x => {
+			        x[1] = new GameData();
+			        return true;
+		        });
+
+			_ = new DataPackageFileSystemCache(socket, fileSystemDataPackageProvider);
+
+			socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(roomInfo);
+
+			socket.Received().SendPacket(Arg.Is<GetDataPackagePacket>(p =>
+		        p.Games.Length == 3 && p.Games[0] == "One" && p.Games[1] == "Two" && p.Games[2] == "Archipelago"
+	        ));
+        }
+
+        [Test]
+        public void Should_request_data_package_for_games_the_server_fails_to_send_the_version_for()
+        {
+	        var roomInfo = new RoomInfoPacket
+	        {
+		        Games = new[] { "One", "Two" },
+		        DataPackageVersions = new Dictionary<string, int> {
+			        { "One", 0 }
+				}
+	        };
+
+			var socket = Substitute.For<IArchipelagoSocketHelper>();
+	        var fileSystemDataPackageProvider = Substitute.For<IFileSystemDataPackageProvider>();
+	        fileSystemDataPackageProvider.TryGetDataPackage(Arg.Any<string>(), out _)
+		        .Returns(x => {
+			        x[1] = new GameData();
+			        return true;
+		        });
+
+	        _ = new DataPackageFileSystemCache(socket, fileSystemDataPackageProvider);
+
+	        socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(roomInfo);
+
+	        socket.Received().SendPacket(Arg.Is<GetDataPackagePacket>(p =>
+		        p.Games.Length == 2 && p.Games[0] == "Two" && p.Games[1] == "Archipelago"
+	        ));
         }
     }
 }
