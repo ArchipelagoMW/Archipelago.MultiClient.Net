@@ -15,7 +15,6 @@ namespace Archipelago.MultiClient.Net.Tests
     {
         [Test]
         public void Enumeration_over_collection_should_not_throw_when_new_data_is_received()
-
         {
             var socket = Substitute.For<IArchipelagoSocketHelper>();
             var locationHelper = Substitute.For<ILocationCheckHelper>();
@@ -67,7 +66,6 @@ namespace Archipelago.MultiClient.Net.Tests
 
         [Test]
         public void Get_Item_Name_From_DataPackage_Does_Not_Throw()
-
         {
             var socket = Substitute.For<IArchipelagoSocketHelper>();
             var locationHelper = Substitute.For<ILocationCheckHelper>();

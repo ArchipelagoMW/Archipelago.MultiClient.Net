@@ -24,14 +24,16 @@ namespace Archipelago.MultiClient.Net.Helpers
         readonly ILocationCheckHelper locationsHelper;
         readonly IDataPackageCache dataPackageCache;
 
-        ConcurrentQueue<NetworkItem> itemQueue = new ConcurrentQueue<NetworkItem>();
+        ConcurrentQueue<NetworkItem> itemQueue; 
 
-        readonly IConcurrentList<NetworkItem> allItemsReceived = new ConcurrentList<NetworkItem>();
+        readonly IConcurrentList<NetworkItem> allItemsReceived;
 
-        Dictionary<long, string> itemLookupCache = new Dictionary<long, string>();
-        
-        public int Index => allItemsReceived.Count;
-        public ReadOnlyCollection<NetworkItem> AllItemsReceived => allItemsReceived.AsReadOnlyCollection();
+        Dictionary<long, string> itemLookupCache;
+
+        ReadOnlyCollection<NetworkItem> cachedReceivedItems;
+		
+		public int Index => cachedReceivedItems.Count;
+        public ReadOnlyCollection<NetworkItem> AllItemsReceived => cachedReceivedItems;
 
         public delegate void ItemReceivedHandler(ReceivedItemsHelper helper);
         public event ItemReceivedHandler ItemReceived;
@@ -42,7 +44,12 @@ namespace Archipelago.MultiClient.Net.Helpers
             this.locationsHelper = locationsHelper;
             this.dataPackageCache = dataPackageCache;
 
-            socket.PacketReceived += Socket_PacketReceived;
+			itemQueue = new ConcurrentQueue<NetworkItem>();
+			allItemsReceived = new ConcurrentList<NetworkItem>();
+			itemLookupCache = new Dictionary<long, string>();
+			cachedReceivedItems = allItemsReceived.AsReadOnlyCollection();
+
+			socket.PacketReceived += Socket_PacketReceived;
         }
 
         /// <summary>
@@ -152,6 +159,8 @@ namespace Archipelago.MultiClient.Net.Helpers
                         allItemsReceived.Add(item);
                         itemQueue.Enqueue(item);
 
+                        cachedReceivedItems = allItemsReceived.AsReadOnlyCollection();
+
                         ItemReceived?.Invoke(this);
                     }
                     break;
@@ -175,7 +184,9 @@ namespace Archipelago.MultiClient.Net.Helpers
                 itemQueue.Enqueue(item);
                 allItemsReceived.Add(item);
 
-                if (ItemReceived != null && !previouslyReceived.Contains(item))
+                cachedReceivedItems = allItemsReceived.AsReadOnlyCollection();
+
+				if (ItemReceived != null && !previouslyReceived.Contains(item))
                     ItemReceived(this);
             }
         }
