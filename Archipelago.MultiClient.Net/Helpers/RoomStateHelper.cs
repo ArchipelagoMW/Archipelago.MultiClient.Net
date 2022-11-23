@@ -31,9 +31,14 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// </summary>
         public bool HasPassword { get; private set; }
         /// <summary>
-        /// An enumeration containing the possible forfeit command permission.
+        /// An enumeration containing the possible release command permission.
         /// </summary>
-        public Permissions ForfeitPermissions { get; private set; }
+        public Permissions ReleasePermissions { get; private set; }
+		/// <summary>
+		/// An enumeration containing the possible forfeit command permission. 
+		/// Deprecated, use Release Permissions instead
+		/// </summary>
+		public Permissions ForfeitPermissions => ReleasePermissions;
         /// <summary>
         /// An enumeration containing the possible collect command permission.
         /// </summary>
@@ -90,9 +95,12 @@ namespace Archipelago.MultiClient.Net.Helpers
 
             if (packet.Permissions != null)
             {
-                if (packet.Permissions.TryGetValue("forfeit", out var forfeitPermissions))
-                    ForfeitPermissions = forfeitPermissions;
-                if (packet.Permissions.TryGetValue("collect", out var collectPermissions))
+                if (packet.Permissions.TryGetValue("release", out var releasePermissions))
+                    ReleasePermissions = releasePermissions;
+                else if (packet.Permissions.TryGetValue("forfeit", out var forfeitPermissions))
+	                ReleasePermissions = forfeitPermissions;
+
+				if (packet.Permissions.TryGetValue("collect", out var collectPermissions))
                     CollectPermissions = collectPermissions;
                 if (packet.Permissions.TryGetValue("remaining", out var remainingPermissions))
                     RemainingPermissions = remainingPermissions;
@@ -118,10 +126,12 @@ namespace Archipelago.MultiClient.Net.Helpers
 
             if (packet.Permissions != null)
             {
-                if (packet.Permissions.TryGetValue("forfeit", out var forfeitPermissions))
-                    ForfeitPermissions = forfeitPermissions;
+                if (packet.Permissions.TryGetValue("release", out var releasePermissions))
+                    ReleasePermissions = releasePermissions;
+				else if (packet.Permissions.TryGetValue("forfeit", out var forfeitPermissions))
+	                ReleasePermissions = forfeitPermissions;
 
-                if (packet.Permissions.TryGetValue("collect", out var collectPermissions))
+				if (packet.Permissions.TryGetValue("collect", out var collectPermissions))
                     CollectPermissions = collectPermissions;
 
                 if (packet.Permissions.TryGetValue("remaining", out var remainingPermissions))

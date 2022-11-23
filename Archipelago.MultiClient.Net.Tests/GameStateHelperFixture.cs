@@ -100,6 +100,55 @@ namespace Archipelago.MultiClient.Net.Tests
                     new RoomUpdatePacket { Password = false },
                     s => s.HasPassword, true, false),
 
+                // Release Permissions
+                new RoomStateHelperTest<Permissions>(
+	                "Should_get_and_update_release_permissions",
+	                new RoomInfoPacket { Permissions = new Dictionary<string, Permissions> { { "release", Permissions.Enabled } } },
+	                new RoomUpdatePacket { Permissions = new Dictionary<string, Permissions> { { "release", Permissions.Goal } } },
+	                s => s.ReleasePermissions, Permissions.Enabled, Permissions.Goal),
+                new RoomStateHelperTest<Permissions>(
+					"Should_not_update_release_permissions_when_its_not_provided",
+	                new RoomInfoPacket { Permissions = new Dictionary<string, Permissions> { { "release", Permissions.Disabled } } },
+	                new RoomUpdatePacket { Permissions = null },
+	                s => s.ReleasePermissions, Permissions.Disabled, Permissions.Disabled),
+                new RoomStateHelperTest<Permissions>(
+					"Should_update_release_permissions_to_false_when_its_provided",
+	                new RoomInfoPacket { Permissions = new Dictionary<string, Permissions> { { "release", Permissions.Auto } } },
+	                new RoomUpdatePacket { Permissions = new Dictionary<string, Permissions> { { "release", Permissions.Enabled } } },
+	                s => s.ReleasePermissions, Permissions.Auto, Permissions.Enabled),
+
+				//forward compatibility
+                new RoomStateHelperTest<Permissions>(
+					"Should_get_and_update_release_permissions_from_forfeit_permissions",
+	                new RoomInfoPacket { Permissions = new Dictionary<string, Permissions> { { "forfeit", Permissions.Enabled } } },
+	                new RoomUpdatePacket { Permissions = new Dictionary<string, Permissions> { { "forfeit", Permissions.Goal } } },
+	                s => s.ReleasePermissions, Permissions.Enabled, Permissions.Goal),
+                new RoomStateHelperTest<Permissions>(
+	                "Should_update_release_permissions_to_false_when_its_provided_as_forfeit_permission",
+	                new RoomInfoPacket { Permissions = new Dictionary<string, Permissions> { { "forfeit", Permissions.Auto } } },
+	                new RoomUpdatePacket { Permissions = new Dictionary<string, Permissions> { { "forfeit", Permissions.Enabled } } },
+	                s => s.ReleasePermissions, Permissions.Auto, Permissions.Enabled),
+                new RoomStateHelperTest<Permissions>(
+	                "Should_get_and_update_forfeit_permissions_from_release_permissions",
+	                new RoomInfoPacket { Permissions = new Dictionary<string, Permissions> { { "release", Permissions.Enabled } } },
+	                new RoomUpdatePacket { Permissions = new Dictionary<string, Permissions> { { "release", Permissions.Goal } } },
+	                s => s.ReleasePermissions, Permissions.Enabled, Permissions.Goal),
+                new RoomStateHelperTest<Permissions>(
+	                "Should_update_forfeit_permissions_to_false_when_its_provided_as_release_permission",
+	                new RoomInfoPacket { Permissions = new Dictionary<string, Permissions> { { "release", Permissions.Auto } } },
+	                new RoomUpdatePacket { Permissions = new Dictionary<string, Permissions> { { "release", Permissions.Enabled } } },
+	                s => s.ReleasePermissions, Permissions.Auto, Permissions.Enabled),
+                new RoomStateHelperTest<Permissions>(
+	                "Should_get_and_update_release_permissions_from_release_permissions_over_forfeit_permissions",
+	                new RoomInfoPacket { Permissions = new Dictionary<string, Permissions> {
+		                { "forfeit", Permissions.Auto },
+		                { "release", Permissions.Enabled }
+					} },
+	                new RoomUpdatePacket { Permissions = new Dictionary<string, Permissions> {
+			            { "forfeit", Permissions.Disabled },
+		                { "release", Permissions.Auto }
+					} },
+					s => s.ReleasePermissions, Permissions.Enabled, Permissions.Auto),
                 // Forfeit Permissions
                 new RoomStateHelperTest<Permissions>(
                     "Should_get_and_update_forfeit_permissions",
@@ -116,6 +165,7 @@ namespace Archipelago.MultiClient.Net.Tests
                     new RoomInfoPacket { Permissions = new Dictionary<string, Permissions> { { "forfeit", Permissions.Auto } } },
                     new RoomUpdatePacket { Permissions = new Dictionary<string, Permissions> { { "forfeit", Permissions.Enabled } } },
                     s => s.ForfeitPermissions, Permissions.Auto, Permissions.Enabled),
+
 
                 // Collect Permissions
                 new RoomStateHelperTest<Permissions>(
