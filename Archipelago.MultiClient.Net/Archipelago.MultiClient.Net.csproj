@@ -15,7 +15,7 @@
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<GeneratePackageOnBuild>False</GeneratePackageOnBuild>
 		<Version>4.1.0</Version>
-		<Company>Hussein Farran, Jarno Westhof, Zach Parks</Company>
+		<Company>Jarno Westhof, Hussein Farran, Zach Parks</Company>
 	</PropertyGroup>
 
 	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
