@@ -53,7 +53,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 
     public class ConnectionInfoHelper : IConnectionInfoProvider
     {
-        private readonly IArchipelagoSocketHelper socket;
+        readonly IArchipelagoSocketHelper socket;
 
         public string Game { get; private set; }
         public int Team { get; private set; }
@@ -71,7 +71,7 @@ namespace Archipelago.MultiClient.Net.Helpers
             socket.PacketReceived += PacketReceived;
         }
 
-        private void PacketReceived(ArchipelagoPacketBase packet)
+        void PacketReceived(ArchipelagoPacketBase packet)
         {
             switch (packet)
             {
@@ -93,7 +93,7 @@ namespace Archipelago.MultiClient.Net.Helpers
             Uuid = uuid ?? Guid.NewGuid().ToString();
         }
 
-        private void Reset()
+        void Reset()
         {
             Game = null;
             Team = -1;
@@ -107,19 +107,13 @@ namespace Archipelago.MultiClient.Net.Helpers
         ///     Send a ConnectUpdate packet and set the tags and ItemsHandlingFlags for the current connection to the provided params.
         /// </summary>
         /// <param name="tags">New tags for the current connection.</param>
-        public void UpdateConnectionOptions(string[] tags)
-        {
-            UpdateConnectionOptions(tags, ItemsHandlingFlags);
-        }
+        public void UpdateConnectionOptions(string[] tags) => UpdateConnectionOptions(tags, ItemsHandlingFlags);
 
         /// <summary>
         ///     Send a ConnectUpdate packet and set the tags and ItemsHandlingFlags for the current connection to the provided params.
         /// </summary>
         /// <param name="itemsHandlingFlags">New ItemsHandlingFlags for the current connection.</param>
-        public void UpdateConnectionOptions(ItemsHandlingFlags itemsHandlingFlags)
-        {
-            UpdateConnectionOptions(Tags, ItemsHandlingFlags);
-        }
+        public void UpdateConnectionOptions(ItemsHandlingFlags itemsHandlingFlags) => UpdateConnectionOptions(Tags, ItemsHandlingFlags);
 
         /// <summary>
         ///     Send a ConnectUpdate packet and set the tags and ItemsHandlingFlags for the current connection to the provided params.

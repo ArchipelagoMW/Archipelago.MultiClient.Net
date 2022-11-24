@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.31829.152
+# Visual Studio Version 17
+VisualStudioVersion = 17.2.32616.157
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Archipelago.MultiClient.Net", "Archipelago.MultiClient.Net\Archipelago.MultiClient.Net.csproj", "{35A803AD-85ED-42E9-B1E3-C6B72096F0C1}"
 EndProject

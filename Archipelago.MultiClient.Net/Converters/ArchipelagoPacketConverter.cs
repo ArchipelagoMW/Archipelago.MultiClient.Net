@@ -14,7 +14,7 @@ namespace Archipelago.MultiClient.Net.Converters
 {
     public class ArchipelagoPacketConverter : JsonConverter
     {
-        public static Dictionary<ArchipelagoPacketType, Func<JObject, ArchipelagoPacketBase>> PacketDeserializationMap = new Dictionary<ArchipelagoPacketType, Func<JObject, ArchipelagoPacketBase>>()
+        static readonly Dictionary<ArchipelagoPacketType, Func<JObject, ArchipelagoPacketBase>> PacketDeserializationMap = new Dictionary<ArchipelagoPacketType, Func<JObject, ArchipelagoPacketBase>>()
         {
             [ArchipelagoPacketType.RoomInfo]          = obj => obj.ToObject<RoomInfoPacket>(),
             [ArchipelagoPacketType.ConnectionRefused] = obj => obj.ToObject<ConnectionRefusedPacket>(),
@@ -51,22 +51,18 @@ namespace Archipelago.MultiClient.Net.Converters
             var token = JObject.Load(reader);
 
             var commandType = token["cmd"].ToString();
-            ArchipelagoPacketType packetType = (ArchipelagoPacketType)Enum.Parse(typeof(ArchipelagoPacketType), commandType);
+            var packetType = (ArchipelagoPacketType)Enum.Parse(typeof(ArchipelagoPacketType), commandType);
             
             ArchipelagoPacketBase ret = null;
             if (PacketDeserializationMap.ContainsKey(packetType))
-            {
                 ret = PacketDeserializationMap[packetType](token);
-            }
             else
-            {
                 throw new InvalidOperationException("Received an unknown packet.");
-            }
 
             return ret;
         }
 
-        private static ArchipelagoPacketBase DeserializePrintJsonPacket(JObject obj)
+        static ArchipelagoPacketBase DeserializePrintJsonPacket(JObject obj)
         {
             if (obj.TryGetValue("type", out var token))
             {
@@ -82,7 +78,9 @@ namespace Archipelago.MultiClient.Net.Converters
                             return obj.ToObject<HintPrintJsonPacket>();
                         case JsonMessageType.ItemSend:
                             return obj.ToObject<ItemPrintJsonPacket>();
-                    }
+                        case JsonMessageType.Countdown:
+	                        return obj.ToObject<CountdownPrintJsonPacket>();
+}
                 }
 
                 obj["type"] = null;
@@ -92,8 +90,7 @@ namespace Archipelago.MultiClient.Net.Converters
         }
 
 #if NET35
-        private static bool EnumTryParse<TEnum>(string value, out TEnum result)
-            where TEnum : struct, IConvertible
+        static bool EnumTryParse<TEnum>(string value, out TEnum result) where TEnum : struct, IConvertible
         {
             if (value == null || !Enum.IsDefined(typeof(TEnum), value))
             {
@@ -106,9 +103,6 @@ namespace Archipelago.MultiClient.Net.Converters
         }
 #endif
 
-        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
-        {
-            throw new NotImplementedException();
-        }
+        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer) => throw new NotImplementedException();
     }
 }

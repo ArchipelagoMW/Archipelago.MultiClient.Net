@@ -36,7 +36,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 
     public class PlayerHelper : IPlayerHelper
     {
-        private PlayerInfo[] players;
+        PlayerInfo[] players;
 
         /// <summary>
         /// A collection of PlayerInfo's where the index is the player their slot
@@ -57,11 +57,9 @@ namespace Archipelago.MultiClient.Net.Helpers
         public string GetPlayerAlias(int slot)
         {
             if (players == null)
-            {
                 return null;
-            }
 
-            PlayerInfo playerInfo = players.FirstOrDefault(p => p.Slot == slot);
+            var playerInfo = players.FirstOrDefault(p => p.Slot == slot);
 
             return playerInfo?.Alias;
         }
@@ -74,11 +72,9 @@ namespace Archipelago.MultiClient.Net.Helpers
         public string GetPlayerName(int slot)
         {
             if (players == null)
-            {
                 return null;
-            }
 
-            PlayerInfo playerInfo = players.FirstOrDefault(p => p.Slot == slot);
+            var playerInfo = players.FirstOrDefault(p => p.Slot == slot);
 
             return playerInfo?.Name;
         }
@@ -93,20 +89,16 @@ namespace Archipelago.MultiClient.Net.Helpers
         public string GetPlayerAliasAndName(int slot)
         {
             if (players == null)
-            {
                 return null;
-            }
 
-            PlayerInfo playerInfo = players.FirstOrDefault(p => p.Slot == slot);
+            var playerInfo = players.FirstOrDefault(p => p.Slot == slot);
             if (playerInfo == null)
-            {
                 return null;
-            }
 
             return $"{playerInfo.Alias} ({playerInfo.Name})";
         }
 
-        private void PacketReceived(ArchipelagoPacketBase packet)
+        void PacketReceived(ArchipelagoPacketBase packet)
         {
             switch (packet)
             {
@@ -119,17 +111,13 @@ namespace Archipelago.MultiClient.Net.Helpers
             }
         }
 
-        private void CreatePlayerInfo(NetworkPlayer[] networkPlayers, Dictionary<int, NetworkSlot> slotInfos)
+        void CreatePlayerInfo(NetworkPlayer[] networkPlayers, Dictionary<int, NetworkSlot> slotInfos)
         {
             NetworkSlot[] groups;
             if (slotInfos == null)
-            {
                 groups = new NetworkSlot[0];
-            }
             else
-            {
                 groups = slotInfos.Values.Where(s => s.Type == SlotType.Group).ToArray();
-            }
 
             players = networkPlayers.Select(p => new PlayerInfo {
                 Team = p.Team,
@@ -141,7 +129,7 @@ namespace Archipelago.MultiClient.Net.Helpers
             }).ToArray();
         }
 
-        private void UpdatePlayerInfo(NetworkPlayer[] networkPlayers)
+        void UpdatePlayerInfo(NetworkPlayer[] networkPlayers)
         {
             if (networkPlayers != null && networkPlayers.Length > 0)
             {

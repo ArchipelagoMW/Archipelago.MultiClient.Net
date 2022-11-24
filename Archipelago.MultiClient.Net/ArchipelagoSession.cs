@@ -1,6 +1,7 @@
 ﻿using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Exceptions;
 using Archipelago.MultiClient.Net.Helpers;
+using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
 using System;
 using System.Threading;
@@ -13,9 +14,9 @@ namespace Archipelago.MultiClient.Net
 {
     public class ArchipelagoSession
     {
-        private const int ArchipelagoConnectionTimeoutInSeconds = 5;
+        const int ArchipelagoConnectionTimeoutInSeconds = 5;
 
-        public ArchipelagoSocketHelper Socket { get; }
+        public IArchipelagoSocketHelper Socket { get; }
         public ReceivedItemsHelper Items { get; }
         public LocationCheckHelper Locations { get; }
         public PlayerHelper Players { get; }
@@ -25,14 +26,15 @@ namespace Archipelago.MultiClient.Net
         public MessageLogHelper MessageLog { get; }
 
 #if NET35
-        volatile bool expectingLoginResult;
-        private LoginResult loginResult;
+	    volatile bool awaitingRoomInfo;
+		volatile bool expectingLoginResult;
+        LoginResult loginResult;
 #else
-        private TaskCompletionSource<LoginResult> loginResultTask = new TaskCompletionSource<LoginResult>();
-        private TaskCompletionSource<RoomInfoPacket> roomInfoPacketTask = new TaskCompletionSource<RoomInfoPacket>();
+        TaskCompletionSource<LoginResult> loginResultTask = new TaskCompletionSource<LoginResult>();
+        TaskCompletionSource<RoomInfoPacket> roomInfoPacketTask = new TaskCompletionSource<RoomInfoPacket>();
 #endif
 
-        internal ArchipelagoSession(ArchipelagoSocketHelper socket,
+		internal ArchipelagoSession(IArchipelagoSocketHelper socket,
                                     ReceivedItemsHelper items,
                                     LocationCheckHelper locations,
                                     PlayerHelper players,
@@ -54,11 +56,10 @@ namespace Archipelago.MultiClient.Net
         }
 
 
-        private void Socket_PacketReceived(ArchipelagoPacketBase packet)
+        void Socket_PacketReceived(ArchipelagoPacketBase packet)
         {
             switch (packet)
             {
-
                 case ConnectedPacket _:
                 case ConnectionRefusedPacket _:
 #if NET35
@@ -71,10 +72,15 @@ namespace Archipelago.MultiClient.Net
 #else
                     loginResultTask.TrySetResult(LoginResult.FromPacket(packet));
                     break;
-                case RoomInfoPacket roomInfoPacket:
-                    roomInfoPacketTask.TrySetResult(roomInfoPacket);
-                    break;
 #endif
+				case RoomInfoPacket roomInfoPacket:
+#if NET35
+					awaitingRoomInfo = false;
+#else
+					roomInfoPacketTask.TrySetResult(roomInfoPacket);
+#endif
+					break;
+
             }
         }
 
@@ -130,7 +136,9 @@ namespace Archipelago.MultiClient.Net
         public Task<LoginResult> LoginAsync(string game, string name, ItemsHandlingFlags itemsHandlingFlags,
             Version version = null, string[] tags = null, string uuid = null, string password = null)
         {
-            if (!roomInfoPacketTask.Task.IsCompleted)
+	        loginResultTask = new TaskCompletionSource<LoginResult>();
+
+			if (!roomInfoPacketTask.Task.IsCompleted)
             {
                 loginResultTask = new TaskCompletionSource<LoginResult>();
                 loginResultTask.SetResult(new LoginFailure("You are not connected, run ConnectAsync() first"));
@@ -141,30 +149,30 @@ namespace Archipelago.MultiClient.Net
 
             try
             {
-                Socket.SendPacket(new ConnectPacket {
+				Socket.SendPacket(new ConnectPacket {
                     Game = ConnectionInfo.Game,
                     Name = name,
                     Password = password,
                     Tags = ConnectionInfo.Tags,
                     Uuid = ConnectionInfo.Uuid,
-                    Version = version ?? new Version(0,3,3),
+                    Version = version != null ? new NetworkVersion(version) : new NetworkVersion(0,3,5),
                     ItemsHandling = ConnectionInfo.ItemsHandlingFlags
                 });
             }
             catch (ArchipelagoSocketClosedException)
             {
-                loginResultTask = new TaskCompletionSource<LoginResult>();
                 loginResultTask.SetResult(new LoginFailure("You are not connected, run ConnectAsync() first"));
                 return loginResultTask.Task;
             }
 
-            loginResultTask = SetResultAfterTimeout<LoginResult>(ArchipelagoConnectionTimeoutInSeconds, new LoginFailure("Connection timed out."));
+            SetResultAfterTimeout<LoginResult>(loginResultTask, ArchipelagoConnectionTimeoutInSeconds, 
+	            new LoginFailure("Connection timed out."));
+
             return loginResultTask.Task;
         }
 
-        private static TaskCompletionSource<T> SetResultAfterTimeout<T>(int timeoutInSeconds, T result)
+        static void SetResultAfterTimeout<T>(TaskCompletionSource<T> task, int timeoutInSeconds, T result)
         {
-            var task = new TaskCompletionSource<T>();
 #if NET40
             var timer = new Timer(_ => task.TrySetResult(result));
             timer.Change(TimeSpan.FromSeconds(timeoutInSeconds), TimeSpan.FromMilliseconds(-1));
@@ -172,7 +180,6 @@ namespace Archipelago.MultiClient.Net
             var tokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(timeoutInSeconds));
             tokenSource.Token.Register(() => task.TrySetResult(result));
 #endif
-            return task;
         }
 #endif
 
@@ -203,23 +210,37 @@ namespace Archipelago.MultiClient.Net
 
             try
             {
+				awaitingRoomInfo = true;
                 expectingLoginResult = true;
                 loginResult = null;
 
                 Socket.Connect();
 
-                Socket.SendPacket(new ConnectPacket
+                var connectedStartedTime = DateTime.UtcNow;
+				while (awaitingRoomInfo)
+				{
+					if (DateTime.UtcNow - connectedStartedTime > TimeSpan.FromSeconds(ArchipelagoConnectionTimeoutInSeconds))
+					{
+						Socket.Disconnect();
+
+						return new LoginFailure("Connection timed out.");
+					}
+
+					Thread.Sleep(25);
+				}
+
+				Socket.SendPacket(new ConnectPacket
                 {
                     Game = ConnectionInfo.Game,
                     Name = name,
                     Password = password,
                     Tags = ConnectionInfo.Tags,
                     Uuid = ConnectionInfo.Uuid,
-                    Version = version ?? new Version(0,3,3),
+                    Version = version != null ? new NetworkVersion(version) : new NetworkVersion(0,3,3),
                     ItemsHandling = ConnectionInfo.ItemsHandlingFlags
                 });
 
-                var connectedStartedTime = DateTime.UtcNow;
+                connectedStartedTime = DateTime.UtcNow;
                 while (expectingLoginResult)
                 {
                     if (DateTime.UtcNow - connectedStartedTime > TimeSpan.FromSeconds(ArchipelagoConnectionTimeoutInSeconds))
@@ -246,19 +267,20 @@ namespace Archipelago.MultiClient.Net
 
             try
             {
-                task.Wait();
+	            task.Wait(TimeSpan.FromSeconds(ArchipelagoConnectionTimeoutInSeconds));
             }
             catch (AggregateException e)
             {
-                if (e.GetBaseException() is OperationCanceledException)
-                {
-                    return new LoginFailure("Connection timed out.");
-                }
+	            if (e.GetBaseException() is OperationCanceledException)
+		            return new LoginFailure("Connection timed out.");
 
-                return new LoginFailure(e.GetBaseException().Message);
+	            return new LoginFailure(e.GetBaseException().Message);
             }
 
-            return LoginAsync(game, name, itemsHandlingFlags, version, tags, uuid, password).Result;
+			if (!task.IsCompleted)
+				return new LoginFailure("Connection timed out.");
+			
+			return LoginAsync(game, name, itemsHandlingFlags, version, tags, uuid, password).Result;
 #endif
         }
     }

@@ -53,14 +53,10 @@ namespace Archipelago.MultiClient.Net.BounceFeatures.DeathLink
         public bool Equals(DeathLink other)
         {
             if (ReferenceEquals(null, other))
-            {
                 return false;
-            }
 
             if (ReferenceEquals(this, other))
-            {
                 return true;
-            }
 
             return Source == other.Source
                    && Timestamp.Date.Equals(other.Timestamp.Date)
@@ -72,19 +68,13 @@ namespace Archipelago.MultiClient.Net.BounceFeatures.DeathLink
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj))
-            {
                 return false;
-            }
 
             if (ReferenceEquals(this, obj))
-            {
                 return true;
-            }
 
             if (obj.GetType() != GetType())
-            {
                 return false;
-            }
 
             return Equals((DeathLink)obj);
         }
@@ -93,20 +83,15 @@ namespace Archipelago.MultiClient.Net.BounceFeatures.DeathLink
         {
             unchecked
             {
-                var hashCode = Timestamp.GetHashCode();
+	            // ReSharper disable once NonReadonlyMemberInGetHashCode
+	            var hashCode = Timestamp.GetHashCode();
                 hashCode = (hashCode * 397) ^ (Source != null ? Source.GetHashCode() : 0);
                 return hashCode;
             }
         }
 
-        public static bool operator ==(DeathLink lhs, DeathLink rhs)
-        {
-            return lhs?.Equals(rhs) ?? rhs is null;
-        }
+        public static bool operator ==(DeathLink lhs, DeathLink rhs) => lhs?.Equals(rhs) ?? rhs is null;
 
-        public static bool operator !=(DeathLink lhs, DeathLink rhs)
-        {
-            return !(lhs == rhs);
-        }
+        public static bool operator !=(DeathLink lhs, DeathLink rhs) => !(lhs == rhs);
     }
 }

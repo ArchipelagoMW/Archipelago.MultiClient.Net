@@ -28,9 +28,6 @@ namespace Archipelago.MultiClient.Net.Models
         internal Func<string, Task<JToken>> GetAsync { get; set; }
 #endif
 
-        public override string ToString()
-        {
-            return $"Key: {Key}";
-        }
+        public override string ToString() => $"Key: {Key}";
     }
 }

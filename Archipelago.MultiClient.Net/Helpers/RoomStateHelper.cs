@@ -8,7 +8,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 {
     public class RoomStateHelper
     {
-        private string[] tags;
+        string[] tags;
 
         /// <summary>
         /// The amount of points it costs to receive a hint from the server.
@@ -31,9 +31,14 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// </summary>
         public bool HasPassword { get; private set; }
         /// <summary>
-        /// An enumeration containing the possible forfeit command permission.
+        /// An enumeration containing the possible release command permission.
         /// </summary>
-        public Permissions ForfeitPermissions { get; private set; }
+        public Permissions ReleasePermissions { get; private set; }
+		/// <summary>
+		/// An enumeration containing the possible forfeit command permission. 
+		/// Deprecated, use Release Permissions instead
+		/// </summary>
+		public Permissions ForfeitPermissions => ReleasePermissions;
         /// <summary>
         /// An enumeration containing the possible collect command permission.
         /// </summary>
@@ -64,7 +69,7 @@ namespace Archipelago.MultiClient.Net.Helpers
             socket.PacketReceived += PacketReceived;
         }
 
-        private void PacketReceived(ArchipelagoPacketBase packet)
+        void PacketReceived(ArchipelagoPacketBase packet)
         {
             switch (packet)
             {
@@ -77,11 +82,11 @@ namespace Archipelago.MultiClient.Net.Helpers
             }
         }
 
-        private void OnRoomInfoPacketReceived(RoomInfoPacket packet)
+        void OnRoomInfoPacketReceived(RoomInfoPacket packet)
         {
             HintCost = packet.HintCost;
             LocationCheckPoints = packet.LocationCheckPoints;
-            Version = packet.Version;
+            Version = packet.Version?.ToVersion();
             HasPassword = packet.Password;
             Seed = packet.SeedName;
             RoomInfoSendTime = UnixTimeConverter.UnixTimeStampToDateTime(packet.Timestamp);
@@ -90,64 +95,47 @@ namespace Archipelago.MultiClient.Net.Helpers
 
             if (packet.Permissions != null)
             {
-                if (packet.Permissions.TryGetValue("forfeit", out Permissions forfeitPermissions))
-                {
-                    ForfeitPermissions = forfeitPermissions;
-                }
-                if (packet.Permissions.TryGetValue("collect", out Permissions collectPermissions))
-                {
+                if (packet.Permissions.TryGetValue("release", out var releasePermissions))
+                    ReleasePermissions = releasePermissions;
+                else if (packet.Permissions.TryGetValue("forfeit", out var forfeitPermissions))
+	                ReleasePermissions = forfeitPermissions;
+
+				if (packet.Permissions.TryGetValue("collect", out var collectPermissions))
                     CollectPermissions = collectPermissions;
-                }
-                if (packet.Permissions.TryGetValue("remaining", out Permissions remainingPermissions))
-                {
+                if (packet.Permissions.TryGetValue("remaining", out var remainingPermissions))
                     RemainingPermissions = remainingPermissions;
-                }
             }
         }
 
-        private void OnRoomUpdatedPacketReceived(RoomUpdatePacket packet)
+        void OnRoomUpdatedPacketReceived(RoomUpdatePacket packet)
         {
             if(packet.HintCost.HasValue)
-            {
                 HintCost = packet.HintCost.Value;
-            }
 
             if (packet.LocationCheckPoints.HasValue)
-            {
                 LocationCheckPoints = packet.LocationCheckPoints.Value;
-            }
 
             if (packet.HintPoints.HasValue)
-            {
                 HintPoints = packet.HintPoints.Value;
-            }
 
             if (packet.Tags != null)
-            {
                 tags = packet.Tags;
-            }
 
             if (packet.Password.HasValue)
-            {
                 HasPassword = packet.Password.Value;
-            }
 
             if (packet.Permissions != null)
             {
-                if (packet.Permissions.TryGetValue("forfeit", out Permissions forfeitPermissions))
-                {
-                    ForfeitPermissions = forfeitPermissions;
-                }
+                if (packet.Permissions.TryGetValue("release", out var releasePermissions))
+                    ReleasePermissions = releasePermissions;
+				else if (packet.Permissions.TryGetValue("forfeit", out var forfeitPermissions))
+	                ReleasePermissions = forfeitPermissions;
 
-                if (packet.Permissions.TryGetValue("collect", out Permissions collectPermissions))
-                {
+				if (packet.Permissions.TryGetValue("collect", out var collectPermissions))
                     CollectPermissions = collectPermissions;
-                }
 
-                if (packet.Permissions.TryGetValue("remaining", out Permissions remainingPermissions))
-                {
+                if (packet.Permissions.TryGetValue("remaining", out var remainingPermissions))
                     RemainingPermissions = remainingPermissions;
-                }
             }
         }
     }

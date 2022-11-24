@@ -32,7 +32,7 @@ namespace Archipelago.MultiClient.Net.Tests
                 Players = new[] {
                     new NetworkPlayer { Name = "1", Alias = "One", Slot = 1, Team = 1 },
                     new NetworkPlayer { Name = "2", Alias = "Two", Slot = 2, Team = 1 },
-                    new NetworkPlayer { Name = "3", Alias = "Three", Slot = 1, Team = 2 },
+                    new NetworkPlayer { Name = "3", Alias = "Three", Slot = 1, Team = 2 }
                 }
             };
 
@@ -62,7 +62,7 @@ namespace Archipelago.MultiClient.Net.Tests
                 Players = new[] {
                     new NetworkPlayer { Name = "1", Alias = "One", Slot = 1, Team = 1 },
                     new NetworkPlayer { Name = "2", Alias = "Two", Slot = 2, Team = 1 },
-                    new NetworkPlayer { Name = "3", Alias = "Three", Slot = 1, Team = 2 },
+                    new NetworkPlayer { Name = "3", Alias = "Three", Slot = 1, Team = 2 }
                 },
                 SlotInfo = new Dictionary<int, NetworkSlot> {
                     { 1, new NetworkSlot { Type = SlotType.Player, Game = "Game1" } },

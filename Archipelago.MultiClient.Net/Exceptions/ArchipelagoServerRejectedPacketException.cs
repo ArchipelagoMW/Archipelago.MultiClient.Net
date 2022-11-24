@@ -5,9 +5,14 @@ namespace Archipelago.MultiClient.Net.Exceptions
 {
     public class ArchipelagoServerRejectedPacketException : Exception
     {
-        public ArchipelagoServerRejectedPacketException(ArchipelagoPacketType faultyPacketType, InvalidPacketErrorType errorType, string message) 
+	    public ArchipelagoPacketType FaultyPacketType { get; }
+	    public InvalidPacketErrorType ErrorType { get; }
+
+	    public ArchipelagoServerRejectedPacketException(ArchipelagoPacketType faultyPacketType, InvalidPacketErrorType errorType, string message) 
             : base(message)
-        {
-        }
+	    {
+		    FaultyPacketType = faultyPacketType;
+		    ErrorType = errorType;
+	    }
     }
 }

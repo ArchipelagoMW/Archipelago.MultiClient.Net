@@ -6,9 +6,9 @@ namespace Archipelago.MultiClient.Net.ConcurrentCollection
 {
     class ConcurrentList<T> : IConcurrentList<T>
     {
-        private readonly List<T> list = new List<T>();
+        readonly List<T> list = new List<T>();
 
-        private readonly object lockObject = new object();
+        readonly object lockObject = new object();
 
         public int Count
         {

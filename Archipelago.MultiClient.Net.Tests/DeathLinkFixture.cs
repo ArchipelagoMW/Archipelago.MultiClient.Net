@@ -125,10 +125,7 @@ namespace Archipelago.MultiClient.Net.Tests
             var sut = new DeathLinkService(socket, connectionInfo, new DataStorageHelper(socket, connectionInfo));
 
             DeathLink receivedDeathLink = null;
-            sut.OnDeathLinkReceived += dl =>
-            {
-                receivedDeathLink = dl;
-            };
+            sut.OnDeathLinkReceived += dl => receivedDeathLink = dl;
 
             sut.SendDeathLink(deathLink);
 
@@ -150,9 +147,7 @@ namespace Archipelago.MultiClient.Net.Tests
         public void Should_enable_death_link_if_its_not_enabled()
         {
             var socket = Substitute.For<IArchipelagoSocketHelper>();
-            var connectionInfo = new ConnectionInfoHelper(socket);
-
-            connectionInfo.Tags = Array.Empty<string>();
+            var connectionInfo = new ConnectionInfoHelper(socket) { Tags = Array.Empty<string>() };
 
             var sut = new DeathLinkService(socket, connectionInfo, new DataStorageHelper(socket, connectionInfo));
 
@@ -168,9 +163,7 @@ namespace Archipelago.MultiClient.Net.Tests
         public void Should_enable_death_link_if_its_already_enabled()
         {
             var socket = Substitute.For<IArchipelagoSocketHelper>();
-            var connectionInfo = new ConnectionInfoHelper(socket);
-
-            connectionInfo.Tags = new[] { "DeathLink" };
+            var connectionInfo = new ConnectionInfoHelper(socket) { Tags = new[] { "DeathLink" } };
 
             var sut = new DeathLinkService(socket, connectionInfo, new DataStorageHelper(socket, connectionInfo));
 
@@ -186,9 +179,7 @@ namespace Archipelago.MultiClient.Net.Tests
         public void Should_disabled_death_link_if_its_not_enabled()
         {
             var socket = Substitute.For<IArchipelagoSocketHelper>();
-            var connectionInfo = new ConnectionInfoHelper(socket);
-
-            connectionInfo.Tags = new[] { "SomeTag" };
+            var connectionInfo = new ConnectionInfoHelper(socket) { Tags = new[] { "SomeTag" } };
 
             var sut = new DeathLinkService(socket, connectionInfo, new DataStorageHelper(socket, connectionInfo));
 
@@ -204,9 +195,7 @@ namespace Archipelago.MultiClient.Net.Tests
         public void Should_disable_death_link_if_its_already_enabled()
         {
             var socket = Substitute.For<IArchipelagoSocketHelper>();
-            var connectionInfo = new ConnectionInfoHelper(socket);
-
-            connectionInfo.Tags = new[] { "SomeTag", "DeathLink" };
+            var connectionInfo = new ConnectionInfoHelper(socket) { Tags = new[] { "SomeTag", "DeathLink" } };
 
             var sut = new DeathLinkService(socket, connectionInfo, new DataStorageHelper(socket, connectionInfo));
 

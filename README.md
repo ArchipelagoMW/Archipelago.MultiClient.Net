@@ -1,97 +1,219 @@
 # Archipelago.MultiClient.Net
-A client library for use with .NET based prog-langs for interfacing with Archipelago hosts.
 
-## Getting Started
+A client library for use with .NET based applications for interfacing with Archipelago hosts. This client conforms with the latest stable [Archipelago Network Protocol Specification](https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md).
 
-```csharp
-var session = ArchipelagoSessionFactory.CreateSession("localhost", 38281);
+# Documentation
 
-session.TryConnectAndLogin("Risk of Rain 2", "Ijwu", new Version(2,1,0));
-session.Locations.CompleteLocationChecks(42);
-```
-
-The `ArchipelagoSession` object is your entrypoint for all operations with the server. The session object exposes various helpers which provide functionality for various objectives you might be trying to achieve.
-
-### LocationCheckHelper
-
-The location check helper may be used to complete or scout location checks. The API also provides utility functions such as retrieving the name of a location from numerical id.
+## Create Session Instance
 
 ```csharp
 var session = ArchipelagoSessionFactory.CreateSession("localhost", 38281);
 
-session.TryConnectAndLogin("Risk of Rain 2", "Ijwu", new Version(2,1,0));
-session.Locations.CompleteLocationChecks(42);
+// alternatively...
 
-string locationName = session.Locations.GetLocationNameFromId(42) ?? $"Location: {locationId}";
-long locationId = session.Locations.GetLocationIdFromName(locationName);
-
-session.Locations.ScoutLocationsAsync(locationInfoPacket => Console.WriteLine(locationInfoPacket.Locations.Count));
+var session = ArchipelagoSessionFactory.CreateSession(new Uri("ws://localhost:38281"));
 ```
 
-### ReceivedItemsHelper
+The freshly created `ArchipelagoSession` object is the entrypoint for all incoming and outgoing interactions with the server. Keep it in scope for at least the lifetime of the connection. If the room changes ports, or the user needs to connect to a different room, then a new session needs to be created at the new host and port.
 
-The received items helper provides an interface for retrieving the list of received items as well as a C# event for when an item is received. The event automatically executes its registered event handlers when an item is received. A utility method is also included for getting an item name from numerical id.
+## Connect to Room
+
+Connect to a server at a specific room slot using the following method:
 
 ```csharp
-var session = ArchipelagoSessionFactory.CreateSession("localhost", 38281);
-
-session.TryConnectAndLogin("Risk of Rain 2", "Ijwu", new Version(2,1,0));
-session.Items.ItemReceived += (receivedItemsHelper) => {
-	var itemReceivedName = receivedItemsHelper.PeekItemName() ?? $"Item: {itemId}";
-	// ... Handle item receipt.
-
-	receivedItemsHelper.DequeueItem();
-};
-
-string itemName = session.Items.GetItemName(88) ?? $"Item: {itemId}"
+LoginResult TryConnectAndLogin(
+        string game, // Name of the game implemented by this client, SHOULD match what is used in the world implementation
+        string name, // Name of the slot to connect as (a.k.a player name)
+        ItemsHandlingFlags itemsHandlingFlags, /* One of the following (see AP docs for details):
+                NoItems
+                RemoteItems
+                IncludeOwnItems
+                IncludeStartingInventory
+                AllItems
+            */
+        Version version = null, // Minimum Archipelago world specification version which this client can successfuly interface with
+        string[] tags = null, /* One of the following (see AP docs for details)
+                "AP"
+                "IgnoreGame"
+                "DeathLink"
+                "Tracker"
+                "TextOnly"
+            */
+        string uuid = null, // Unique identifier for this player/client, if null randomly generated
+        string password = null // Password that was set when the room was created
+    );
 ```
 
-### PlayerHelper
+For example,
+
+```csharp
+LoginResult result = session.TryConnectAndLogin("Risk of Rain 2", "Ijwu", new Version(2,1,0));
+```
+
+Would attempt to connect to a password-less room at the slot `Ijwu`, and report the game `Risk of Rain 2` with a minimum apworld version of `v2.1.0`.
+
+Once connected, you have access to a suite of helper objects which provide an interface for sending/receiving information with the server.
+
+### Example Connection
+
+```csharp
+private static void Connect(string server, string user, string pass)
+{
+    LoginResult result;
+
+    try
+    {
+        // handle TryConnectAndLogin attempt here and save the returned object to `result`
+    }
+    catch (Exception e)
+    {
+        result = new LoginFailure(e.GetBaseException().Message);
+    }
+
+    if (!result.Successful)
+    {
+        LoginFailure failure = (LoginFailure)result;
+        string errorMessage = $"Failed to Connect to {server} as {user}:";
+        foreach (string error in failure.Errors)
+        {
+            errorMessage += $"\n    {error}";
+        }
+        foreach (ConnectionRefusedError error in failure.ErrorCodes)
+        {
+            errorMessage += $"\n    {error}";
+        }
+
+        return; // Did not connect, show the user the contents of `errorMessage`
+    }
+    
+    // Successfully connected, `ArchipelagoSession` (assume statically defined as `session` from now on) can now be used to interact with the server and the returned `LoginSuccessful` contains some useful information about the initial connection (e.g. a copy of the slot data as `loginSuccess.SlotData`)
+    var loginSuccess = (LoginSuccessful)result;
+}
+```
+
+If using .net 4.0 or higher, you can use `ConnectAsync` and `LoginAsync` to prevent hitching for injection-based implementations like harmony.
+
+## Helper Overview
+
+```csharp
+session.Socket         // Payload-agnostic interface for sending/receving the most basic transmission units between client/server
+session.Items          // Helpers for handling receipt of items
+session.Locations      // Helpers for reporting visited locations to the servers
+session.Players        // Helpers for translating player number, alias, name etc.
+session.DataStorage    // Helpers for reading/writing globally accessible to any client connected in the room
+session.ConnectionInfo // Helpers for reading/handling useful information on the current connection
+session.RoomState      // Information on the state of the room
+session.MessageLog     // Interface for the server to push info messages to the user
+```
+
+## Players
 
 The player helper provides methods for accessing details about the other players currently connected to the Archipelago session.
 
-```csharp
-var session = ArchipelagoSessionFactory.CreateSession("localhost", 38281);
+### Get All Player Names
 
-session.TryConnectAndLogin("Risk of Rain 2", "Ijwu", new Version(2,1,0));
+```csharp
 var sortedPlayerNames = session.Players.AllPlayers.Select(x => x.Name).OrderBy(x => x);
 ```
 
-### RoomStateHelper
+### Get Current Player Name
+
+```csharp
+string playerName = session.Players.GetPlayerAliasAndName(session.ConnectionInfo.Slot);
+```
+
+## Locations
+
+### Report Collected Location(s)
+
+Call the following method to inform the server of locations whose items have been "found", and therefore should be distributed (if neccessary):
+
+```csharp
+// Report multiple at once
+session.Locations.CompleteLocationChecks(new []{1,3,8});
+
+// Or report one at a time
+session.Locations.CompleteLocationChecks(3);
+```
+
+The location ID used is of that defined in the AP world.
+
+### Location ID <--> Name
+
+```csharp
+string locationName = session.Locations.GetLocationNameFromId(42) ?? $"Location: {locationId}";
+long locationId = session.Locations.GetLocationIdFromName(locationName);
+```
+
+### Scout Location Checks
+
+Scouting means asking the server what is stored in a specific location *without* collecting it:
+
+```csharp
+session.Locations.ScoutLocationsAsync(locationInfoPacket => Console.WriteLine(locationInfoPacket.Locations.Count));
+```
+
+## Items
+
+### Item ID --> Name
+
+```csharp
+string itemName = session.Items.GetItemName(88) ?? $"Item: {itemId}";
+```
+
+### Access Received Items
+
+At any time, you can access the current inventory for the active session/slot via the `Items` helper like so:
+
+```csharp
+foreach(NetworkItem item in session.Items.AllItemsReceived)
+{
+    long itemId = item.Item;
+}
+```
+
+*Note: The list of received items will never shrink and the collection is guaranteed to be in the order that the server sent the items. Because of this, it is safe to assume that if the size of this collection has changed it's because new items were received and appended to the end of the collection.*
+
+### Received Item Callback Handler (Asynchronous)
+
+```csharp
+// Must go AFTER a successful connection attempt
+session.Items.ItemReceived += (receivedItemsHelper) => {
+	var itemReceivedName = receivedItemsHelper.PeekItemName() ?? $"Item: {itemId}";
+
+	// ... Handle item receipt here
+
+	receivedItemsHelper.DequeueItem();
+};
+```
+
+*Note: This callback event will occur for every item on connection and reconnection. Whether or not it includes the first batch of remote items depends on your `ItemHandlingFlags` when connecting.*
+
+## RoomState
 
 The roomstate helper provides access to values that represent the current state of the multiworld room, with information such as the cost of a hint and or your current accumulated amount of hint point or the permissions for things like forfeiting
 
 ```csharp
-var session = ArchipelagoSessionFactory.CreateSession("localhost", 38281);
-session.TryConnectAndLogin("Timespinner", "Jarno", new Version(2,1,0));
-
 Console.WriteLine($"You have {session.RoomState.HintPoints}, and need {session.RoomState.HintCost} for a hint");
 ```
 
-### ConnectionInfoHelper
+## ConnectionInfo
 
 The conection info helper provides access to values under which you are currently connected, such as your slot number or your currently used tags and item handling flags
 
 ```csharp
-var session = ArchipelagoSessionFactory.CreateSession("localhost", 38281);
-session.TryConnectAndLogin("Timespinner", "Jarno", new Version(2,4,0));
-
 Console.WriteLine($"You are connected on slot {session.ConnectionInfo.Slot}, on team {session.ConnectionInfo.Team}");
 ```
 
-### ArchipelagoSocketHelper
+## ArchipelagoSocket
 
 The socket helper is a lower level API allowing for direct access to the socket which the session object uses to communicate with the Archipelago server. You may use this object to hook onto when messages are received or you may use it to send any packets defined in the library. Various events are exposed to allow for receipt of errors or notifying of socket close.
 
 ```csharp
-var session = ArchipelagoSessionFactory.CreateSession("localhost", 38281);
-
-session.TryConnectAndLogin("Risk of Rain 2", "Ijwu", new Version(2,1,0));
 session.Socket.SendPacket(new SayPacket(){Text = "Woof woof!"});
-
 ```
 
-### DeathLink
+## DeathLink
 
 DeathLink support is included in the library. You may enable it by using the `CreateDeathLinkService` in the `DeathLinkProvider` class, and the `EnableDeathlink` method on the service. Deathlink can be toggled on an off by the the `EnableDeathlink` and `DisableDeathlink` methods on the service
 
@@ -109,7 +231,7 @@ deathLinkService.OnDeathLinkReceived += (deathLinkObject) => {
 deathLinkService.SendDeathLink(new DeathLink("Ijwu", "Died to exposure."));
 ```
 
-### DataStorage
+## DataStorage
 
 DataStorage support is included in the library. You may save values on the archipelago server in order to share them across other player's sessions or to simply keep track of values outside of your game's state.
 
@@ -173,13 +295,19 @@ session.DataStorage["C"] = ((session.DataStorage["C"] - 6) + Bitwise.RightShift(
 
 //Update callbacks
 //EnergyLink deplete pattern, subtract 50, then set value to 0 if its lower than 0
-session.DataStorage["EnergyLink"] = ((session.DataStorage["EnergyLink"] - 50) << 0) + Callback.Add((old, new) => {
-    var actualDepleted = (float)new - (float)old; //calculate the actual change, might differ if there was less than 50 left on the server
+session.DataStorage["EnergyLink"] = ((session.DataStorage["EnergyLink"] - 50) << 0) + Callback.Add((oldData, newData) => {
+    var actualDepleted = (float)newData - (float)oldData; //calculate the actual change, might differ if there was less than 50 left on the server
 });
 
 //Keeping track of changes
-session.DataStorage["OnChangeHandler"].OnValueChanged += (old, new) => {
-	var changed = (int)new - (int)old; //Keep track of changes made to `OnChangeHandler` by any client, and calculate the difference
+session.DataStorage["OnChangeHandler"].OnValueChanged += (oldData, newData) => {
+	var changed = (int)newData - (int)oldData; //Keep track of changes made to `OnChangeHandler` by any client, and calculate the difference
+};
+
+//Keeping track of change (but for more complex data structures)
+session.DataStorage["OnChangeHandler"].OnValueChanged += (oldData, newData) => {
+    var old_dict = oldData.ToObject<Dictionary<int, int>>();
+    var new_dict = newData.ToObject<Dictionary<int, int>>();
 };
 
 //Retrieving
@@ -196,7 +324,7 @@ var text = (string)obj["Text"]; //Get value for anonymous object key `Text`
 
 ```
 
-### Message Logging
+## Message Logging
 
 The Archipelago server can send messages to client to be displayed on screen as sort of a log, this is done by handling the `PrintPacket` and `PrintJsonPacket` packets. This library simplifies this process into a single handler for you to handle both kinds of messages.
 ```csharp
@@ -262,3 +390,18 @@ foreach (part in message.Parts)
 	DisplayOnScreen(part.Text, part.Color, part.IsBackgroundColor);
 }
 ```
+
+## Send Completion
+
+You can report the completion of the player's goal like so:
+
+```csharp
+public static void send_completion()
+{
+    var statusUpdatePacket = new StatusUpdatePacket();
+    statusUpdatePacket.Status = ArchipelagoClientState.ClientGoal;
+    Session.Socket.SendPacket(statusUpdatePacket);
+}
+```
+
+

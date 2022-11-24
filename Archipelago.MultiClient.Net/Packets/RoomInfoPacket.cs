@@ -1,5 +1,4 @@
-﻿using Archipelago.MultiClient.Net.Converters;
-using Archipelago.MultiClient.Net.Enums;
+﻿using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Models;
 #if USE_OCULUS_NEWTONSOFT
 using Oculus.Newtonsoft.Json;
@@ -16,8 +15,7 @@ namespace Archipelago.MultiClient.Net.Packets
         public override ArchipelagoPacketType PacketType => ArchipelagoPacketType.RoomInfo;
 
         [JsonProperty("version")]
-        [JsonConverter(typeof(NamedTupleInterchangeConverter))]
-        public Version Version { get; set; }
+        public NetworkVersion Version { get; set; }
 
         [JsonProperty("tags")]
         public string[] Tags { get; set; }

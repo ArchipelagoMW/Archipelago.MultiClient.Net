@@ -37,4 +37,10 @@ namespace Archipelago.MultiClient.Net.Packets
         [JsonProperty("found")]
         public bool? Found { get; set; }
     }
+
+    public class CountdownPrintJsonPacket : PrintJsonPacket
+    {
+	    [JsonProperty("countdown")]
+	    public int RemainingSeconds { get; set; }
+	}
 }

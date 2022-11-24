@@ -4,6 +4,7 @@ using Archipelago.MultiClient.Net.Models;
 using Oculus.Newtonsoft.Json;
 #else
 using Newtonsoft.Json;
+
 #endif
 using System.Collections.Generic;
 

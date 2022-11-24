@@ -31,7 +31,7 @@ namespace Archipelago.MultiClient.Net.Models
         internal List<OperationSpecification> Operations = new List<OperationSpecification>(0);
         internal DataStorageHelper.DataStorageUpdatedHandler Callbacks;
 
-        private JToken cachedValue;
+        JToken cachedValue;
 
         internal DataStorageElement(DataStorageElementContext context)
         {
@@ -532,60 +532,36 @@ namespace Archipelago.MultiClient.Net.Models
         /// Will not override any existing value, only set the default value if none existed
         /// </summary>
         /// <param name="value">The default value for the key</param>
-        public void Initialize(JToken value)
-        {
-            Context.Initialize(Context.Key, value);
-        }
-        /// <summary>
-        /// Initializes a value in the server side data storage
-        /// Will not override any existing value, only set the default value if none existed
-        /// </summary>
-        /// <param name="value">The default value for the key</param>
-        public void Initialize(IEnumerable value)
-        {
-            Context.Initialize(Context.Key, JArray.FromObject(value));
-        }
+        public void Initialize(IEnumerable value) => Context.Initialize(Context.Key, JArray.FromObject(value));
 
 #if NET35
         /// <summary>
         /// Retrieves the value of a certain key from server side data storage.
         /// </summary>
         /// <param name="callback">The callback that will be called when the value is retrieved</param>
-        public void GetAsync<T>(Action<T> callback)
-        {
-            GetAsync(t => callback(t.ToObject<T>()));
-        }
+        public void GetAsync<T>(Action<T> callback) => GetAsync(t => callback(t.ToObject<T>()));
+
         /// <summary>
         /// Retrieves the value of a certain key from server side data storage.
         /// </summary>
         /// <param name="callback">The callback that will be called when the value is retrieved</param>
-        public void GetAsync(Action<JToken> callback)
-        {
-            Context.GetAsync(Context.Key, callback);
-        }
+        public void GetAsync(Action<JToken> callback) => Context.GetAsync(Context.Key, callback);
 #else
         /// <summary>
         /// Retrieves the value of a certain key from server side data storage.
         /// </summary>
-        public Task<T> GetAsync<T>()
-        {
-            return GetAsync().ContinueWith(r => r.Result.ToObject<T>());
-        }
+        public Task<T> GetAsync<T>() => GetAsync().ContinueWith(r => r.Result.ToObject<T>());
+
         /// <summary>
         /// Retrieves the value of a certain key from server side data storage.
         /// </summary>
-        public Task<JToken> GetAsync()
-        {
-            return Context.GetAsync(Context.Key);
-        }
+        public Task<JToken> GetAsync() => Context.GetAsync(Context.Key);
 #endif
 
-        private static T RetrieveAndReturnArrayValue<T>(DataStorageElement e)
+        static T RetrieveAndReturnArrayValue<T>(DataStorageElement e)
         {
             if (e.cachedValue != null)
-            {
                 return ((JArray)e.cachedValue).ToObject<T>();
-            }
 
             var value = e.Context.GetData(e.Context.Key).ToObject<JArray>() ?? new JArray();
 
@@ -599,10 +575,8 @@ namespace Archipelago.MultiClient.Net.Models
                     case Operation.Add:
 #endif
                         if (operation.Value.Type != JTokenType.Array)
-                        {
                             throw new InvalidOperationException(
                                 $"Cannot perform operation {Operation.Add} on Array value, with a non Array value: {operation.Value}");
-                        }
 
                         value.Merge(operation.Value);
                         break;
@@ -614,10 +588,7 @@ namespace Archipelago.MultiClient.Net.Models
                     case Operation.Replace:
 #endif
                         if (operation.Value.Type != JTokenType.Array)
-                        {
-                            throw new InvalidOperationException(
-                                $"Cannot replace Array value, with a non Array value: {operation.Value}");
-                        }
+                            throw new InvalidOperationException($"Cannot replace Array value, with a non Array value: {operation.Value}");
 
                         value = operation.Value.ToObject<JArray>() ?? new JArray();
                         break;
@@ -632,14 +603,12 @@ namespace Archipelago.MultiClient.Net.Models
             return value.ToObject<T>();
         }
 
-        private static string RetrieveAndReturnStringValue(DataStorageElement e)
+        static string RetrieveAndReturnStringValue(DataStorageElement e)
         {
             if (e.cachedValue != null)
-            {
                 return (string)e.cachedValue;
-            }
 
-            string value = e.Context.GetData(e.Context.Key).ToString();
+            var value = e.Context.GetData(e.Context.Key).ToString();
 
             foreach (var operation in e.Operations)
             {
@@ -659,9 +628,7 @@ namespace Archipelago.MultiClient.Net.Models
                     case Operation.Mul:
 #endif
                         if (operation.Value.Type != JTokenType.Integer)
-                        {
                             throw new InvalidOperationException($"Cannot perform operation {Operation.Mul} on string value, with a non interger value: {operation.Value}");
-                        }
 
                         value = string.Concat(Enumerable.Repeat(value, (int)operation.Value));
                         break;
@@ -684,14 +651,12 @@ namespace Archipelago.MultiClient.Net.Models
             return Convert.ToString(e.cachedValue);
         }
 
-        private static T RetrieveAndReturnDecimalValue<T>(DataStorageElement e) where T : struct
+        static T RetrieveAndReturnDecimalValue<T>(DataStorageElement e) where T : struct
         {
             if (e.cachedValue != null)
-            {
                 return e.cachedValue.ToObject<T>();
-            }
 
-            decimal value = e.Context.GetData(e.Context.Key).ToObject<decimal>();
+            var value = e.Context.GetData(e.Context.Key).ToObject<decimal>();
 
             foreach (var operation in e.Operations)
             {
@@ -815,27 +780,16 @@ namespace Archipelago.MultiClient.Net.Models
         public T To<T>()
         {
             if (Operations.Count != 0)
-            {
                 throw new InvalidOperationException(
                     "DataStorageElement.To<T>() cannot be used together with other operations on the DataStorageElement");
-            }
 
             return Context.GetData(Context.Key).ToObject<T>();
         }
 
-        public override string ToString()
-        {
-            return $"{Context?.ToString() ?? "(null)"}, ({ListOperations()})";
-        }
+        public override string ToString() => $"{Context?.ToString() ?? "(null)"}, ({ListOperations()})";
 
-        private string ListOperations()
-        {
-            if (Operations == null)
-            {
-                return "none";
-            }
-
-            return string.Join(", ", Operations.Select(o => o.ToString()).ToArray());
-        }
+        string ListOperations() => Operations == null 
+	        ? "none" 
+	        : string.Join(", ", Operations.Select(o => o.ToString()).ToArray());
     }
 }

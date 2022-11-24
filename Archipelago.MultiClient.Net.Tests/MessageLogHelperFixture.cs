@@ -5,7 +5,6 @@ using Archipelago.MultiClient.Net.Packets;
 using NSubstitute;
 using NUnit.Framework;
 using System.Collections.Generic;
-using System.Drawing;
 
 namespace Archipelago.MultiClient.Net.Tests
 {
@@ -25,10 +24,7 @@ namespace Archipelago.MultiClient.Net.Tests
 
             string toStringResult = null;
 
-            sut.OnMessageReceived += (message) =>
-            {
-                toStringResult = message.ToString();
-            };
+            sut.OnMessageReceived += (message) => toStringResult = message.ToString();
 
             var printPacket = new PrintPacket {
                 Text = "Some message that really does not add value to the test at hand"
@@ -55,10 +51,7 @@ namespace Archipelago.MultiClient.Net.Tests
 
             string toStringResult = null;
 
-            sut.OnMessageReceived += (message) =>
-            {
-                toStringResult = message.ToString();
-            };
+            sut.OnMessageReceived += (message) => toStringResult = message.ToString();
 
             var packet = new PrintJsonPacket
             {
@@ -109,10 +102,7 @@ namespace Archipelago.MultiClient.Net.Tests
 
             MessagePart[] parts = null;
 
-            sut.OnMessageReceived += (message) =>
-            {
-                parts = message.Parts;
-            };
+            sut.OnMessageReceived += (message) => parts = message.Parts;
 
             var printPacket = new PrintPacket
             {
@@ -144,10 +134,7 @@ namespace Archipelago.MultiClient.Net.Tests
 
             MessagePart[] parts = null;
 
-            sut.OnMessageReceived += (message) =>
-            {
-                parts = message.Parts;
-            };
+            sut.OnMessageReceived += (message) => parts = message.Parts;
 
             var packet = new PrintJsonPacket
             {
@@ -249,10 +236,7 @@ namespace Archipelago.MultiClient.Net.Tests
 
             MessagePart[] parts = null;
 
-            sut.OnMessageReceived += (message) =>
-            {
-                parts = message.Parts;
-            };
+            sut.OnMessageReceived += (message) => parts = message.Parts;
 
             var packet = new PrintJsonPacket
             {
@@ -298,10 +282,7 @@ namespace Archipelago.MultiClient.Net.Tests
 
             MessagePart[] parts = null;
 
-            sut.OnMessageReceived += (message) =>
-            {
-                parts = message.Parts;
-            };
+            sut.OnMessageReceived += (message) => parts = message.Parts;
 
             var packet = new PrintJsonPacket
             {
@@ -344,10 +325,7 @@ namespace Archipelago.MultiClient.Net.Tests
 
             ItemSendLogMessage logMessage = null;
 
-            sut.OnMessageReceived += (message) =>
-            {
-                logMessage = message as ItemSendLogMessage;
-            };
+            sut.OnMessageReceived += (message) => logMessage = message as ItemSendLogMessage;
 
             var packet = new ItemPrintJsonPacket
             {
@@ -382,10 +360,7 @@ namespace Archipelago.MultiClient.Net.Tests
 
             HintItemSendLogMessage logMessage = null;
 
-            sut.OnMessageReceived += (message) =>
-            {
-                logMessage = message as HintItemSendLogMessage;
-            };
+            sut.OnMessageReceived += (message) => logMessage = message as HintItemSendLogMessage;
 
             var packet = new HintPrintJsonPacket
             {
@@ -408,6 +383,35 @@ namespace Archipelago.MultiClient.Net.Tests
         }
 
         [Test]
+        public void Should_preserve_extra_properties_on_CountdownPrintJsonPacket()
+        {
+	        var socket = Substitute.For<IArchipelagoSocketHelper>();
+	        var locations = Substitute.For<ILocationCheckHelper>();
+	        var items = Substitute.For<IReceivedItemsHelper>();
+	        var players = Substitute.For<IPlayerHelper>();
+	        var connectionInfo = Substitute.For<IConnectionInfoProvider>();
+
+	        var sut = new MessageLogHelper(socket, items, locations, players, connectionInfo);
+
+	        CountdownLogMessage logMessage = null;
+
+	        sut.OnMessageReceived += (message) => 
+		        logMessage = message as CountdownLogMessage;
+
+	        var packet = new CountdownPrintJsonPacket
+	        {
+		        Data = new[] { new JsonMessagePart { Text = "" } },
+				RemainingSeconds = 8,
+		        MessageType = JsonMessageType.Countdown
+	        };
+
+	        socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(packet);
+
+	        Assert.That(logMessage, Is.Not.Null);
+	        Assert.That(logMessage.RemainingSeconds, Is.EqualTo(8));
+        }
+
+		[Test]
         public void Should_split_new_lines_in_separate_messages_for_print_package()
         {
             var socket = Substitute.For<IArchipelagoSocketHelper>();
@@ -420,10 +424,7 @@ namespace Archipelago.MultiClient.Net.Tests
 
             List<LogMessage> logMessage = new List<LogMessage>(6);
 
-            sut.OnMessageReceived += (message) =>
-            {
-                logMessage.Add(message);
-            };
+            sut.OnMessageReceived += (message) => logMessage.Add(message);
 
             var packet = new PrintPacket
             {
@@ -452,12 +453,9 @@ namespace Archipelago.MultiClient.Net.Tests
 
             var sut = new MessageLogHelper(socket, items, locations, players, connectionInfo);
 
-            List<LogMessage> logMessage = new List<LogMessage>(3);
+            var logMessage = new List<LogMessage>(3);
 
-            sut.OnMessageReceived += (message) =>
-            {
-                logMessage.Add(message);
-            };
+            sut.OnMessageReceived += (message) => logMessage.Add(message);
 
             var packet = new PrintJsonPacket
             {
@@ -507,10 +505,7 @@ namespace Archipelago.MultiClient.Net.Tests
 
             MessagePart[] parts = null;
 
-            sut.OnMessageReceived += (message) =>
-            {
-                parts = message.Parts;
-            };
+            sut.OnMessageReceived += (message) => parts = message.Parts;
 
             var packet = new PrintJsonPacket
             {

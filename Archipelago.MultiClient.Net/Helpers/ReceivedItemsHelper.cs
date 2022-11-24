@@ -20,18 +20,20 @@ namespace Archipelago.MultiClient.Net.Helpers
 
     public class ReceivedItemsHelper : IReceivedItemsHelper
     {
-        private readonly IArchipelagoSocketHelper socket;
-        private readonly ILocationCheckHelper locationsHelper;
-        private readonly IDataPackageCache dataPackageCache;
+        readonly IArchipelagoSocketHelper socket;
+        readonly ILocationCheckHelper locationsHelper;
+        readonly IDataPackageCache dataPackageCache;
 
-        private ConcurrentQueue<NetworkItem> itemQueue = new ConcurrentQueue<NetworkItem>();
+        ConcurrentQueue<NetworkItem> itemQueue; 
 
-        private readonly IConcurrentList<NetworkItem> allItemsReceived = new ConcurrentList<NetworkItem>();
+        readonly IConcurrentList<NetworkItem> allItemsReceived;
 
-        private Dictionary<long, string> itemLookupCache = new Dictionary<long, string>();
-        
-        public int Index => allItemsReceived.Count;
-        public ReadOnlyCollection<NetworkItem> AllItemsReceived => allItemsReceived.AsReadOnlyCollection();
+        Dictionary<long, string> itemLookupCache;
+
+        ReadOnlyCollection<NetworkItem> cachedReceivedItems;
+		
+		public int Index => cachedReceivedItems.Count;
+        public ReadOnlyCollection<NetworkItem> AllItemsReceived => cachedReceivedItems;
 
         public delegate void ItemReceivedHandler(ReceivedItemsHelper helper);
         public event ItemReceivedHandler ItemReceived;
@@ -42,7 +44,12 @@ namespace Archipelago.MultiClient.Net.Helpers
             this.locationsHelper = locationsHelper;
             this.dataPackageCache = dataPackageCache;
 
-            socket.PacketReceived += Socket_PacketReceived;
+			itemQueue = new ConcurrentQueue<NetworkItem>();
+			allItemsReceived = new ConcurrentList<NetworkItem>();
+			itemLookupCache = new Dictionary<long, string>();
+			cachedReceivedItems = allItemsReceived.AsReadOnlyCollection();
+
+			socket.PacketReceived += Socket_PacketReceived;
         }
 
         /// <summary>
@@ -51,10 +58,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// <returns>
         ///     True if the queue is not empty, otherwise false.
         /// </returns>
-        public bool Any()
-        {
-            return !itemQueue.IsEmpty;
-        }
+        public bool Any() => !itemQueue.IsEmpty;
 
         /// <summary>
         ///     Peek the next item on the queue to be handled. 
@@ -114,23 +118,22 @@ namespace Archipelago.MultiClient.Net.Helpers
         public string GetItemName(long id)
         {
             if (itemLookupCache.TryGetValue(id, out var name))
-            {
                 return name;
-            }
 
             if (!dataPackageCache.TryGetDataPackageFromCache(out var dataPackage))
-            {
                 return null;
-            }
             
-            itemLookupCache = dataPackage.Games.Select(x => x.Value).SelectMany(x => x.ItemLookup).ToDictionary(x => x.Value, x => x.Key);
+            itemLookupCache = dataPackage.Games
+	            .Select(x => x.Value)
+	            .SelectMany(x => x.ItemLookup)
+	            .ToDictionary(x => x.Value, x => x.Key);
 
             return itemLookupCache.TryGetValue(id, out var itemName)
                 ? itemName
                 : null;
         }
 
-        private void Socket_PacketReceived(ArchipelagoPacketBase packet)
+        void Socket_PacketReceived(ArchipelagoPacketBase packet)
         {
             switch (packet.PacketType)
             {
@@ -156,17 +159,16 @@ namespace Archipelago.MultiClient.Net.Helpers
                         allItemsReceived.Add(item);
                         itemQueue.Enqueue(item);
 
-                        if (ItemReceived != null)
-                        {
-                            ItemReceived(this);
-                        }
+                        cachedReceivedItems = allItemsReceived.AsReadOnlyCollection();
+
+                        ItemReceived?.Invoke(this);
                     }
                     break;
                 }
             }
         }
 
-        private void PerformResynchronization(ReceivedItemsPacket receivedItemsPacket)
+        void PerformResynchronization(ReceivedItemsPacket receivedItemsPacket)
         {
             var previouslyReceived = allItemsReceived.AsReadOnlyCollection();
 
@@ -182,10 +184,10 @@ namespace Archipelago.MultiClient.Net.Helpers
                 itemQueue.Enqueue(item);
                 allItemsReceived.Add(item);
 
-                if (ItemReceived != null && !previouslyReceived.Contains(item))
-                {
+                cachedReceivedItems = allItemsReceived.AsReadOnlyCollection();
+
+				if (ItemReceived != null && !previouslyReceived.Contains(item))
                     ItemReceived(this);
-                }
             }
         }
     }

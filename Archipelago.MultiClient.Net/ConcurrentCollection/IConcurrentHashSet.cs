@@ -1,6 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 
-internal interface IConcurrentHashSet<T>
+interface IConcurrentHashSet<T>
 {
     bool TryAdd(T item);
     bool Contains(T item);

@@ -8,17 +8,16 @@ using Newtonsoft.Json;
 #endif
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 
 namespace Archipelago.MultiClient.Net.Cache
 {
-    internal class DataPackageFileSystemCache : IDataPackageCache
+    class DataPackageFileSystemCache : IDataPackageCache
     {
-        private readonly IArchipelagoSocketHelper socket;
-        private readonly IFileSystemDataPackageProvider fileSystemDataPackageProvider;
+        readonly IArchipelagoSocketHelper socket;
+        readonly IFileSystemDataPackageProvider fileSystemDataPackageProvider;
 
-        private readonly Dictionary<string, GameData> dataPackages = new Dictionary<string, GameData>();
+        readonly Dictionary<string, GameData> dataPackages = new Dictionary<string, GameData>();
 
         public DataPackageFileSystemCache(IArchipelagoSocketHelper socket) : this(socket, new FileSystemDataPackageProvider())
         {
@@ -32,13 +31,13 @@ namespace Archipelago.MultiClient.Net.Cache
             socket.PacketReceived += Socket_PacketReceived;
         }
 
-        private void Socket_PacketReceived(ArchipelagoPacketBase packet)
+        void Socket_PacketReceived(ArchipelagoPacketBase packet)
         {
             switch (packet)
             {
                 case RoomInfoPacket roomInfoPacket:
                     AddArchipelagoGame(roomInfoPacket);
-                    LoadDataPackageFromFileCache(roomInfoPacket);
+                    LoadDataPackageFromFileCache(roomInfoPacket.Games);
 
                     var invalidated = GetCacheInvalidatedGames(roomInfoPacket);
 
@@ -56,23 +55,20 @@ namespace Archipelago.MultiClient.Net.Cache
             }
         }
 
-        private void AddArchipelagoGame(RoomInfoPacket roomInfoPacket)
-        {
-            roomInfoPacket.Games = roomInfoPacket.Games.Concat(new[] { "Archipelago" }).ToArray();
-        }
+        void AddArchipelagoGame(RoomInfoPacket roomInfoPacket) => 
+	        roomInfoPacket.Games = roomInfoPacket.Games
+		        .Concat(new[] { "Archipelago" })
+		        .Distinct()
+		        .ToArray();
 
-        private void LoadDataPackageFromFileCache(RoomInfoPacket packet)
+        void LoadDataPackageFromFileCache(string[] games)
         {
-            foreach (string game in packet.Games.Distinct())
-            {
+            foreach (var game in games)
                 if (TryGetGameDataFromFileCache(game, out var cachedPackage))
-                {
                     dataPackages[game] = cachedPackage;
-                }
-            }
         }
 
-        private bool TryGetGameDataFromFileCache(string game, out GameData gameData)
+        bool TryGetGameDataFromFileCache(string game, out GameData gameData)
         {
             if (fileSystemDataPackageProvider.TryGetDataPackage(game, out var cachedGameData))
             {
@@ -105,7 +101,7 @@ namespace Archipelago.MultiClient.Net.Cache
 
         internal void UpdateDataPackageFromServer(DataPackage package)
         {
-            foreach (KeyValuePair<string, GameData> packageGameData in package.Games)
+            foreach (var packageGameData in package.Games)
             {
                 dataPackages[packageGameData.Key] = packageGameData.Value;
 
@@ -114,18 +110,18 @@ namespace Archipelago.MultiClient.Net.Cache
             }
         }
         
-        private List<string> GetCacheInvalidatedGames(RoomInfoPacket packet)
+        List<string> GetCacheInvalidatedGames(RoomInfoPacket packet)
         {
             var gamesNeedingUpdating = new List<string>();
 
-            foreach (string game in packet.Games.Distinct())
+            foreach (var game in packet.Games)
             {
-                if (dataPackages.TryGetValue(game, out var gameData))
+                if (packet.DataPackageVersions != null 
+                    && packet.DataPackageVersions.ContainsKey(game) 
+                    && dataPackages.TryGetValue(game, out var gameData))
                 {
                     if (gameData.Version != packet.DataPackageVersions[game])
-                    {
                         gamesNeedingUpdating.Add(game);
-                    }
                 }
                 else
                 {
