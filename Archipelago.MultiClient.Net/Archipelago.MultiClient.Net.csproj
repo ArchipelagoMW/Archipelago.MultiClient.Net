@@ -3,24 +3,30 @@
 		<TargetFrameworks>net35;net40;netstandard2.0;net6.0</TargetFrameworks>
 		<AssemblyTitle>Archipelago.MultiClient.Net</AssemblyTitle>
 		<Product>Archipelago.MultiClient.Net</Product>
-		<Copyright>Copyright ©  2022</Copyright>
+		<Copyright>Copyright © 2022</Copyright>
 		<OutputPath>bin\$(Configuration)\</OutputPath>
 		<Description>A client library for use with .NET based prog-langs for interfacing with Archipelago hosts.</Description>
 		<PackageProjectUrl>https://github.com/ArchipelagoMW/Archipelago.MultiClient.Net</PackageProjectUrl>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<RepositoryUrl>https://github.com/ArchipelagoMW/Archipelago.MultiClient.Net</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
-		<AssemblyVersion>4.1.1.0</AssemblyVersion>
-		<FileVersion>4.1.1.0</FileVersion>
+		<AssemblyVersion>4.1.2.0</AssemblyVersion>
+		<FileVersion>4.1.2.0</FileVersion>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageRequireLicenseAcceptance>False</PackageRequireLicenseAcceptance>
 		<GeneratePackageOnBuild>False</GeneratePackageOnBuild>
-		<Version>4.1.1</Version>
+		<Version>4.1.2</Version>
 		<Company>Jarno Westhof, Hussein Farran, Zach Parks</Company>
 	</PropertyGroup>
 
 	<PropertyGroup>
+		<IncludeSymbols>true</IncludeSymbols>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);Copy3rdPartyAssembliesTarget</TargetsForTfmSpecificContentInPackage>
 	</PropertyGroup>
 
 	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -37,7 +43,7 @@
 		</None>
 	</ItemGroup>
 
-	<ItemGroup Condition="'$(TargetFramework)' == 'net35'">
+	<ItemGroup Condition="'$(TargetFramework)' == 'net35' Or '$(TargetFramework)' == 'net40'">
 		<Reference Include="Newtonsoft.Json">
 			<HintPath>..\DLLs\net35\Newtonsoft.Json.dll</HintPath>
 		</Reference>
@@ -46,24 +52,20 @@
 		</Reference>
 	</ItemGroup>
 
-	<ItemGroup Condition="'$(TargetFramework)' == 'net40'">
-		<Reference Include="Newtonsoft.Json">
-			<HintPath>..\DLLs\net35\Newtonsoft.Json.dll</HintPath>
-		</Reference>
-		<Reference Include="websocket-sharp">
-			<HintPath>..\DLLs\websocket-sharp.dll</HintPath>
-		</Reference>
-	</ItemGroup>
-
-	<ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+	<ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0' Or '$(TargetFramework)' == 'net6.0'">
 		<Reference Include="Newtonsoft.Json">
 			<HintPath>..\DLLs\netstandard2.0\Newtonsoft.Json.dll</HintPath>
 		</Reference>
 	</ItemGroup>
 
-	<ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
-		<Reference Include="Newtonsoft.Json">
-			<HintPath>..\DLLs\netstandard2.0\Newtonsoft.Json.dll</HintPath>
-		</Reference>
-	</ItemGroup>
+	<Target Name="Copy3rdPartyAssembliesTarget">
+		<ItemGroup>
+			<TfmSpecificPackageFile Include="bin\$(Configuration)\$(TargetFramework)\Newtonsoft.Json.dll">
+				<PackagePath>lib\$(TargetFramework)\Newtonsoft.Json.dll</PackagePath>
+			</TfmSpecificPackageFile>
+			<TfmSpecificPackageFile Include="bin\$(Configuration)\$(TargetFramework)\websocket-sharp.dll" Condition="'$(TargetFramework)' == 'net35' Or '$(TargetFramework)' == 'net40'">
+				<PackagePath>lib\$(TargetFramework)\websocket-sharp.dll</PackagePath>
+			</TfmSpecificPackageFile>
+		</ItemGroup>
+	</Target> 
 </Project>
