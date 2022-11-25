@@ -532,7 +532,14 @@ namespace Archipelago.MultiClient.Net.Models
         /// Will not override any existing value, only set the default value if none existed
         /// </summary>
         /// <param name="value">The default value for the key</param>
-        public void Initialize(IEnumerable value) => Context.Initialize(Context.Key, JArray.FromObject(value));
+        public void Initialize(JToken value) => Context.Initialize(Context.Key, value);
+
+		/// <summary>
+		/// Initializes a value in the server side data storage
+		/// Will not override any existing value, only set the default value if none existed
+		/// </summary>
+		/// <param name="value">The default value for the key</param>
+		public void Initialize(IEnumerable value) => Context.Initialize(Context.Key, JArray.FromObject(value));
 
 #if NET35
         /// <summary>

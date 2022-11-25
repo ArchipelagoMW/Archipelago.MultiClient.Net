@@ -31,6 +31,11 @@
 			<HintPath>..\Archipelago.MultiClient.Net\bin\Debug\net35\Archipelago.MultiClient.Net.dll</HintPath>
 		</Reference>
 	</ItemGroup>
+	<ItemGroup Condition="'$(TargetFramework)' == 'net47' AND '$(Configuration)' == 'Release'">
+		<Reference Include="Archipelago.MultiClient.Net">
+			<HintPath>..\Archipelago.MultiClient.Net\bin\Release\net35\Archipelago.MultiClient.Net.dll</HintPath>
+		</Reference>
+	</ItemGroup>
 
 	<ItemGroup Condition="'$(TargetFramework)' == 'net471'">
 		<Reference Include="Newtonsoft.Json">

@@ -1,4 +1,4 @@
-﻿#if NET471
+﻿#if NET47
 using Archipelago.MultiClient.Net.ConcurrentCollection;
 using NUnit.Framework;
 

@@ -1,8 +1,13 @@
 ﻿using Archipelago.MultiClient.Net.Converters;
 using Archipelago.MultiClient.Net.Packets;
-using Newtonsoft.Json;
 using NUnit.Framework;
 using System.Collections.Generic;
+
+#if USE_OCULUS_NEWTONSOFT
+using Oculus.Newtonsoft.Json;
+#else
+using Newtonsoft.Json;
+#endif
 
 namespace Archipelago.MultiClient.Net.Tests
 {

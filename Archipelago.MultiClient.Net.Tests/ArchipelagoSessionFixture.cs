@@ -132,7 +132,7 @@ namespace Archipelago.MultiClient.Net.Tests
 				});
 			}
 
-#if NET471
+#if NET47
 			socket.When(s => s.Connect()).Do(_ => SendRoomInfoPacketAsync());
 #else
 			socket.When(s => s.ConnectAsync()).Do(_ => SendRoomInfoPacketAsync());
