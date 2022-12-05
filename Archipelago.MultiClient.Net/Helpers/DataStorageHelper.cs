@@ -177,7 +177,10 @@ namespace Archipelago.MultiClient.Net.Helpers
 
         void SetValue(string key, DataStorageElement e)
         {
-            if (e.Context == null)
+	        if (key.StartsWith("_read_"))
+		        throw new InvalidOperationException($"DataStorage write operation on readonly key '{key}' is not allowed");
+
+	        if (e.Context == null)
             {
                 e.Context = GetContextForKey(key);
             }

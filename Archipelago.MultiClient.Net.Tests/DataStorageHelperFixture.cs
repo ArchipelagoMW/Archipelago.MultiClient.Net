@@ -19,7 +19,7 @@ namespace Archipelago.MultiClient.Net.Tests
     [TestFixture]
     class DataStorageHelperFixture
     {
-        public static TestCaseData[] GetValueTests =>
+		public static TestCaseData[] GetValueTests =>
             new TestCaseData[] {
                 new GetValueTest<int>((sut, key) => sut[key], 10),
                 new GetValueTest<long>((sut, key) => sut[key], 1000L),
@@ -825,7 +825,37 @@ namespace Archipelago.MultiClient.Net.Tests
             Assert.That(result, Is.EqualTo(25));
         }
 
-        public static void ExecuteAsyncWithDelay(Action retrieve, Action raiseEvent)
+        [Test]
+        public void Should_throw_on_write_opperation_on_readonly_key()
+        {
+	        var socket = Substitute.For<IArchipelagoSocketHelper>();
+	        var connectionInfo = Substitute.For<IConnectionInfoProvider>();
+
+	        var sut = new DataStorageHelper(socket, connectionInfo);
+
+			var ex1 = Assert.Throws<InvalidOperationException>(() =>
+			{
+				sut["_read_*"] = 10;
+			});
+			Assert.That(ex1.Message, Is.EqualTo("DataStorage write operation on readonly key '_read_*' is not allowed"));
+
+			var ex2 = Assert.Throws<InvalidOperationException>(() =>
+			{
+				sut["_read_keys"] = "";
+			});
+			Assert.That(ex2.Message, Is.EqualTo("DataStorage write operation on readonly key '_read_keys' is not allowed"));
+
+			var ex3 = Assert.Throws<InvalidOperationException>(() =>
+			{
+				sut["_read_slot_data_0"] = new JObject();
+			});
+			Assert.That(ex3.Message, Is.EqualTo("DataStorage write operation on readonly key '_read_slot_data_0' is not allowed"));
+
+			socket.DidNotReceive().SendPacket(Arg.Any<GetPacket>());
+			socket.DidNotReceive().SendPacketAsync(Arg.Any<SetPacket>());
+		}
+
+		public static void ExecuteAsyncWithDelay(Action retrieve, Action raiseEvent)
         {
             Task.WaitAll( new [] {
                 Task.Factory.StartNew(() =>
