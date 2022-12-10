@@ -4,7 +4,7 @@ using System;
 
 namespace Archipelago.MultiClient.Net.Helpers
 {
-    internal interface IConnectionInfoProvider
+    interface IConnectionInfoProvider
     {
         /// <summary>
         /// The game you are connected to or an empty string otherwise
@@ -32,19 +32,19 @@ namespace Archipelago.MultiClient.Net.Helpers
         string Uuid { get; }
 
         /// <summary>
-        ///     Send a ConnectUpdate packet and set the tags and ItemsHandlingFlags for the current connection to the provided params.
+        /// Send a ConnectUpdate packet and set the tags and ItemsHandlingFlags for the current connection to the provided params.
         /// </summary>
         /// <param name="tags">New tags for the current connection.</param>
         void UpdateConnectionOptions(string[] tags);
 
         /// <summary>
-        ///     Send a ConnectUpdate packet and set the tags and ItemsHandlingFlags for the current connection to the provided params.
+        /// Send a ConnectUpdate packet and set the tags and ItemsHandlingFlags for the current connection to the provided params.
         /// </summary>
         /// <param name="itemsHandlingFlags">New ItemsHandlingFlags for the current connection.</param>
         void UpdateConnectionOptions(ItemsHandlingFlags itemsHandlingFlags);
 
         /// <summary>
-        ///     Send a ConnectUpdate packet and set the tags and ItemsHandlingFlags for the current connection to the provided params.
+        /// Send a ConnectUpdate packet and set the tags and ItemsHandlingFlags for the current connection to the provided params.
         /// </summary>
         /// <param name="tags">New tags for the current connection.</param>
         /// <param name="itemsHandlingFlags">New ItemsHandlingFlags for the current connection.</param>
@@ -104,19 +104,19 @@ namespace Archipelago.MultiClient.Net.Helpers
         }
 
         /// <summary>
-        ///     Send a ConnectUpdate packet and set the tags and ItemsHandlingFlags for the current connection to the provided params.
+        /// Send a ConnectUpdate packet and set the tags and ItemsHandlingFlags for the current connection to the provided params.
         /// </summary>
         /// <param name="tags">New tags for the current connection.</param>
         public void UpdateConnectionOptions(string[] tags) => UpdateConnectionOptions(tags, ItemsHandlingFlags);
 
         /// <summary>
-        ///     Send a ConnectUpdate packet and set the tags and ItemsHandlingFlags for the current connection to the provided params.
+        /// Send a ConnectUpdate packet and set the tags and ItemsHandlingFlags for the current connection to the provided params.
         /// </summary>
         /// <param name="itemsHandlingFlags">New ItemsHandlingFlags for the current connection.</param>
         public void UpdateConnectionOptions(ItemsHandlingFlags itemsHandlingFlags) => UpdateConnectionOptions(Tags, ItemsHandlingFlags);
 
         /// <summary>
-        ///     Send a ConnectUpdate packet and set the tags and ItemsHandlingFlags for the current connection to the provided params.
+        /// Send a ConnectUpdate packet and set the tags and ItemsHandlingFlags for the current connection to the provided params.
         /// </summary>
         /// <param name="tags">New tags for the current connection.</param>
         /// <param name="itemsHandlingFlags">New ItemsHandlingFlags for the current connection.</param>

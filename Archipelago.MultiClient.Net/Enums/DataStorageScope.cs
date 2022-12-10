@@ -1,5 +1,8 @@
 ﻿namespace Archipelago.MultiClient.Net.Enums
 {
+	/// <summary>
+	/// Scope for DataStorage keys
+	/// </summary>
     public enum Scope
     {
         /// <summary>
@@ -21,5 +24,10 @@
         /// Keys in this scope are with shared with clients connected to your slot
         /// </summary>
         Slot,
-    }
+		
+        /// <summary>
+        /// Keys in this scope are read-only and can only be updated by the server
+        /// </summary>
+		ReadOnly
+	}
 }

@@ -855,6 +855,21 @@ namespace Archipelago.MultiClient.Net.Tests
 			socket.DidNotReceive().SendPacketAsync(Arg.Any<SetPacket>());
 		}
 
+
+		[Test]
+		public void Should_get_hint_for_current_slot()
+		{
+			var socket = Substitute.For<IArchipelagoSocketHelper>();
+			var connectionInfo = Substitute.For<IConnectionInfoProvider>();
+
+			var sut = new DataStorageHelper(socket, connectionInfo);
+
+			sut.GetHints();
+
+			socket.DidNotReceive().SendPacket(Arg.Any<GetPacket>());
+			socket.DidNotReceive().SendPacketAsync(Arg.Any<SetPacket>());
+		}
+
 		public static void ExecuteAsyncWithDelay(Action retrieve, Action raiseEvent)
         {
             Task.WaitAll( new [] {

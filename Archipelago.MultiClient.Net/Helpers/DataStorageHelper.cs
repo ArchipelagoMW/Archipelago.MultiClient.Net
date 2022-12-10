@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace Archipelago.MultiClient.Net.Helpers
 {
-    public class DataStorageHelper
+    public partial class DataStorageHelper
     {
         public delegate void DataStorageUpdatedHandler(JToken originalValue, JToken newValue);
 
@@ -102,7 +102,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         }
 
 #if NET35
-        void GetAsync(string key, Action<JToken> callback)
+		void GetAsync(string key, Action<JToken> callback)
         {
             if (!asyncRetrievalCallbacks.ContainsKey(key))
                 asyncRetrievalCallbacks[key] = callback;
@@ -217,7 +217,7 @@ namespace Archipelago.MultiClient.Net.Helpers
             }
         }
 
-        private DataStorageElementContext GetContextForKey(string key) =>
+        DataStorageElementContext GetContextForKey(string key) =>
 	        new DataStorageElementContext
 	        {
 		        Key = key,
@@ -240,13 +240,13 @@ namespace Archipelago.MultiClient.Net.Helpers
 
         void RemoveHandler(string key, DataStorageUpdatedHandler handler)
         {
-            if (onValueChangedEventHandlers.ContainsKey(key))
-            {
-                onValueChangedEventHandlers[key] -= handler;
+	        if (!onValueChangedEventHandlers.ContainsKey(key)) 
+		        return;
 
-                if (onValueChangedEventHandlers[key] == null)
-                    onValueChangedEventHandlers.Remove(key);
-            }
+	        onValueChangedEventHandlers[key] -= handler;
+
+	        if (onValueChangedEventHandlers[key] == null)
+		        onValueChangedEventHandlers.Remove(key);
         }
 
         string AddScope(Scope scope, string key)
@@ -261,6 +261,8 @@ namespace Archipelago.MultiClient.Net.Helpers
                     return $"{scope}:{connectionInfoProvider.Team}:{key}";
                 case Scope.Slot:
                     return $"{scope}:{connectionInfoProvider.Slot}:{key}";
+				case Scope.ReadOnly:
+					return $"_read_{key}";
                 default:
                     throw new ArgumentOutOfRangeException(nameof(scope), scope, $"Invalid scope for key {key}");
             }
