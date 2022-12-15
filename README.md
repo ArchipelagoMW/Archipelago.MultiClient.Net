@@ -10,8 +10,9 @@ A client library for use with .NET based applications for interfacing with Archi
 var session = ArchipelagoSessionFactory.CreateSession("localhost", 38281);
 
 // alternatively...
-
 var session = ArchipelagoSessionFactory.CreateSession(new Uri("ws://localhost:38281"));
+var session = ArchipelagoSessionFactory.CreateSession("localhost:38281");
+var session = ArchipelagoSessionFactory.CreateSession("localhost");
 ```
 
 The freshly created `ArchipelagoSession` object is the entrypoint for all incoming and outgoing interactions with the server. Keep it in scope for at least the lifetime of the connection. If the room changes ports, or the user needs to connect to a different room, then a new session needs to be created at the new host and port.
@@ -33,8 +34,6 @@ LoginResult TryConnectAndLogin(
             */
         Version version = null, // Minimum Archipelago world specification version which this client can successfuly interface with
         string[] tags = null, /* One of the following (see AP docs for details)
-                "AP"
-                "IgnoreGame"
                 "DeathLink"
                 "Tracker"
                 "TextOnly"
@@ -47,7 +46,7 @@ LoginResult TryConnectAndLogin(
 For example,
 
 ```csharp
-LoginResult result = session.TryConnectAndLogin("Risk of Rain 2", "Ijwu", new Version(2,1,0));
+LoginResult result = session.TryConnectAndLogin("Risk of Rain 2", "Ijwu", ItemsHandlingFlags.AllItems);
 ```
 
 Would attempt to connect to a password-less room at the slot `Ijwu`, and report the game `Risk of Rain 2` with a minimum apworld version of `v2.1.0`.
@@ -221,7 +220,7 @@ DeathLink support is included in the library. You may enable it by using the `Cr
 var session = ArchipelagoSessionFactory.CreateSession("localhost", 38281);
 
 var deathLinkService = session.CreateDeathLinkService().EnableDeathlink();
-session.TryConnectAndLogin("Risk of Rain 2", "Ijwu", new Version(2,1,0));
+session.TryConnectAndLogin("Risk of Rain 2", "Ijwu", ItemsHandlingFlags.AllItems);
 
 deathLinkService.OnDeathLinkReceived += (deathLinkObject) => {
 	// ... Kill your player(s).
@@ -270,7 +269,7 @@ Mathematical operations, bitwise operations and callbacks can be chained, given 
 Examples:
 ```csharp
 var session = ArchipelagoSessionFactory.CreateSession("localhost", 38281);
-session.TryConnectAndLogin("Timespinner", "Jarno", new Version(2,6,0));
+session.TryConnectAndLogin("Timespinner", "Jarno", ItemsHandlingFlags.AllItems);
 
 //Initializing
 session.DataStorage["B"].Initialize(20); //Set initial value for B in global scope if it has no value assigned yet
@@ -330,7 +329,7 @@ The Archipelago server can send messages to client to be displayed on screen as 
 ```csharp
 var session = ArchipelagoSessionFactory.CreateSession("localhost", 38281);
 session.MessageLog.OnMessageReceived += OnMessageReceived;
-session.TryConnectAndLogin("Timespinner", "Jarno", new Version(0,3,5));
+session.TryConnectAndLogin("Timespinner", "Jarno", ItemsHandlingFlags.AllItems, new Version(0,3,5));
 
 static void OnMessageReceived(LogMessage message)
 {
