@@ -30,7 +30,7 @@ namespace Archipelago.MultiClient.Net.Tests
 				MissingChecks = Array.Empty<long>(),
 				Players = Array.Empty<NetworkPlayer>(),
 				SlotData = new Dictionary<string, object>(0),
-				SlotInfo = new Dictionary<int, NetworkSlot>(0),
+				SlotInfo = new Dictionary<int, NetworkSlot>(0)
 			};
 
 			SetupRoomInfoPacket(socket, new RoomInfoPacket { Games = Array.Empty<string>() });
@@ -40,7 +40,23 @@ namespace Archipelago.MultiClient.Net.Tests
 			
 			Assert.That(result.Successful, Is.True);
 		}
-		
+
+		[TestCase(true)]
+		[TestCase(false)]
+		public void Should_request_slot_data_if_enabled(bool requestSlotData)
+		{
+			var socket = Substitute.For<IArchipelagoSocketHelper>();
+			var fileSystemDataPackageProvider = Substitute.For<IFileSystemDataPackageProvider>();
+
+			var session = CreateTestSession(socket, fileSystemDataPackageProvider);
+
+			SetupRoomInfoPacket(socket, new RoomInfoPacket { Games = Array.Empty<string>() });
+
+			_ = session.TryConnectAndLogin("", "", ItemsHandlingFlags.NoItems, requestSlotData: requestSlotData);
+
+			session.Socket.Received().SendPacket(Arg.Is<ConnectPacket>(p => p.RequestSlotData == requestSlotData));
+		}
+
 		[Test]
 		public void Should_send_connect_after_retrieving_data_package()
 		{
@@ -93,6 +109,37 @@ namespace Archipelago.MultiClient.Net.Tests
 
 			Assert.That(result.Successful, Is.False);
 			Assert.That(((LoginFailure)result).Errors.First(), Is.EqualTo("Connection timed out."));
+		}
+
+		[Test]
+		public void Should_add_correct_properties_to_login_successful()
+		{
+			var socket = Substitute.For<IArchipelagoSocketHelper>();
+			var fileSystemDataPackageProvider = Substitute.For<IFileSystemDataPackageProvider>();
+
+			var session = CreateTestSession(socket, fileSystemDataPackageProvider);
+
+			var connectedPacket = new ConnectedPacket
+			{
+				Slot = 4,
+				Team = 3,
+				LocationsChecked = Array.Empty<long>(),
+				MissingChecks = Array.Empty<long>(),
+				Players = Array.Empty<NetworkPlayer>(),
+				SlotData = new Dictionary<string, object>(0)
+			};
+
+			SetupRoomInfoPacket(socket, new RoomInfoPacket { Games = Array.Empty<string>() });
+			SetupLoginResultPacket(socket, connectedPacket);
+
+			var result = session.TryConnectAndLogin("", "", ItemsHandlingFlags.NoItems);
+
+			Assert.That(result.Successful, Is.True);
+
+			var successful = (LoginSuccessful)result;
+
+			Assert.That(successful.Slot, Is.EqualTo(4));
+			Assert.That(successful.Team, Is.EqualTo(3));
 		}
 
 		static ArchipelagoSession CreateTestSession(IArchipelagoSocketHelper socket,

@@ -720,7 +720,7 @@ namespace Archipelago.MultiClient.Net.Tests
             Assert.That((string)anonymousType["B"], Is.EqualTo("Hello"));
         }
 
-        [Test]
+		[Test]
         public void Should_set_default()
         {
             var socket = Substitute.For<IArchipelagoSocketHelper>();
@@ -850,21 +850,6 @@ namespace Archipelago.MultiClient.Net.Tests
 				sut["_read_slot_data_0"] = new JObject();
 			});
 			Assert.That(ex3.Message, Is.EqualTo("DataStorage write operation on readonly key '_read_slot_data_0' is not allowed"));
-
-			socket.DidNotReceive().SendPacket(Arg.Any<GetPacket>());
-			socket.DidNotReceive().SendPacketAsync(Arg.Any<SetPacket>());
-		}
-
-
-		[Test]
-		public void Should_get_hint_for_current_slot()
-		{
-			var socket = Substitute.For<IArchipelagoSocketHelper>();
-			var connectionInfo = Substitute.For<IConnectionInfoProvider>();
-
-			var sut = new DataStorageHelper(socket, connectionInfo);
-
-			sut.GetHints();
 
 			socket.DidNotReceive().SendPacket(Arg.Any<GetPacket>());
 			socket.DidNotReceive().SendPacketAsync(Arg.Any<SetPacket>());

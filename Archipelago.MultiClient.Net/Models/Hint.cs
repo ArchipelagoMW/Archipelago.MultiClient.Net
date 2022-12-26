@@ -18,7 +18,7 @@ namespace Archipelago.MultiClient.Net.Models
 		public ItemFlags ItemFlags { get; set; }
 
 		[JsonProperty("found")]
-		public long Found { get; set; }
+		public bool Found { get; set; }
 
 		[JsonProperty("entrance")]
 		public string Entrance { get; set; }

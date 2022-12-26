@@ -36,10 +36,11 @@ namespace Archipelago.MultiClient.Net
         /// Your slot number on your team.
         /// </summary>
         public int Slot { get; }
-        /// <summary>
-        /// Contains a slot data, differs per game
-        /// </summary>
-        public Dictionary<string, object> SlotData { get; }
+
+		/// <summary>
+		/// Contains a slot data, differs per game
+		/// </summary>
+		public Dictionary<string, object> SlotData { get; }
 
         public LoginSuccessful(ConnectedPacket connectedPacket)
         {

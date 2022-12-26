@@ -10,12 +10,12 @@
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<RepositoryUrl>https://github.com/ArchipelagoMW/Archipelago.MultiClient.Net</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
-		<AssemblyVersion>4.1.2.0</AssemblyVersion>
-		<FileVersion>4.1.2.0</FileVersion>
+		<AssemblyVersion>4.2.0.0</AssemblyVersion>
+		<FileVersion>4.2.0.0</FileVersion>
+		<Version>4.2.0</Version>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageRequireLicenseAcceptance>False</PackageRequireLicenseAcceptance>
 		<GeneratePackageOnBuild>False</GeneratePackageOnBuild>
-		<Version>4.1.2</Version>
 		<Company>Jarno Westhof, Hussein Farran, Zach Parks</Company>
 	</PropertyGroup>
 

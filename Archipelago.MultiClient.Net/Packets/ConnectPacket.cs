@@ -28,5 +28,8 @@ namespace Archipelago.MultiClient.Net.Packets
 
         [JsonProperty("items_handling")]
         public ItemsHandlingFlags ItemsHandling { get; set; }
+
+        [JsonProperty("slot_data")]
+		public bool RequestSlotData { get; set; }
     }
 }
