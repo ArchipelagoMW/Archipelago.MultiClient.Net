@@ -14,6 +14,9 @@ namespace Archipelago.MultiClient.Net.Models
 		[JsonProperty("item")]
 		public long ItemId { get; set; }
 
+		[JsonProperty("location")]
+		public long LocationId { get; set; }
+
 		[JsonProperty("item_flags")]
 		public ItemFlags ItemFlags { get; set; }
 
