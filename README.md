@@ -39,7 +39,8 @@ LoginResult TryConnectAndLogin(
                 "TextOnly"
             */
         string uuid = null, // Unique identifier for this player/client, if null randomly generated
-        string password = null // Password that was set when the room was created
+        string password = null, // Password that was set when the room was created
+	bool requestSlotData = true // If the LoginResult should contain the slot data
     );
 ```
 
