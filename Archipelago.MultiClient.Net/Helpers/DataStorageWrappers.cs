@@ -1,6 +1,5 @@
 ﻿using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Models;
-using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 
 #if NET35
@@ -29,9 +28,9 @@ namespace Archipelago.MultiClient.Net.Helpers
 		/// <param name="slot">the slot id of the player to request hints for, defaults to the current player's slot if left empty</param>
 		/// <param name="team">the team id of the player to request hints for, defaults to the current player's team if left empty</param>
 		/// <returns>An array of unlocked hints or null if the slot or team does not exist</returns>
-		public void GetHintsAsync(Action<Hint[]> onHintsRetrieved, int? slot = null, int? team = null) => 
-			GetAsync(Scope.ReadOnly, $"hints_{team ?? connectionInfoProvider.Team}_{slot ?? connectionInfoProvider.Slot}",
-				t => onHintsRetrieved(t?.ToObject<Hint[]>()));
+		public void GetHintsAsync(Action<Hint[]> onHintsRetrieved, int? slot = null, int? team = null) =>
+			this[Scope.ReadOnly, $"hints_{team ?? connectionInfoProvider.Team}_{slot ?? connectionInfoProvider.Slot}"]
+				.GetAsync(t => onHintsRetrieved(t?.ToObject<Hint[]>()));
 #else
 		/// <summary>
 		/// Retrieves all unlocked hints for the specified player slot and team
@@ -40,8 +39,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 		/// <param name="team">the team id of the player to request hints for, defaults to the current player's team if left empty</param>
 		/// <returns>An array of unlocked hints or null if the slot or team does not exist</returns>
 		public Task<Hint[]> GetHintsAsync(int? slot = null, int? team = null) =>
-			GetAsync(Scope.ReadOnly, $"hints_{team ?? connectionInfoProvider.Team}_{slot ?? connectionInfoProvider.Slot}")
-				.ContinueWith(t => t.Result?.ToObject<Hint[]>());
+			this[Scope.ReadOnly, $"hints_{team ?? connectionInfoProvider.Team}_{slot ?? connectionInfoProvider.Slot}"].GetAsync<Hint[]>();
 #endif
 
 		/// <summary>
@@ -59,8 +57,8 @@ namespace Archipelago.MultiClient.Net.Helpers
 		/// <param name="slot">the slot id of the player to request slot data for, defaults to the current player's slot if left empty</param>
 		/// <returns>An Dictionary with string keys, and custom defined values, the keys and values differ per game</returns>
 		public void GetSlotDataAsync(Action<Dictionary<string, object>> onSlotDataRetrieved, int? slot = null) =>
-			GetAsync(Scope.ReadOnly, $"slot_data_{slot ?? connectionInfoProvider.Slot}",
-				t => onSlotDataRetrieved(t?.ToObject<Dictionary<string, object>>()));
+			this[Scope.ReadOnly, $"slot_data_{slot ?? connectionInfoProvider.Slot}"]
+				.GetAsync(t => onSlotDataRetrieved(t?.ToObject<Dictionary<string, object>>()));
 #else
 		/// <summary>
 		/// Retrieves the custom slot data for the specified slot
@@ -68,8 +66,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 		/// <param name="slot">the slot id of the player to request slot data for, defaults to the current player's slot if left empty</param>
 		/// <returns>An Dictionary with string keys, and custom defined values, the keys and values differ per game</returns>
 		public Task<Dictionary<string, object>> GetSlotDataAsync(int? slot = null) =>
-			GetAsync(Scope.ReadOnly, $"slot_data_{slot ?? connectionInfoProvider.Slot}")
-				.ContinueWith(t => t.Result?.ToObject<Dictionary<string, object>>());
+			this[Scope.ReadOnly, $"slot_data_{slot ?? connectionInfoProvider.Slot}"].GetAsync<Dictionary<string, object>>();
 #endif
 
 		/// <summary>
@@ -88,8 +85,8 @@ namespace Archipelago.MultiClient.Net.Helpers
 		/// <param name="game">the game name to request item name groups for, defaults to the current player's game if left empty</param>
 		/// <returns>An Dictionary with item group names for keys and an array of item names as value</returns>
 		public void GetItemNameGroupsAsync(Action<Dictionary<string, string[]>> onItemNameGroupsRetrieved, string game = null) =>
-			GetAsync(Scope.ReadOnly, $"item_name_groups_{game ?? connectionInfoProvider.Game}",
-				t => onItemNameGroupsRetrieved(t?.ToObject<Dictionary<string, string[]>>()));
+			this[Scope.ReadOnly, $"item_name_groups_{game ?? connectionInfoProvider.Game}"]
+				.GetAsync(t => onItemNameGroupsRetrieved(t?.ToObject<Dictionary<string, string[]>>()));
 #else
 		/// <summary>
 		/// Retrieves the defined item name groups for the specified game
@@ -97,8 +94,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 		/// <param name="game">the game name to request item name groups for, defaults to the current player's game if left empty</param>
 		/// <returns>An Dictionary with item group names for keys and an array of item names as value</returns>
 		public Task<Dictionary<string, string[]>> GetItemNameGroupsAsync(string game = null) =>
-			GetAsync(Scope.ReadOnly, $"item_name_groups_{game ?? connectionInfoProvider.Game}")
-				.ContinueWith(t => t.Result?.ToObject<Dictionary<string, string[]>>());
+			this[Scope.ReadOnly, $"item_name_groups_{game ?? connectionInfoProvider.Game}"].GetAsync<Dictionary<string, string[]>>();
 #endif
 	}
 }

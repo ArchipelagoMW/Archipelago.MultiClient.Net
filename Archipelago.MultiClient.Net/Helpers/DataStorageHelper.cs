@@ -102,9 +102,6 @@ namespace Archipelago.MultiClient.Net.Helpers
         }
 
 #if NET35
-	    void GetAsync(Scope scope, string key, Action<JToken> callback) =>
-		    GetAsync(AddScope(scope, key), callback);
-
 		void GetAsync(string key, Action<JToken> callback)
         {
             if (!asyncRetrievalCallbacks.ContainsKey(key))
@@ -115,9 +112,6 @@ namespace Archipelago.MultiClient.Net.Helpers
             socket.SendPacketAsync(new GetPacket { Keys = new[] { key } });
         }
 #else
-	    Task<JToken> GetAsync(Scope scope, string key) =>
-		    GetAsync(AddScope(scope, key));
-
 	    Task<JToken> GetAsync(string key)
         {
             if (asyncRetrievalTasks.TryGetValue(key, out var asyncRetrievalTask))
