@@ -52,7 +52,8 @@ namespace Archipelago.MultiClient.Net.Models
             Callbacks += callback.Method;
         }
 
-        public static DataStorageElement operator ++(DataStorageElement a) => new DataStorageElement(a, Operation.Add, 1);
+#pragma warning disable CS1591
+		public static DataStorageElement operator ++(DataStorageElement a) => new DataStorageElement(a, Operation.Add, 1);
         public static DataStorageElement operator --(DataStorageElement a) => new DataStorageElement(a, Operation.Add, -1);
         public static DataStorageElement operator +(DataStorageElement a, JToken b) => new DataStorageElement(a, Operation.Add, b);
         public static DataStorageElement operator +(DataStorageElement a, IEnumerable b) => new DataStorageElement(a, Operation.Add, JArray.FromObject(b));
@@ -74,13 +75,13 @@ namespace Archipelago.MultiClient.Net.Models
         public static DataStorageElement operator >>(DataStorageElement a, int b) => new DataStorageElement(a, Operation.Min, b);
         public static DataStorageElement operator <<(DataStorageElement a, int b) => new DataStorageElement(a, Operation.Max, b);
 
-        public static implicit operator DataStorageElement(bool b) => new DataStorageElement(Operation.Replace, b);
+		public static implicit operator DataStorageElement(bool b) => new DataStorageElement(Operation.Replace, b);
 		public static implicit operator DataStorageElement(int i) => new DataStorageElement(Operation.Replace, i);
 		public static implicit operator DataStorageElement(long l) => new DataStorageElement(Operation.Replace, l);
 		public static implicit operator DataStorageElement(decimal m) => new DataStorageElement(Operation.Replace, m);
 		public static implicit operator DataStorageElement(double d) => new DataStorageElement(Operation.Replace, d);
 		public static implicit operator DataStorageElement(float f) => new DataStorageElement(Operation.Replace, f);
-		public static implicit operator DataStorageElement(string s) => new DataStorageElement(Operation.Replace, s);
+		public static implicit operator DataStorageElement(string s) => s == null ? new DataStorageElement(Operation.Replace, JValue.CreateNull()) : new DataStorageElement(Operation.Replace, s);
 		public static implicit operator DataStorageElement(JToken o) => new DataStorageElement(Operation.Replace, o);
 		public static implicit operator DataStorageElement(Array a) => new DataStorageElement(Operation.Replace, JArray.FromObject(a));
 		public static implicit operator DataStorageElement(List<bool> l) => new DataStorageElement(Operation.Replace, JArray.FromObject(l));
@@ -91,12 +92,22 @@ namespace Archipelago.MultiClient.Net.Models
 		public static implicit operator DataStorageElement(List<float> l) => new DataStorageElement(Operation.Replace, JArray.FromObject(l));
 		public static implicit operator DataStorageElement(List<string> l) => new DataStorageElement(Operation.Replace, JArray.FromObject(l));
 		public static implicit operator DataStorageElement(List<object> l) => new DataStorageElement(Operation.Replace, JArray.FromObject(l));
-		
+		//public static implicit operator DataStorageElement(CollectionBase b) => new DataStorageElement(Operation.Replace, JArray.FromObject(b));
+
+
+
+		public static implicit operator bool(DataStorageElement e) => RetrieveAndReturnBoolValue<bool>(e);
+		public static implicit operator bool?(DataStorageElement e) => RetrieveAndReturnBoolValue<bool?>(e);
 		public static implicit operator int(DataStorageElement e) => RetrieveAndReturnDecimalValue<int>(e);
+		public static implicit operator int?(DataStorageElement e) => RetrieveAndReturnDecimalValue<int?>(e);
 		public static implicit operator long(DataStorageElement e) => RetrieveAndReturnDecimalValue<long>(e);
+		public static implicit operator long?(DataStorageElement e) => RetrieveAndReturnDecimalValue<long?>(e);
 		public static implicit operator decimal(DataStorageElement e) => RetrieveAndReturnDecimalValue<decimal>(e);
+		public static implicit operator decimal?(DataStorageElement e) => RetrieveAndReturnDecimalValue<decimal?>(e);
 		public static implicit operator double(DataStorageElement e) => RetrieveAndReturnDecimalValue<double>(e);
+		public static implicit operator double?(DataStorageElement e) => RetrieveAndReturnDecimalValue<double?>(e);
 		public static implicit operator float(DataStorageElement e) => RetrieveAndReturnDecimalValue<float>(e);
+		public static implicit operator float?(DataStorageElement e) => RetrieveAndReturnDecimalValue<float?>(e);
 		public static implicit operator string(DataStorageElement e) => RetrieveAndReturnStringValue(e);
 		public static implicit operator bool[](DataStorageElement e) => RetrieveAndReturnArrayValue<bool[]>(e);
 		public static implicit operator int[](DataStorageElement e) => RetrieveAndReturnArrayValue<int[]>(e);
@@ -117,7 +128,7 @@ namespace Archipelago.MultiClient.Net.Models
 
 		public static implicit operator JArray(DataStorageElement e) => RetrieveAndReturnArrayValue<JArray>(e);
 		public static implicit operator JToken(DataStorageElement e) => e.Context.GetData(e.Context.Key);
-
+#pragma warning restore CS1591
 		/// <summary>
 		/// Initializes a value in the server side data storage
 		/// Will not override any existing value, only set the default value if none existed
@@ -197,9 +208,12 @@ namespace Archipelago.MultiClient.Net.Models
             if (e.cachedValue != null)
                 return (string)e.cachedValue;
 
-            var value = e.Context.GetData(e.Context.Key).ToString();
-
-            foreach (var operation in e.Operations)
+			var yayToken = e.Context.GetData(e.Context.Key);
+			var value = (yayToken.Type == JTokenType.Null)
+				? null
+				: yayToken.ToString();
+			
+			foreach (var operation in e.Operations)
             {
                 switch (operation.Operation)
                 {
@@ -223,17 +237,50 @@ namespace Archipelago.MultiClient.Net.Models
                 }
             }
 
-            e.cachedValue = value;
-
-            return Convert.ToString(e.cachedValue);
+			if (value == null)
+				e.cachedValue = JValue.CreateNull();
+			else
+				e.cachedValue = value;
+			
+            return (string)e.cachedValue;
         }
 
-        static T RetrieveAndReturnDecimalValue<T>(DataStorageElement e) where T : struct
+        static T RetrieveAndReturnBoolValue<T>(DataStorageElement e)
+        {
+	        if (e.cachedValue != null)
+		        return e.cachedValue.ToObject<T>();
+
+	        var value = e.Context.GetData(e.Context.Key).ToObject<bool?>() ?? (bool?)Activator.CreateInstance(typeof(T));
+
+	        foreach (var operation in e.Operations)
+	        {
+		        switch (operation.Operation)
+		        {
+			        case Operation.Replace:
+				        value = (bool?)operation.Value;
+				        break;
+
+			        default:
+				        throw new InvalidOperationException($"Cannot perform operation {operation.Operation} on boolean value");
+		        }
+	        }
+
+	        e.cachedValue = value;
+			
+			return value.HasValue 
+				? (T)Convert.ChangeType(value.Value, IsNullable<T>() ? Nullable.GetUnderlyingType(typeof(T)) : typeof(T))
+				: default;
+        }
+
+        static T RetrieveAndReturnDecimalValue<T>(DataStorageElement e)
         {
             if (e.cachedValue != null)
                 return e.cachedValue.ToObject<T>();
 
-            var value = e.Context.GetData(e.Context.Key).ToObject<decimal>();
+            var value = e.Context.GetData(e.Context.Key).ToObject<decimal?>();
+
+            if (!value.HasValue && !IsNullable<T>())
+	            value = Activator.CreateInstance<decimal>();
 
             foreach (var operation in e.Operations)
             {
@@ -256,15 +303,15 @@ namespace Archipelago.MultiClient.Net.Models
                         break;
 
                     case Operation.Pow:
-                        value = (decimal)Math.Pow((double)value, (double)operation.Value);
+                        value = (decimal)Math.Pow((double)value.Value, (double)operation.Value);
                         break;
 
                     case Operation.Max:
-                        value = Math.Max(value, (decimal)operation.Value);
+                        value = Math.Max(value.Value, (decimal)operation.Value);
                         break;
 
                     case Operation.Min:
-                        value = Math.Min(value, (decimal)operation.Value);
+                        value = Math.Min(value.Value, (decimal)operation.Value);
                         break;
 
                     case Operation.Xor:
@@ -291,22 +338,28 @@ namespace Archipelago.MultiClient.Net.Models
 
             e.cachedValue = value;
 
-            return (T)Convert.ChangeType(value, typeof(T));
-        }
+            return value.HasValue
+	            ? (T)Convert.ChangeType(value.Value, IsNullable<T>() ? Nullable.GetUnderlyingType(typeof(T)) : typeof(T))
+	            : default;
+		}
 
-        /// <summary>
-        /// Retrieves the value from the server and casts it to the given type
-        /// Cannot be used in combination with other operators
-        /// </summary>
-        /// <returns>The value from server as the given type</returns>
-        /// <exception cref="T:System.InvalidOperationException">
-        ///     DataStorageElement.To() cannot be used together with other operations on the DataStorageElement
-        ///     Other operations include =, +=, /=, + etc
-        /// </exception>
-        /// <exception cref="T:Archipelago.MultiClient.Net.Exceptions.ArchipelagoSocketClosedException">
-        ///     The websocket connection is not alive
-        /// </exception>
-        public T To<T>()
+        static bool IsNullable<T>() =>
+	        typeof(T).IsGenericType
+	        && typeof(T).GetGenericTypeDefinition() == typeof(Nullable<>).GetGenericTypeDefinition();
+
+		/// <summary>
+		/// Retrieves the value from the server and casts it to the given type
+		/// Cannot be used in combination with other operators
+		/// </summary>
+		/// <returns>The value from server as the given type</returns>
+		/// <exception cref="T:System.InvalidOperationException">
+		///     DataStorageElement.To() cannot be used together with other operations on the DataStorageElement
+		///     Other operations include =, +=, /=, + etc
+		/// </exception>
+		/// <exception cref="T:Archipelago.MultiClient.Net.Exceptions.ArchipelagoSocketClosedException">
+		///     The websocket connection is not alive
+		/// </exception>
+		public T To<T>()
         {
             if (Operations.Count != 0)
                 throw new InvalidOperationException(
@@ -315,7 +368,9 @@ namespace Archipelago.MultiClient.Net.Models
             return Context.GetData(Context.Key).ToObject<T>();
         }
 
-        public override string ToString() => $"{Context?.ToString() ?? "(null)"}, ({ListOperations()})";
+        /// <summary>Returns a string that represents the current object.</summary>
+        /// <returns>A string that represents the current object.</returns>
+		public override string ToString() => $"{Context?.ToString() ?? "(null)"}, ({ListOperations()})";
 
         string ListOperations() => Operations == null 
 	        ? "none" 
