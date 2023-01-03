@@ -149,7 +149,7 @@ namespace Archipelago.MultiClient.Net.Tests
 			var locations = new LocationCheckHelper(socket, dataPackageCache);
 			var items = new ReceivedItemsHelper(socket, locations, dataPackageCache);
 			var players = new PlayerHelper(socket);
-			var roomState = new RoomStateHelper(socket);
+			var roomState = new RoomStateHelper(socket, locations);
 			var connectionInfo = new ConnectionInfoHelper(socket);
 			var dataStorage = new DataStorageHelper(socket, connectionInfo);
 			var messageLog = new MessageLogHelper(socket, items, locations, players, connectionInfo);

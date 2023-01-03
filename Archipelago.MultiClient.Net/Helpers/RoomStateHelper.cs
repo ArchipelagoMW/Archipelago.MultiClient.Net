@@ -8,7 +8,9 @@ namespace Archipelago.MultiClient.Net.Helpers
 {
     public class RoomStateHelper
     {
-        string[] tags;
+	    readonly ILocationCheckHelper locationCheckHelper;
+
+	    string[] tags;
 
         /// <summary>
         /// The amount of points it costs to receive a hint from the server.
@@ -68,9 +70,11 @@ namespace Archipelago.MultiClient.Net.Helpers
                 ? default 
                 : new ReadOnlyCollection<string>(tags);
         
-        public RoomStateHelper(IArchipelagoSocketHelper socket)
+        public RoomStateHelper(IArchipelagoSocketHelper socket, ILocationCheckHelper locationCheckHelper)
         {
-            socket.PacketReceived += PacketReceived;
+	        this.locationCheckHelper = locationCheckHelper;
+
+	        socket.PacketReceived += PacketReceived;
         }
 
         void PacketReceived(ArchipelagoPacketBase packet)
@@ -88,9 +92,9 @@ namespace Archipelago.MultiClient.Net.Helpers
 
         void OnRoomInfoPacketReceived(RoomInfoPacket packet)
         {
-            HintCost = packet.HintCost;
-            HintCostPercentage = packet.HintCost;
-            LocationCheckPoints = packet.LocationCheckPoints;
+	        HintCostPercentage = packet.HintCostPercentage;
+	        HintCost = (int)Math.Max(0m, locationCheckHelper.AllLocations.Count * 0.01m * packet.HintCostPercentage);
+			LocationCheckPoints = packet.LocationCheckPoints;
             Version = packet.Version?.ToVersion();
             HasPassword = packet.Password;
             Seed = packet.SeedName;
@@ -114,11 +118,11 @@ namespace Archipelago.MultiClient.Net.Helpers
 
         void OnRoomUpdatedPacketReceived(RoomUpdatePacket packet)
         {
-            if(packet.HintCost.HasValue)
-                HintCost = packet.HintCost.Value;
-
-            if (packet.HintCost.HasValue)
-	            HintCostPercentage = packet.HintCost.Value;
+	        if (packet.HintCostPercentage.HasValue)
+	        {
+		        HintCostPercentage = packet.HintCostPercentage.Value;
+		        HintCost = (int)Math.Max(0m, locationCheckHelper.AllLocations.Count * 0.01m * packet.HintCostPercentage.Value);
+	        }
 
 			if (packet.LocationCheckPoints.HasValue)
                 LocationCheckPoints = packet.LocationCheckPoints.Value;

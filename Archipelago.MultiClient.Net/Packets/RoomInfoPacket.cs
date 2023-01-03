@@ -22,7 +22,7 @@ namespace Archipelago.MultiClient.Net.Packets
         public Dictionary<string, Permissions> Permissions { get; set; }
 
         [JsonProperty("hint_cost")]
-        public int HintCost { get; set; }
+        public int HintCostPercentage { get; set; }
 
         [JsonProperty("location_check_points")]
         public int LocationCheckPoints { get; set; }

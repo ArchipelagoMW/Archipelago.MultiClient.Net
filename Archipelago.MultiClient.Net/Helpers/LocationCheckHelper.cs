@@ -27,6 +27,10 @@ namespace Archipelago.MultiClient.Net.Helpers
 
         long GetLocationIdFromName(string game, string locationName);
         string GetLocationNameFromId(long locationId);
+
+        ReadOnlyCollection<long> AllLocations { get; }
+        ReadOnlyCollection<long> AllLocationsChecked { get; }
+        ReadOnlyCollection<long> AllMissingLocations { get; }
     }
 
     public class LocationCheckHelper : ILocationCheckHelper
