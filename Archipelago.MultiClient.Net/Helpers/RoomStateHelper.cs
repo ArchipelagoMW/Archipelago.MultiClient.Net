@@ -14,10 +14,14 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// The amount of points it costs to receive a hint from the server.
         /// </summary>
         public int HintCost { get; private set;  }
-        /// <summary>
-        /// The amount of hint points you receive per item/location check completed.
-        /// </summary>
-        public int LocationCheckPoints { get; private set; }
+		/// <summary>
+		/// The percentage of total locations that need to be checked to receive a hint from the server.
+		/// </summary>
+		public int HintCostPercentage { get; private set; }
+		/// <summary>
+		/// The amount of hint points you receive per item/location check completed.
+		/// </summary>
+		public int LocationCheckPoints { get; private set; }
         /// <summary>
         /// The client's current hint points.
         /// </summary>
@@ -85,6 +89,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         void OnRoomInfoPacketReceived(RoomInfoPacket packet)
         {
             HintCost = packet.HintCost;
+            HintCostPercentage = packet.HintCost;
             LocationCheckPoints = packet.LocationCheckPoints;
             Version = packet.Version?.ToVersion();
             HasPassword = packet.Password;
@@ -112,7 +117,10 @@ namespace Archipelago.MultiClient.Net.Helpers
             if(packet.HintCost.HasValue)
                 HintCost = packet.HintCost.Value;
 
-            if (packet.LocationCheckPoints.HasValue)
+            if (packet.HintCost.HasValue)
+	            HintCostPercentage = packet.HintCost.Value;
+
+			if (packet.LocationCheckPoints.HasValue)
                 LocationCheckPoints = packet.LocationCheckPoints.Value;
 
             if (packet.HintPoints.HasValue)

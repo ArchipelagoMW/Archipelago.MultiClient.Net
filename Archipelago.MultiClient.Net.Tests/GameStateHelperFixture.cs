@@ -17,20 +17,20 @@ namespace Archipelago.MultiClient.Net.Tests
             new TestCaseData[] {
                 // HintCost
                 new RoomStateHelperTest<int>(
-                    "Should_get_and_update_hint_cost",
+                    "Should_get_and_update_hint_cost_percentage",
                     new RoomInfoPacket { HintCost = 99 },
                     new RoomUpdatePacket { HintCost = 777 },
-                    s => s.HintCost, 99, 777),
+                    s => s.HintCostPercentage, 99, 777),
                 new RoomStateHelperTest<int>(
-                    "Should_not_update_hint_cost_when_its_not_provided",
+					"Should_not_update_hint_cost_percentage_when_its_not_provided",
                     new RoomInfoPacket { HintCost = 99 },
                     new RoomUpdatePacket { HintCost = null },
-                    s => s.HintCost, 99, 99),
+                    s => s.HintCostPercentage, 99, 99),
                 new RoomStateHelperTest<int>(
-                    "Should_update_hint_cost_to_0_when_its_provided",
+					"Should_update_hint_cost_percentage_to_0_when_its_provided",
                     new RoomInfoPacket { HintCost = 99 },
                     new RoomUpdatePacket { HintCost = 0 },
-                    s => s.HintCost, 99, 0),
+                    s => s.HintCostPercentage, 99, 0),
 
                 // LocationCheckPoints
                 new RoomStateHelperTest<int>(

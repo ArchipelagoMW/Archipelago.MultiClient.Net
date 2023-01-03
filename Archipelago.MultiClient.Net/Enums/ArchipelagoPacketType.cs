@@ -1,4 +1,6 @@
-﻿namespace Archipelago.MultiClient.Net.Enums
+﻿using System;
+
+namespace Archipelago.MultiClient.Net.Enums
 {
     public enum ArchipelagoPacketType
     {
@@ -8,7 +10,8 @@
         ReceivedItems,
         LocationInfo,
         RoomUpdate,
-        Print,
+        [Obsolete("Print packets are only supported for AP servers up to 0.3.7, use session.MessageLog.OnMessageReceived to receive messages")]
+		Print,
         PrintJSON,
         Connect,
         ConnectUpdate,
