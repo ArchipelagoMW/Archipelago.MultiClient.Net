@@ -7,9 +7,20 @@ using System.Text;
 
 namespace Archipelago.MultiClient.Net.Helpers
 {
+	/// <summary>
+	/// Allows clients to easily subscribe to incoming messages and helps formulating those messages correctly
+	/// </summary>
     public class MessageLogHelper
     {
-        public delegate void MessageReceivedHandler(LogMessage message);
+		/// <summary>
+		/// Method signature for the OnMessageReceived event
+		/// </summary>
+		/// <param name="message">A message to display to the user</param>
+		public delegate void MessageReceivedHandler(LogMessage message);
+
+        /// <summary>
+        /// Triggered for each message that should be presented to the player
+        /// </summary>
         public event MessageReceivedHandler OnMessageReceived;
 
         readonly IReceivedItemsHelper items;
@@ -175,15 +186,26 @@ namespace Archipelago.MultiClient.Net.Helpers
         }
     }
 
+	/// <summary>
+	/// A message to display to the user, consisting of an array of message parts to form a sentence
+	/// </summary>
     public class LogMessage
     {
-        public MessagePart[] Parts { get; }
+		/// <summary>
+		/// Different part of a message that should be used to build a sentence
+		/// The order of the parts is the order the different sections should appear in
+		/// </summary>
+		public MessagePart[] Parts { get; }
 
         internal LogMessage(MessagePart[] parts)
         {
             Parts = parts;
         }
 
+		/// <summary>
+		/// Uses the the Parts to form a correct sentence
+		/// </summary>
+		/// <returns>the sentence this LogMessage is representing</returns>
         public override string ToString()
         {
             if (Parts.Length == 1)
@@ -197,12 +219,25 @@ namespace Archipelago.MultiClient.Net.Helpers
             return builder.ToString();
         }
     }
-    
-    public class ItemSendLogMessage : LogMessage
+
+	/// <summary>
+	/// A item send message to display to the user, consisting of an array of message parts to form a sentence
+	/// item send messages contain additional information about the item that was send for more specific processing
+	/// </summary>
+	public class ItemSendLogMessage : LogMessage
     {
+		/// <summary>
+		/// The player slot number of the player who received the item
+		/// </summary>
         public int ReceivingPlayerSlot { get; }
-        public int SendingPlayerSlot { get; }
-        public NetworkItem Item { get; }
+		/// <summary>
+		/// The player slot number of the player who send the item
+		/// </summary>
+		public int SendingPlayerSlot { get; }
+		/// <summary>
+		/// The Item that was send
+		/// </summary>
+		public NetworkItem Item { get; }
 
         internal ItemSendLogMessage(MessagePart[] parts, int receiver, int sender, NetworkItem item) : base(parts)
         {
@@ -212,19 +247,47 @@ namespace Archipelago.MultiClient.Net.Helpers
         }
     }
 
-    public class HintItemSendLogMessage : ItemSendLogMessage
-    {
-        public bool IsFound { get; }
+	/// <summary>
+	/// A item hint message to display to the user, consisting of an array of message parts to form a sentence
+	/// item hint messages contain additional information about the item that was send for more specific processing
+	/// </summary>
+	public class HintItemSendLogMessage : LogMessage
+	{
+		/// <summary>
+		/// The player slot number of the player who received the item
+		/// </summary>
+		public int ReceivingPlayerSlot { get; }
+		/// <summary>
+		/// The player slot number of the player who send the item
+		/// </summary>
+		public int SendingPlayerSlot { get; }
+		/// <summary>
+		/// The Item that was send
+		/// </summary>
+		public NetworkItem Item { get; }
+		/// <summary>
+		/// Indicates if the location of this item was already checked
+		/// </summary>
+		public bool IsFound { get; }
 
-        internal HintItemSendLogMessage(MessagePart[] parts, int receiver, int sender, NetworkItem item, bool found) 
-            : base(parts, receiver, sender, item)
+        internal HintItemSendLogMessage(MessagePart[] parts, int receiver, int sender, NetworkItem item, bool found) : base(parts)
         {
-            IsFound = found;
+	        ReceivingPlayerSlot = receiver;
+	        SendingPlayerSlot = sender;
+	        Item = item;
+			IsFound = found;
         }
     }
 
-    public class CountdownLogMessage : LogMessage
+	/// <summary>
+	/// A countdown message to display to the user, consisting of an array of message parts to form a sentence
+	/// countdown message contain additional information about the item that was send for more specific processing
+	/// </summary>
+	public class CountdownLogMessage : LogMessage
     {
+		/// <summary>
+		/// The amount of seconds remaining in the countdown
+		/// </summary>
 	    public int RemainingSeconds { get; }
 
 	    internal CountdownLogMessage(MessagePart[] parts, int remainingSeconds) : base(parts)
@@ -233,6 +296,9 @@ namespace Archipelago.MultiClient.Net.Helpers
 	    }
     }
 
+	/// <summary>
+	/// 
+	/// </summary>
 	public enum MessagePartType
     {
         Text,
