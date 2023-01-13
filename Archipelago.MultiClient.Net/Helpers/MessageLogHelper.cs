@@ -203,7 +203,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         }
 
 		/// <summary>
-		/// Uses the the Parts to form a correct sentence
+		/// Uses the Parts to form a correct sentence
 		/// </summary>
 		/// <returns>the sentence this LogMessage is representing</returns>
         public override string ToString()
@@ -221,8 +221,8 @@ namespace Archipelago.MultiClient.Net.Helpers
     }
 
 	/// <summary>
-	/// A item send message to display to the user, consisting of an array of message parts to form a sentence
-	/// item send messages contain additional information about the item that was send for more specific processing
+	/// An item send message to display to the user, consisting of an array of message parts to form a sentence.
+	/// Item send messages contain additional information about the item that was sent for more specific processing
 	/// </summary>
 	public class ItemSendLogMessage : LogMessage
     {
@@ -231,11 +231,11 @@ namespace Archipelago.MultiClient.Net.Helpers
 		/// </summary>
         public int ReceivingPlayerSlot { get; }
 		/// <summary>
-		/// The player slot number of the player who send the item
+		/// The player slot number of the player who sent the item
 		/// </summary>
 		public int SendingPlayerSlot { get; }
 		/// <summary>
-		/// The Item that was send
+		/// The Item that was sent
 		/// </summary>
 		public NetworkItem Item { get; }
 
@@ -248,8 +248,8 @@ namespace Archipelago.MultiClient.Net.Helpers
     }
 
 	/// <summary>
-	/// A item hint message to display to the user, consisting of an array of message parts to form a sentence
-	/// item hint messages contain additional information about the item that was send for more specific processing
+	/// An item hint message to display to the user, consisting of an array of message parts to form a sentence.
+	/// Item hint messages contain additional information about the item that was sent for more specific processing
 	/// </summary>
 	public class HintItemSendLogMessage : LogMessage
 	{
@@ -258,7 +258,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 		/// </summary>
 		public int ReceivingPlayerSlot { get; }
 		/// <summary>
-		/// The player slot number of the player who send the item
+		/// The player slot number of the player who sent the item
 		/// </summary>
 		public int SendingPlayerSlot { get; }
 		/// <summary>
@@ -281,7 +281,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 
 	/// <summary>
 	/// A countdown message to display to the user, consisting of an array of message parts to form a sentence
-	/// countdown message contain additional information about the item that was send for more specific processing
+	/// countdown message also contains the remaining seconds for the countdown for more specific processing
 	/// </summary>
 	public class CountdownLogMessage : LogMessage
     {

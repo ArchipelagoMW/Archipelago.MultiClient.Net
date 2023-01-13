@@ -7,10 +7,25 @@ namespace Archipelago.MultiClient.Net.BounceFeatures.DeathLink
 {
     public class DeathLink : IEquatable<DeathLink>
     {
+	    /// <summary>
+	    /// The Timestamp of the created DeathLink object
+	    /// </summary>
         public DateTime Timestamp { get; internal set; }
+	    /// <summary>
+	    /// The name of the player who sent the DeathLink
+	    /// </summary>
         public string Source { get; }
+	    /// <summary>
+	    /// The full text to print for players receiving the DeathLink. Can be null
+	    /// </summary>
         public string Cause { get; }
-
+	    
+	    /// <summary>
+	    /// A DeathLink object that gets sent and received via bounce packets.
+	    /// </summary>
+	    /// <param name="sourcePlayer">Name of the player sending the DeathLink</param>
+	    /// <param name="cause">Optional reason for the DeathLink. Since this is optional it should generally include
+	    /// a name as if this entire text is what will be displayed</param>
         public DeathLink(string sourcePlayer, string cause = null)
         {
             Timestamp = DateTime.UtcNow;
