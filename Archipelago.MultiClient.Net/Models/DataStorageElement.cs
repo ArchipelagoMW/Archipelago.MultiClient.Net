@@ -92,9 +92,6 @@ namespace Archipelago.MultiClient.Net.Models
 		public static implicit operator DataStorageElement(List<float> l) => new DataStorageElement(Operation.Replace, JArray.FromObject(l));
 		public static implicit operator DataStorageElement(List<string> l) => new DataStorageElement(Operation.Replace, JArray.FromObject(l));
 		public static implicit operator DataStorageElement(List<object> l) => new DataStorageElement(Operation.Replace, JArray.FromObject(l));
-		//public static implicit operator DataStorageElement(CollectionBase b) => new DataStorageElement(Operation.Replace, JArray.FromObject(b));
-
-
 
 		public static implicit operator bool(DataStorageElement e) => RetrieveAndReturnBoolValue<bool>(e);
 		public static implicit operator bool?(DataStorageElement e) => RetrieveAndReturnBoolValue<bool?>(e);
@@ -125,7 +122,7 @@ namespace Archipelago.MultiClient.Net.Models
 		public static implicit operator List<float>(DataStorageElement e) => RetrieveAndReturnArrayValue<List<float>>(e);
 		public static implicit operator List<string>(DataStorageElement e) => RetrieveAndReturnArrayValue<List<string>>(e);
 		public static implicit operator List<object>(DataStorageElement e) => RetrieveAndReturnArrayValue<List<object>>(e);
-
+		public static implicit operator Array(DataStorageElement e) => RetrieveAndReturnArrayValue<Array>(e);
 		public static implicit operator JArray(DataStorageElement e) => RetrieveAndReturnArrayValue<JArray>(e);
 		public static implicit operator JToken(DataStorageElement e) => e.Context.GetData(e.Context.Key);
 #pragma warning restore CS1591

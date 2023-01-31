@@ -4,6 +4,7 @@ using Archipelago.MultiClient.Net.Exceptions;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Security.Authentication;
 
 #if !NET35
 using System.Threading.Tasks;
@@ -15,7 +16,10 @@ namespace Archipelago.MultiClient.Net.Helpers
 {
     public class ArchipelagoSocketHelper : IArchipelagoSocketHelper
     {
-        static readonly ArchipelagoPacketConverter Converter = new ArchipelagoPacketConverter();
+	    const SslProtocols Tls13 = (SslProtocols)12288;
+	    const SslProtocols Tls12 = (SslProtocols)3072;
+		
+		static readonly ArchipelagoPacketConverter Converter = new ArchipelagoPacketConverter();
 
         public event ArchipelagoSocketHelperDelagates.PacketReceivedHandler PacketReceived;
         public event ArchipelagoSocketHelperDelagates.PacketsSentHandler PacketsSent;
@@ -45,6 +49,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         {
             Uri = hostUrl;
             webSocket = new WebSocket(Uri.ToString());
+            webSocket.SslConfiguration.EnabledSslProtocols = Tls12 | Tls13;
             webSocket.OnMessage += OnMessageReceived;
             webSocket.OnError += OnError;
             webSocket.OnClose += OnClose;
