@@ -49,7 +49,10 @@ namespace Archipelago.MultiClient.Net.Helpers
         {
             Uri = hostUrl;
             webSocket = new WebSocket(Uri.ToString());
-            webSocket.SslConfiguration.EnabledSslProtocols = Tls12 | Tls13;
+
+			if (webSocket.IsSecure)
+				webSocket.SslConfiguration.EnabledSslProtocols = Tls12 | Tls13;
+
             webSocket.OnMessage += OnMessageReceived;
             webSocket.OnError += OnError;
             webSocket.OnClose += OnClose;
