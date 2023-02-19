@@ -15,6 +15,7 @@
 		<Version>4.2.4</Version>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageRequireLicenseAcceptance>False</PackageRequireLicenseAcceptance>
+		<PackageIcon>blue-icon.png</PackageIcon>
 		<GeneratePackageOnBuild>False</GeneratePackageOnBuild>
 		<Company>Jarno Westhof, Hussein Farran, Zach Parks</Company>
 	</PropertyGroup>
@@ -37,10 +38,8 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<None Include="..\README.md">
-			<Pack>True</Pack>
-			<PackagePath>\</PackagePath>
-		</None>
+		<None Include="Icon\blue-icon.png" Pack="true" PackagePath="\"/>
+		<None Include="..\README.md" Pack="true" PackagePath="\"/>
 	</ItemGroup>
 
 	<ItemGroup Condition="'$(TargetFramework)' == 'net35' Or '$(TargetFramework)' == 'net40'">
@@ -56,6 +55,10 @@
 		<Reference Include="Newtonsoft.Json">
 			<HintPath>..\DLLs\netstandard2.0\Newtonsoft.Json.dll</HintPath>
 		</Reference>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Icon\" />
 	</ItemGroup>
 
 	<Target Name="Copy3rdPartyAssembliesTarget">
