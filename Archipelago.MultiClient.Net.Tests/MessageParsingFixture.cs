@@ -3,6 +3,7 @@ using Archipelago.MultiClient.Net.Packets;
 using Newtonsoft.Json;
 using NUnit.Framework;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Archipelago.MultiClient.Net.Tests
 {
@@ -35,5 +36,40 @@ namespace Archipelago.MultiClient.Net.Tests
 			Assert.That(roomInfoPacket.Password, Is.EqualTo(false));
 			Assert.That(roomInfoPacket.SeedName, Is.EqualTo("48876073281086942113"));
 		}
+
+		[Test]
+        public void Should_not_throw_on_receiving_unknown_packet()
+        {
+	        const string message = @"[{""cmd"":""NewCommand"",""testing"":5,""something"":true}]";
+
+	        List<ArchipelagoPacketBase> packets = null;
+
+			Assert.DoesNotThrow(() => {
+				packets = JsonConvert.DeserializeObject<List<ArchipelagoPacketBase>>(message, Converter);
+			});
+
+	        Assert.That(packets, Is.Not.Null);
+	        Assert.That(packets.Count, Is.EqualTo(1));
+
+	        var unknownPacket = packets[0] as UnknownPacket;
+
+	        Assert.That(unknownPacket, Is.Not.Null);
+	        Assert.That(unknownPacket.ToJObject()["testing"].ToObject<int>(), Is.EqualTo(5));
+	        Assert.That(unknownPacket.ToJObject()["something"].ToObject<bool>(), Is.EqualTo(true));
+		}
+
+        [Test]
+        public void Should_handle_multiple_packets_in_same_message()
+        {
+	        const string message = @"[{""cmd"":""Retrieved"",""keys"":{""A"":10,""B"":6}},{""cmd"":""LocationInfo"",""locations"":[{""item"":1,""location"":2344,""player"":3,""flags"":0}]}]";
+
+	        var packets = JsonConvert.DeserializeObject<List<ArchipelagoPacketBase>>(message, Converter);
+
+	        Assert.That(packets, Is.Not.Null);
+	        Assert.That(packets.Count, Is.EqualTo(2));
+
+	        Assert.That(packets.OfType<RetrievedPacket>().Count(), Is.EqualTo(1));
+			Assert.That(packets.OfType<LocationInfoPacket>().Count(), Is.EqualTo(1));
+        }
 	}
 }

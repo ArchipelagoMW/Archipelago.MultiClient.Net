@@ -10,8 +10,6 @@ namespace Archipelago.MultiClient.Net.Enums
         ReceivedItems,
         LocationInfo,
         RoomUpdate,
-        [Obsolete("Print packets are only supported for AP servers up to 0.3.7, use session.MessageLog.OnMessageReceived to receive messages")]
-		Print,
         PrintJSON,
         Connect,
         ConnectUpdate,
@@ -29,6 +27,7 @@ namespace Archipelago.MultiClient.Net.Enums
         Retrieved,
         Set,
         SetReply,
-        SetNotify
+        SetNotify,
+		Unknown
     }
 }
