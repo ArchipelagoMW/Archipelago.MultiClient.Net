@@ -26,5 +26,8 @@ namespace Archipelago.MultiClient.Net.Packets
         public Dictionary<string, object> SlotData { get; set; }
         [JsonProperty("slot_info")]
         public Dictionary<int, NetworkSlot> SlotInfo { get; set; }
+        
+        [JsonProperty("hint_points")]
+        public int? HintPoints { get; set; }
     }
 }
