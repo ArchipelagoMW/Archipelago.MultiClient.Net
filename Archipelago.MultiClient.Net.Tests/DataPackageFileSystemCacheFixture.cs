@@ -9,7 +9,11 @@ using System.Collections.Generic;
 
 namespace Archipelago.MultiClient.Net.Tests
 {
-    [TestFixture]
+	//use Directory C:\Users\current_user\AppData\Local\Archipelago\Cache 
+	//retention 1 month since last moddified, update File.SetLastWriteTime(file, modifiedTime) in use
+
+
+	[TestFixture]
     public class DataPackageFileSystemCacheFixture
     {
         [Test]
