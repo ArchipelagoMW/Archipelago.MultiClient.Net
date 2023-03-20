@@ -1,6 +1,7 @@
 ﻿using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Models;
 using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 
 namespace Archipelago.MultiClient.Net.Packets
@@ -33,10 +34,14 @@ namespace Archipelago.MultiClient.Net.Packets
         [JsonProperty("games")]
         public string[] Games { get; set; }
 
+		[Obsolete("use DataPackageChecksums instead")]
         [JsonProperty("datapackage_versions")]
         public Dictionary<string, int> DataPackageVersions { get; set; }
 
-        [JsonProperty("seed_name")]
+        [JsonProperty("datapackage_checksums")]
+        public Dictionary<string, string> DataPackageChecksums { get; set; }
+
+		[JsonProperty("seed_name")]
         public string SeedName { get; set; }
 
         [JsonProperty("time")]
