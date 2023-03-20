@@ -12,30 +12,6 @@ namespace Archipelago.MultiClient.Net.Tests
     class MessageLogHelperFixture
     {
         [Test]
-        public void Should_convert_print_packet_into_string()
-        {
-            var socket = Substitute.For<IArchipelagoSocketHelper>();
-            var locations = Substitute.For<ILocationCheckHelper>();
-            var items = Substitute.For<IReceivedItemsHelper>();
-            var players = Substitute.For<IPlayerHelper>();
-            var connectionInfo = Substitute.For<IConnectionInfoProvider>();
-
-            var sut = new MessageLogHelper(socket, items, locations, players, connectionInfo);
-
-            string toStringResult = null;
-
-            sut.OnMessageReceived += (message) => toStringResult = message.ToString();
-
-            var printPacket = new PrintPacket {
-                Text = "Some message that really does not add value to the test at hand"
-            };
-
-            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(printPacket);
-
-            Assert.That(toStringResult, Is.EqualTo("Some message that really does not add value to the test at hand"));
-        }
-
-        [Test]
         public void Should_convert_print_json_packet_into_string()
         {
             var socket = Substitute.For<IArchipelagoSocketHelper>();
@@ -73,31 +49,6 @@ namespace Archipelago.MultiClient.Net.Tests
             socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(packet);
 
             Assert.That(toStringResult, Is.EqualTo("Text1Text2Text3Text4Text5Text6Text7Text8Text9Text10"));
-        }
-
-        [Test]
-        public void Should_get_parsed_data_for_print_packet()
-        {
-            var socket = Substitute.For<IArchipelagoSocketHelper>();
-            var locations = Substitute.For<ILocationCheckHelper>();
-            var items = Substitute.For<IReceivedItemsHelper>();
-            var players = Substitute.For<IPlayerHelper>();
-            var connectionInfo = Substitute.For<IConnectionInfoProvider>();
-
-            var sut = new MessageLogHelper(socket, items, locations, players, connectionInfo);
-
-            MessagePart[] parts = null;
-
-            sut.OnMessageReceived += (message) => parts = message.Parts;
-
-            var printPacket = new PrintPacket { Text = "Some message that really does not add value to the test at hand" };
-
-            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(printPacket);
-
-            Assert.That(parts.Length, Is.EqualTo(1));
-            Assert.That(parts[0].Text, Is.EqualTo("Some message that really does not add value to the test at hand"));
-            Assert.That(parts[0].Color, Is.EqualTo(Color.White));
-            Assert.That(parts[0].IsBackgroundColor, Is.EqualTo(false));
         }
 
         [Test]
@@ -354,37 +305,6 @@ namespace Archipelago.MultiClient.Net.Tests
 
 	        Assert.That(logMessage, Is.Not.Null);
 	        Assert.That(logMessage.RemainingSeconds, Is.EqualTo(8));
-        }
-
-		[Test]
-        public void Should_split_new_lines_in_separate_messages_for_print_package()
-        {
-            var socket = Substitute.For<IArchipelagoSocketHelper>();
-            var locations = Substitute.For<ILocationCheckHelper>();
-            var items = Substitute.For<IReceivedItemsHelper>();
-            var players = Substitute.For<IPlayerHelper>();
-            var connectionInfo = Substitute.For<IConnectionInfoProvider>();
-
-            var sut = new MessageLogHelper(socket, items, locations, players, connectionInfo);
-
-            List<LogMessage> logMessage = new List<LogMessage>(6);
-
-            sut.OnMessageReceived += (message) => logMessage.Add(message);
-
-            var packet = new PrintPacket {
-                Text =
-                    "!help \n    Returns the help listing\n!license \n    Returns the licensing information\n!countdown seconds = 10 \n    Start a countdown in seconds"
-            };
-
-            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(packet);
-
-            Assert.That(logMessage.Count, Is.EqualTo(6));
-            Assert.That(logMessage[0].ToString(), Is.EqualTo("!help "));
-            Assert.That(logMessage[1].ToString(), Is.EqualTo("    Returns the help listing"));
-            Assert.That(logMessage[2].ToString(), Is.EqualTo("!license "));
-            Assert.That(logMessage[3].ToString(), Is.EqualTo("    Returns the licensing information"));
-            Assert.That(logMessage[4].ToString(), Is.EqualTo("!countdown seconds = 10 "));
-            Assert.That(logMessage[5].ToString(), Is.EqualTo("    Start a countdown in seconds"));
         }
 
         [Test]

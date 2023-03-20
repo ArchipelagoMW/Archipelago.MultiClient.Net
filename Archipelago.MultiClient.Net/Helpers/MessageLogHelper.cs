@@ -36,17 +36,11 @@ namespace Archipelago.MultiClient.Net.Helpers
 
             switch (packet)
             {
-                case PrintPacket printPacket:
-                    TriggerOnMessageReceived(ToPrintJson(printPacket));
-                    break;
                 case PrintJsonPacket printJsonPacket:
                     TriggerOnMessageReceived(printJsonPacket);
                     break;
             }
         }
-
-        static PrintJsonPacket ToPrintJson(PrintPacket printPacket) => 
-	        new PrintJsonPacket { Data = new [] { new JsonMessagePart { Text = printPacket.Text } } };
 
         void TriggerOnMessageReceived(PrintJsonPacket printJsonPacket)
         {

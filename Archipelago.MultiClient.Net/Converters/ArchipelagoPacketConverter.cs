@@ -17,7 +17,6 @@ namespace Archipelago.MultiClient.Net.Converters
             [ArchipelagoPacketType.ReceivedItems]     = obj => obj.ToObject<ReceivedItemsPacket>(),
             [ArchipelagoPacketType.LocationInfo]      = obj => obj.ToObject<LocationInfoPacket>(),
             [ArchipelagoPacketType.RoomUpdate]        = obj => obj.ToObject<RoomUpdatePacket>(),
-            [ArchipelagoPacketType.Print]             = obj => obj.ToObject<PrintPacket>(),
             [ArchipelagoPacketType.PrintJSON]         = DeserializePrintJsonPacket,
             [ArchipelagoPacketType.Connect]           = obj => obj.ToObject<ConnectPacket>(),
             [ArchipelagoPacketType.ConnectUpdate]     = obj => obj.ToObject<ConnectUpdatePacket>(),
