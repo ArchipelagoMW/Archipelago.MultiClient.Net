@@ -81,6 +81,9 @@ namespace Archipelago.MultiClient.Net.Helpers
         {
             switch (packet)
             {
+	            case ConnectedPacket connectedPacket:
+		            OnConnectedPacketReceived(connectedPacket);
+		            break;
                 case RoomUpdatePacket roomUpdatePacket:
 	                OnRoomUpdatedPacketReceived(roomUpdatePacket);
 	                break;
@@ -88,6 +91,12 @@ namespace Archipelago.MultiClient.Net.Helpers
                     OnRoomInfoPacketReceived(roomInfoPacket);
                     break;
             }
+        }
+
+        void OnConnectedPacketReceived(ConnectedPacket packet)
+        {
+	        if (packet.HintPoints.HasValue)
+		        HintPoints = packet.HintPoints.Value;
         }
 
         void OnRoomInfoPacketReceived(RoomInfoPacket packet)
