@@ -77,7 +77,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 
                     missingLocations = new ReadOnlyCollection<long>(connectedPacket.MissingChecks);
 
-                     CheckLocations(connectedPacket.LocationsChecked);
+                    CheckLocations(connectedPacket.LocationsChecked);
                     break;
                 case RoomUpdatePacket updatePacket:
                     CheckLocations(updatePacket.CheckedLocations);
