@@ -7,6 +7,7 @@ using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -403,8 +404,66 @@ namespace Archipelago.MultiClient.Net.Tests
             Assert.That(sut.AllMissingLocations, Is.Empty);
         }
 
-#if !NET471
+
         [Test]
+        public void Should_not_send_location_checks_already_confirmed_by_the_server()
+		{
+	        var socket = Substitute.For<IArchipelagoSocketHelper>();
+	        var cache = Substitute.For<IDataPackageCache>();
+
+	        var sut = new LocationCheckHelper(socket, cache);
+
+	        var connectedPacket = new ConnectedPacket
+	        {
+		        LocationsChecked = new long[] { 1, 2 },
+		        MissingChecks = new long[] { 3, 4, 5, 6 },
+	        };
+
+	        socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(connectedPacket);
+
+	        var updatePacket = new RoomUpdatePacket
+	        {
+		        CheckedLocations = new long[] { 3, 4 }
+	        };
+
+	        socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(updatePacket);
+
+	        sut.CompleteLocationChecks(2, 4, 6);
+
+	        socket.Received().SendPacket(Arg.Is<LocationChecksPacket>(p => p.Locations.Length == 1 && p.Locations.First() == 6L));
+        }
+
+		[Test]
+        public void Should_re_send_location_checks_already_checked_but_not_confirmed_by_server()
+		{
+	        var socket = Substitute.For<IArchipelagoSocketHelper>();
+	        var cache = Substitute.For<IDataPackageCache>();
+
+	        var sut = new LocationCheckHelper(socket, cache);
+
+	        var connectedPacket = new ConnectedPacket
+	        {
+		        LocationsChecked = new long[] { 1 },
+		        MissingChecks = new long[] { 2, 3, 4, 5, 6 },
+			};
+
+	        socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(connectedPacket);
+
+			sut.CompleteLocationChecks(2, 3);
+
+			socket.Received().SendPacket(Arg.Is<LocationChecksPacket>(p => p.Locations.Length == 2));
+
+			sut.CompleteLocationChecks(4);
+			
+			socket.Received().SendPacket(Arg.Is<LocationChecksPacket>(p => p.Locations.Length == 3));
+
+			sut.CompleteLocationChecks(5, 6);
+
+			socket.Received().SendPacket(Arg.Is<LocationChecksPacket>(p => p.Locations.Length == 5));
+		}
+
+#if !NET471
+		[Test]
         public async Task Should_scout_locations_async()
         {
             var socket = Substitute.For<IArchipelagoSocketHelper>();
