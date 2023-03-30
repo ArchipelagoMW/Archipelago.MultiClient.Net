@@ -190,7 +190,10 @@ namespace Archipelago.MultiClient.Net.Helpers
 				CheckLocations(ids);
 			}).ContinueWith(t =>
 			{
-				socket.SendPacketAsync(GetLocationChecksPacket());
+				var packet = GetLocationChecksPacket();
+
+				if (packet.Locations.Any())
+					socket.SendPacketAsync(GetLocationChecksPacket());
 			});
 		}
 #endif

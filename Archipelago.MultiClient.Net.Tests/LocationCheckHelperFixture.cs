@@ -462,6 +462,27 @@ namespace Archipelago.MultiClient.Net.Tests
 			socket.Received().SendPacket(Arg.Is<LocationChecksPacket>(p => p.Locations.Length == 5));
 		}
 
+        [Test]
+        public void Should_not_send_check_if_no_new_locations_are_checked()
+        {
+	        var socket = Substitute.For<IArchipelagoSocketHelper>();
+	        var cache = Substitute.For<IDataPackageCache>();
+
+	        var sut = new LocationCheckHelper(socket, cache);
+
+	        var connectedPacket = new ConnectedPacket
+	        {
+		        LocationsChecked = new long[] { 1, 2, 3 },
+		        MissingChecks = new long[] { 5, 6 },
+	        };
+
+	        socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(connectedPacket);
+
+	        sut.CompleteLocationChecks(2, 3);
+
+	        socket.DidNotReceive().SendPacket(Arg.Any<LocationChecksPacket>());
+        }
+
 #if !NET471
 		[Test]
         public async Task Should_scout_locations_async()
