@@ -40,7 +40,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// </summary>
         public bool Connected => webSocket.State == WebSocketState.Open || webSocket.State == WebSocketState.CloseReceived;
 
-        readonly ClientWebSocket webSocket;
+        internal readonly ClientWebSocket webSocket;
 
         internal ArchipelagoSocketHelper(Uri hostUri)
         {

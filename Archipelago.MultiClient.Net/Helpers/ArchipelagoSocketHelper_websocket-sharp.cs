@@ -43,7 +43,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// </summary>
         public bool Connected => webSocket.ReadyState == WebSocketState.Open || webSocket.ReadyState == WebSocketState.Closing;
 
-        readonly WebSocket webSocket;
+        internal readonly WebSocket webSocket;
 
         internal ArchipelagoSocketHelper(Uri hostUrl)
         {
