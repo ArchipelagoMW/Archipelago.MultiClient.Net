@@ -15,7 +15,7 @@ namespace Archipelago.MultiClient.Net
         public static ArchipelagoSession CreateSession(Uri uri)
         {
             var socket = new ArchipelagoSocketHelper(uri);
-            var dataPackageCache = new DataPackageFileSystemCache(socket);
+            var dataPackageCache = new DataPackageCache(socket);
             var locations = new LocationCheckHelper(socket, dataPackageCache);
             var items = new ReceivedItemsHelper(socket, locations, dataPackageCache);
             var players = new PlayerHelper(socket);
