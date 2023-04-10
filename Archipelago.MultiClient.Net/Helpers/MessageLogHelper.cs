@@ -1,9 +1,10 @@
 ﻿using Archipelago.MultiClient.Net.Enums;
+using Archipelago.MultiClient.Net.MessageLog.Messages;
+using Archipelago.MultiClient.Net.MessageLog.Parts;
 using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace Archipelago.MultiClient.Net.Helpers
 {
@@ -52,15 +53,53 @@ namespace Archipelago.MultiClient.Net.Helpers
 
                 switch (linePacket)
                 {
-                    case HintPrintJsonPacket hintPrintJson:
+	                case ItemPrintJsonPacket itemPrintJson:
+		                message = new ItemSendLogMessage(parts,
+			                itemPrintJson.ReceivingPlayer, itemPrintJson.Item.Player, itemPrintJson.Item);
+		                break;
+	                case ItemCheatPrintJsonPacket itemCheatPrintJson:
+		                message = new ItemCheatLogMessage(parts,
+			                itemCheatPrintJson.ReceivingPlayer, itemCheatPrintJson.Item.Player, 
+			                itemCheatPrintJson.Item, itemCheatPrintJson.Team);
+		                break;
+					case HintPrintJsonPacket hintPrintJson:
                         message = new HintItemSendLogMessage(parts,
                             hintPrintJson.ReceivingPlayer, hintPrintJson.Item.Player,
                             hintPrintJson.Item, hintPrintJson.Found.HasValue && hintPrintJson.Found.Value);
                         break;
-                    case ItemPrintJsonPacket itemPrintJson:
-                        message = new ItemSendLogMessage(parts,
-                            itemPrintJson.ReceivingPlayer, itemPrintJson.Item.Player, itemPrintJson.Item);
-                        break;
+	                case JoinPrintJsonPacket joinPrintJson:
+		                message = new JoinLogMessage(parts, joinPrintJson.Team, joinPrintJson.Slot, joinPrintJson.Tags);
+		                break;
+	                case LeavePrintJsonPacket leavePrintJson:
+		                message = new LeaveLogMessage(parts, leavePrintJson.Team, leavePrintJson.Slot);
+		                break;
+	                case ChatPrintJsonPacket chatPrintJson:
+		                message = new ChatLogMessage(parts, chatPrintJson.Team, chatPrintJson.Slot, chatPrintJson.Message);
+		                break;
+	                case ServerChatPrintJsonPacket serverChatPrintJson:
+		                message = new ServerChatLogMessage(parts, serverChatPrintJson.Message);
+		                break;
+	                case TutorialPrintJsonPacket _:
+		                message = new TutorialLogMessage(parts);
+		                break;
+	                case TagsChangedPrintJsonPacket tagsPrintJson:
+		                message = new TagsChangedLogMessage(parts, tagsPrintJson.Tags);
+		                break;
+	                case CommandResultPrintJsonPacket _:
+		                message = new CommandResultLogMessage(parts);
+		                break;
+	                case AdminCommandResultPrintJsonPacket _:
+		                message = new AdminCommandResultLogMessage(parts);
+		                break;
+	                case GoalPrintJsonPacket goalPrintJsonPacket:
+		                message = new GoalLogMessage(parts, goalPrintJsonPacket.Team, goalPrintJsonPacket.Slot);
+		                break;
+	                case ReleasePrintJsonPacket releasePrintJsonPacket:
+		                message = new ReleaseLogMessage(parts, releasePrintJsonPacket.Team, releasePrintJsonPacket.Slot);
+		                break;
+	                case CollectPrintJsonPacket collectPrintJsonPacket:
+		                message = new CollectLogMessage(parts, collectPrintJsonPacket.Team, collectPrintJsonPacket.Slot);
+		                break;
 					case CountdownPrintJsonPacket countdownPrintJson:
 						message = new CountdownLogMessage(parts, countdownPrintJson.RemainingSeconds);
 						break;
@@ -166,241 +205,6 @@ namespace Archipelago.MultiClient.Net.Helpers
                 default:
                     return new MessagePart(MessagePartType.Text, part);
             }
-        }
-    }
-
-    public class LogMessage
-    {
-        public MessagePart[] Parts { get; }
-
-        internal LogMessage(MessagePart[] parts)
-        {
-            Parts = parts;
-        }
-
-        public override string ToString()
-        {
-            if (Parts.Length == 1)
-                return Parts[0].Text;
-
-            var builder = new StringBuilder(Parts.Length);
-
-            foreach (var part in Parts)
-                builder.Append(part.Text);
-
-            return builder.ToString();
-        }
-    }
-    
-    public class ItemSendLogMessage : LogMessage
-    {
-        public int ReceivingPlayerSlot { get; }
-        public int SendingPlayerSlot { get; }
-        public NetworkItem Item { get; }
-
-        internal ItemSendLogMessage(MessagePart[] parts, int receiver, int sender, NetworkItem item) : base(parts)
-        {
-            ReceivingPlayerSlot = receiver;
-            SendingPlayerSlot = sender;
-            Item = item;
-        }
-    }
-
-    public class HintItemSendLogMessage : ItemSendLogMessage
-    {
-        public bool IsFound { get; }
-
-        internal HintItemSendLogMessage(MessagePart[] parts, int receiver, int sender, NetworkItem item, bool found) 
-            : base(parts, receiver, sender, item)
-        {
-            IsFound = found;
-        }
-    }
-
-    public class CountdownLogMessage : LogMessage
-    {
-	    public int RemainingSeconds { get; }
-
-	    internal CountdownLogMessage(MessagePart[] parts, int remainingSeconds) : base(parts)
-	    {
-		    RemainingSeconds = remainingSeconds;
-	    }
-    }
-
-	public enum MessagePartType
-    {
-        Text,
-        Player,
-        Item,
-        Location,
-        Entrance
-    }
-
-    public class MessagePart
-    {
-        public string Text { get; internal set; }
-        public MessagePartType Type { get; internal set; }
-        public Color Color { get; internal set; }
-        public bool IsBackgroundColor { get; internal set; }
-
-        internal MessagePart(MessagePartType type, JsonMessagePart messagePart, Color? color = null)
-        {
-            Type = type;
-            Text = messagePart.Text;
-
-            if (color.HasValue)
-            {
-                Color = color.Value;
-            }
-            else if (messagePart.Color.HasValue)
-            {
-                Color = GetColor(messagePart.Color.Value);
-                IsBackgroundColor = messagePart.Color.Value >= JsonMessagePartColor.BlackBg;
-            }
-            else
-            {
-                Color = Color.White;
-            }
-        }
-
-        static Color GetColor(JsonMessagePartColor color)
-        {
-            switch (color)
-            {
-                case JsonMessagePartColor.Red:
-                case JsonMessagePartColor.RedBg:
-                    return Color.Red;
-                case JsonMessagePartColor.Green:
-                case JsonMessagePartColor.GreenBg:
-                    return Color.Green;
-                case JsonMessagePartColor.Yellow:
-                case JsonMessagePartColor.YellowBg:
-                    return Color.Yellow;
-                case JsonMessagePartColor.Blue:
-                case JsonMessagePartColor.BlueBg:
-                    return Color.Blue;
-                case JsonMessagePartColor.Magenta:
-                case JsonMessagePartColor.MagentaBg:
-                    return Color.Magenta;
-                case JsonMessagePartColor.Cyan:
-                case JsonMessagePartColor.CyanBg:
-                    return Color.Cyan;
-                case JsonMessagePartColor.Black:
-                case JsonMessagePartColor.BlackBg:
-                    return Color.Black;
-                case JsonMessagePartColor.White:
-                case JsonMessagePartColor.WhiteBg:
-                    return Color.White;
-                default:
-                    return Color.White;
-            }
-        }
-
-        public override string ToString() => Text;
-    }
-    
-    public class ItemMessagePart : MessagePart
-    {
-        public ItemFlags Flags { get; }
-        public long ItemId { get; }
-
-        internal ItemMessagePart(IReceivedItemsHelper items, JsonMessagePart part) : base(MessagePartType.Item, part)
-        {
-            Flags = part.Flags ?? ItemFlags.None;
-            Color = GetColor(Flags);
-
-            switch (part.Type)
-            {
-                case JsonMessagePartType.ItemId:
-                    ItemId = long.Parse(part.Text);
-                    Text = items.GetItemName(ItemId) ?? $"Item: {ItemId}";
-                    break; 
-                case JsonMessagePartType.ItemName:
-                    ItemId = 0; // we are not going to try to reverse lookup this value based on the game of the receiving player
-                    Text = part.Text;
-                    break;
-            }
-        }
-
-        static Color GetColor(ItemFlags flags)
-        {
-            if (HasFlag(flags, ItemFlags.Advancement))
-                return Color.Plum;
-            if (HasFlag(flags, ItemFlags.NeverExclude))
-                return Color.SlateBlue;
-            if (HasFlag(flags, ItemFlags.Trap))
-                return Color.Salmon;
-
-            return Color.Cyan;
-        }
-
-        static bool HasFlag(ItemFlags flags, ItemFlags flag) =>
-#if NET35
-            (flags & flag) > 0;
-#else
-            flags.HasFlag(flag);
-#endif
-    }
-
-    public class PlayerMessagePart : MessagePart
-    {
-        public bool IsActivePlayer { get; }
-        public int SlotId { get; }
-        
-        internal PlayerMessagePart(IPlayerHelper players, IConnectionInfoProvider connectionInfo, JsonMessagePart part) : base (MessagePartType.Player, part)
-        {
-            switch (part.Type)
-            {
-                case JsonMessagePartType.PlayerId:
-                    SlotId = int.Parse(part.Text);
-                    IsActivePlayer = SlotId == connectionInfo.Slot;
-                    Text = players.GetPlayerAlias(SlotId) ?? $"Player {SlotId}";
-                    break;
-                case JsonMessagePartType.PlayerName:
-                    SlotId = 0; // value is not slot resolvable according to docs
-                    IsActivePlayer = false;
-                    Text = part.Text;
-                    break;
-            }
-
-            Color = GetColor(IsActivePlayer);
-        }
-
-        static Color GetColor(bool isActivePlayer)
-        {
-            if (isActivePlayer)
-                return Color.Magenta;
-
-            return Color.Yellow;
-        }
-    }
-
-    public class LocationMessagePart : MessagePart
-    {
-        public long LocationId { get; }
-
-        internal LocationMessagePart(ILocationCheckHelper locations, JsonMessagePart part) 
-            : base(MessagePartType.Location, part, Color.Green)
-        {
-            switch (part.Type)
-            {
-                case JsonMessagePartType.LocationId:
-                    LocationId = long.Parse(part.Text);
-                    Text = locations.GetLocationNameFromId(LocationId) ?? $"Location: {LocationId}";
-                    break;
-                case JsonMessagePartType.PlayerName:
-                    LocationId = 0; // we are not going to try to reverse lookup as we don't know the game this location belongs to
-                    Text = part.Text;
-                    break;
-            }
-        }
-    }
-
-    public class EntranceMessagePart : MessagePart
-    {
-        internal EntranceMessagePart(JsonMessagePart messagePart) : base(MessagePartType.Entrance, messagePart, Color.Blue)
-        {
-            Text = messagePart.Text;
         }
     }
 }

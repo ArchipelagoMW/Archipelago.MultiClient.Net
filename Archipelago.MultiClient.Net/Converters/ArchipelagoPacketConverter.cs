@@ -65,11 +65,35 @@ namespace Archipelago.MultiClient.Net.Converters
                 {
                     switch (type)
                     {
-                        case JsonMessageType.Hint:
+	                    case JsonMessageType.ItemSend:
+		                    return obj.ToObject<ItemPrintJsonPacket>();
+	                    case JsonMessageType.ItemCheat:
+		                    return obj.ToObject<ItemCheatPrintJsonPacket>();
+						case JsonMessageType.Hint:
                             return obj.ToObject<HintPrintJsonPacket>();
-                        case JsonMessageType.ItemSend:
-                            return obj.ToObject<ItemPrintJsonPacket>();
-                        case JsonMessageType.Countdown:
+	                    case JsonMessageType.Join:
+		                    return obj.ToObject<JoinPrintJsonPacket>();
+	                    case JsonMessageType.Part:
+		                    return obj.ToObject<LeavePrintJsonPacket>();
+	                    case JsonMessageType.Chat:
+		                    return obj.ToObject<ChatPrintJsonPacket>();
+	                    case JsonMessageType.ServerChat:
+		                    return obj.ToObject<ServerChatPrintJsonPacket>();
+	                    case JsonMessageType.Tutorial:
+		                    return obj.ToObject<TutorialPrintJsonPacket>();
+	                    case JsonMessageType.TagsChanged:
+		                    return obj.ToObject<TagsChangedPrintJsonPacket>();
+	                    case JsonMessageType.CommandResult:
+		                    return obj.ToObject<CommandResultPrintJsonPacket>();
+	                    case JsonMessageType.AdminCommandResult:
+		                    return obj.ToObject<AdminCommandResultPrintJsonPacket>();
+	                    case JsonMessageType.Goal:
+		                    return obj.ToObject<GoalPrintJsonPacket>();
+	                    case JsonMessageType.Release:
+		                    return obj.ToObject<ReleasePrintJsonPacket>();
+	                    case JsonMessageType.Collect:
+		                    return obj.ToObject<CollectPrintJsonPacket>();
+						case JsonMessageType.Countdown:
 	                        return obj.ToObject<CountdownPrintJsonPacket>();
 					}
                 }

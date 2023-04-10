@@ -1,5 +1,7 @@
 ﻿using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Helpers;
+using Archipelago.MultiClient.Net.MessageLog.Messages;
+using Archipelago.MultiClient.Net.MessageLog.Parts;
 using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
 using NSubstitute;
@@ -394,5 +396,34 @@ namespace Archipelago.MultiClient.Net.Tests
             Assert.That(parts[2].IsBackgroundColor, Is.EqualTo(false));
             Assert.That(parts[2].Type, Is.EqualTo(MessagePartType.Player));
         }
-    }
+
+        [Test]
+        public void Should_preserve_extra_properties_on_ItemCheatPrintJsonPacket()
+        {
+	        var socket = Substitute.For<IArchipelagoSocketHelper>();
+	        var locations = Substitute.For<ILocationCheckHelper>();
+	        var items = Substitute.For<IReceivedItemsHelper>();
+	        var players = Substitute.For<IPlayerHelper>();
+	        var connectionInfo = Substitute.For<IConnectionInfoProvider>();
+
+	        var sut = new MessageLogHelper(socket, items, locations, players, connectionInfo);
+
+	        ItemCheatLogMessage logMessage = null;
+
+	        sut.OnMessageReceived += (message) =>
+		        logMessage = message as ItemCheatLogMessage;
+
+	        var packet = new CountdownPrintJsonPacket
+	        {
+		        Data = new[] { new JsonMessagePart { Text = "" } },
+		        RemainingSeconds = 8,
+		        MessageType = JsonMessageType.Countdown
+	        };
+
+	        socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(packet);
+
+	        Assert.That(logMessage, Is.Not.Null);
+	        Assert.That(logMessage.RemainingSeconds, Is.EqualTo(8));
+        }
+	}
 }

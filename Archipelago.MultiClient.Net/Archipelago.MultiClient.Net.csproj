@@ -38,8 +38,8 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<None Include="Icon\blue-icon.png" Pack="true" PackagePath="\"/>
-		<None Include="..\README.md" Pack="true" PackagePath="\"/>
+		<None Include="Icon\blue-icon.png" Pack="true" PackagePath="\" />
+		<None Include="..\README.md" Pack="true" PackagePath="\" />
 	</ItemGroup>
 
 	<ItemGroup Condition="'$(TargetFramework)' == 'net35' Or '$(TargetFramework)' == 'net40'">
