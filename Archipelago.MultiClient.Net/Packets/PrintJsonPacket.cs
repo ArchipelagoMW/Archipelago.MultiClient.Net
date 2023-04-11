@@ -101,7 +101,13 @@ namespace Archipelago.MultiClient.Net.Packets
 
     public class TagsChangedPrintJsonPacket : PrintJsonPacket
     {
-	    [JsonProperty("tags")]
+	    [JsonProperty("team")]
+	    public int Team { get; set; }
+
+	    [JsonProperty("slot")]
+	    public int Slot { get; set; }
+
+		[JsonProperty("tags")]
 	    public string[] Tags { get; set; }
 	}
 

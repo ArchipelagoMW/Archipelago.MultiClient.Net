@@ -7,6 +7,7 @@ using Archipelago.MultiClient.Net.Packets;
 using NSubstitute;
 using NUnit.Framework;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace Archipelago.MultiClient.Net.Tests
 {
@@ -222,8 +223,16 @@ namespace Archipelago.MultiClient.Net.Tests
             var items = Substitute.For<IReceivedItemsHelper>();
             var players = Substitute.For<IPlayerHelper>();
             players.GetPlayerAlias(4).Returns("LocalPlayer");
+            players.AllPlayers.Returns(new ReadOnlyCollection<PlayerInfo>(new List<PlayerInfo> {
+	            new PlayerInfo { Team = 1, Slot = 0 },
+	            new PlayerInfo { Team = 1, Slot = 1 },
+	            new PlayerInfo { Team = 1, Slot = 2 },
+	            new PlayerInfo { Team = 1, Slot = 3 },
+	            new PlayerInfo { Team = 1, Slot = 4 }
+			}));
             var connectionInfo = Substitute.For<IConnectionInfoProvider>();
-            connectionInfo.Slot.Returns(4);
+            connectionInfo.Team.Returns(1);
+			connectionInfo.Slot.Returns(4);
 
             var sut = new MessageLogHelper(socket, items, locations, players, connectionInfo);
 
@@ -234,7 +243,7 @@ namespace Archipelago.MultiClient.Net.Tests
             var packet = new ItemPrintJsonPacket {
                 Data = new[] { new JsonMessagePart { Text = "" } },
                 Item = new NetworkItem { Flags = ItemFlags.None, Player = 2, Item = 100, Location = 1000 },
-                ReceivingPlayer = 1,
+                ReceivingPlayer = 4,
                 MessageType = JsonMessageType.ItemSend
             };
 
@@ -242,9 +251,18 @@ namespace Archipelago.MultiClient.Net.Tests
 
             Assert.That(logMessage, Is.Not.Null);
             Assert.That(logMessage.Item, Is.EqualTo(packet.Item));
-            Assert.That(logMessage.ReceivingPlayerSlot, Is.EqualTo(1));
+
+            Assert.That(logMessage.Receiver.Slot, Is.EqualTo(4));
+            Assert.That(logMessage.Sender.Slot, Is.EqualTo(2));
+
+            Assert.That(logMessage.IsReceiverTheActivePlayer, Is.EqualTo(true));
+            Assert.That(logMessage.IsSenderTheActivePlayer, Is.EqualTo(false));
+
+            Assert.That(logMessage.IsRelatedToActivePlayer, Is.EqualTo(true));
+
+			Assert.That(logMessage.ReceivingPlayerSlot, Is.EqualTo(4));
             Assert.That(logMessage.SendingPlayerSlot, Is.EqualTo(2));
-        }
+		}
 
         [Test]
         public void Should_preserve_extra_properties_on_HintPrintJsonPacket()
@@ -254,7 +272,14 @@ namespace Archipelago.MultiClient.Net.Tests
             var items = Substitute.For<IReceivedItemsHelper>();
             var players = Substitute.For<IPlayerHelper>();
             players.GetPlayerAlias(4).Returns("LocalPlayer");
-            var connectionInfo = Substitute.For<IConnectionInfoProvider>();
+            players.AllPlayers.Returns(new ReadOnlyCollection<PlayerInfo>(new List<PlayerInfo> {
+	            new PlayerInfo { Team = 1, Slot = 0 },
+	            new PlayerInfo { Team = 1, Slot = 1 },
+	            new PlayerInfo { Team = 1, Slot = 2 },
+	            new PlayerInfo { Team = 1, Slot = 3 },
+	            new PlayerInfo { Team = 1, Slot = 4 }
+			}));
+			var connectionInfo = Substitute.For<IConnectionInfoProvider>();
             connectionInfo.Slot.Returns(4);
 
             var sut = new MessageLogHelper(socket, items, locations, players, connectionInfo);
@@ -275,10 +300,20 @@ namespace Archipelago.MultiClient.Net.Tests
 
             Assert.That(logMessage, Is.Not.Null);
             Assert.That(logMessage.Item, Is.EqualTo(packet.Item));
-            Assert.That(logMessage.ReceivingPlayerSlot, Is.EqualTo(1));
-            Assert.That(logMessage.SendingPlayerSlot, Is.EqualTo(2));
+
+            Assert.That(logMessage.Receiver.Slot, Is.EqualTo(1));
+            Assert.That(logMessage.Sender.Slot, Is.EqualTo(2));
+
+            Assert.That(logMessage.IsReceiverTheActivePlayer, Is.EqualTo(false));
+            Assert.That(logMessage.IsSenderTheActivePlayer, Is.EqualTo(false));
+
+            Assert.That(logMessage.IsRelatedToActivePlayer, Is.EqualTo(false));
+
             Assert.That(logMessage.IsFound, Is.EqualTo(true));
-        }
+
+			Assert.That(logMessage.ReceivingPlayerSlot, Is.EqualTo(1));
+            Assert.That(logMessage.SendingPlayerSlot, Is.EqualTo(2));
+		}
 
         [Test]
         public void Should_preserve_extra_properties_on_CountdownPrintJsonPacket()
@@ -413,17 +448,15 @@ namespace Archipelago.MultiClient.Net.Tests
 	        sut.OnMessageReceived += (message) =>
 		        logMessage = message as ItemCheatLogMessage;
 
-	        var packet = new CountdownPrintJsonPacket
+	        var packet = new ItemCheatPrintJsonPacket
 	        {
-		        Data = new[] { new JsonMessagePart { Text = "" } },
-		        RemainingSeconds = 8,
-		        MessageType = JsonMessageType.Countdown
+		        Data = new[] { new JsonMessagePart { Text = "Thief" } },
+		        MessageType = JsonMessageType.ItemCheat
 	        };
 
 	        socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(packet);
 
 	        Assert.That(logMessage, Is.Not.Null);
-	        Assert.That(logMessage.RemainingSeconds, Is.EqualTo(8));
         }
 	}
 }

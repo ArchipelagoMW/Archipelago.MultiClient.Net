@@ -1,7 +1,7 @@
 ﻿using Archipelago.MultiClient.Net.MessageLog.Parts;
 using System.Text;
 
-namespace Archipelago.MultiClient.Net.Helpers
+namespace Archipelago.MultiClient.Net.MessageLog.Messages
 {
 	public class LogMessage
 	{

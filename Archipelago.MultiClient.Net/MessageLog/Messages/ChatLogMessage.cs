@@ -1,17 +1,16 @@
-﻿using Archipelago.MultiClient.Net.MessageLog.Parts;
+﻿using Archipelago.MultiClient.Net.Helpers;
+using Archipelago.MultiClient.Net.MessageLog.Parts;
 
-namespace Archipelago.MultiClient.Net.Helpers
+namespace Archipelago.MultiClient.Net.MessageLog.Messages
 {
-	public class ChatLogMessage : LogMessage
+	public class ChatLogMessage : PlayerSpecificLogMessage
 	{
-		public int Team { get; }
-		public int Slot { get; }
 		public string Message { get; }
 
-		internal ChatLogMessage(MessagePart[] parts, int team, int slot, string message) : base(parts)
+		internal ChatLogMessage(MessagePart[] parts,
+			IPlayerHelper players, IConnectionInfoProvider connectionInfo, int team, int slot, string message) 
+			: base(parts, players, connectionInfo, team, slot)
 		{
-			Team = team;
-			Slot = slot;
 			Message = message;
 		}
 	}

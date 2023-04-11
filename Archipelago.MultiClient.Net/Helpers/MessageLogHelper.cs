@@ -8,10 +8,19 @@ using System.Linq;
 
 namespace Archipelago.MultiClient.Net.Helpers
 {
+    /// <summary>
+    /// Helper class to easy subscribe to log messages send by the server to the client
+    /// </summary>
     public class MessageLogHelper
     {
-        public delegate void MessageReceivedHandler(LogMessage message);
-        public event MessageReceivedHandler OnMessageReceived;
+	    /// <inheritdoc />
+	    public delegate void MessageReceivedHandler(LogMessage message);
+		/// <summary>
+		/// Event handler for informational text messages send by the server to the client
+		/// These message are of the base type LogMessage but can be any of type that inherits LogMessage
+		/// Different messages types can contain different additional properties
+		/// </summary>
+		public event MessageReceivedHandler OnMessageReceived;
 
         readonly IReceivedItemsHelper items;
         readonly ILocationCheckHelper locations;
@@ -32,15 +41,10 @@ namespace Archipelago.MultiClient.Net.Helpers
 
         void Socket_PacketReceived(ArchipelagoPacketBase packet)
         {
-            if (OnMessageReceived == null)
+            if (OnMessageReceived == null || !(packet is PrintJsonPacket printJsonPacket))
                 return;
 
-            switch (packet)
-            {
-                case PrintJsonPacket printJsonPacket:
-                    TriggerOnMessageReceived(printJsonPacket);
-                    break;
-            }
+            TriggerOnMessageReceived(printJsonPacket);
         }
 
         void TriggerOnMessageReceived(PrintJsonPacket printJsonPacket)
@@ -54,27 +58,30 @@ namespace Archipelago.MultiClient.Net.Helpers
                 switch (linePacket)
                 {
 	                case ItemPrintJsonPacket itemPrintJson:
-		                message = new ItemSendLogMessage(parts,
-			                itemPrintJson.ReceivingPlayer, itemPrintJson.Item.Player, itemPrintJson.Item);
+		                message = new ItemSendLogMessage(parts, players, connectionInfo,
+							itemPrintJson.ReceivingPlayer, itemPrintJson.Item.Player, itemPrintJson.Item);
 		                break;
 	                case ItemCheatPrintJsonPacket itemCheatPrintJson:
-		                message = new ItemCheatLogMessage(parts,
-			                itemCheatPrintJson.ReceivingPlayer, itemCheatPrintJson.Item.Player, 
-			                itemCheatPrintJson.Item, itemCheatPrintJson.Team);
+		                message = new ItemCheatLogMessage(parts, players, connectionInfo,
+			                itemCheatPrintJson.Team, itemCheatPrintJson.ReceivingPlayer, 
+			                itemCheatPrintJson.Item);
 		                break;
 					case HintPrintJsonPacket hintPrintJson:
-                        message = new HintItemSendLogMessage(parts,
-                            hintPrintJson.ReceivingPlayer, hintPrintJson.Item.Player,
+                        message = new HintItemSendLogMessage(parts, players, connectionInfo,
+							hintPrintJson.ReceivingPlayer, hintPrintJson.Item.Player,
                             hintPrintJson.Item, hintPrintJson.Found.HasValue && hintPrintJson.Found.Value);
                         break;
 	                case JoinPrintJsonPacket joinPrintJson:
-		                message = new JoinLogMessage(parts, joinPrintJson.Team, joinPrintJson.Slot, joinPrintJson.Tags);
+		                message = new JoinLogMessage(parts, players, connectionInfo,
+							joinPrintJson.Team, joinPrintJson.Slot, joinPrintJson.Tags);
 		                break;
 	                case LeavePrintJsonPacket leavePrintJson:
-		                message = new LeaveLogMessage(parts, leavePrintJson.Team, leavePrintJson.Slot);
+		                message = new LeaveLogMessage(parts, players, connectionInfo,
+							leavePrintJson.Team, leavePrintJson.Slot);
 		                break;
 	                case ChatPrintJsonPacket chatPrintJson:
-		                message = new ChatLogMessage(parts, chatPrintJson.Team, chatPrintJson.Slot, chatPrintJson.Message);
+		                message = new ChatLogMessage(parts, players, connectionInfo,
+							chatPrintJson.Team, chatPrintJson.Slot, chatPrintJson.Message);
 		                break;
 	                case ServerChatPrintJsonPacket serverChatPrintJson:
 		                message = new ServerChatLogMessage(parts, serverChatPrintJson.Message);
@@ -83,8 +90,9 @@ namespace Archipelago.MultiClient.Net.Helpers
 		                message = new TutorialLogMessage(parts);
 		                break;
 	                case TagsChangedPrintJsonPacket tagsPrintJson:
-		                message = new TagsChangedLogMessage(parts, tagsPrintJson.Tags);
-		                break;
+		                message = new TagsChangedLogMessage(parts, players, connectionInfo,
+			                tagsPrintJson.Team, tagsPrintJson.Slot, tagsPrintJson.Tags);
+						break;
 	                case CommandResultPrintJsonPacket _:
 		                message = new CommandResultLogMessage(parts);
 		                break;
@@ -92,13 +100,16 @@ namespace Archipelago.MultiClient.Net.Helpers
 		                message = new AdminCommandResultLogMessage(parts);
 		                break;
 	                case GoalPrintJsonPacket goalPrintJsonPacket:
-		                message = new GoalLogMessage(parts, goalPrintJsonPacket.Team, goalPrintJsonPacket.Slot);
+		                message = new GoalLogMessage(parts, players, connectionInfo,
+			                goalPrintJsonPacket.Team, goalPrintJsonPacket.Slot);
 		                break;
 	                case ReleasePrintJsonPacket releasePrintJsonPacket:
-		                message = new ReleaseLogMessage(parts, releasePrintJsonPacket.Team, releasePrintJsonPacket.Slot);
+		                message = new ReleaseLogMessage(parts, players, connectionInfo,
+			                releasePrintJsonPacket.Team, releasePrintJsonPacket.Slot);
 		                break;
 	                case CollectPrintJsonPacket collectPrintJsonPacket:
-		                message = new CollectLogMessage(parts, collectPrintJsonPacket.Team, collectPrintJsonPacket.Slot);
+		                message = new CollectLogMessage(parts, players, connectionInfo,
+			                collectPrintJsonPacket.Team, collectPrintJsonPacket.Slot);
 		                break;
 					case CountdownPrintJsonPacket countdownPrintJson:
 						message = new CountdownLogMessage(parts, countdownPrintJson.RemainingSeconds);

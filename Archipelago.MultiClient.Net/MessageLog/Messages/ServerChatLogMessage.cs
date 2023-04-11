@@ -1,6 +1,6 @@
 ﻿using Archipelago.MultiClient.Net.MessageLog.Parts;
 
-namespace Archipelago.MultiClient.Net.Helpers
+namespace Archipelago.MultiClient.Net.MessageLog.Messages
 {
 	public class ServerChatLogMessage : LogMessage
 	{
