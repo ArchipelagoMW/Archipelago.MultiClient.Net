@@ -168,20 +168,102 @@ namespace Archipelago.MultiClient.Net.Helpers
         {
             switch (source)
             {
-                case HintPrintJsonPacket hintPrintJsonPacket:
+	            case ItemPrintJsonPacket itemPrintJson:
+		            return new ItemPrintJsonPacket
+		            {
+			            MessageType = itemPrintJson.MessageType,
+			            ReceivingPlayer = itemPrintJson.ReceivingPlayer,
+			            Item = itemPrintJson.Item
+		            };
+	            case ItemCheatPrintJsonPacket itemCheatPrintJson:
+		            return new ItemCheatPrintJsonPacket
+		            {
+			            MessageType = itemCheatPrintJson.MessageType,
+			            ReceivingPlayer = itemCheatPrintJson.ReceivingPlayer,
+			            Item = itemCheatPrintJson.Item,
+			            Team = itemCheatPrintJson.Team
+		            };
+				case HintPrintJsonPacket hintPrintJsonPacket:
                     return new HintPrintJsonPacket {
                         MessageType = hintPrintJsonPacket.MessageType,
                         ReceivingPlayer = hintPrintJsonPacket.ReceivingPlayer,
                         Item = hintPrintJsonPacket.Item,
                         Found = hintPrintJsonPacket.Found
                     };
-                case ItemPrintJsonPacket itemPrintJson:
-                    return new ItemPrintJsonPacket
-                    {
-                        MessageType = itemPrintJson.MessageType,
-                        ReceivingPlayer = itemPrintJson.ReceivingPlayer,
-                        Item = itemPrintJson.Item
-                    };
+	            case JoinPrintJsonPacket joinPrintJson:
+		            return new JoinPrintJsonPacket
+					{
+			            MessageType = joinPrintJson.MessageType,
+			            Team = joinPrintJson.Team,
+			            Slot = joinPrintJson.Slot,
+			            Tags = joinPrintJson.Tags
+		            };
+	            case LeavePrintJsonPacket leavePrintJson:
+		            return new LeavePrintJsonPacket
+					{
+			            MessageType = leavePrintJson.MessageType,
+			            Team = leavePrintJson.Team,
+			            Slot = leavePrintJson.Slot,
+		            };
+	            case ChatPrintJsonPacket chatPrintJson:
+		            return new ChatPrintJsonPacket
+		            {
+			            MessageType = chatPrintJson.MessageType,
+			            Team = chatPrintJson.Team,
+			            Slot = chatPrintJson.Slot,
+						Message = chatPrintJson.Message
+					};
+	            case ServerChatPrintJsonPacket serverChatPrintJson:
+		            return new ServerChatPrintJsonPacket
+					{
+			            MessageType = serverChatPrintJson.MessageType,
+			            Message = serverChatPrintJson.Message
+		            };
+	            case TutorialPrintJsonPacket tutorialPrintJson:
+		            return new TutorialPrintJsonPacket
+					{
+			            MessageType = tutorialPrintJson.MessageType,
+		            };
+	            case TagsChangedPrintJsonPacket tagsChangedPrintJson:
+		            return new TagsChangedPrintJsonPacket
+					{
+						MessageType = tagsChangedPrintJson.MessageType,
+						Team = tagsChangedPrintJson.Team,
+						Slot = tagsChangedPrintJson.Slot,
+						Tags = tagsChangedPrintJson.Tags
+					};
+	            case CommandResultPrintJsonPacket commandResultPrintJson:
+		            return new CommandResultPrintJsonPacket 
+		            {
+			            MessageType = commandResultPrintJson.MessageType,
+		            };
+
+	            case AdminCommandResultPrintJsonPacket adminCommandResultPrintJson:
+		            return new AdminCommandResultPrintJsonPacket
+					{
+			            MessageType = adminCommandResultPrintJson.MessageType,
+		            };
+	            case GoalPrintJsonPacket goalPrintJson:
+		            return new GoalPrintJsonPacket
+					{
+			            MessageType = goalPrintJson.MessageType,
+			            Team = goalPrintJson.Team,
+			            Slot = goalPrintJson.Slot,
+		            };
+	            case ReleasePrintJsonPacket releasePrintJson:
+		            return new ReleasePrintJsonPacket
+					{
+			            MessageType = releasePrintJson.MessageType,
+			            Team = releasePrintJson.Team,
+			            Slot = releasePrintJson.Slot,
+		            };
+	            case CollectPrintJsonPacket collectPrintJson:
+		            return new CollectPrintJsonPacket
+					{
+			            MessageType = collectPrintJson.MessageType,
+			            Team = collectPrintJson.Team,
+			            Slot = collectPrintJson.Slot,
+		            };
 				case CountdownPrintJsonPacket countdownPrintJson:
 					return new CountdownPrintJsonPacket
 					{

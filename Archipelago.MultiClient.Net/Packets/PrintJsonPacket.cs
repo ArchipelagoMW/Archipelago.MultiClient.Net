@@ -50,12 +50,6 @@ namespace Archipelago.MultiClient.Net.Packets
         public bool? Found { get; set; }
     }
 
-    public class CountdownPrintJsonPacket : PrintJsonPacket
-    {
-	    [JsonProperty("countdown")]
-	    public int RemainingSeconds { get; set; }
-	}
-
     public class JoinPrintJsonPacket : PrintJsonPacket
     {
 	    [JsonProperty("team")]
@@ -145,4 +139,10 @@ namespace Archipelago.MultiClient.Net.Packets
 	    [JsonProperty("slot")]
 	    public int Slot { get; set; }
 	}
+
+    public class CountdownPrintJsonPacket : PrintJsonPacket
+    {
+	    [JsonProperty("countdown")]
+	    public int RemainingSeconds { get; set; }
+    }
 }
