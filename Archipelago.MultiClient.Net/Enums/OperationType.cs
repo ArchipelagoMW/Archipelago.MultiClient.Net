@@ -1,6 +1,6 @@
 ﻿namespace Archipelago.MultiClient.Net.Enums
 {
-    public enum Operation
+    public enum OperationType
     {
         Add,
         Mul,
@@ -14,6 +14,9 @@
         Or,
         And,
         LeftShift,
-        RightShift
+        RightShift,
+		Remove,
+		Pop,
+		Update
     }
 }

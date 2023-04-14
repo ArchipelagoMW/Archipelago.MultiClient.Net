@@ -137,7 +137,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 		        Key = key,
 		        DefaultValue = value,
 		        Operations = new[] {
-			        new OperationSpecification { Operation = Operation.Default }
+			        new OperationSpecification { OperationType = OperationType.Default }
 		        }
 	        });
 
@@ -181,7 +181,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 		        throw new InvalidOperationException($"DataStorage write operation on readonly key '{key}' is not allowed");
 
 	        if (e == null)
-		        e = new DataStorageElement(Operation.Replace, JValue.CreateNull());
+		        e = new DataStorageElement(OperationType.Replace, JValue.CreateNull());
 	        
 	        if (e.Context == null)
             {
@@ -191,7 +191,7 @@ namespace Archipelago.MultiClient.Net.Helpers
             {
                 e.Operations.Insert(0, new OperationSpecification
                 {
-                    Operation = Operation.Replace,
+                    OperationType = OperationType.Replace,
                     Value = GetValue(e.Context.Key)
                 });
             }
