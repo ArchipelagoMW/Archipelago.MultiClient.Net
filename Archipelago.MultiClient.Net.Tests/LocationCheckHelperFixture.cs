@@ -482,6 +482,32 @@ namespace Archipelago.MultiClient.Net.Tests
 	        socket.DidNotReceive().SendPacket(Arg.Any<LocationChecksPacket>());
         }
 
+        [Test]
+        public void Should_not_fail_when_room_update_is_missing_location_checks()
+        {
+	        var socket = Substitute.For<IArchipelagoSocketHelper>();
+	        var cache = Substitute.For<IDataPackageCache>();
+
+	        _ = new LocationCheckHelper(socket, cache);
+
+	        var connectedPacket = new ConnectedPacket
+	        {
+		        LocationsChecked = Array.Empty<long>(),
+		        MissingChecks = new long[] { 1, 2, 3 }
+	        };
+
+	        var roomUpdatePacket = new RoomUpdatePacket
+	        {
+		        CheckedLocations = null
+	        };
+
+	        Assert.DoesNotThrow(() =>
+	        {
+		        socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(connectedPacket);
+		        socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(roomUpdatePacket);
+	        });
+        }
+
 #if !NET471
 		[Test]
         public async Task Should_scout_locations_async()

@@ -83,7 +83,9 @@ namespace Archipelago.MultiClient.Net.Helpers
                     break;
                 case RoomUpdatePacket updatePacket:
                     CheckLocations(updatePacket.CheckedLocations);
-                    serverConfirmedChecks.UnionWith(updatePacket.CheckedLocations);
+
+					if (updatePacket.CheckedLocations != null)
+						serverConfirmedChecks.UnionWith(updatePacket.CheckedLocations);
 					break;
 #if NET35
                 case LocationInfoPacket locationInfoPacket:
