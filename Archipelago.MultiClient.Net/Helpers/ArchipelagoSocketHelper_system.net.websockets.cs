@@ -11,6 +11,10 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
+#if NET45
+using System.Net;
+#endif
+
 namespace Archipelago.MultiClient.Net.Helpers
 {
     public class ArchipelagoSocketHelper : IArchipelagoSocketHelper
@@ -46,10 +50,14 @@ namespace Archipelago.MultiClient.Net.Helpers
         {
             Uri = hostUri;
             webSocket = new ClientWebSocket();
+#if NET45
+	        var Tls13 = (SecurityProtocolType)12288;
+	        System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | Tls13;
+#endif
 #if NET6_0
             webSocket.Options.DangerousDeflateOptions = new WebSocketDeflateOptions();
 #endif
-        }
+		}
 
         /// <summary>
         ///     Initiates a connection to the host synchronously.
