@@ -1,6 +1,7 @@
 ﻿#if NET45 || NETSTANDARD2_0 || NET6_0
 using Archipelago.MultiClient.Net.Converters;
 using Archipelago.MultiClient.Net.Exceptions;
+using Archipelago.MultiClient.Net.Extensions;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Concurrent;
@@ -24,7 +25,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         const int ReceiveChunkSize = 1024;
         const int SendChunkSize = 1024;
 
-        public event ArchipelagoSocketHelperDelagates.PacketReceivedHandler PacketReceived;
+		public event ArchipelagoSocketHelperDelagates.PacketReceivedHandler PacketReceived;
         public event ArchipelagoSocketHelperDelagates.PacketsSentHandler PacketsSent;
         public event ArchipelagoSocketHelperDelagates.ErrorReceivedHandler ErrorReceived;
         public event ArchipelagoSocketHelperDelagates.SocketClosedHandler SocketClosed;
@@ -44,7 +45,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// </summary>
         public bool Connected => webSocket.State == WebSocketState.Open || webSocket.State == WebSocketState.CloseReceived;
 
-        internal readonly ClientWebSocket webSocket;
+        internal ClientWebSocket webSocket;
 
         internal ArchipelagoSocketHelper(Uri hostUri)
         {
@@ -60,36 +61,41 @@ namespace Archipelago.MultiClient.Net.Helpers
 		}
 
         /// <summary>
-        ///     Initiates a connection to the host synchronously.
-        /// </summary>
-        public void Connect()
-        {
-	        try
-	        {
-		        ConnectAsync().Wait(5100);
-	        }
-	        catch (AggregateException ae)
-	        {
-		        throw ae.InnerException ?? ae.InnerExceptions.First();
-	        }
-        }
-
-        /// <summary>
         ///     Initiates a connection to the host asynchronously.
         ///     Handle the <see cref="SocketOpened"/> event to add a callback.
         /// </summary>
         public async Task ConnectAsync()
         {
-            await webSocket.ConnectAsync(Uri, CancellationToken.None);
+			await ConnectToProvidedUri(Uri);
 
             if (SocketOpened != null)
-            {
                 SocketOpened();
-            }
 
             _ = Task.Run(PollingLoop);
             _ = Task.Run(SendLoop);
         }
+
+        async Task ConnectToProvidedUri(Uri uri)
+        {
+			if (uri.Scheme != "unspecified")
+				await webSocket.ConnectAsync(uri, CancellationToken.None);
+			else
+			{
+				try
+				{
+					await ConnectToProvidedUri(uri.AsWss());
+
+					if (webSocket.State == WebSocketState.Open)
+						return;
+				}
+				catch
+				{
+					webSocket = new ClientWebSocket();
+				}
+
+				await ConnectToProvidedUri(uri.AsWs());
+			}
+		} 
 
         async Task PollingLoop()
         {
@@ -149,21 +155,6 @@ namespace Archipelago.MultiClient.Net.Helpers
             } while (!result.EndOfMessage);
 
             return stringResult.ToString();
-        }
-
-        /// <summary>
-        ///     Disconnect from the host synchronously.
-        /// </summary>
-        public void Disconnect()
-        {
-	        try
-	        {
-				DisconnectAsync().Wait(5100);
-			}
-	        catch (AggregateException ae)
-	        {
-		        throw ae.InnerException ?? ae.InnerExceptions.First();
-			}
         }
 
         /// <summary>

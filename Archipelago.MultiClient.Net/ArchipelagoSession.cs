@@ -14,7 +14,7 @@ namespace Archipelago.MultiClient.Net
 {
     public class ArchipelagoSession
     {
-        const int ArchipelagoConnectionTimeoutInSeconds = 5;
+        const int ArchipelagoConnectionTimeoutInSeconds = 4;
 
         public IArchipelagoSocketHelper Socket { get; }
         public ReceivedItemsHelper Items { get; }

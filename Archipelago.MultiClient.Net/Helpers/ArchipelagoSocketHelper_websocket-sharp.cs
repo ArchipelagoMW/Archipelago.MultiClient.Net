@@ -1,6 +1,7 @@
 ﻿#if NET35 || NET40
 using Archipelago.MultiClient.Net.Converters;
 using Archipelago.MultiClient.Net.Exceptions;
+using Archipelago.MultiClient.Net.Extensions;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -41,53 +42,81 @@ namespace Archipelago.MultiClient.Net.Helpers
         ///     Returns true if the socket believes it is connected to the host.
         ///     Does not emit a ping to determine if the connection is stable.
         /// </summary>
-        public bool Connected => webSocket.ReadyState == WebSocketState.Open || webSocket.ReadyState == WebSocketState.Closing;
+        public bool Connected => webSocket != null &&
+	        webSocket.ReadyState == WebSocketState.Open || webSocket.ReadyState == WebSocketState.Closing;
 
-        internal readonly WebSocket webSocket;
+        internal WebSocket webSocket;
 
         internal ArchipelagoSocketHelper(Uri hostUrl)
         {
-            Uri = hostUrl;
-            webSocket = new WebSocket(Uri.ToString());
-
-			if (webSocket.IsSecure)
-				webSocket.SslConfiguration.EnabledSslProtocols = Tls12 | Tls13;
-
-            webSocket.OnMessage += OnMessageReceived;
-            webSocket.OnError += OnError;
-            webSocket.OnClose += OnClose;
-            webSocket.OnOpen += OnOpen;
+	        Uri = hostUrl;
         }
 
-        /// <summary>
-        ///     Initiates a connection to the host.
-        /// </summary>
-        public void Connect() => webSocket.Connect();
+		WebSocket CreateWebSocket(Uri uri)
+        {
+	        var socket = new WebSocket(uri.ToString());
 
+	        if (socket.IsSecure)
+		        socket.SslConfiguration.EnabledSslProtocols = Tls12 | Tls13;
 
+	        socket.OnMessage += OnMessageReceived;
+	        socket.OnError += OnError;
+	        socket.OnClose += OnClose;
+	        socket.OnOpen += OnOpen;
+
+	        return socket;
+        }
+
+		/// <summary>
+		///     Initiates a connection to the host.
+		/// </summary>
+		public void Connect()
+		{
+			ConnectToProvidedUri(Uri);
+		}
+
+		void ConnectToProvidedUri(Uri uri)
+		{
+			if (uri.Scheme != "unspecified")
+			{
+				webSocket = CreateWebSocket(uri);
+				webSocket.Connect();
+			}
+			else
+			{
+				try
+				{
+					ConnectToProvidedUri(uri.AsWss());
+
+					if (webSocket.IsAlive)
+						return;
+
+					ConnectToProvidedUri(uri.AsWs());
+				}
+				catch
+				{
+					ConnectToProvidedUri(uri.AsWs());
+				}
+			}
+		}
+		
         /// <summary>
         ///     Disconnect from the host.
         /// </summary>
         public void Disconnect()
         {
-            if (webSocket.IsAlive)
+            if (webSocket != null && webSocket.IsAlive)
                 webSocket.Close();
         }
 
 #if NET35
-        /// <summary>
-        ///     Initiates a connection to the host asynchronously.
-        ///     Handle the <see cref="SocketOpened"/> event to add a callback.
-        /// </summary>
-        public void ConnectAsync() => webSocket.ConnectAsync();
-
         /// <summary>
         ///     Disconnect from the host asynchronously.
         ///     Handle the <see cref="SocketClosed"/> event to add a callback.
         /// </summary>
         public void DisconnectAsync()
         {
-            if (webSocket.IsAlive)
+            if (webSocket != null && webSocket.IsAlive)
                 webSocket.CloseAsync();
         }
 #else
@@ -98,9 +127,21 @@ namespace Archipelago.MultiClient.Net.Helpers
         {
             connectAsyncTask = new TaskCompletionSource<bool>();
 
-            webSocket.ConnectAsync();
+			Task.Factory.StartNew(() =>
+			{
+				try
+				{
+					Connect();
 
-            return connectAsyncTask.Task;
+					connectAsyncTask.TrySetResult(true);
+				}
+				catch (Exception e)
+				{
+					connectAsyncTask.TrySetException(e);
+				}
+			});
+
+			return connectAsyncTask.Task;
         }
 
         /// <summary>
@@ -108,9 +149,10 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// </summary>
         public Task DisconnectAsync()
         {
+			//TODO: make sense
             disconnectAsyncTask = new TaskCompletionSource<bool>();
 
-            if (webSocket.IsAlive)
+            if (webSocket != null && webSocket.IsAlive)
                 webSocket.CloseAsync();
             else
                 disconnectAsyncTask.SetResult(false);
@@ -158,7 +200,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// </exception>
         public void SendMultiplePackets(params ArchipelagoPacketBase[] packets)
         {
-            if (webSocket.IsAlive)
+            if (webSocket != null && webSocket.IsAlive)
             {
                 var packetAsJson = JsonConvert.SerializeObject(packets);
                 webSocket.Send(packetAsJson);
@@ -281,7 +323,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         {
             var taskCompletionSource = new TaskCompletionSource<bool>();
 
-            if (webSocket.IsAlive)
+            if (webSocket != null && webSocket.IsAlive)
             {
                 var packetAsJson = JsonConvert.SerializeObject(packets);
                 webSocket.SendAsync(packetAsJson, success => {
@@ -320,6 +362,8 @@ namespace Archipelago.MultiClient.Net.Helpers
             if (disconnectAsyncTask != null)
                 disconnectAsyncTask.SetResult(true);
 #endif
+			if (Uri.Scheme == "unspecified" && sender == webSocket && webSocket.Url.Scheme == "wss")
+				return; //we ignore the first connection failure for unspecified protocol
 
             if (SocketClosed != null)
                 SocketClosed(e.Reason);
