@@ -149,7 +149,6 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// </summary>
         public Task DisconnectAsync()
         {
-			//TODO: make sense
             disconnectAsyncTask = new TaskCompletionSource<bool>();
 
             if (webSocket != null && webSocket.IsAlive)
