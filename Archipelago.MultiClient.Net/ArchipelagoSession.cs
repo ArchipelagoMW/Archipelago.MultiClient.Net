@@ -3,7 +3,11 @@ using Archipelago.MultiClient.Net.Exceptions;
 using Archipelago.MultiClient.Net.Helpers;
 using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
+using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Reflection;
 using System.Threading;
 
 #if !NET35
@@ -61,9 +65,12 @@ namespace Archipelago.MultiClient.Net
             switch (packet)
             {
                 case ConnectedPacket _:
-                case ConnectionRefusedPacket _:
+	            case ConnectionRefusedPacket _:
+					if (packet is ConnectedPacket)
+						LogUsedVersion();
+
 #if NET35
-                    if (expectingLoginResult)
+					if (expectingLoginResult)
                     {
                         expectingLoginResult = false;
                         loginResult = LoginResult.FromPacket(packet);
@@ -80,8 +87,45 @@ namespace Archipelago.MultiClient.Net
 					roomInfoPacketTask.TrySetResult(roomInfoPacket);
 #endif
 					break;
-
             }
+        }
+
+        void LogUsedVersion()
+        {
+#if NET35
+			const string libVersion = "NET35";
+#elif NET40
+			const string libVersion = "NET40";
+#elif NET45
+			const string libVersion = "NET45";
+#elif NETSTANDARD2_0
+			const string libVersion = "NETSTANDARD2_0";
+#elif NET6_0
+			const string libVersion = "NET6_0";
+#else
+			const string libVersion = "OTHER";
+#endif
+	        var assemblyVersion = FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).FileVersion;
+
+	        try
+	        {
+		        Socket.SendPacketAsync(new SetPacket {
+			        Key = ".NetUsedVersions",
+			        DefaultValue = JObject.FromObject(new Dictionary<string, bool>()),
+			        Operations = new[] {
+				        new OperationSpecification {
+					        OperationType = OperationType.Update,
+					        Value = JObject.FromObject(new Dictionary<string, bool> {
+						        { $"{ConnectionInfo.Game}:{assemblyVersion}:{libVersion}", true }
+					        })
+				        }
+			        }
+		        });
+	        }
+	        catch
+	        {
+		        // ignored
+	        }
         }
 
 #if !NET35
@@ -101,7 +145,7 @@ namespace Archipelago.MultiClient.Net
                     var task = Socket.ConnectAsync();
                     task.Wait(TimeSpan.FromSeconds(ArchipelagoConnectionTimeoutInSeconds));
 
-                    if (!task.IsCompleted)
+					if (!task.IsCompleted)
                         roomInfoPacketTask.TrySetCanceled();
                 }
                 catch (AggregateException)
