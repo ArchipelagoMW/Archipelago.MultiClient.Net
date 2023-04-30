@@ -140,10 +140,10 @@ namespace Archipelago.MultiClient.Net
 #else
 			const string libVersion = "OTHER";
 #endif
-	        var assemblyVersion = FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).FileVersion;
-
-	        try
-	        {
+            try
+            {
+				var assemblyVersion = FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).FileVersion;
+				
 		        Socket.SendPacketAsync(new SetPacket {
 			        Key = ".NetUsedVersions",
 			        DefaultValue = JObject.FromObject(new Dictionary<string, bool>()),
