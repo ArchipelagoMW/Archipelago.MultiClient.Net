@@ -4,8 +4,15 @@ using Archipelago.MultiClient.Net.Models;
 
 namespace Archipelago.MultiClient.Net.MessageLog.Parts
 {
+	/// <summary>
+	/// Part of a LogMessage that contains information about an location
+	/// </summary>
+	/// <seealso cref="T:Archipelago.MultiClient.Net.MessageLog.Parts.MessagePart"/>
 	public class LocationMessagePart : MessagePart
 	{
+		/// <summary>
+		/// The name of the location
+		/// </summary>
 		public long LocationId { get; }
 
 		internal LocationMessagePart(ILocationCheckHelper locations, JsonMessagePart part) 

@@ -4,6 +4,10 @@ using Archipelago.MultiClient.Net.Models;
 
 namespace Archipelago.MultiClient.Net.MessageLog.Parts
 {
+	/// <summary>
+	/// Part of a LogMessage that contains information about an item
+	/// </summary>
+	/// <seealso cref="T:Archipelago.MultiClient.Net.MessageLog.Parts.MessagePart"/>
 	public class PlayerMessagePart : MessagePart
 	{
 		public bool IsActivePlayer { get; }

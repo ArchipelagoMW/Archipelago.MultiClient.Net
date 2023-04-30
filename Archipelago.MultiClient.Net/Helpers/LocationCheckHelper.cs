@@ -15,7 +15,10 @@ using Archipelago.MultiClient.Net.Exceptions;
 
 namespace Archipelago.MultiClient.Net.Helpers
 {
-    public interface ILocationCheckHelper
+	/// <summary>
+	/// Provides way to mark locations as checked
+	/// </summary>
+	public interface ILocationCheckHelper
     {
         void CompleteLocationChecks(params long[] ids);
 
@@ -33,6 +36,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         ReadOnlyCollection<long> AllMissingLocations { get; }
     }
 
+	/// <inheritdoc/>
     public class LocationCheckHelper : ILocationCheckHelper
     {
         public delegate void CheckedLocationsUpdatedHandler(ReadOnlyCollection<long> newCheckedLocations);

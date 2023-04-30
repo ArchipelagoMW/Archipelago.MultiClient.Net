@@ -16,7 +16,10 @@ namespace Archipelago.MultiClient.Net.Helpers
         public delegate void SocketOpenedHandler();
     }
 
-    public interface IArchipelagoSocketHelper
+    /// <summary>
+    /// Provides access to the underlying websocket, so send or receive messages
+    /// </summary>
+	public interface IArchipelagoSocketHelper
     {
         event ArchipelagoSocketHelperDelagates.PacketReceivedHandler PacketReceived;
         event ArchipelagoSocketHelperDelagates.PacketsSentHandler PacketsSent;

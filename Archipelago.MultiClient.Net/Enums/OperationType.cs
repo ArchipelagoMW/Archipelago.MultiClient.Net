@@ -1,5 +1,8 @@
 ﻿namespace Archipelago.MultiClient.Net.Enums
 {
+	/// <summary>
+	/// The type of DataStorage operation
+	/// </summary>
     public enum OperationType
     {
         Add,

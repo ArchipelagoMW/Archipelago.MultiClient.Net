@@ -13,7 +13,10 @@ using System.Threading.Tasks;
 
 namespace Archipelago.MultiClient.Net.Helpers
 {
-    public partial class DataStorageHelper
+	/// <summary>
+	/// Provides access to a server side data storage to share and store values across sessions and players
+	/// </summary>
+	public partial class DataStorageHelper
     {
         public delegate void DataStorageUpdatedHandler(JToken originalValue, JToken newValue);
 
@@ -167,9 +170,9 @@ namespace Archipelago.MultiClient.Net.Helpers
             if (!t.Wait(TimeSpan.FromSeconds(2)))
             {
                 throw new TimeoutException($"Timed out retrieving data for key `{key}`. " +
-                                           $"This may be due to an attempt to retrieve a value from the DataStorageHelper in a synchronous fashion from within a PacketReceived handler. " +
-                                           $"When using the DataStorageHelper from within code which runs on the websocket thread then use the asynchronous getters. Ex: `DataStorageHelper[\"{key}\"].GetAsync().ContinueWith(x => {{}});`" +
-                                           $"Be aware that DataStorageHelper calls tend to cause packet responses, so making a call from within a PacketReceived handler may cause an infinite loop.");
+                   $"This may be due to an attempt to retrieve a value from the DataStorageHelper in a synchronous fashion from within a PacketReceived handler. " +
+                   $"When using the DataStorageHelper from within code which runs on the websocket thread then use the asynchronous getters. Ex: `DataStorageHelper[\"{key}\"].GetAsync().ContinueWith(x => {{}});`" +
+                   $"Be aware that DataStorageHelper calls tend to cause packet responses, so making a call from within a PacketReceived handler may cause an infinite loop.");
             }
             return t.Result;
 #endif

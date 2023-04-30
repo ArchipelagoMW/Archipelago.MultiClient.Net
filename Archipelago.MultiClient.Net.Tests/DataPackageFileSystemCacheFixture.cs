@@ -10,7 +10,7 @@ using System.Collections.Generic;
 namespace Archipelago.MultiClient.Net.Tests
 {
 	//use Directory C:\Users\<current_user>\AppData\Local\Archipelago\Cache\<game>\<checksum>.json
-	//retention 1 month since last moddified, update File.SetLastWriteTime(file, modifiedTime) in use
+	//retention 1 month since last modified, update File.SetLastWriteTime(file, modifiedTime) in use
 
 
 	[TestFixture]
@@ -258,17 +258,10 @@ namespace Archipelago.MultiClient.Net.Tests
 
 	        socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(roomInfo);
 
-			socket.Received().SendPacket(Arg.Is<GetDataPackagePacket>(p => Checkpacket(p)));
-
-			//socket.Received().SendPacket(Arg.Is<GetDataPackagePacket>(p =>
-		    //    p.Games.Length == 1 && p.Games[0] == "Two"
-	        //));
-        }
-
-        bool Checkpacket(GetDataPackagePacket p)
-        {
-	        return p.Games.Length == 1 && p.Games[0] == "Two";
-        }
+	        socket.Received().SendPacket(Arg.Is<GetDataPackagePacket>(p =>
+			    p.Games.Length == 1 && p.Games[0] == "Two"
+			));
+		}
 
         class TestGameData : GameData
         {

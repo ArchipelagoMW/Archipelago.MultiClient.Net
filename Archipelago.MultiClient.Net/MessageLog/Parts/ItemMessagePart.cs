@@ -4,9 +4,20 @@ using Archipelago.MultiClient.Net.Models;
 
 namespace Archipelago.MultiClient.Net.MessageLog.Parts
 {
+	/// <summary>
+	/// Part of a LogMessage that contains information about an item
+	/// </summary>
+	/// <seealso cref="T:Archipelago.MultiClient.Net.MessageLog.Parts.MessagePart"/>
 	public class ItemMessagePart : MessagePart
 	{
+		/// <summary>
+		/// The flags that identify the items its special properties
+		/// </summary>
 		public ItemFlags Flags { get; }
+		
+		/// <summary>
+		/// The id of the item
+		/// </summary>
 		public long ItemId { get; }
 
 		internal ItemMessagePart(IReceivedItemsHelper items, JsonMessagePart part) : base(MessagePartType.Item, part)

@@ -8,12 +8,19 @@ using System.Collections;
 
 namespace Archipelago.MultiClient.Net.Models
 {
+	/// <summary>
+	/// An opperation to apply to the DataStorage
+	/// </summary>
     public class OperationSpecification
     {
-        [JsonProperty("operation")]
+		/// <inheritdoc cref="T:Archipelago.MultiClient.Net.Models.OperationType"/>
+		[JsonProperty("operation")]
         [JsonConverter(typeof(StringEnumConverter), typeof(SnakeCaseNamingStrategy))]
         public OperationType OperationType;
 
+		/// <summary>
+		/// The value related to this operation
+		/// </summary>
         [JsonProperty("value")]
         public JToken Value { get; set; }
 
@@ -26,23 +33,45 @@ namespace Archipelago.MultiClient.Net.Models
 	/// </summary>
     public static class Operation
     {
-		public static OperationSpecification Min(JToken i) =>
+		/// <summary>
+		/// Performs a Math.Min() on the store its current value vs the provided value
+		/// </summary>
+		/// <param name="i">The value to compare to</param>
+	    public static OperationSpecification Min(JToken i) =>
 			new OperationSpecification { OperationType = OperationType.Min, Value = i };
 
+		/// <summary>
+		/// Performs a Math.Max() on the store its current value vs the provided value
+		/// </summary>
+		/// <param name="i">The value to compare to</param>
 		public static OperationSpecification Max(JToken i) =>
 		    new OperationSpecification { OperationType = OperationType.Max, Value = i };
 
-	    public static OperationSpecification Remove(JToken t) =>
-		    new OperationSpecification { OperationType = OperationType.Max, Value = t };
+		/// <summary>
+		/// Performs a List.Remove() to remove the first occurrence of the provided value
+		/// </summary>
+		/// <param name="value">The value to remove</param>
+		public static OperationSpecification Remove(JToken value) =>
+		    new OperationSpecification { OperationType = OperationType.Remove, Value = value };
 
-	    public static OperationSpecification Pop(JToken t) =>
-		    new OperationSpecification { OperationType = OperationType.Max, Value = t };
+		/// <summary>
+		/// Performs a List.RemoveAt() or Dictionary.Remove() to remove a specified index or key from a list or dictionary
+		/// </summary>
+		/// <param name="value">The index or key to remove</param>
+		public static OperationSpecification Pop(JToken value) =>
+		    new OperationSpecification { OperationType = OperationType.Pop, Value = value };
 
-	    public static OperationSpecification Update(IDictionary dictionary) =>
-		    new OperationSpecification { OperationType = OperationType.Max, Value = JObject.FromObject(dictionary) };
+		/// <summary>
+		/// Performs Dictionary merge, adding all keys from value to the original dict overriding existing keys
+		/// </summary>
+		/// <param name="dictionary">The dictionary to merge in</param>
+		public static OperationSpecification Update(IDictionary dictionary) =>
+		    new OperationSpecification { OperationType = OperationType.Update, Value = JObject.FromObject(dictionary) };
 	}
 
-
+	/// <summary>
+	/// Bitwise operations to apply to the DataStorage
+	/// </summary>
 	public static class Bitwise
     {
         public static OperationSpecification Xor(long i) =>
@@ -61,7 +90,10 @@ namespace Archipelago.MultiClient.Net.Models
             new OperationSpecification { OperationType = OperationType.RightShift, Value = i };
     }
 
-    public class Callback
+	/// <summary>
+	/// Provides a method to be called when a certain DataStorage operation completes
+	/// </summary>
+	public class Callback
     {
         internal DataStorageHelper.DataStorageUpdatedHandler Method { get; set; }
 

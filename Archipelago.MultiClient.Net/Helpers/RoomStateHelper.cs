@@ -6,7 +6,10 @@ using System.Collections.ObjectModel;
 
 namespace Archipelago.MultiClient.Net.Helpers
 {
-    public class RoomStateHelper
+	/// <summary>
+	/// Provides information about the current state of the server
+	/// </summary>
+	public class RoomStateHelper
     {
 	    readonly ILocationCheckHelper locationCheckHelper;
 
@@ -70,7 +73,7 @@ namespace Archipelago.MultiClient.Net.Helpers
                 ? default 
                 : new ReadOnlyCollection<string>(tags);
         
-        public RoomStateHelper(IArchipelagoSocketHelper socket, ILocationCheckHelper locationCheckHelper)
+        internal RoomStateHelper(IArchipelagoSocketHelper socket, ILocationCheckHelper locationCheckHelper)
         {
 	        this.locationCheckHelper = locationCheckHelper;
 
@@ -111,18 +114,18 @@ namespace Archipelago.MultiClient.Net.Helpers
 
             tags = packet.Tags;
 
-            if (packet.Permissions != null)
-            {
-                if (packet.Permissions.TryGetValue("release", out var releasePermissions))
-                    ReleasePermissions = releasePermissions;
-                else if (packet.Permissions.TryGetValue("forfeit", out var forfeitPermissions))
-	                ReleasePermissions = forfeitPermissions;
+            if (packet.Permissions == null) 
+	            return;
 
-				if (packet.Permissions.TryGetValue("collect", out var collectPermissions))
-                    CollectPermissions = collectPermissions;
-                if (packet.Permissions.TryGetValue("remaining", out var remainingPermissions))
-                    RemainingPermissions = remainingPermissions;
-            }
+            if (packet.Permissions.TryGetValue("release", out var releasePermissions))
+	            ReleasePermissions = releasePermissions;
+            else if (packet.Permissions.TryGetValue("forfeit", out var forfeitPermissions))
+	            ReleasePermissions = forfeitPermissions;
+
+            if (packet.Permissions.TryGetValue("collect", out var collectPermissions))
+	            CollectPermissions = collectPermissions;
+            if (packet.Permissions.TryGetValue("remaining", out var remainingPermissions))
+	            RemainingPermissions = remainingPermissions;
         }
 
         void OnRoomUpdatedPacketReceived(RoomUpdatePacket packet)
@@ -145,19 +148,19 @@ namespace Archipelago.MultiClient.Net.Helpers
             if (packet.Password.HasValue)
                 HasPassword = packet.Password.Value;
 
-            if (packet.Permissions != null)
-            {
-                if (packet.Permissions.TryGetValue("release", out var releasePermissions))
-                    ReleasePermissions = releasePermissions;
-				else if (packet.Permissions.TryGetValue("forfeit", out var forfeitPermissions))
-	                ReleasePermissions = forfeitPermissions;
+            if (packet.Permissions == null) 
+	            return;
 
-				if (packet.Permissions.TryGetValue("collect", out var collectPermissions))
-                    CollectPermissions = collectPermissions;
+            if (packet.Permissions.TryGetValue("release", out var releasePermissions))
+	            ReleasePermissions = releasePermissions;
+            else if (packet.Permissions.TryGetValue("forfeit", out var forfeitPermissions))
+	            ReleasePermissions = forfeitPermissions;
 
-                if (packet.Permissions.TryGetValue("remaining", out var remainingPermissions))
-                    RemainingPermissions = remainingPermissions;
-            }
+            if (packet.Permissions.TryGetValue("collect", out var collectPermissions))
+	            CollectPermissions = collectPermissions;
+
+            if (packet.Permissions.TryGetValue("remaining", out var remainingPermissions))
+	            RemainingPermissions = remainingPermissions;
         }
     }
 }

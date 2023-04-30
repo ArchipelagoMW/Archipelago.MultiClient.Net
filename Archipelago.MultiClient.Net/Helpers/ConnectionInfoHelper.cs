@@ -4,7 +4,10 @@ using System;
 
 namespace Archipelago.MultiClient.Net.Helpers
 {
-    interface IConnectionInfoProvider
+	/// <summary>
+	/// Provides information about your current connection
+	/// </summary>
+	interface IConnectionInfoProvider
     {
         /// <summary>
         /// The game you are connected to or an empty string otherwise
@@ -50,19 +53,26 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// <param name="itemsHandlingFlags">New ItemsHandlingFlags for the current connection.</param>
         void UpdateConnectionOptions(string[] tags, ItemsHandlingFlags itemsHandlingFlags);
     }
-
-    public class ConnectionInfoHelper : IConnectionInfoProvider
+	
+	///<inheritdoc/>
+	public class ConnectionInfoHelper : IConnectionInfoProvider
     {
         readonly IArchipelagoSocketHelper socket;
 
-        public string Game { get; private set; }
-        public int Team { get; private set; }
-        public int Slot { get; private set; }
-        public string[] Tags { get; internal set; }
-        public ItemsHandlingFlags ItemsHandlingFlags { get; internal set; }
-        public string Uuid { get; private set; }
+        ///<inheritdoc/>
+		public string Game { get; private set; }
+        ///<inheritdoc/>
+		public int Team { get; private set; }
+        ///<inheritdoc/>
+		public int Slot { get; private set; }
+        ///<inheritdoc/>
+		public string[] Tags { get; internal set; }
+        ///<inheritdoc/>
+		public ItemsHandlingFlags ItemsHandlingFlags { get; internal set; }
+        ///<inheritdoc/>
+		public string Uuid { get; private set; }
 
-        public ConnectionInfoHelper(IArchipelagoSocketHelper socket)
+		internal ConnectionInfoHelper(IArchipelagoSocketHelper socket)
         {
             this.socket = socket;
 
@@ -103,24 +113,14 @@ namespace Archipelago.MultiClient.Net.Helpers
             Uuid = null;
         }
 
-        /// <summary>
-        /// Send a ConnectUpdate packet and set the tags and ItemsHandlingFlags for the current connection to the provided params.
-        /// </summary>
-        /// <param name="tags">New tags for the current connection.</param>
-        public void UpdateConnectionOptions(string[] tags) => UpdateConnectionOptions(tags, ItemsHandlingFlags);
+        ///<inheritdoc/>
+		public void UpdateConnectionOptions(string[] tags) => UpdateConnectionOptions(tags, ItemsHandlingFlags);
 
-        /// <summary>
-        /// Send a ConnectUpdate packet and set the tags and ItemsHandlingFlags for the current connection to the provided params.
-        /// </summary>
-        /// <param name="itemsHandlingFlags">New ItemsHandlingFlags for the current connection.</param>
-        public void UpdateConnectionOptions(ItemsHandlingFlags itemsHandlingFlags) => UpdateConnectionOptions(Tags, ItemsHandlingFlags);
+        ///<inheritdoc/>
+		public void UpdateConnectionOptions(ItemsHandlingFlags itemsHandlingFlags) => UpdateConnectionOptions(Tags, ItemsHandlingFlags);
 
-        /// <summary>
-        /// Send a ConnectUpdate packet and set the tags and ItemsHandlingFlags for the current connection to the provided params.
-        /// </summary>
-        /// <param name="tags">New tags for the current connection.</param>
-        /// <param name="itemsHandlingFlags">New ItemsHandlingFlags for the current connection.</param>
-        public void UpdateConnectionOptions(string[] tags, ItemsHandlingFlags itemsHandlingFlags)
+        ///<inheritdoc/>
+		public void UpdateConnectionOptions(string[] tags, ItemsHandlingFlags itemsHandlingFlags)
         {
             SetConnectionParameters(Game, tags, itemsHandlingFlags, Uuid);
 

@@ -72,7 +72,7 @@ namespace Archipelago.MultiClient.Net.Cache
             }
         }
 
-        void AddArchipelagoGame(RoomInfoPacket roomInfoPacket) => 
+		static void AddArchipelagoGame(RoomInfoPacket roomInfoPacket) => 
 	        roomInfoPacket.Games = roomInfoPacket.Games
 		        .Concat(new[] { "Archipelago" })
 		        .Distinct()

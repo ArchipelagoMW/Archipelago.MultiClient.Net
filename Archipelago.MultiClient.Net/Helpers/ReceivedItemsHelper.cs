@@ -13,12 +13,25 @@ using System.Collections.Concurrent;
 
 namespace Archipelago.MultiClient.Net.Helpers
 {
-    public interface IReceivedItemsHelper
+	/// <summary>
+	/// Provides simplified methods to receive items
+	/// </summary>
+	public interface IReceivedItemsHelper
     {
-        string GetItemName(long id);
+	    /// <summary>
+	    ///     Perform a lookup using the DataPackage sent as a source of truth to lookup a particular item id for a particular game.
+	    /// </summary>
+	    /// <param name="id">
+	    ///     Id of the item to lookup.
+	    /// </param>
+	    /// <returns>
+	    ///     The name of the item as a string, or null if no such item is found.
+	    /// </returns>
+		string GetItemName(long id);
     }
 
-    public class ReceivedItemsHelper : IReceivedItemsHelper
+	/// <inheritdoc/>
+	public class ReceivedItemsHelper : IReceivedItemsHelper
     {
         readonly IArchipelagoSocketHelper socket;
         readonly ILocationCheckHelper locationsHelper;
@@ -106,15 +119,7 @@ namespace Archipelago.MultiClient.Net.Helpers
             return item;
         }
 
-        /// <summary>
-        ///     Perform a lookup using the DataPackage sent as a source of truth to lookup a particular item id for a particular game.
-        /// </summary>
-        /// <param name="id">
-        ///     Id of the item to lookup.
-        /// </param>
-        /// <returns>
-        ///     The name of the item as a string, or null if no such item is found.
-        /// </returns>
+		/// <inheritdoc/>
         public string GetItemName(long id)
         {
             if (itemLookupCache.TryGetValue(id, out var name))

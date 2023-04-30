@@ -148,23 +148,18 @@ namespace Archipelago.MultiClient.Net.Tests
 			var dataPackageCache = new DataPackageCache(socket, fileSystemDataPackageProvider);
 			var locations = new LocationCheckHelper(socket, dataPackageCache);
 			var items = new ReceivedItemsHelper(socket, locations, dataPackageCache);
-			var players = new PlayerHelper(socket);
-			var roomState = new RoomStateHelper(socket, locations);
 			var connectionInfo = new ConnectionInfoHelper(socket);
+			var players = new PlayerHelper(socket, connectionInfo);
+			var roomState = new RoomStateHelper(socket, locations);
 			var dataStorage = new DataStorageHelper(socket, connectionInfo);
 			var messageLog = new MessageLogHelper(socket, items, locations, players, connectionInfo);
 
 			return new ArchipelagoSession(socket, items, locations, players, roomState, connectionInfo, dataStorage, messageLog);
 		}
 
-		static void SetupLoginResultPacket(IArchipelagoSocketHelper socket, ArchipelagoPacketBase loginResultPacket)
-		{
-			socket.When(s => s.SendPacket(Arg.Any<ConnectPacket>())).Do(_ =>
-			{
-				socket.PacketReceived +=
-					Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(loginResultPacket);
-			});
-		}
+		static void SetupLoginResultPacket(IArchipelagoSocketHelper socket, ArchipelagoPacketBase loginResultPacket) =>
+			socket.When(s => s.SendPacket(Arg.Any<ConnectPacket>()))
+				.Do(_ => socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(loginResultPacket));
 
 		static void SetupRoomInfoPacket(IArchipelagoSocketHelper socket, RoomInfoPacket roomInfoPacket)
 		{

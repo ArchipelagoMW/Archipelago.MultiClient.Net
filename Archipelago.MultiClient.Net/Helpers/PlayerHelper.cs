@@ -7,12 +7,24 @@ using System.Linq;
 
 namespace Archipelago.MultiClient.Net.Helpers
 {
-    public interface IPlayerHelper
+	/// <summary>
+	/// A helper class containing information about all players in the current multiworld
+	/// </summary>
+	public interface IPlayerHelper
     {
+		/// <summary>
+		/// A dictionary of all team's containing all their PlayerInfo's index by their slot
+		/// </summary>
+#if NET35 || NET40
+		Dictionary<int, ReadOnlyCollection<PlayerInfo>> Players { get; }
+#else
+		ReadOnlyDictionary<int, ReadOnlyCollection<PlayerInfo>> Players { get; }
+#endif
+
 	    /// <summary>
-	    /// A collection of PlayerInfo's where the index is the player their slot
+	    /// A enumerable of PlayerInfo's for all players in the multiworld
 	    /// </summary>
-	    ReadOnlyCollection<PlayerInfo> AllPlayers { get; }
+		IEnumerable<PlayerInfo> AllPlayers { get; }
 
 		/// <summary>
 		/// Returns the Alias corresponding to the provided player slot
@@ -39,64 +51,64 @@ namespace Archipelago.MultiClient.Net.Helpers
         string GetPlayerAliasAndName(int slot);
     }
 
+	/// <inheritdoc/>
     public class PlayerHelper : IPlayerHelper
     {
-        PlayerInfo[] players;
+	    readonly IConnectionInfoProvider connectionInfo;
 
-        /// <summary>
-        /// A collection of PlayerInfo's where the index is the player their slot
-        /// </summary>
-        public ReadOnlyCollection<PlayerInfo> AllPlayers => new ReadOnlyCollection<PlayerInfo>(players ?? new PlayerInfo[0]);
+#if NET35 || NET40
+	    Dictionary<int, ReadOnlyCollection<PlayerInfo>> players = new Dictionary<int, ReadOnlyCollection<PlayerInfo>>(0);
+#else
+	    ReadOnlyDictionary<int, ReadOnlyCollection<PlayerInfo>> players = 
+		    new ReadOnlyDictionary<int, ReadOnlyCollection<PlayerInfo>>(new Dictionary<int, ReadOnlyCollection<PlayerInfo>>(0));
+#endif
 
-        internal PlayerHelper(IArchipelagoSocketHelper socket)
+	    /// <inheritdoc/>
+#if NET35 || NET40
+		public Dictionary<int, ReadOnlyCollection<PlayerInfo>> Players => players;
+#else
+		public ReadOnlyDictionary<int, ReadOnlyCollection<PlayerInfo>> Players => players;
+#endif
+
+	    /// <inheritdoc/>
+		public IEnumerable<PlayerInfo> AllPlayers => players.SelectMany(kvp => kvp.Value);
+
+		internal PlayerHelper(IArchipelagoSocketHelper socket, IConnectionInfoProvider connectionInfo)
         {
-            socket.PacketReceived += PacketReceived;
+	        this.connectionInfo = connectionInfo;
+
+	        socket.PacketReceived += PacketReceived;
         }
 
-        /// <summary>
-        /// Returns the Alias corresponding to the provided player slot
-        /// Alias defaults to the player's name until a different alias is specifically set
-        /// </summary>
-        /// <param name="slot">The slot of which to retrieve the alias</param>
-        /// <returns>The player's alias, or null if no such player is found</returns>
-        public string GetPlayerAlias(int slot)
+		/// <inheritdoc/>
+		public string GetPlayerAlias(int slot)
         {
             if (players == null)
                 return null;
 
-            var playerInfo = players.FirstOrDefault(p => p.Slot == slot);
+            var playerInfo = players[connectionInfo.Team].FirstOrDefault(p => p.Slot == slot);
 
             return playerInfo?.Alias;
         }
 
-        /// <summary>
-        /// Returns the Name corresponding to the provided player slot
-        /// </summary>
-        /// <param name="slot">The slot of which to retrieve the name</param>
-        /// <returns>The player's name, or null if no such player is found</returns>
-        public string GetPlayerName(int slot)
+		/// <inheritdoc/>
+		public string GetPlayerName(int slot)
         {
             if (players == null)
                 return null;
 
-            var playerInfo = players.FirstOrDefault(p => p.Slot == slot);
+            var playerInfo = players[connectionInfo.Team].FirstOrDefault(p => p.Slot == slot);
 
             return playerInfo?.Name;
         }
 
-        /// <summary>
-        /// Returns the Alias and Name corresponding to the provided player slot
-        /// Alias defaults to the player's name until a different alias is specifically set
-        /// The result is returned in the format of "Alias (Name)"
-        /// </summary>
-        /// <param name="slot">The slot of which to retrieve the alias</param>
-        /// <returns>The player's alias and name in the following format of "Alias (Name)", or null if no such player is found</returns>
-        public string GetPlayerAliasAndName(int slot)
+		/// <inheritdoc/>
+		public string GetPlayerAliasAndName(int slot)
         {
             if (players == null)
                 return null;
 
-            var playerInfo = players.FirstOrDefault(p => p.Slot == slot);
+            var playerInfo = players[connectionInfo.Team].FirstOrDefault(p => p.Slot == slot);
             if (playerInfo == null)
                 return null;
 
@@ -118,35 +130,73 @@ namespace Archipelago.MultiClient.Net.Helpers
 
         void CreatePlayerInfo(NetworkPlayer[] networkPlayers, Dictionary<int, NetworkSlot> slotInfos)
         {
-            NetworkSlot[] groups;
-            if (slotInfos == null)
-                groups = new NetworkSlot[0];
-            else
-                groups = slotInfos.Values.Where(s => s.Type == SlotType.Group).ToArray();
+	        var groups = slotInfos == null 
+	            ? new NetworkSlot[0] 
+	            : slotInfos.Values.Where(s => s.Type == SlotType.Group).ToArray();
 
-            players = networkPlayers.Select(p => new PlayerInfo {
-                Team = p.Team,
-                Slot = p.Slot,
-                Name = p.Name,
-                Alias = p.Alias,
-                Game = slotInfos?[p.Slot].Game,
-                Groups = groups.Where(g => g.GroupMembers.Contains(p.Slot)).ToArray()
-            }).ToArray();
-        }
+            var maxTeam = 0;
+			var maxSlot = 0;
 
-        void UpdatePlayerInfo(NetworkPlayer[] networkPlayers)
-        {
-            if (networkPlayers != null && networkPlayers.Length > 0)
+            foreach (var p in networkPlayers)
             {
-                for (int i = 0; i < networkPlayers.Length; i++)
-                {
-                    players[i].Team = networkPlayers[i].Team;
-                    players[i].Slot = networkPlayers[i].Slot;
-                    players[i].Name = networkPlayers[i].Name;
-                    players[i].Alias = networkPlayers[i].Alias;
-                }
+	            if (p.Team > maxTeam)
+		            maxTeam = p.Team;
+	            if (p.Slot > maxSlot)
+		            maxSlot = p.Slot;
+			}
+
+			var playerData = new Dictionary<int, PlayerInfo[]>(maxTeam);
+
+			//team is 0 based
+			for (var i = 0; i <= maxTeam; i++)
+            {
+	            //slot 0 is for server, player slots start at 1
+				playerData[i] = new PlayerInfo[maxSlot + 1];
+	            playerData[i][0] = new PlayerInfo
+	            {
+		            Team = i,
+		            Slot = 0,
+		            Name = "Server",
+		            Alias = "Server",
+		            Game = "Archipelago",
+		            Groups = new NetworkSlot[0]
+	            };
+			}
+
+			foreach (var p in networkPlayers)
+            {
+	            playerData[p.Team][p.Slot] = new PlayerInfo {
+		            Team = p.Team,
+		            Slot = p.Slot,
+		            Name = p.Name,
+		            Alias = p.Alias,
+		            Game = slotInfos?[p.Slot].Game,
+		            Groups = groups.Where(g => g.GroupMembers.Contains(p.Slot)).ToArray()
+	            };
             }
-        }
+
+			var allPlayers = new Dictionary<int, ReadOnlyCollection<PlayerInfo>>(playerData.Count);
+			foreach (var kvp in playerData)
+				allPlayers[kvp.Key] = new ReadOnlyCollection<PlayerInfo>(kvp.Value);
+
+#if NET35 || NET40
+	        players = allPlayers;
+#else
+	        players = new ReadOnlyDictionary<int, ReadOnlyCollection<PlayerInfo>>(allPlayers);
+#endif
+		}
+
+		void UpdatePlayerInfo(NetworkPlayer[] networkPlayers)
+		{
+			if (networkPlayers == null || networkPlayers.Length <= 0) 
+				return;
+
+			foreach (var p in networkPlayers)
+			{
+				players[p.Team][p.Slot].Name = p.Name;
+				players[p.Team][p.Slot].Alias = p.Alias;
+			}
+		}
     }
 
     /// <summary>

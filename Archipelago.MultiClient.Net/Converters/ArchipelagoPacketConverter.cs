@@ -7,9 +7,13 @@ using System.Collections.Generic;
 
 namespace Archipelago.MultiClient.Net.Converters
 {
+	/// <summary>
+	/// Json Converter for archipelago packets
+	/// </summary>
     public class ArchipelagoPacketConverter : JsonConverter
     {
-        static readonly Dictionary<ArchipelagoPacketType, Func<JObject, ArchipelagoPacketBase>> PacketDeserializationMap = new Dictionary<ArchipelagoPacketType, Func<JObject, ArchipelagoPacketBase>>()
+        static readonly Dictionary<ArchipelagoPacketType, Func<JObject, ArchipelagoPacketBase>> PacketDeserializationMap = 
+	        new Dictionary<ArchipelagoPacketType, Func<JObject, ArchipelagoPacketBase>>(23)
         {
             [ArchipelagoPacketType.RoomInfo]          = obj => obj.ToObject<RoomInfoPacket>(),
             [ArchipelagoPacketType.ConnectionRefused] = obj => obj.ToObject<ConnectionRefusedPacket>(),
@@ -36,15 +40,18 @@ namespace Archipelago.MultiClient.Net.Converters
             [ArchipelagoPacketType.SetReply]          = obj => obj.ToObject<SetReplyPacket>(),
         };
 
-        public override bool CanWrite => false;
+        /// <inheritdoc/>
+		public override bool CanWrite => false;
 
-        public override bool CanConvert(Type objectType) => objectType.IsAssignableFrom(typeof(ArchipelagoPacketBase));
+        /// <inheritdoc/>
+		public override bool CanConvert(Type objectType) => objectType.IsAssignableFrom(typeof(ArchipelagoPacketBase));
 
-        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        /// <inheritdoc/>
+		public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
             var token = JObject.Load(reader);
 
-            var commandType = token["cmd"].ToString();
+            var commandType = token["cmd"]?.ToString();
 
             ArchipelagoPacketBase packet;
 			if (EnumTryParse(commandType, out ArchipelagoPacketType packetType) && PacketDeserializationMap.ContainsKey(packetType))
@@ -117,11 +124,13 @@ namespace Archipelago.MultiClient.Net.Converters
             result = (TEnum)Enum.Parse(typeof(TEnum), value);
             return true;
 #else
-	        return Enum.TryParse(value, out result);
+#pragma warning disable IDE0022 // Use expression body for methods
+			return Enum.TryParse(value, out result);
+#pragma warning restore IDE0022 // Use expression body for methods
 #endif
-        }
+		}
 
-
+		/// <inheritdoc/>
 		public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer) => throw new NotImplementedException();
     }
 }

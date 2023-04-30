@@ -16,17 +16,51 @@ using System.Threading.Tasks;
 
 namespace Archipelago.MultiClient.Net
 {
-    public class ArchipelagoSession
+	/// <summary>
+	/// `ArchipelagoSession` is the overarching class to access and modify and respond to the multiworld state
+	/// </summary>
+	public class ArchipelagoSession
     {
         const int ArchipelagoConnectionTimeoutInSeconds = 4;
 
-        public IArchipelagoSocketHelper Socket { get; }
+		/// <summary>
+		/// Provides access to the underlying websocket, so send or receive messages
+		/// </summary>
+		public IArchipelagoSocketHelper Socket { get; }
+
+		/// <summary>
+		/// Provides simplified methods to receive items
+		/// </summary>
         public ReceivedItemsHelper Items { get; }
+
+		/// <summary>
+		/// Provides way to mark locations as checked
+		/// </summary>
         public LocationCheckHelper Locations { get; }
+
+		/// <summary>
+		/// Provides information about all players in the multiworld
+		/// </summary>
         public PlayerHelper Players { get; }
+
+		/// <summary>
+		/// Provides access to a server side data storage to share and store values across sessions and players
+		/// </summary>
         public DataStorageHelper DataStorage { get; }
+
+		/// <summary>
+		/// Provides information about your current connection
+		/// </summary>
         public ConnectionInfoHelper ConnectionInfo { get; }
+
+		/// <summary>
+		/// Provides information about the current state of the server
+		/// </summary>
         public RoomStateHelper RoomState { get; }
+
+		/// <summary>
+		/// Provides simplified handlers to receive messages about events that happen in the multiworld
+		/// </summary>
         public MessageLogHelper MessageLog { get; }
 
 #if NET35
@@ -66,7 +100,7 @@ namespace Archipelago.MultiClient.Net
             {
                 case ConnectedPacket _:
 	            case ConnectionRefusedPacket _:
-					if (packet is ConnectedPacket)
+					if (packet is ConnectedPacket && RoomState.Version != null && RoomState.Version >= new Version(0, 3, 8))
 						LogUsedVersion();
 
 #if NET35
@@ -80,7 +114,8 @@ namespace Archipelago.MultiClient.Net
                     loginResultTask.TrySetResult(LoginResult.FromPacket(packet));
                     break;
 #endif
-				case RoomInfoPacket roomInfoPacket:
+                // ReSharper disable once UnusedVariable
+                case RoomInfoPacket roomInfoPacket:
 #if NET35
 					awaitingRoomInfo = false;
 #else
@@ -113,12 +148,9 @@ namespace Archipelago.MultiClient.Net
 			        Key = ".NetUsedVersions",
 			        DefaultValue = JObject.FromObject(new Dictionary<string, bool>()),
 			        Operations = new[] {
-				        new OperationSpecification {
-					        OperationType = OperationType.Update,
-					        Value = JObject.FromObject(new Dictionary<string, bool> {
-						        { $"{ConnectionInfo.Game}:{assemblyVersion}:{libVersion}", true }
-					        })
-				        }
+						Operation.Update(new Dictionary<string, bool> {
+							{ $"{ConnectionInfo.Game}:{assemblyVersion}:{libVersion}", true }
+						})
 			        }
 		        });
 	        }
@@ -321,7 +353,7 @@ namespace Archipelago.MultiClient.Net
 		        Password = password,
 		        Tags = ConnectionInfo.Tags,
 		        Uuid = ConnectionInfo.Uuid,
-		        Version = version != null ? new NetworkVersion(version) : new NetworkVersion(0, 3, 7),
+		        Version = version != null ? new NetworkVersion(version) : new NetworkVersion(0, 4, 0),
 		        ItemsHandling = ConnectionInfo.ItemsHandlingFlags,
 				RequestSlotData = requestSlotData
 			};
