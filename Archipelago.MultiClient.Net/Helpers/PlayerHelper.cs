@@ -9,13 +9,18 @@ namespace Archipelago.MultiClient.Net.Helpers
 {
     public interface IPlayerHelper
     {
-        /// <summary>
-        /// Returns the Alias corresponding to the provided player slot
-        /// Alias defaults to the player's name until a different alias is specifically set
-        /// </summary>
-        /// <param name="slot">The slot of which to retrieve the alias</param>
-        /// <returns>The player's alias, or null if no such player is found</returns>
-        string GetPlayerAlias(int slot);
+	    /// <summary>
+	    /// A collection of PlayerInfo's where the index is the player their slot
+	    /// </summary>
+	    ReadOnlyCollection<PlayerInfo> AllPlayers { get; }
+
+		/// <summary>
+		/// Returns the Alias corresponding to the provided player slot
+		/// Alias defaults to the player's name until a different alias is specifically set
+		/// </summary>
+		/// <param name="slot">The slot of which to retrieve the alias</param>
+		/// <returns>The player's alias, or null if no such player is found</returns>
+		string GetPlayerAlias(int slot);
 
         /// <summary>
         /// Returns the Name corresponding to the provided player slot
@@ -144,13 +149,43 @@ namespace Archipelago.MultiClient.Net.Helpers
         }
     }
 
+    /// <summary>
+    /// Information about a specific player
+    /// </summary>
     public class PlayerInfo
     {
+        /// <summary>
+        /// The team of this player
+        /// </summary>
         public int Team { get; internal set; }
+        /// <summary>
+        /// The slot of this player
+        /// </summary>
         public int Slot { get; internal set; }
+        /// <summary>
+        /// A custom name Alias for this player, that can optionally set with !alias, if no alias is set will return Name instead
+        /// </summary>
         public string Alias { get; internal set; }
+        /// <summary>
+        /// The name of that player
+        /// </summary>
         public string Name { get; internal set; }
+        /// <summary>
+        /// The game the player is playing
+        /// </summary>
         public string Game { get; internal set; }
+        /// <summary>
+        /// A array of groups this player is part of
+        /// </summary>
         public NetworkSlot[] Groups { get; internal set; }
+
+		/// <summary>
+		/// Checks if the provided team and slot, are sharing any slot groups with this player
+		/// </summary>
+		/// <param name="team">The team to check</param>
+		/// <param name="slot">The slot to check</param>
+		/// <returns></returns>
+        public bool IsSharingGroupWith(int team, int slot) => 
+			Team == team && Groups != null && Groups.Any(g => g.GroupMembers.Any(m => m == slot));
     }
 }

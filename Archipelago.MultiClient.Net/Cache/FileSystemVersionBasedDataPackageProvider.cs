@@ -6,14 +6,12 @@ using System.IO;
 
 namespace Archipelago.MultiClient.Net.Cache
 {
-    interface IFileSystemDataPackageProvider
-    {
-        bool TryGetDataPackage(string game, out GameData gameData);
-        void SaveDataPackageToFile(string game, GameData gameData);
-    }
+	interface IFileSystemDataVersionBasedPackageProvider : IFileSystemDataPackageProvider
+	{
+	}
 
-    class FileSystemDataPackageProvider : IFileSystemDataPackageProvider
-    {
+	class FileSystemVersionBasedDataPackageProvider : IFileSystemDataVersionBasedPackageProvider
+	{
         const string DataPackageFolderName = "ArchipelagoDatapackageCache";
         readonly string cacheFolder = 
             Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), DataPackageFolderName);
@@ -22,7 +20,7 @@ namespace Archipelago.MultiClient.Net.Cache
         readonly object fileAccessLockObjectsLock = new object();
         readonly Dictionary<string, object> fileAccessLockObjects = new Dictionary<string, object>();
 
-        public bool TryGetDataPackage(string game, out GameData gameData)
+        public bool TryGetDataPackage(string game, string _, out GameData gameData)
         {
             var filePath = GetFilePath(game);
 

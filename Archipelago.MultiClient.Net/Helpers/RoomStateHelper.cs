@@ -8,16 +8,22 @@ namespace Archipelago.MultiClient.Net.Helpers
 {
     public class RoomStateHelper
     {
-        string[] tags;
+	    readonly ILocationCheckHelper locationCheckHelper;
+
+	    string[] tags;
 
         /// <summary>
         /// The amount of points it costs to receive a hint from the server.
         /// </summary>
         public int HintCost { get; private set;  }
-        /// <summary>
-        /// The amount of hint points you receive per item/location check completed.
-        /// </summary>
-        public int LocationCheckPoints { get; private set; }
+		/// <summary>
+		/// The percentage of total locations that need to be checked to receive a hint from the server.
+		/// </summary>
+		public int HintCostPercentage { get; private set; }
+		/// <summary>
+		/// The amount of hint points you receive per item/location check completed.
+		/// </summary>
+		public int LocationCheckPoints { get; private set; }
         /// <summary>
         /// The client's current hint points.
         /// </summary>
@@ -64,15 +70,20 @@ namespace Archipelago.MultiClient.Net.Helpers
                 ? default 
                 : new ReadOnlyCollection<string>(tags);
         
-        public RoomStateHelper(IArchipelagoSocketHelper socket)
+        public RoomStateHelper(IArchipelagoSocketHelper socket, ILocationCheckHelper locationCheckHelper)
         {
-            socket.PacketReceived += PacketReceived;
+	        this.locationCheckHelper = locationCheckHelper;
+
+	        socket.PacketReceived += PacketReceived;
         }
 
         void PacketReceived(ArchipelagoPacketBase packet)
         {
             switch (packet)
             {
+	            case ConnectedPacket connectedPacket:
+		            OnConnectedPacketReceived(connectedPacket);
+		            break;
                 case RoomUpdatePacket roomUpdatePacket:
 	                OnRoomUpdatedPacketReceived(roomUpdatePacket);
 	                break;
@@ -82,10 +93,17 @@ namespace Archipelago.MultiClient.Net.Helpers
             }
         }
 
+        void OnConnectedPacketReceived(ConnectedPacket packet)
+        {
+	        if (packet.HintPoints.HasValue)
+		        HintPoints = packet.HintPoints.Value;
+        }
+
         void OnRoomInfoPacketReceived(RoomInfoPacket packet)
         {
-            HintCost = packet.HintCost;
-            LocationCheckPoints = packet.LocationCheckPoints;
+	        HintCostPercentage = packet.HintCostPercentage;
+	        HintCost = (int)Math.Max(0m, locationCheckHelper.AllLocations.Count * 0.01m * packet.HintCostPercentage);
+			LocationCheckPoints = packet.LocationCheckPoints;
             Version = packet.Version?.ToVersion();
             HasPassword = packet.Password;
             Seed = packet.SeedName;
@@ -109,10 +127,13 @@ namespace Archipelago.MultiClient.Net.Helpers
 
         void OnRoomUpdatedPacketReceived(RoomUpdatePacket packet)
         {
-            if(packet.HintCost.HasValue)
-                HintCost = packet.HintCost.Value;
+	        if (packet.HintCostPercentage.HasValue)
+	        {
+		        HintCostPercentage = packet.HintCostPercentage.Value;
+		        HintCost = (int)Math.Max(0m, locationCheckHelper.AllLocations.Count * 0.01m * packet.HintCostPercentage.Value);
+	        }
 
-            if (packet.LocationCheckPoints.HasValue)
+			if (packet.LocationCheckPoints.HasValue)
                 LocationCheckPoints = packet.LocationCheckPoints.Value;
 
             if (packet.HintPoints.HasValue)

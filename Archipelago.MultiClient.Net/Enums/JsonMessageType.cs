@@ -2,8 +2,20 @@
 {
     public enum JsonMessageType
     {
+		ItemSend,
+		ItemCheat,
         Hint,
-        ItemSend,
-        Countdown
+		Join,
+		Part,
+		Chat,
+		ServerChat,
+		Tutorial,
+		TagsChanged,
+		CommandResult,
+	    AdminCommandResult,
+	    Goal,
+	    Release,
+	    Collect,
+	    Countdown,
 	}
 }

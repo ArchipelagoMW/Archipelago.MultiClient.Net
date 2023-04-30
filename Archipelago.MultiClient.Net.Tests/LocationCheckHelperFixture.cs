@@ -403,8 +403,113 @@ namespace Archipelago.MultiClient.Net.Tests
             Assert.That(sut.AllMissingLocations, Is.Empty);
         }
 
-#if !NET471
+
         [Test]
+        public void Should_not_send_location_checks_already_confirmed_by_the_server()
+		{
+	        var socket = Substitute.For<IArchipelagoSocketHelper>();
+	        var cache = Substitute.For<IDataPackageCache>();
+
+	        var sut = new LocationCheckHelper(socket, cache);
+
+	        var connectedPacket = new ConnectedPacket
+	        {
+		        LocationsChecked = new long[] { 1, 2 },
+		        MissingChecks = new long[] { 3, 4, 5, 6 },
+	        };
+
+	        socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(connectedPacket);
+
+	        var updatePacket = new RoomUpdatePacket
+	        {
+		        CheckedLocations = new long[] { 3, 4 }
+	        };
+
+	        socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(updatePacket);
+
+	        sut.CompleteLocationChecks(2, 4, 6);
+
+	        socket.Received().SendPacket(Arg.Is<LocationChecksPacket>(p => p.Locations.Length == 1 && p.Locations.First() == 6L));
+        }
+
+		[Test]
+        public void Should_re_send_location_checks_already_checked_but_not_confirmed_by_server()
+		{
+	        var socket = Substitute.For<IArchipelagoSocketHelper>();
+	        var cache = Substitute.For<IDataPackageCache>();
+
+	        var sut = new LocationCheckHelper(socket, cache);
+
+	        var connectedPacket = new ConnectedPacket
+	        {
+		        LocationsChecked = new long[] { 1 },
+		        MissingChecks = new long[] { 2, 3, 4, 5, 6 },
+			};
+
+	        socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(connectedPacket);
+
+			sut.CompleteLocationChecks(2, 3);
+
+			socket.Received().SendPacket(Arg.Is<LocationChecksPacket>(p => p.Locations.Length == 2));
+
+			sut.CompleteLocationChecks(4);
+			
+			socket.Received().SendPacket(Arg.Is<LocationChecksPacket>(p => p.Locations.Length == 3));
+
+			sut.CompleteLocationChecks(5, 6);
+
+			socket.Received().SendPacket(Arg.Is<LocationChecksPacket>(p => p.Locations.Length == 5));
+		}
+
+        [Test]
+        public void Should_not_send_check_if_no_new_locations_are_checked()
+        {
+	        var socket = Substitute.For<IArchipelagoSocketHelper>();
+	        var cache = Substitute.For<IDataPackageCache>();
+
+	        var sut = new LocationCheckHelper(socket, cache);
+
+	        var connectedPacket = new ConnectedPacket
+	        {
+		        LocationsChecked = new long[] { 1, 2, 3 },
+		        MissingChecks = new long[] { 5, 6 },
+	        };
+
+	        socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(connectedPacket);
+
+	        sut.CompleteLocationChecks(2, 3);
+
+	        socket.DidNotReceive().SendPacket(Arg.Any<LocationChecksPacket>());
+        }
+
+        [Test]
+        public void Should_not_fail_when_room_update_is_missing_location_checks()
+        {
+	        var socket = Substitute.For<IArchipelagoSocketHelper>();
+	        var cache = Substitute.For<IDataPackageCache>();
+
+	        _ = new LocationCheckHelper(socket, cache);
+
+	        var connectedPacket = new ConnectedPacket
+	        {
+		        LocationsChecked = Array.Empty<long>(),
+		        MissingChecks = new long[] { 1, 2, 3 }
+	        };
+
+	        var roomUpdatePacket = new RoomUpdatePacket
+	        {
+		        CheckedLocations = null
+	        };
+
+	        Assert.DoesNotThrow(() =>
+	        {
+		        socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(connectedPacket);
+		        socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(roomUpdatePacket);
+	        });
+        }
+
+#if !NET471
+		[Test]
         public async Task Should_scout_locations_async()
         {
             var socket = Substitute.For<IArchipelagoSocketHelper>();

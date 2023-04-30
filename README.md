@@ -252,8 +252,6 @@ Mathematical operations on values stored on the server are supported using the f
 * `/`, Divide left value by right value
 * `%`, Gets remainder after dividing left value by right value
 * `^`, Multiply left value by the power of the right value
-* `>>`, Override left with right value, if right value is lower
-* `<<`, Override left with right value, if right value is bigger
 
 Bitwise operations on values stored on the server are supported using the following opperations:
 * `+ Bitwise.Xor(x)`, apply logical exclusive OR to the left value using value x
@@ -261,6 +259,13 @@ Bitwise operations on values stored on the server are supported using the follow
 * `+ Bitwise.And(x)`, apply logical AND to the left value using value x
 * `+ Bitwise.LeftShift(x)`, binary shift the left value to the left by x
 * `+ Bitwise.RightShift(x)`, binary shift the left value to the right by x
+
+Other operations on values stored on the server are supported using the following opperations:
+* `+ Operation.Min(x)`, get the lowest value of the left value and x
+* `+ Operation.Max(x)`, get the highest value of the left value and x
+* `+ Operation.Remove(x)`, when the left value is a list, removes the first element with value x
+* `+ Operation.Pop(x)`, when the left value is a list or dictionary, removes the element at index x or key x
+* `+ Operation.Update(x)`, when the left value is a list or dictionary, updates the dictionary with the keys/values in x
 
 Operation specific callbacks are supported, these get called only once with the results of the current operation:
 * `+ Callback.Add((oldValue, newValue) => {});`, calls this method after your operation or chain of operations are proccesed by the server
@@ -280,7 +285,7 @@ session.DataStorage[Scope.Slot, "SetPersonal"] = 20; //Set `SetPersonal` to 20, 
 session.DataStorage[Scope.Global, "SetGlobal"] = 30; //Set `SetGlobal` to 30, in global scope shared among all players (the default scope is global)
 session.DataStorage["Add"] += 50; //Add 50 to the current value of `Add`
 session.DataStorage["Divide"] /= 2; //Divide current value of `Divide` in half
-session.DataStorage["Max"] <<= 80; //Set `Max` to 80 if the stored value is lower than 80
+session.DataStorage["Max"] += + Operation.Max(80); //Set `Max` to 80 if the stored value is lower than 80
 session.DataStorage["Dictionary"] = JObject.FromObject(new Dictionary<string, int>()); //Set `Dictionary` to a Dictionary
 session.DataStorage["SetObject"] = JObject.FromObject(new SomeClassOrStruct()); //Set `SetObject` to a custom object
 session.DataStorage["BitShiftLeft"] += Bitwise.LeftShift(1); //Bitshift current value of `BitShiftLeft` to left by 1
@@ -290,12 +295,12 @@ session.DataStorage["Array"] = new []{ "One", "Two" }; //Arrays can be stored di
 session.DataStorage["Array"] += new []{ "Three" }; //Append array values to existing array on the server
 
 //Chaining operations
-session.DataStorage["Min"] = (session.DataStorage["Min"] + 40) >> 100; //Add 40 to `Min`, then Set `Min` to 100 if `Min` is bigger than 100
+session.DataStorage["Min"] = (session.DataStorage["Min"] + 40) + Operation.Min(100); //Add 40 to `Min`, then Set `Min` to 100 if `Min` is bigger than 100
 session.DataStorage["C"] = ((session.DataStorage["C"] - 6) + Bitwise.RightShift(1)) ^ 3; //Subtract 6 from `C`, then multiply `C` by 2 using bitshifting, then take `C` to the power of 3
 
 //Update callbacks
 //EnergyLink deplete pattern, subtract 50, then set value to 0 if its lower than 0
-session.DataStorage["EnergyLink"] = ((session.DataStorage["EnergyLink"] - 50) << 0) + Callback.Add((oldData, newData) => {
+session.DataStorage["EnergyLink"] = ((session.DataStorage["EnergyLink"] - 50) + Operation.Min(0)) + Callback.Add((oldData, newData) => {
     var actualDepleted = (float)newData - (float)oldData; //calculate the actual change, might differ if there was less than 50 left on the server
 });
 

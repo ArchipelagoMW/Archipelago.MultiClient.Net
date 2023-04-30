@@ -7,6 +7,7 @@ using NSubstitute;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace Archipelago.MultiClient.Net.Tests
 {
@@ -15,22 +16,39 @@ namespace Archipelago.MultiClient.Net.Tests
     {
         public static TestCaseData[] RoomStateHelperTests =>
             new TestCaseData[] {
+                // HintCostPercentage
+                new RoomStateHelperTest<int>(
+                    "Should_get_and_update_hint_cost_percentage",
+                    new RoomInfoPacket { HintCostPercentage = 99 },
+                    new RoomUpdatePacket { HintCostPercentage = 777 },
+                    s => s.HintCostPercentage, 99, 777),
+                new RoomStateHelperTest<int>(
+					"Should_not_update_hint_cost_percentage_when_its_not_provided",
+                    new RoomInfoPacket { HintCostPercentage = 99 },
+                    new RoomUpdatePacket { HintCostPercentage = null },
+                    s => s.HintCostPercentage, 99, 99),
+                new RoomStateHelperTest<int>(
+					"Should_update_hint_cost_percentage_to_0_when_its_provided",
+                    new RoomInfoPacket { HintCostPercentage = 99 },
+                    new RoomUpdatePacket { HintCostPercentage = 0 },
+                    s => s.HintCostPercentage, 99, 0),
+
                 // HintCost
                 new RoomStateHelperTest<int>(
-                    "Should_get_and_update_hint_cost",
-                    new RoomInfoPacket { HintCost = 99 },
-                    new RoomUpdatePacket { HintCost = 777 },
-                    s => s.HintCost, 99, 777),
+	                "Should_get_and_update_hint_cost",
+	                new RoomInfoPacket { HintCostPercentage = 40 },
+	                new RoomUpdatePacket { HintCostPercentage = 25 },
+	                s => s.HintCost, 60, 37),
                 new RoomStateHelperTest<int>(
-                    "Should_not_update_hint_cost_when_its_not_provided",
-                    new RoomInfoPacket { HintCost = 99 },
-                    new RoomUpdatePacket { HintCost = null },
-                    s => s.HintCost, 99, 99),
+	                "Should_not_update_hint_cost_when_its_not_provided",
+	                new RoomInfoPacket { HintCostPercentage = -10 },
+	                new RoomUpdatePacket { HintCostPercentage = null },
+	                s => s.HintCost, 0, 0),
                 new RoomStateHelperTest<int>(
-                    "Should_update_hint_cost_to_0_when_its_provided",
-                    new RoomInfoPacket { HintCost = 99 },
-                    new RoomUpdatePacket { HintCost = 0 },
-                    s => s.HintCost, 99, 0),
+	                "Should_update_hint_cost_to_0_when_its_provided",
+	                new RoomInfoPacket { HintCostPercentage = 99 },
+	                new RoomUpdatePacket { HintCostPercentage = 0 },
+	                s => s.HintCost, 148, 0),
 
                 // LocationCheckPoints
                 new RoomStateHelperTest<int>(
@@ -227,8 +245,10 @@ namespace Archipelago.MultiClient.Net.Tests
             T expectedValueAfterFirstPacket, T expectedValueAfterSecondPacket)
         {
             var socket = Substitute.For<IArchipelagoSocketHelper>();
+            var locationHelper = Substitute.For<ILocationCheckHelper>();
+            locationHelper.AllLocations.Returns(new ReadOnlyCollection<long>(new long[150]));
 
-            var sut = new RoomStateHelper(socket);
+			var sut = new RoomStateHelper(socket, locationHelper);
 
             Assert.That(getValue(sut), Is.EqualTo(default(T)),
                 $"initial value before the first RoomInfoPacket is received should be {default(T)} but is {getValue(sut)}");

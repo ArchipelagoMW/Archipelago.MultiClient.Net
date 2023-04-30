@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<TargetFrameworks>net35;net40;netstandard2.0;net6.0</TargetFrameworks>
+		<TargetFrameworks>net35;net40;net45;netstandard2.0;net6.0</TargetFrameworks>
 		<AssemblyTitle>Archipelago.MultiClient.Net</AssemblyTitle>
 		<Product>Archipelago.MultiClient.Net</Product>
 		<Copyright>Copyright © 2022</Copyright>
@@ -10,11 +10,12 @@
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<RepositoryUrl>https://github.com/ArchipelagoMW/Archipelago.MultiClient.Net</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
-		<AssemblyVersion>4.2.1.0</AssemblyVersion>
-		<FileVersion>4.2.1.0</FileVersion>
-		<Version>4.2.1</Version>
+		<AssemblyVersion>5.0.0.0</AssemblyVersion>
+		<FileVersion>5.0.0.0</FileVersion>
+		<Version>5.0.0</Version>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageRequireLicenseAcceptance>False</PackageRequireLicenseAcceptance>
+		<PackageIcon>blue-icon.png</PackageIcon>
 		<GeneratePackageOnBuild>False</GeneratePackageOnBuild>
 		<Company>Jarno Westhof, Hussein Farran, Zach Parks</Company>
 	</PropertyGroup>
@@ -37,10 +38,8 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<None Include="..\README.md">
-			<Pack>True</Pack>
-			<PackagePath>\</PackagePath>
-		</None>
+		<None Include="Icon\blue-icon.png" Pack="true" PackagePath="\" />
+		<None Include="..\README.md" Pack="true" PackagePath="\" />
 	</ItemGroup>
 
 	<ItemGroup Condition="'$(TargetFramework)' == 'net35' Or '$(TargetFramework)' == 'net40'">
@@ -52,10 +51,20 @@
 		</Reference>
 	</ItemGroup>
 
+	<ItemGroup Condition="'$(TargetFramework)' == 'net45'">
+		<Reference Include="Newtonsoft.Json">
+			<HintPath>..\DLLs\net35\Newtonsoft.Json.dll</HintPath>
+		</Reference>
+	</ItemGroup>
+
 	<ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0' Or '$(TargetFramework)' == 'net6.0'">
 		<Reference Include="Newtonsoft.Json">
 			<HintPath>..\DLLs\netstandard2.0\Newtonsoft.Json.dll</HintPath>
 		</Reference>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Icon\" />
 	</ItemGroup>
 
 	<Target Name="Copy3rdPartyAssembliesTarget">

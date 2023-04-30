@@ -1,40 +1,19 @@
 ﻿using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Helpers;
+using Archipelago.MultiClient.Net.MessageLog.Messages;
+using Archipelago.MultiClient.Net.MessageLog.Parts;
 using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
 using NSubstitute;
 using NUnit.Framework;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace Archipelago.MultiClient.Net.Tests
 {
     [TestFixture]
     class MessageLogHelperFixture
     {
-        [Test]
-        public void Should_convert_print_packet_into_string()
-        {
-            var socket = Substitute.For<IArchipelagoSocketHelper>();
-            var locations = Substitute.For<ILocationCheckHelper>();
-            var items = Substitute.For<IReceivedItemsHelper>();
-            var players = Substitute.For<IPlayerHelper>();
-            var connectionInfo = Substitute.For<IConnectionInfoProvider>();
-
-            var sut = new MessageLogHelper(socket, items, locations, players, connectionInfo);
-
-            string toStringResult = null;
-
-            sut.OnMessageReceived += (message) => toStringResult = message.ToString();
-
-            var printPacket = new PrintPacket {
-                Text = "Some message that really does not add value to the test at hand"
-            };
-
-            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(printPacket);
-
-            Assert.That(toStringResult, Is.EqualTo("Some message that really does not add value to the test at hand"));
-        }
-
         [Test]
         public void Should_convert_print_json_packet_into_string()
         {
@@ -73,31 +52,6 @@ namespace Archipelago.MultiClient.Net.Tests
             socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(packet);
 
             Assert.That(toStringResult, Is.EqualTo("Text1Text2Text3Text4Text5Text6Text7Text8Text9Text10"));
-        }
-
-        [Test]
-        public void Should_get_parsed_data_for_print_packet()
-        {
-            var socket = Substitute.For<IArchipelagoSocketHelper>();
-            var locations = Substitute.For<ILocationCheckHelper>();
-            var items = Substitute.For<IReceivedItemsHelper>();
-            var players = Substitute.For<IPlayerHelper>();
-            var connectionInfo = Substitute.For<IConnectionInfoProvider>();
-
-            var sut = new MessageLogHelper(socket, items, locations, players, connectionInfo);
-
-            MessagePart[] parts = null;
-
-            sut.OnMessageReceived += (message) => parts = message.Parts;
-
-            var printPacket = new PrintPacket { Text = "Some message that really does not add value to the test at hand" };
-
-            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(printPacket);
-
-            Assert.That(parts.Length, Is.EqualTo(1));
-            Assert.That(parts[0].Text, Is.EqualTo("Some message that really does not add value to the test at hand"));
-            Assert.That(parts[0].Color, Is.EqualTo(Color.White));
-            Assert.That(parts[0].IsBackgroundColor, Is.EqualTo(false));
         }
 
         [Test]
@@ -261,133 +215,7 @@ namespace Archipelago.MultiClient.Net.Tests
             Assert.That(parts[1].IsBackgroundColor, Is.EqualTo(false));
         }
 
-        [Test]
-        public void Should_preserve_extra_properties_on_ItemPrintJsonPacket()
-        {
-            var socket = Substitute.For<IArchipelagoSocketHelper>();
-            var locations = Substitute.For<ILocationCheckHelper>();
-            var items = Substitute.For<IReceivedItemsHelper>();
-            var players = Substitute.For<IPlayerHelper>();
-            players.GetPlayerAlias(4).Returns("LocalPlayer");
-            var connectionInfo = Substitute.For<IConnectionInfoProvider>();
-            connectionInfo.Slot.Returns(4);
-
-            var sut = new MessageLogHelper(socket, items, locations, players, connectionInfo);
-
-            ItemSendLogMessage logMessage = null;
-
-            sut.OnMessageReceived += (message) => logMessage = message as ItemSendLogMessage;
-
-            var packet = new ItemPrintJsonPacket {
-                Data = new[] { new JsonMessagePart { Text = "" } },
-                Item = new NetworkItem { Flags = ItemFlags.None, Player = 2, Item = 100, Location = 1000 },
-                ReceivingPlayer = 1,
-                MessageType = JsonMessageType.ItemSend
-            };
-
-            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(packet);
-
-            Assert.That(logMessage, Is.Not.Null);
-            Assert.That(logMessage.Item, Is.EqualTo(packet.Item));
-            Assert.That(logMessage.ReceivingPlayerSlot, Is.EqualTo(1));
-            Assert.That(logMessage.SendingPlayerSlot, Is.EqualTo(2));
-        }
-
-        [Test]
-        public void Should_preserve_extra_properties_on_HintPrintJsonPacket()
-        {
-            var socket = Substitute.For<IArchipelagoSocketHelper>();
-            var locations = Substitute.For<ILocationCheckHelper>();
-            var items = Substitute.For<IReceivedItemsHelper>();
-            var players = Substitute.For<IPlayerHelper>();
-            players.GetPlayerAlias(4).Returns("LocalPlayer");
-            var connectionInfo = Substitute.For<IConnectionInfoProvider>();
-            connectionInfo.Slot.Returns(4);
-
-            var sut = new MessageLogHelper(socket, items, locations, players, connectionInfo);
-
-            HintItemSendLogMessage logMessage = null;
-
-            sut.OnMessageReceived += (message) => logMessage = message as HintItemSendLogMessage;
-
-            var packet = new HintPrintJsonPacket {
-                Data = new[] { new JsonMessagePart { Text = "" } },
-                Item = new NetworkItem { Flags = ItemFlags.None, Player = 2, Item = 100, Location = 1000 },
-                ReceivingPlayer = 1,
-                Found = true,
-                MessageType = JsonMessageType.ItemSend
-            };
-
-            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(packet);
-
-            Assert.That(logMessage, Is.Not.Null);
-            Assert.That(logMessage.Item, Is.EqualTo(packet.Item));
-            Assert.That(logMessage.ReceivingPlayerSlot, Is.EqualTo(1));
-            Assert.That(logMessage.SendingPlayerSlot, Is.EqualTo(2));
-            Assert.That(logMessage.IsFound, Is.EqualTo(true));
-        }
-
-        [Test]
-        public void Should_preserve_extra_properties_on_CountdownPrintJsonPacket()
-        {
-	        var socket = Substitute.For<IArchipelagoSocketHelper>();
-	        var locations = Substitute.For<ILocationCheckHelper>();
-	        var items = Substitute.For<IReceivedItemsHelper>();
-	        var players = Substitute.For<IPlayerHelper>();
-	        var connectionInfo = Substitute.For<IConnectionInfoProvider>();
-
-	        var sut = new MessageLogHelper(socket, items, locations, players, connectionInfo);
-
-	        CountdownLogMessage logMessage = null;
-
-	        sut.OnMessageReceived += (message) => 
-		        logMessage = message as CountdownLogMessage;
-
-	        var packet = new CountdownPrintJsonPacket
-	        {
-		        Data = new[] { new JsonMessagePart { Text = "" } },
-				RemainingSeconds = 8,
-		        MessageType = JsonMessageType.Countdown
-	        };
-
-	        socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(packet);
-
-	        Assert.That(logMessage, Is.Not.Null);
-	        Assert.That(logMessage.RemainingSeconds, Is.EqualTo(8));
-        }
-
 		[Test]
-        public void Should_split_new_lines_in_separate_messages_for_print_package()
-        {
-            var socket = Substitute.For<IArchipelagoSocketHelper>();
-            var locations = Substitute.For<ILocationCheckHelper>();
-            var items = Substitute.For<IReceivedItemsHelper>();
-            var players = Substitute.For<IPlayerHelper>();
-            var connectionInfo = Substitute.For<IConnectionInfoProvider>();
-
-            var sut = new MessageLogHelper(socket, items, locations, players, connectionInfo);
-
-            List<LogMessage> logMessage = new List<LogMessage>(6);
-
-            sut.OnMessageReceived += (message) => logMessage.Add(message);
-
-            var packet = new PrintPacket {
-                Text =
-                    "!help \n    Returns the help listing\n!license \n    Returns the licensing information\n!countdown seconds = 10 \n    Start a countdown in seconds"
-            };
-
-            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(packet);
-
-            Assert.That(logMessage.Count, Is.EqualTo(6));
-            Assert.That(logMessage[0].ToString(), Is.EqualTo("!help "));
-            Assert.That(logMessage[1].ToString(), Is.EqualTo("    Returns the help listing"));
-            Assert.That(logMessage[2].ToString(), Is.EqualTo("!license "));
-            Assert.That(logMessage[3].ToString(), Is.EqualTo("    Returns the licensing information"));
-            Assert.That(logMessage[4].ToString(), Is.EqualTo("!countdown seconds = 10 "));
-            Assert.That(logMessage[5].ToString(), Is.EqualTo("    Start a countdown in seconds"));
-        }
-
-        [Test]
         public void Should_split_new_lines_in_separate_messages_for_print_json_package()
         {
             var socket = Substitute.For<IArchipelagoSocketHelper>();
@@ -474,5 +302,654 @@ namespace Archipelago.MultiClient.Net.Tests
             Assert.That(parts[2].IsBackgroundColor, Is.EqualTo(false));
             Assert.That(parts[2].Type, Is.EqualTo(MessagePartType.Player));
         }
-    }
+
+		[Test]
+		public void Should_preserve_extra_properties_on_ItemPrintJsonPacket()
+		{
+			var socket = Substitute.For<IArchipelagoSocketHelper>();
+			var locations = Substitute.For<ILocationCheckHelper>();
+			var items = Substitute.For<IReceivedItemsHelper>();
+			var players = Substitute.For<IPlayerHelper>();
+			players.GetPlayerAlias(4).Returns("LocalPlayer");
+			players.AllPlayers.Returns(new ReadOnlyCollection<PlayerInfo>(new List<PlayerInfo> {
+				new PlayerInfo { Team = 1, Slot = 0 },
+				new PlayerInfo { Team = 1, Slot = 1 },
+				new PlayerInfo { Team = 1, Slot = 2 },
+				new PlayerInfo { Team = 1, Slot = 3 },
+				new PlayerInfo { Team = 1, Slot = 4 }
+			}));
+			var connectionInfo = Substitute.For<IConnectionInfoProvider>();
+			connectionInfo.Team.Returns(1);
+			connectionInfo.Slot.Returns(4);
+
+			var sut = new MessageLogHelper(socket, items, locations, players, connectionInfo);
+
+			ItemSendLogMessage logMessage = null;
+
+			sut.OnMessageReceived += (message) => logMessage = message as ItemSendLogMessage;
+
+			var packet = new ItemPrintJsonPacket
+			{
+				Data = new[] { new JsonMessagePart { Text = "" } },
+				Item = new NetworkItem { Flags = ItemFlags.None, Player = 2, Item = 100, Location = 1000 },
+				ReceivingPlayer = 4,
+				MessageType = JsonMessageType.ItemSend
+			};
+
+			socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(packet);
+
+			Assert.That(logMessage, Is.Not.Null);
+			Assert.That(logMessage.Item, Is.EqualTo(packet.Item));
+
+			Assert.That(logMessage.Receiver.Slot, Is.EqualTo(4));
+			Assert.That(logMessage.Sender.Slot, Is.EqualTo(2));
+
+			Assert.That(logMessage.IsReceiverTheActivePlayer, Is.EqualTo(true));
+			Assert.That(logMessage.IsSenderTheActivePlayer, Is.EqualTo(false));
+
+			Assert.That(logMessage.IsRelatedToActivePlayer, Is.EqualTo(true));
+
+			Assert.That(logMessage.ReceivingPlayerSlot, Is.EqualTo(4));
+			Assert.That(logMessage.SendingPlayerSlot, Is.EqualTo(2));
+		}
+
+		[Test]
+		public void Should_preserve_extra_properties_on_ItemCheatPrintJsonPacket()
+		{
+			var socket = Substitute.For<IArchipelagoSocketHelper>();
+			var locations = Substitute.For<ILocationCheckHelper>();
+			var items = Substitute.For<IReceivedItemsHelper>();
+			var players = Substitute.For<IPlayerHelper>();
+			players.GetPlayerAlias(4).Returns("LocalPlayer");
+			players.AllPlayers.Returns(new ReadOnlyCollection<PlayerInfo>(new List<PlayerInfo> {
+				new PlayerInfo { Team = 1, Slot = 0 },
+				new PlayerInfo { Team = 1, Slot = 1 },
+			}));
+			var connectionInfo = Substitute.For<IConnectionInfoProvider>();
+			connectionInfo.Team.Returns(1);
+			connectionInfo.Slot.Returns(4);
+
+			var sut = new MessageLogHelper(socket, items, locations, players, connectionInfo);
+
+			ItemCheatLogMessage logMessage = null;
+
+			sut.OnMessageReceived += (message) => logMessage = message as ItemCheatLogMessage;
+
+			var packet = new ItemCheatPrintJsonPacket
+			{
+				Data = new[] { new JsonMessagePart { Text = "" } },
+				Item = new NetworkItem { Flags = ItemFlags.None, Player = 1, Item = 100, Location = 1000 },
+				ReceivingPlayer = 1,
+				Team = 1,
+				MessageType = JsonMessageType.ItemCheat
+			};
+
+			socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(packet);
+
+			Assert.That(logMessage, Is.Not.Null);
+			Assert.That(logMessage.Item, Is.EqualTo(packet.Item));
+
+			Assert.That(logMessage.Receiver.Slot, Is.EqualTo(1));
+			Assert.That(logMessage.Sender.Slot, Is.EqualTo(0));
+			Assert.That(logMessage.Sender.Name, Is.Null);
+			Assert.That(logMessage.Sender.Game, Is.Null);
+
+			Assert.That(logMessage.IsReceiverTheActivePlayer, Is.EqualTo(false));
+			Assert.That(logMessage.IsSenderTheActivePlayer, Is.EqualTo(false));
+			Assert.That(logMessage.IsRelatedToActivePlayer, Is.EqualTo(false));
+		}
+
+		[Test]
+		public void Should_preserve_extra_properties_on_HintPrintJsonPacket()
+		{
+			var socket = Substitute.For<IArchipelagoSocketHelper>();
+			var locations = Substitute.For<ILocationCheckHelper>();
+			var items = Substitute.For<IReceivedItemsHelper>();
+			var players = Substitute.For<IPlayerHelper>();
+			players.GetPlayerAlias(4).Returns("LocalPlayer");
+			players.AllPlayers.Returns(new ReadOnlyCollection<PlayerInfo>(new List<PlayerInfo> {
+				new PlayerInfo { Team = 1, Slot = 0 },
+				new PlayerInfo { Team = 1, Slot = 1 },
+				new PlayerInfo { Team = 1, Slot = 2 },
+				new PlayerInfo { Team = 1, Slot = 3 },
+				new PlayerInfo { Team = 1, Slot = 4 }
+			}));
+			var connectionInfo = Substitute.For<IConnectionInfoProvider>();
+			connectionInfo.Team.Returns(1);
+			connectionInfo.Slot.Returns(4);
+
+			var sut = new MessageLogHelper(socket, items, locations, players, connectionInfo);
+
+			HintItemSendLogMessage logMessage = null;
+
+			sut.OnMessageReceived += (message) => logMessage = message as HintItemSendLogMessage;
+
+			var packet = new HintPrintJsonPacket
+			{
+				Data = new[] { new JsonMessagePart { Text = "" } },
+				Item = new NetworkItem { Flags = ItemFlags.None, Player = 2, Item = 100, Location = 1000 },
+				ReceivingPlayer = 1,
+				Found = true,
+				MessageType = JsonMessageType.Hint
+			};
+
+			socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(packet);
+
+			Assert.That(logMessage, Is.Not.Null);
+			Assert.That(logMessage.Item, Is.EqualTo(packet.Item));
+
+			Assert.That(logMessage.Receiver.Slot, Is.EqualTo(1));
+			Assert.That(logMessage.Sender.Slot, Is.EqualTo(2));
+
+			Assert.That(logMessage.IsReceiverTheActivePlayer, Is.EqualTo(false));
+			Assert.That(logMessage.IsSenderTheActivePlayer, Is.EqualTo(false));
+
+			Assert.That(logMessage.IsRelatedToActivePlayer, Is.EqualTo(false));
+
+			Assert.That(logMessage.IsFound, Is.EqualTo(true));
+
+			Assert.That(logMessage.ReceivingPlayerSlot, Is.EqualTo(1));
+			Assert.That(logMessage.SendingPlayerSlot, Is.EqualTo(2));
+		}
+
+		[Test]
+		public void Should_preserve_extra_properties_on_JoinPrintJsonPacket()
+		{
+			var socket = Substitute.For<IArchipelagoSocketHelper>();
+			var locations = Substitute.For<ILocationCheckHelper>();
+			var items = Substitute.For<IReceivedItemsHelper>();
+			var players = Substitute.For<IPlayerHelper>();
+			players.GetPlayerAlias(4).Returns("LocalPlayer");
+			players.AllPlayers.Returns(new ReadOnlyCollection<PlayerInfo>(new List<PlayerInfo> {
+				new PlayerInfo { Team = 1, Slot = 0 },
+				new PlayerInfo { Team = 1, Slot = 1 },
+				new PlayerInfo { Team = 1, Slot = 2 },
+				new PlayerInfo { Team = 1, Slot = 3 },
+				new PlayerInfo { Team = 1, Slot = 4 }
+			}));
+			var connectionInfo = Substitute.For<IConnectionInfoProvider>();
+			connectionInfo.Team.Returns(1);
+			connectionInfo.Slot.Returns(4);
+
+			var sut = new MessageLogHelper(socket, items, locations, players, connectionInfo);
+
+			JoinLogMessage logMessage = null;
+
+			sut.OnMessageReceived += (message) => logMessage = message as JoinLogMessage;
+
+			var packet = new JoinPrintJsonPacket
+			{
+				Data = new[] { new JsonMessagePart { Text = "" } },
+				Team = 1,
+				Slot = 2,
+				Tags = new []{ "TAG" },
+				MessageType = JsonMessageType.Join
+			};
+
+			socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(packet);
+
+			Assert.That(logMessage, Is.Not.Null);
+
+			Assert.That(logMessage.Player.Team, Is.EqualTo(1));
+			Assert.That(logMessage.Player.Slot, Is.EqualTo(2));
+
+			Assert.That(logMessage.Tags, Is.EquivalentTo(new[] { "TAG" }));
+
+			Assert.That(logMessage.IsActivePlayer, Is.EqualTo(false));
+
+			Assert.That(logMessage.IsRelatedToActivePlayer, Is.EqualTo(false));
+		}
+
+		[Test]
+		public void Should_preserve_extra_properties_on_LeavePrintJsonPacket()
+		{
+			var socket = Substitute.For<IArchipelagoSocketHelper>();
+			var locations = Substitute.For<ILocationCheckHelper>();
+			var items = Substitute.For<IReceivedItemsHelper>();
+			var players = Substitute.For<IPlayerHelper>();
+			players.GetPlayerAlias(4).Returns("LocalPlayer");
+			players.AllPlayers.Returns(new ReadOnlyCollection<PlayerInfo>(new List<PlayerInfo> {
+				new PlayerInfo { Team = 1, Slot = 0 },
+				new PlayerInfo { Team = 1, Slot = 1 },
+				new PlayerInfo { Team = 1, Slot = 2 },
+				new PlayerInfo { Team = 1, Slot = 3 },
+				new PlayerInfo { Team = 1, Slot = 4 }
+			}));
+			var connectionInfo = Substitute.For<IConnectionInfoProvider>();
+			connectionInfo.Team.Returns(1);
+			connectionInfo.Slot.Returns(4);
+
+			var sut = new MessageLogHelper(socket, items, locations, players, connectionInfo);
+
+			LeaveLogMessage logMessage = null;
+
+			sut.OnMessageReceived += (message) => logMessage = message as LeaveLogMessage;
+
+			var packet = new LeavePrintJsonPacket
+			{
+				Data = new[] { new JsonMessagePart { Text = "" } },
+				Team = 1,
+				Slot = 4,
+				MessageType = JsonMessageType.Part
+			};
+
+			socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(packet);
+
+			Assert.That(logMessage, Is.Not.Null);
+
+			Assert.That(logMessage.Player.Team, Is.EqualTo(1));
+			Assert.That(logMessage.Player.Slot, Is.EqualTo(4));
+
+			Assert.That(logMessage.IsActivePlayer, Is.EqualTo(true));
+
+			Assert.That(logMessage.IsRelatedToActivePlayer, Is.EqualTo(true));
+		}
+
+		[Test]
+		public void Should_preserve_extra_properties_on_ChatPrintJsonPacket()
+		{
+			var socket = Substitute.For<IArchipelagoSocketHelper>();
+			var locations = Substitute.For<ILocationCheckHelper>();
+			var items = Substitute.For<IReceivedItemsHelper>();
+			var players = Substitute.For<IPlayerHelper>();
+			players.GetPlayerAlias(4).Returns("LocalPlayer");
+			players.AllPlayers.Returns(new ReadOnlyCollection<PlayerInfo>(new List<PlayerInfo> {
+				new PlayerInfo { Team = 1, Slot = 0, Groups = new []{ new NetworkSlot { GroupMembers = new []{ 1,2,4 } } } },
+				new PlayerInfo { Team = 1, Slot = 1, Groups = new []{ new NetworkSlot { GroupMembers = new []{ 0,2,4 } } } },
+				new PlayerInfo { Team = 1, Slot = 2, Groups = new []{ new NetworkSlot { GroupMembers = new []{ 0,1,4 } } } },
+				new PlayerInfo { Team = 1, Slot = 3 },
+				new PlayerInfo { Team = 1, Slot = 4, Groups = new []{ new NetworkSlot { GroupMembers = new []{ 0,1,2 } } } }
+			}));
+			var connectionInfo = Substitute.For<IConnectionInfoProvider>();
+			connectionInfo.Team.Returns(1);
+			connectionInfo.Slot.Returns(4);
+
+			var sut = new MessageLogHelper(socket, items, locations, players, connectionInfo);
+
+			ChatLogMessage logMessage = null;
+
+			sut.OnMessageReceived += (message) => logMessage = message as ChatLogMessage;
+
+			var packet = new ChatPrintJsonPacket
+			{
+				Data = new[] { new JsonMessagePart { Text = "" } },
+				Team = 1,
+				Slot = 2,
+				Message = "Silly duplicated data",
+				MessageType = JsonMessageType.Chat
+			};
+
+			socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(packet);
+
+			Assert.That(logMessage, Is.Not.Null);
+
+			Assert.That(logMessage.Player.Team, Is.EqualTo(1));
+			Assert.That(logMessage.Player.Slot, Is.EqualTo(2));
+
+			Assert.That(logMessage.IsActivePlayer, Is.EqualTo(false));
+
+			Assert.That(logMessage.IsRelatedToActivePlayer, Is.EqualTo(true));
+
+			Assert.That(logMessage.Message, Is.EqualTo("Silly duplicated data"));
+		}
+
+		[Test]
+		public void Should_preserve_extra_properties_on_ServerChatPrintJsonPacket()
+		{
+			var socket = Substitute.For<IArchipelagoSocketHelper>();
+			var locations = Substitute.For<ILocationCheckHelper>();
+			var items = Substitute.For<IReceivedItemsHelper>();
+			var players = Substitute.For<IPlayerHelper>();
+			players.GetPlayerAlias(4).Returns("LocalPlayer");
+			players.AllPlayers.Returns(new ReadOnlyCollection<PlayerInfo>(new List<PlayerInfo> {
+				new PlayerInfo { Team = 1, Slot = 0 },
+				new PlayerInfo { Team = 1, Slot = 1 },
+				new PlayerInfo { Team = 1, Slot = 2 },
+				new PlayerInfo { Team = 1, Slot = 3 },
+				new PlayerInfo { Team = 1, Slot = 4 }
+			}));
+			var connectionInfo = Substitute.For<IConnectionInfoProvider>();
+			connectionInfo.Team.Returns(1);
+			connectionInfo.Slot.Returns(4);
+
+			var sut = new MessageLogHelper(socket, items, locations, players, connectionInfo);
+
+			ServerChatLogMessage logMessage = null;
+
+			sut.OnMessageReceived += (message) => logMessage = message as ServerChatLogMessage;
+
+			var packet = new ServerChatPrintJsonPacket
+			{
+				Data = new[] { new JsonMessagePart { Text = "" } },
+				Message = "Silly duplicated data",
+				MessageType = JsonMessageType.ServerChat
+			};
+
+			socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(packet);
+
+			Assert.That(logMessage, Is.Not.Null);
+
+			Assert.That(logMessage.Message, Is.EqualTo("Silly duplicated data"));
+		}
+
+		[Test]
+		public void Should_preserve_extra_properties_on_TutorialPrintJsonPacket()
+		{
+			var socket = Substitute.For<IArchipelagoSocketHelper>();
+			var locations = Substitute.For<ILocationCheckHelper>();
+			var items = Substitute.For<IReceivedItemsHelper>();
+			var players = Substitute.For<IPlayerHelper>();
+			players.GetPlayerAlias(4).Returns("LocalPlayer");
+			players.AllPlayers.Returns(new ReadOnlyCollection<PlayerInfo>(new List<PlayerInfo> {
+				new PlayerInfo { Team = 1, Slot = 0 },
+				new PlayerInfo { Team = 1, Slot = 1 },
+				new PlayerInfo { Team = 1, Slot = 2 },
+				new PlayerInfo { Team = 1, Slot = 3 },
+				new PlayerInfo { Team = 1, Slot = 4 }
+			}));
+			var connectionInfo = Substitute.For<IConnectionInfoProvider>();
+			connectionInfo.Team.Returns(1);
+			connectionInfo.Slot.Returns(4);
+
+			var sut = new MessageLogHelper(socket, items, locations, players, connectionInfo);
+
+			TutorialLogMessage logMessage = null;
+
+			sut.OnMessageReceived += (message) => logMessage = message as TutorialLogMessage;
+
+			var packet = new TutorialPrintJsonPacket
+			{
+				Data = new[] { new JsonMessagePart { Text = "" } },
+				MessageType = JsonMessageType.Tutorial
+			};
+
+			socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(packet);
+
+			Assert.That(logMessage, Is.Not.Null);
+		}
+
+		[Test]
+		public void Should_preserve_extra_properties_on_TagsChangedPrintJsonPacket()
+		{
+			var socket = Substitute.For<IArchipelagoSocketHelper>();
+			var locations = Substitute.For<ILocationCheckHelper>();
+			var items = Substitute.For<IReceivedItemsHelper>();
+			var players = Substitute.For<IPlayerHelper>();
+			players.GetPlayerAlias(4).Returns("LocalPlayer");
+			players.AllPlayers.Returns(new ReadOnlyCollection<PlayerInfo>(new List<PlayerInfo> {
+				new PlayerInfo { Team = 1, Slot = 0 },
+				new PlayerInfo { Team = 1, Slot = 1 },
+				new PlayerInfo { Team = 1, Slot = 2 },
+				new PlayerInfo { Team = 1, Slot = 3 },
+				new PlayerInfo { Team = 1, Slot = 4 }
+			}));
+			var connectionInfo = Substitute.For<IConnectionInfoProvider>();
+			connectionInfo.Team.Returns(1);
+			connectionInfo.Slot.Returns(4);
+
+			var sut = new MessageLogHelper(socket, items, locations, players, connectionInfo);
+
+			TagsChangedLogMessage logMessage = null;
+
+			sut.OnMessageReceived += (message) => logMessage = message as TagsChangedLogMessage;
+
+			var packet = new TagsChangedPrintJsonPacket
+			{
+				Data = new[] { new JsonMessagePart { Text = "" } },
+				Team = 1,
+				Slot = 2,
+				Tags = new[] { "TAG", "TAG2" },
+				MessageType = JsonMessageType.TagsChanged
+			};
+
+			socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(packet);
+
+			Assert.That(logMessage, Is.Not.Null);
+
+			Assert.That(logMessage.Player.Team, Is.EqualTo(1));
+			Assert.That(logMessage.Player.Slot, Is.EqualTo(2));
+
+			Assert.That(logMessage.Tags, Is.EquivalentTo(new[] { "TAG", "TAG2" }));
+
+			Assert.That(logMessage.IsActivePlayer, Is.EqualTo(false));
+
+			Assert.That(logMessage.IsRelatedToActivePlayer, Is.EqualTo(false));
+		}
+
+		[Test]
+		public void Should_preserve_extra_properties_on_CommandResultPrintJsonPacket()
+		{
+			var socket = Substitute.For<IArchipelagoSocketHelper>();
+			var locations = Substitute.For<ILocationCheckHelper>();
+			var items = Substitute.For<IReceivedItemsHelper>();
+			var players = Substitute.For<IPlayerHelper>();
+			players.GetPlayerAlias(4).Returns("LocalPlayer");
+			players.AllPlayers.Returns(new ReadOnlyCollection<PlayerInfo>(new List<PlayerInfo> {
+				new PlayerInfo { Team = 1, Slot = 0 },
+				new PlayerInfo { Team = 1, Slot = 1 },
+				new PlayerInfo { Team = 1, Slot = 2 },
+				new PlayerInfo { Team = 1, Slot = 3 },
+				new PlayerInfo { Team = 1, Slot = 4 }
+			}));
+			var connectionInfo = Substitute.For<IConnectionInfoProvider>();
+			connectionInfo.Team.Returns(1);
+			connectionInfo.Slot.Returns(4);
+
+			var sut = new MessageLogHelper(socket, items, locations, players, connectionInfo);
+
+			CommandResultLogMessage logMessage = null;
+
+			sut.OnMessageReceived += (message) => logMessage = message as CommandResultLogMessage;
+
+			var packet = new CommandResultPrintJsonPacket
+			{
+				Data = new[] { new JsonMessagePart { Text = "" } },
+				MessageType = JsonMessageType.CommandResult
+			};
+
+			socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(packet);
+
+			Assert.That(logMessage, Is.Not.Null);
+		}
+
+		[Test]
+		public void Should_preserve_extra_properties_on_AdminCommandResultPrintJsonPacket()
+		{
+			var socket = Substitute.For<IArchipelagoSocketHelper>();
+			var locations = Substitute.For<ILocationCheckHelper>();
+			var items = Substitute.For<IReceivedItemsHelper>();
+			var players = Substitute.For<IPlayerHelper>();
+			players.GetPlayerAlias(4).Returns("LocalPlayer");
+			players.AllPlayers.Returns(new ReadOnlyCollection<PlayerInfo>(new List<PlayerInfo> {
+				new PlayerInfo { Team = 1, Slot = 0 },
+				new PlayerInfo { Team = 1, Slot = 1 },
+				new PlayerInfo { Team = 1, Slot = 2 },
+				new PlayerInfo { Team = 1, Slot = 3 },
+				new PlayerInfo { Team = 1, Slot = 4 }
+			}));
+			var connectionInfo = Substitute.For<IConnectionInfoProvider>();
+			connectionInfo.Team.Returns(1);
+			connectionInfo.Slot.Returns(4);
+
+			var sut = new MessageLogHelper(socket, items, locations, players, connectionInfo);
+
+			AdminCommandResultLogMessage logMessage = null;
+
+			sut.OnMessageReceived += (message) => logMessage = message as AdminCommandResultLogMessage;
+
+			var packet = new AdminCommandResultPrintJsonPacket
+			{
+				Data = new[] { new JsonMessagePart { Text = "" } },
+				MessageType = JsonMessageType.CommandResult
+			};
+
+			socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(packet);
+
+			Assert.That(logMessage, Is.Not.Null);
+		}
+
+		[Test]
+		public void Should_preserve_extra_properties_on_GoalPrintJsonPacket()
+		{
+			var socket = Substitute.For<IArchipelagoSocketHelper>();
+			var locations = Substitute.For<ILocationCheckHelper>();
+			var items = Substitute.For<IReceivedItemsHelper>();
+			var players = Substitute.For<IPlayerHelper>();
+			players.GetPlayerAlias(4).Returns("LocalPlayer");
+			players.AllPlayers.Returns(new ReadOnlyCollection<PlayerInfo>(new List<PlayerInfo> {
+				new PlayerInfo { Team = 1, Slot = 0 },
+				new PlayerInfo { Team = 1, Slot = 1 },
+				new PlayerInfo { Team = 1, Slot = 2 },
+				new PlayerInfo { Team = 1, Slot = 3 },
+				new PlayerInfo { Team = 1, Slot = 4 }
+			}));
+			var connectionInfo = Substitute.For<IConnectionInfoProvider>();
+			connectionInfo.Team.Returns(1);
+			connectionInfo.Slot.Returns(4);
+
+			var sut = new MessageLogHelper(socket, items, locations, players, connectionInfo);
+
+			GoalLogMessage logMessage = null;
+
+			sut.OnMessageReceived += (message) => logMessage = message as GoalLogMessage;
+
+			var packet = new GoalPrintJsonPacket
+			{
+				Data = new[] { new JsonMessagePart { Text = "" } },
+				Team = 1,
+				Slot = 2,
+				MessageType = JsonMessageType.TagsChanged
+			};
+
+			socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(packet);
+
+			Assert.That(logMessage, Is.Not.Null);
+
+			Assert.That(logMessage.Player.Team, Is.EqualTo(1));
+			Assert.That(logMessage.Player.Slot, Is.EqualTo(2));
+
+			Assert.That(logMessage.IsActivePlayer, Is.EqualTo(false));
+
+			Assert.That(logMessage.IsRelatedToActivePlayer, Is.EqualTo(false));
+		}
+
+		[Test]
+		public void Should_preserve_extra_properties_on_ReleasePrintJsonPacket()
+		{
+			var socket = Substitute.For<IArchipelagoSocketHelper>();
+			var locations = Substitute.For<ILocationCheckHelper>();
+			var items = Substitute.For<IReceivedItemsHelper>();
+			var players = Substitute.For<IPlayerHelper>();
+			players.GetPlayerAlias(4).Returns("LocalPlayer");
+			players.AllPlayers.Returns(new ReadOnlyCollection<PlayerInfo>(new List<PlayerInfo> {
+				new PlayerInfo { Team = 1, Slot = 0 },
+				new PlayerInfo { Team = 1, Slot = 1 },
+				new PlayerInfo { Team = 1, Slot = 2 },
+				new PlayerInfo { Team = 1, Slot = 3 },
+				new PlayerInfo { Team = 1, Slot = 4 }
+			}));
+			var connectionInfo = Substitute.For<IConnectionInfoProvider>();
+			connectionInfo.Team.Returns(1);
+			connectionInfo.Slot.Returns(4);
+
+			var sut = new MessageLogHelper(socket, items, locations, players, connectionInfo);
+
+			ReleaseLogMessage logMessage = null;
+
+			sut.OnMessageReceived += (message) => logMessage = message as ReleaseLogMessage;
+
+			var packet = new ReleasePrintJsonPacket
+			{
+				Data = new[] { new JsonMessagePart { Text = "" } },
+				Team = 1,
+				Slot = 2,
+				MessageType = JsonMessageType.TagsChanged
+			};
+
+			socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(packet);
+
+			Assert.That(logMessage, Is.Not.Null);
+
+			Assert.That(logMessage.Player.Team, Is.EqualTo(1));
+			Assert.That(logMessage.Player.Slot, Is.EqualTo(2));
+
+			Assert.That(logMessage.IsActivePlayer, Is.EqualTo(false));
+
+			Assert.That(logMessage.IsRelatedToActivePlayer, Is.EqualTo(false));
+		}
+
+		[Test]
+		public void Should_preserve_extra_properties_on_CollectPrintJsonPacket()
+		{
+			var socket = Substitute.For<IArchipelagoSocketHelper>();
+			var locations = Substitute.For<ILocationCheckHelper>();
+			var items = Substitute.For<IReceivedItemsHelper>();
+			var players = Substitute.For<IPlayerHelper>();
+			players.GetPlayerAlias(4).Returns("LocalPlayer");
+			players.AllPlayers.Returns(new ReadOnlyCollection<PlayerInfo>(new List<PlayerInfo> {
+				new PlayerInfo { Team = 1, Slot = 0 },
+				new PlayerInfo { Team = 1, Slot = 1 },
+				new PlayerInfo { Team = 1, Slot = 2 },
+				new PlayerInfo { Team = 1, Slot = 3 },
+				new PlayerInfo { Team = 1, Slot = 4 }
+			}));
+			var connectionInfo = Substitute.For<IConnectionInfoProvider>();
+			connectionInfo.Team.Returns(1);
+			connectionInfo.Slot.Returns(4);
+
+			var sut = new MessageLogHelper(socket, items, locations, players, connectionInfo);
+
+			CollectLogMessage logMessage = null;
+
+			sut.OnMessageReceived += (message) => logMessage = message as CollectLogMessage;
+
+			var packet = new CollectPrintJsonPacket
+			{
+				Data = new[] { new JsonMessagePart { Text = "" } },
+				Team = 1,
+				Slot = 2,
+				MessageType = JsonMessageType.TagsChanged
+			};
+
+			socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(packet);
+
+			Assert.That(logMessage, Is.Not.Null);
+
+			Assert.That(logMessage.Player.Team, Is.EqualTo(1));
+			Assert.That(logMessage.Player.Slot, Is.EqualTo(2));
+
+			Assert.That(logMessage.IsActivePlayer, Is.EqualTo(false));
+
+			Assert.That(logMessage.IsRelatedToActivePlayer, Is.EqualTo(false));
+		}
+		
+		[Test]
+        public void Should_preserve_extra_properties_on_CountdownPrintJsonPacket()
+        {
+	        var socket = Substitute.For<IArchipelagoSocketHelper>();
+	        var locations = Substitute.For<ILocationCheckHelper>();
+	        var items = Substitute.For<IReceivedItemsHelper>();
+	        var players = Substitute.For<IPlayerHelper>();
+	        var connectionInfo = Substitute.For<IConnectionInfoProvider>();
+
+	        var sut = new MessageLogHelper(socket, items, locations, players, connectionInfo);
+
+	        CountdownLogMessage logMessage = null;
+
+	        sut.OnMessageReceived += (message) =>
+		        logMessage = message as CountdownLogMessage;
+
+	        var packet = new CountdownPrintJsonPacket
+	        {
+		        Data = new[] { new JsonMessagePart { Text = "" } },
+		        RemainingSeconds = 8,
+		        MessageType = JsonMessageType.Countdown
+	        };
+
+	        socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(packet);
+
+	        Assert.That(logMessage, Is.Not.Null);
+	        Assert.That(logMessage.RemainingSeconds, Is.EqualTo(8));
+        }
+	}
 }

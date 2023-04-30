@@ -1,5 +1,4 @@
 ﻿using Archipelago.MultiClient.Net.Converters;
-using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Helpers;
 using Archipelago.MultiClient.Net.Packets;
 using Newtonsoft.Json.Linq;
@@ -13,7 +12,6 @@ namespace Archipelago.MultiClient.Net.BounceFeatures.DeathLink
     {
         readonly IArchipelagoSocketHelper socket;
         readonly IConnectionInfoProvider connectionInfoProvider;
-        readonly DataStorageHelper logger;
 
         DeathLink lastSendDeathLink;
 
@@ -28,17 +26,12 @@ namespace Archipelago.MultiClient.Net.BounceFeatures.DeathLink
         /// </summary>
         public event DeathLinkReceivedHandler OnDeathLinkReceived;
 
-        internal DeathLinkService(IArchipelagoSocketHelper socket, IConnectionInfoProvider connectionInfoProvider, DataStorageHelper logger)
+        internal DeathLinkService(IArchipelagoSocketHelper socket, IConnectionInfoProvider connectionInfoProvider)
         {
             this.socket = socket;
             this.connectionInfoProvider = connectionInfoProvider;
-            this.logger = logger;
 
             socket.PacketReceived += OnPacketReceived;
-
-            logger[Scope.Slot, "DeathLinkReceived"].Initialize(new string[0]);
-            logger[Scope.Slot, "DeathLinkSend"].Initialize(new string[0]);
-            logger["FailedDeathLinks"].Initialize(new string[0]);
         }
 
         void OnPacketReceived(ArchipelagoPacketBase packet)
@@ -48,18 +41,11 @@ namespace Archipelago.MultiClient.Net.BounceFeatures.DeathLink
                 case BouncedPacket bouncedPacket when bouncedPacket.Tags.Contains("DeathLink"):
                     if (DeathLink.TryParse(bouncedPacket.Data, out var deathLink))
                     {
-                        logger[Scope.Slot, "DeathLinkReceived"] += new [] { $"Parsed on {DateTime.UtcNow:u}: {JObject.FromObject(bouncedPacket)}" };
-
                         if (lastSendDeathLink != null && lastSendDeathLink == deathLink)
                             return;
 
                         if (OnDeathLinkReceived != null)
                             OnDeathLinkReceived(deathLink);
-                    }
-                    else
-                    {
-                        logger[Scope.Slot, "DeathLinkReceived"] += new[] { $"Failed on {DateTime.UtcNow:u}: {JObject.FromObject(bouncedPacket)}" };
-                        logger["FailedDeathLinks"] += new[] { $"Failed for slot {connectionInfoProvider.Slot} on {DateTime.UtcNow:u}: {JObject.FromObject(bouncedPacket)}" };
                     }
                     break;
             }
@@ -89,8 +75,6 @@ namespace Archipelago.MultiClient.Net.BounceFeatures.DeathLink
 
             if (deathLink.Cause != null)
                 bouncePacket.Data.Add("cause", deathLink.Cause);
-
-            logger[Scope.Slot, "DeathLinkSend"] += new[] { $"Send on {DateTime.UtcNow:u}: {JObject.FromObject(bouncePacket)}" };
 
             lastSendDeathLink = deathLink;
 

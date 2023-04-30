@@ -7,5 +7,6 @@ This project is build using different target frameworks, each targeting a differ
 | --- | --- |
 | .Net Framework 4.7.1 | .Net Framework 3.5 |
 | .Net Framework 4.7.2 | .Net Framework 4.0 |
+| .Net Framework 4.7 | .Net Framework 4.5 |
 | .Net Framework 4.8 | .Net Standard 2.0 |
 | \<Not Tested\> | .Net 6.0 |

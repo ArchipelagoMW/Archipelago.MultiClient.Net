@@ -1,40 +1,63 @@
 ﻿using Archipelago.MultiClient.Net.Helpers;
 using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace Archipelago.MultiClient.Net.Cache
 {
-    class DataPackageFileSystemCache : IDataPackageCache
+    class DataPackageCache : IDataPackageCache
     {
         readonly IArchipelagoSocketHelper socket;
-        readonly IFileSystemDataPackageProvider fileSystemDataPackageProvider;
 
         readonly Dictionary<string, GameData> dataPackages = new Dictionary<string, GameData>();
 
-        public DataPackageFileSystemCache(IArchipelagoSocketHelper socket) : this(socket, new FileSystemDataPackageProvider())
+		internal IFileSystemDataPackageProvider FileSystemDataPackageProvider;
+
+		public DataPackageCache(IArchipelagoSocketHelper socket)
         {
-        }
+	        this.socket = socket;
 
-        internal DataPackageFileSystemCache(IArchipelagoSocketHelper socket, IFileSystemDataPackageProvider fileSystemDataPackageProvider)
-        {
-            this.socket = socket;
-            this.fileSystemDataPackageProvider = fileSystemDataPackageProvider;
+	        socket.PacketReceived += Socket_PacketReceived;
+		}
 
-            socket.PacketReceived += Socket_PacketReceived;
-        }
+		public DataPackageCache(IArchipelagoSocketHelper socket, IFileSystemDataPackageProvider fileSystemProvider)
+		{
+			this.socket = socket;
+			
+			FileSystemDataPackageProvider = fileSystemProvider;
 
-        void Socket_PacketReceived(ArchipelagoPacketBase packet)
+			socket.PacketReceived += Socket_PacketReceived;
+		}
+
+		void Socket_PacketReceived(ArchipelagoPacketBase packet)
         {
             switch (packet)
             {
                 case RoomInfoPacket roomInfoPacket:
-                    AddArchipelagoGame(roomInfoPacket);
-                    LoadDataPackageFromFileCache(roomInfoPacket.Games);
 
-                    var invalidated = GetCacheInvalidatedGames(roomInfoPacket);
+	                List<string> invalidated;
 
+					if (roomInfoPacket.Version == null || roomInfoPacket.Version.ToVersion() < new Version(0, 4, 0))
+	                {
+						if (FileSystemDataPackageProvider == null)
+							FileSystemDataPackageProvider = new FileSystemVersionBasedDataPackageProvider();
+
+						AddArchipelagoGame(roomInfoPacket);
+
+						LoadDataPackageFromFileCacheByVersion(roomInfoPacket.Games);
+
+						invalidated = GetCacheInvalidatedGamesByVersion(roomInfoPacket);
+					}
+	                else
+	                {
+		                if (FileSystemDataPackageProvider == null)
+							FileSystemDataPackageProvider = new FileSystemCheckSumDataPackageProvider();
+
+						invalidated = GetCacheInvalidatedGamesByChecksum(roomInfoPacket);
+					}
+					
                     if (invalidated.Any())
                     {
                         socket.SendPacket(new GetDataPackagePacket
@@ -55,16 +78,16 @@ namespace Archipelago.MultiClient.Net.Cache
 		        .Distinct()
 		        .ToArray();
 
-        void LoadDataPackageFromFileCache(string[] games)
+        void LoadDataPackageFromFileCacheByVersion(string[] games)
         {
             foreach (var game in games)
-                if (TryGetGameDataFromFileCache(game, out var cachedPackage))
+                if (TryGetGameDataFromFileCacheByVersion(game, out var cachedPackage))
                     dataPackages[game] = cachedPackage;
         }
 
-        bool TryGetGameDataFromFileCache(string game, out GameData gameData)
+        bool TryGetGameDataFromFileCacheByVersion(string game, out GameData gameData)
         {
-            if (fileSystemDataPackageProvider.TryGetDataPackage(game, out var cachedGameData))
+            if (FileSystemDataPackageProvider.TryGetDataPackage(game, "", out var cachedGameData))
             {
                 gameData = cachedGameData;
                 return true;
@@ -99,12 +122,14 @@ namespace Archipelago.MultiClient.Net.Cache
             {
                 dataPackages[packageGameData.Key] = packageGameData.Value;
 
-                if (packageGameData.Value.Version != 0)
-                    fileSystemDataPackageProvider.SaveDataPackageToFile(packageGameData.Key, packageGameData.Value);
+				if (FileSystemDataPackageProvider is IFileSystemDataVersionBasedPackageProvider && packageGameData.Value.Version == 0)
+					continue;
+
+                FileSystemDataPackageProvider.SaveDataPackageToFile(packageGameData.Key, packageGameData.Value);
             }
         }
         
-        List<string> GetCacheInvalidatedGames(RoomInfoPacket packet)
+        List<string> GetCacheInvalidatedGamesByVersion(RoomInfoPacket packet)
         {
             var gamesNeedingUpdating = new List<string>();
 
@@ -125,5 +150,27 @@ namespace Archipelago.MultiClient.Net.Cache
 
             return gamesNeedingUpdating;
         }
-    }
+
+        List<string> GetCacheInvalidatedGamesByChecksum(RoomInfoPacket packet)
+        {
+			var gamesNeedingUpdating = new List<string>();
+
+	        foreach (var game in packet.Games)
+	        {
+		        if (packet.DataPackageChecksums != null
+		            && packet.DataPackageChecksums.TryGetValue(game, out var checksum)
+		            && FileSystemDataPackageProvider.TryGetDataPackage(game, checksum, out var gameData)
+		            && gameData.Checksum == checksum)
+		        {
+			        dataPackages[game] = gameData;
+		        }
+		        else
+		        {
+			        gamesNeedingUpdating.Add(game);
+		        }
+	        }
+
+	        return gamesNeedingUpdating;
+        }
+	}
 }

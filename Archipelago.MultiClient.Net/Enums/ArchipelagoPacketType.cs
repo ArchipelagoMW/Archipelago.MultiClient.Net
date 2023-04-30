@@ -1,4 +1,6 @@
-﻿namespace Archipelago.MultiClient.Net.Enums
+﻿using System;
+
+namespace Archipelago.MultiClient.Net.Enums
 {
     public enum ArchipelagoPacketType
     {
@@ -8,7 +10,6 @@
         ReceivedItems,
         LocationInfo,
         RoomUpdate,
-        Print,
         PrintJSON,
         Connect,
         ConnectUpdate,
@@ -26,6 +27,7 @@
         Retrieved,
         Set,
         SetReply,
-        SetNotify
+        SetNotify,
+		Unknown
     }
 }

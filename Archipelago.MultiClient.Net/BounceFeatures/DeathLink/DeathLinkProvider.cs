@@ -8,6 +8,6 @@ namespace Archipelago.MultiClient.Net.BounceFeatures.DeathLink
         ///     creates and returns a <see cref="DeathLinkService"/> for this <paramref name="session"/>.
         /// </summary>
         public static DeathLinkService CreateDeathLinkService(this ArchipelagoSession session) => 
-	        new DeathLinkService(session.Socket, session.ConnectionInfo, session.DataStorage);
+	        new DeathLinkService(session.Socket, session.ConnectionInfo);
     }
 }

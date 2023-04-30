@@ -17,7 +17,6 @@ namespace Archipelago.MultiClient.Net.Converters
             [ArchipelagoPacketType.ReceivedItems]     = obj => obj.ToObject<ReceivedItemsPacket>(),
             [ArchipelagoPacketType.LocationInfo]      = obj => obj.ToObject<LocationInfoPacket>(),
             [ArchipelagoPacketType.RoomUpdate]        = obj => obj.ToObject<RoomUpdatePacket>(),
-            [ArchipelagoPacketType.Print]             = obj => obj.ToObject<PrintPacket>(),
             [ArchipelagoPacketType.PrintJSON]         = DeserializePrintJsonPacket,
             [ArchipelagoPacketType.Connect]           = obj => obj.ToObject<ConnectPacket>(),
             [ArchipelagoPacketType.ConnectUpdate]     = obj => obj.ToObject<ConnectUpdatePacket>(),
@@ -46,36 +45,57 @@ namespace Archipelago.MultiClient.Net.Converters
             var token = JObject.Load(reader);
 
             var commandType = token["cmd"].ToString();
-            var packetType = (ArchipelagoPacketType)Enum.Parse(typeof(ArchipelagoPacketType), commandType);
-            
-            ArchipelagoPacketBase ret = null;
-            if (PacketDeserializationMap.ContainsKey(packetType))
-                ret = PacketDeserializationMap[packetType](token);
-            else
-                throw new InvalidOperationException("Received an unknown packet.");
 
-            return ret;
-        }
+            ArchipelagoPacketBase packet;
+			if (EnumTryParse(commandType, out ArchipelagoPacketType packetType) && PacketDeserializationMap.ContainsKey(packetType))
+				packet = PacketDeserializationMap[packetType](token);
+			else
+				packet = new UnknownPacket();
+
+	        packet.jobject = token;
+
+	        return packet;
+		}
 
         static ArchipelagoPacketBase DeserializePrintJsonPacket(JObject obj)
         {
             if (obj.TryGetValue("type", out var token))
             {
-#if NET35
                 if (EnumTryParse(token.ToString(), out JsonMessageType type))
-#else
-                if (Enum.TryParse(token.ToString(), out JsonMessageType type))
-#endif
                 {
                     switch (type)
                     {
-                        case JsonMessageType.Hint:
+	                    case JsonMessageType.ItemSend:
+		                    return obj.ToObject<ItemPrintJsonPacket>();
+	                    case JsonMessageType.ItemCheat:
+		                    return obj.ToObject<ItemCheatPrintJsonPacket>();
+						case JsonMessageType.Hint:
                             return obj.ToObject<HintPrintJsonPacket>();
-                        case JsonMessageType.ItemSend:
-                            return obj.ToObject<ItemPrintJsonPacket>();
-                        case JsonMessageType.Countdown:
+	                    case JsonMessageType.Join:
+		                    return obj.ToObject<JoinPrintJsonPacket>();
+	                    case JsonMessageType.Part:
+		                    return obj.ToObject<LeavePrintJsonPacket>();
+	                    case JsonMessageType.Chat:
+		                    return obj.ToObject<ChatPrintJsonPacket>();
+	                    case JsonMessageType.ServerChat:
+		                    return obj.ToObject<ServerChatPrintJsonPacket>();
+	                    case JsonMessageType.Tutorial:
+		                    return obj.ToObject<TutorialPrintJsonPacket>();
+	                    case JsonMessageType.TagsChanged:
+		                    return obj.ToObject<TagsChangedPrintJsonPacket>();
+	                    case JsonMessageType.CommandResult:
+		                    return obj.ToObject<CommandResultPrintJsonPacket>();
+	                    case JsonMessageType.AdminCommandResult:
+		                    return obj.ToObject<AdminCommandResultPrintJsonPacket>();
+	                    case JsonMessageType.Goal:
+		                    return obj.ToObject<GoalPrintJsonPacket>();
+	                    case JsonMessageType.Release:
+		                    return obj.ToObject<ReleasePrintJsonPacket>();
+	                    case JsonMessageType.Collect:
+		                    return obj.ToObject<CollectPrintJsonPacket>();
+						case JsonMessageType.Countdown:
 	                        return obj.ToObject<CountdownPrintJsonPacket>();
-}
+					}
                 }
 
                 obj["type"] = null;
@@ -84,10 +104,11 @@ namespace Archipelago.MultiClient.Net.Converters
             return obj.ToObject<PrintJsonPacket>();
         }
 
-#if NET35
+
         static bool EnumTryParse<TEnum>(string value, out TEnum result) where TEnum : struct, IConvertible
         {
-            if (value == null || !Enum.IsDefined(typeof(TEnum), value))
+#if NET35
+			if (value == null || !Enum.IsDefined(typeof(TEnum), value))
             {
                 result = default;
                 return false;
@@ -95,9 +116,12 @@ namespace Archipelago.MultiClient.Net.Converters
 
             result = (TEnum)Enum.Parse(typeof(TEnum), value);
             return true;
-        }
+#else
+	        return Enum.TryParse(value, out result);
 #endif
+        }
 
-        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer) => throw new NotImplementedException();
+
+		public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer) => throw new NotImplementedException();
     }
 }

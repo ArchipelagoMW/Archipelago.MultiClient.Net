@@ -4,7 +4,10 @@ using System;
 
 namespace Archipelago.MultiClient.Net
 {
-    public static class ArchipelagoSessionFactory
+	/// <summary>
+	/// Factory to initiate a new ArchipelagoSession, the base object to communicate with an Archipelago Server
+	/// </summary>
+	public static class ArchipelagoSessionFactory
     {
         /// <summary>
         ///     Creates an <see cref="ArchipelagoSession"/> object which facilitates all communication to the Archipelago server.
@@ -15,11 +18,11 @@ namespace Archipelago.MultiClient.Net
         public static ArchipelagoSession CreateSession(Uri uri)
         {
             var socket = new ArchipelagoSocketHelper(uri);
-            var dataPackageCache = new DataPackageFileSystemCache(socket);
+            var dataPackageCache = new DataPackageCache(socket);
             var locations = new LocationCheckHelper(socket, dataPackageCache);
             var items = new ReceivedItemsHelper(socket, locations, dataPackageCache);
             var players = new PlayerHelper(socket);
-            var roomState = new RoomStateHelper(socket);
+            var roomState = new RoomStateHelper(socket, locations);
             var connectionInfo = new ConnectionInfoHelper(socket);
             var dataStorage = new DataStorageHelper(socket, connectionInfo);
             var messageLog = new MessageLogHelper(socket, items, locations, players, connectionInfo);
@@ -44,9 +47,9 @@ namespace Archipelago.MultiClient.Net
         {
 	        var uri = hostname;
 
-	        if (!uri.StartsWith("ws://") && !uri.StartsWith("wss://"))
-		        uri = "ws://" + uri;
-			if (!uri.Substring(4).Contains(":"))
+			if (!uri.StartsWith("ws://") && !uri.StartsWith("wss://"))
+		        uri = "unspecified://" + uri;
+			if (!uri.Substring(uri.IndexOf("://", StringComparison.Ordinal) + 3).Contains(":"))
 		        uri += $":{port}";
 	        if (uri.EndsWith(":"))
 		        uri += port;

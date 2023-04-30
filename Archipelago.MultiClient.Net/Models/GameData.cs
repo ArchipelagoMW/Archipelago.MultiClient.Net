@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 
 namespace Archipelago.MultiClient.Net.Models
@@ -11,7 +12,11 @@ namespace Archipelago.MultiClient.Net.Models
         [JsonProperty("item_name_to_id")]
         public Dictionary<string, long> ItemLookup { get; set; } = new Dictionary<string, long>();
 
+		[Obsolete("use Checksum instead")]
         [JsonProperty("version")]
         public int Version { get; set; }
-    }
+
+        [JsonProperty("checksum")]
+        public string Checksum { get; set; }
+	}
 }
