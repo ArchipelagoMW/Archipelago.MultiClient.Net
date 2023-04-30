@@ -8,19 +8,18 @@ using System.Linq;
 
 namespace Archipelago.MultiClient.Net.Helpers
 {
-    /// <summary>
-    /// Helper class to easy subscribe to log messages send by the server to the client
-    /// </summary>
+	/// <summary>
+	/// Allows clients to easily subscribe to incoming messages and helps formulating those messages correctly
+	/// </summary>
     public class MessageLogHelper
     {
 	    /// <inheritdoc />
-	    public delegate void MessageReceivedHandler(LogMessage message);
-		/// <summary>
-		/// Event handler for informational text messages send by the server to the client
-		/// These message are of the base type LogMessage but can be any of type that inherits LogMessage
-		/// Different messages types can contain different additional properties
-		/// </summary>
-		public event MessageReceivedHandler OnMessageReceived;
+		public delegate void MessageReceivedHandler(LogMessage message);
+
+        /// <summary>
+        /// Triggered for each message that should be presented to the player
+        /// </summary>
+        public event MessageReceivedHandler OnMessageReceived;
 
         readonly IReceivedItemsHelper items;
         readonly ILocationCheckHelper locations;

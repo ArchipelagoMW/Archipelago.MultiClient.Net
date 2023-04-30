@@ -15,7 +15,15 @@ namespace Archipelago.MultiClient.Net.BounceFeatures.DeathLink
 
         DeathLink lastSendDeathLink;
 
+        /// <summary>
+        /// Creates <see cref="OnDeathLinkReceived"/> event for clients to hook into and decide what to do with the
+        /// received <see cref="DeathLink"/>
+        /// </summary>
         public delegate void DeathLinkReceivedHandler(DeathLink deathLink);
+        /// <summary>
+        /// Delegate event that supplies the created <see cref="DeathLink"/> whenever one is received from the server
+        /// as a bounce packet.
+        /// </summary>
         public event DeathLinkReceivedHandler OnDeathLinkReceived;
 
         internal DeathLinkService(IArchipelagoSocketHelper socket, IConnectionInfoProvider connectionInfoProvider)
@@ -73,6 +81,10 @@ namespace Archipelago.MultiClient.Net.BounceFeatures.DeathLink
             socket.SendPacketAsync(bouncePacket);
         }
 
+        /// <summary>
+        /// Adds "DeathLink" to your <see cref="ArchipelagoSession"/>'s tags and opts you in to receiving
+        /// <see cref="OnDeathLinkReceived"/> events
+        /// </summary>
         public void EnableDeathLink()
         {
             if (Array.IndexOf(connectionInfoProvider.Tags, "DeathLink") == -1)
@@ -80,6 +92,10 @@ namespace Archipelago.MultiClient.Net.BounceFeatures.DeathLink
                     connectionInfoProvider.Tags.Concat(new[] { "DeathLink" }).ToArray());
         }
 
+        /// <summary>
+        /// Removes the "DeathLink" tag from your <see cref="ArchipelagoSession"/> and opts out of further
+        /// <see cref="OnDeathLinkReceived"/> events
+        /// </summary>
         public void DisableDeathLink()
         {
             if (Array.IndexOf(connectionInfoProvider.Tags, "DeathLink") == -1)
