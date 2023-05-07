@@ -43,7 +43,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         ///     Does not emit a ping to determine if the connection is stable.
         /// </summary>
         public bool Connected => webSocket != null &&
-	        webSocket.ReadyState == WebSocketState.Open || webSocket.ReadyState == WebSocketState.Closing;
+	        (webSocket.ReadyState == WebSocketState.Open || webSocket.ReadyState == WebSocketState.Closing);
 
         internal WebSocket webSocket;
 
