@@ -331,7 +331,7 @@ var text = (string)obj["Text"]; //Get value for anonymous object key `Text`
 
 ## Message Logging
 
-The Archipelago server can send messages to client to be displayed on screen as sort of a log, this is done by handling the `PrintPacket` and `PrintJsonPacket` packets. This library simplifies this process into a single handler for you to handle both kinds of messages.
+The Archipelago server can send messages to client to be displayed on screen as sort of a log, this is done by handling the `PrintJsonPacket` packets. This library simplifies this process into a single handler for you to handle.
 ```csharp
 var session = ArchipelagoSessionFactory.CreateSession("localhost", 38281);
 session.MessageLog.OnMessageReceived += OnMessageReceived;
@@ -350,18 +350,16 @@ static void OnMessageReceived(LogMessage message)
 {
 	switch (message)
 	{
-		case ItemSendLogMessage itemSendLogMessage: 
-			var receiver = itemSendLogMessage.ReceivingPlayerSlot;
-
-			var sender = itemSendLogMessage.SendingPlayerSlot;
-			var networkItem = itemSendLogMessage.Item;
-			break;
 		case ItemHintLogMessage hintLogMessage:
-			var receiver = itemSendLogMessage.ReceivingPlayerSlot;
-
-			var sender = itemSendLogMessage.SendingPlayerSlot;
+			var receiver = itemSendLogMessage.Receiver;
+			var sender = itemSendLogMessage.Sender;
 			var networkItem = itemSendLogMessage.Item;
 			var found = hintLogMessage.IsFound;
+			break;
+		case ItemSendLogMessage itemSendLogMessage: 
+			var receiver = itemSendLogMessage.Receiver;
+			var sender = itemSendLogMessage.Sender;
+			var networkItem = itemSendLogMessage.Item;
 			break;
 	}
 	DisplayOnScreen(message.ToString());
