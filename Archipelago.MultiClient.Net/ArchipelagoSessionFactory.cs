@@ -9,15 +9,16 @@ namespace Archipelago.MultiClient.Net
 	/// </summary>
 	public static class ArchipelagoSessionFactory
     {
-        /// <summary>
-        ///     Creates an <see cref="ArchipelagoSession"/> object which facilitates all communication to the Archipelago server.
-        /// </summary>
-        /// <param name="uri">
-        ///     The full URI to the Archipelago server, including scheme, hostname, and port.
-        /// </param>
-        public static ArchipelagoSession CreateSession(Uri uri)
+		/// <summary>
+		///     Creates an <see cref="ArchipelagoSession"/> object which facilitates all communication to the Archipelago server.
+		/// </summary>
+		/// <param name="uri">
+		///     The full URI to the Archipelago server, including scheme, hostname, and port.
+		/// </param>
+		/// <param name="clientWebSocketFactory">Optionally, provide a custom client websocket implementation</param>
+		public static ArchipelagoSession CreateSession(Uri uri, Func<Uri, IClientWebSocket> clientWebSocketFactory = null)
         {
-            var socket = new ArchipelagoSocketHelper(uri);
+			var socket = new ArchipelagoSocketHelper(uri, clientWebSocketFactory);
             var dataPackageCache = new DataPackageCache(socket);
             var locations = new LocationCheckHelper(socket, dataPackageCache);
             var items = new ReceivedItemsHelper(socket, locations, dataPackageCache);
@@ -41,7 +42,9 @@ namespace Archipelago.MultiClient.Net
 		///     (Optional) The port number which the Archipelago server is hosted on. Defaults to: 38281,
 		///			will be ignored if the port is added to the hostname
 		/// </param>
-		public static ArchipelagoSession CreateSession(string hostname, int port = 38281) => CreateSession(ParseUri(hostname, port));
+		/// <param name="clientWebSocketFactory">Optionally, provide a custom client websocket implementation</param>
+		public static ArchipelagoSession CreateSession(string hostname, int port = 38281,
+			Func<Uri, IClientWebSocket> clientWebSocketFactory = null) => CreateSession(ParseUri(hostname, port), clientWebSocketFactory);
 
         internal static Uri ParseUri(string hostname, int port)
         {

@@ -47,7 +47,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 
         internal WebSocket webSocket;
 
-        internal ArchipelagoSocketHelper(Uri hostUrl)
+        internal ArchipelagoSocketHelper(Uri hostUrl, Func<Uri, IClientWebSocket> clientWebSocketFactory)
         {
 	        Uri = hostUrl;
         }

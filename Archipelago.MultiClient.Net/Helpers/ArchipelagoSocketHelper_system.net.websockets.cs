@@ -43,22 +43,28 @@ namespace Archipelago.MultiClient.Net.Helpers
         ///     Returns true if the socket believes it is connected to the host.
         ///     Does not emit a ping to determine if the connection is stable.
         /// </summary>
-        public bool Connected => webSocket.State == WebSocketState.Open || webSocket.State == WebSocketState.CloseReceived;
+        //public bool Connected => webSocket.State == WebSocketState.Open || webSocket.State == WebSocketState.CloseReceived;
+        public bool Connected => webSocket != null && webSocket.Connected;
 
-        internal ClientWebSocket webSocket;
+		//internal ClientWebSocket webSocket;
 
-        internal ArchipelagoSocketHelper(Uri hostUri)
+		IClientWebSocket webSocket;
+
+		Func<Uri, IClientWebSocket> webSocketFactory;
+
+		internal ArchipelagoSocketHelper(Uri hostUri, Func<Uri, IClientWebSocket> clientWebSocketFactory)
         {
             Uri = hostUri;
-            webSocket = new ClientWebSocket();
-#if NET45
+            webSocketFactory = clientWebSocketFactory;
+            //webSocket = new ClientWebSocket();
+/*#if NET45
 	        var Tls13 = (SecurityProtocolType)12288;
-	        System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | Tls13;
+	        ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | Tls13;
 #endif
 #if NET6_0
             webSocket.Options.DangerousDeflateOptions = new WebSocketDeflateOptions();
-#endif
-		}
+#endif*/
+        }
 
         /// <summary>
         ///     Initiates a connection to the host asynchronously.
@@ -269,13 +275,13 @@ namespace Archipelago.MultiClient.Net.Helpers
             if (!packetList.Any())
                 return;
 
-            if (webSocket.State != WebSocketState.Open)
+            if (!webSocket.Connected)
                 throw new ArchipelagoSocketClosedException();
             
             var packets = packetList.ToArray();
             
             var packetAsJson = JsonConvert.SerializeObject(packets);
-            var messageBuffer = Encoding.UTF8.GetBytes(packetAsJson);
+            /*var messageBuffer = Encoding.UTF8.GetBytes(packetAsJson);
             var messagesCount = (int)Math.Ceiling((double)messageBuffer.Length / SendChunkSize);
 
             for (var i = 0; i < messagesCount; i++)
@@ -289,7 +295,9 @@ namespace Archipelago.MultiClient.Net.Helpers
 
                 await webSocket.SendAsync(new ArraySegment<byte>(messageBuffer, offset, count), 
 	                WebSocketMessageType.Text, lastMessage, CancellationToken.None);
-            }
+            }*/
+
+            await webSocket.SendAsync(packetAsJson);
 
             foreach (var task in tasks)
                 task.TrySetResult(true);

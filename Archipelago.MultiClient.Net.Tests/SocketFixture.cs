@@ -26,7 +26,7 @@ namespace Archipelago.MultiClient.Net.Tests
 			var socketIsOpen = false;
 			var errors = "";
 
-			var socket = new ArchipelagoSocketHelper(new Uri(server));
+			var socket = new ArchipelagoSocketHelper(new Uri(server), null);
 
 			socket.SocketClosed += (reason) => errors += $"Socket closed: {reason}";
 			socket.ErrorReceived += (sender, error) => errors += $"Socket error received: {error}";
@@ -58,7 +58,7 @@ namespace Archipelago.MultiClient.Net.Tests
 			var errors = "";
 			string closedMsg = null;
 
-			var socket = new ArchipelagoSocketHelper(new Uri("wss://notaurl.gg:10000"));
+			var socket = new ArchipelagoSocketHelper(new Uri("wss://notaurl.gg:10000"), null);
 
 			socket.SocketClosed += (reason) => closedMsg = reason;
 			socket.ErrorReceived += (sender, error) => errors += $"Socket error received: {error}";
@@ -98,7 +98,7 @@ namespace Archipelago.MultiClient.Net.Tests
 			var errors = "";
 			string closedMsg = null;
 
-			var socket = new ArchipelagoSocketHelper(new Uri("ws://archipelago.gg:1"));
+			var socket = new ArchipelagoSocketHelper(new Uri("ws://archipelago.gg:1"), null);
 
 			socket.SocketClosed += (reason) => closedMsg = reason;
 			socket.ErrorReceived += (sender, error) => errors += $"Socket error received: {error}";
