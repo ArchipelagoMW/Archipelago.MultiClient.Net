@@ -4,7 +4,7 @@
 using System.Threading.Tasks;
 #endif
 
-namespace Archipelago.MultiClient.Net.Helpers
+namespace Archipelago.MultiClient.Net.WebSockets
 {
 	/// <summary>
 	/// Interface of basic low level websocket, allow custom implementation of websockets to be created uses 3rd party libaries
@@ -43,7 +43,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 		/// blocking method to connect to the host, the uri to connect to was provided in the constructor
 		/// </summary>
 		/// <exception cref="Exception">An exception is thrown if connecting fails</exception>
-		void Connect();
+		void Connect(Uri uri);
 		/// <summary>
 		/// blocking method to disconnect from the host
 		/// </summary>
@@ -60,7 +60,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 		/// Non blocking method to connect to the host, the uri to connect to was provided in the constructor
 		/// </summary>
 		/// <returns>a Task that should complete when either the connection is established and Connected returns true or connecting failed</returns>
-		Task ConnectAsync();
+		Task ConnectAsync(Uri uri);
 		/// <summary>
 		/// Non blocking method to disconnect from the host
 		/// </summary>

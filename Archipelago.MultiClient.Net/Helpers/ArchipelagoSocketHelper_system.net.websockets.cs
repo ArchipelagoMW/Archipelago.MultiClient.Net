@@ -2,6 +2,7 @@
 using Archipelago.MultiClient.Net.Converters;
 using Archipelago.MultiClient.Net.Exceptions;
 using Archipelago.MultiClient.Net.Extensions;
+using Archipelago.MultiClient.Net.WebSockets;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Concurrent;

@@ -1,5 +1,6 @@
 ﻿using Archipelago.MultiClient.Net.Cache;
 using Archipelago.MultiClient.Net.Helpers;
+using Archipelago.MultiClient.Net.WebSockets;
 using System;
 
 namespace Archipelago.MultiClient.Net

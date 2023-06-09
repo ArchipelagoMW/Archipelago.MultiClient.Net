@@ -18,12 +18,10 @@ namespace Archipelago.MultiClient.Net.WebSockets
 		const int ReceiveChunkSize = 1024;
 		const int SendChunkSize = 1024;
 
-		Uri uri;
 		ClientWebSocket webSocket;
 
-		public SystemNetWebsocket(Uri hostUri)
+		public SystemNetWebsocket()
 		{
-			uri = hostUri;
 			webSocket = new ClientWebSocket();
 #if NET45
 			var Tls13 = (SecurityProtocolType)12288;
@@ -36,7 +34,7 @@ namespace Archipelago.MultiClient.Net.WebSockets
 		
 		public bool Connected => webSocket.State == WebSocketState.Open || webSocket.State == WebSocketState.CloseReceived;
 
-		public async Task ConnectAsync()
+		public async Task ConnectAsync(Uri uri)
 		{
 			await webSocket.ConnectAsync(uri, CancellationToken.None);
 		}
