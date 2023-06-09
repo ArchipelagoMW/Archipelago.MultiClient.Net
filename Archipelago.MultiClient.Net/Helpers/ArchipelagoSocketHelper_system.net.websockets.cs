@@ -31,8 +31,8 @@ namespace Archipelago.MultiClient.Net.Helpers
         public event ArchipelagoSocketHelperDelagates.SocketClosedHandler SocketClosed;
         public event ArchipelagoSocketHelperDelagates.SocketOpenedHandler SocketOpened;
 
-        readonly ConcurrentQueue<Tuple<ArchipelagoPacketBase, TaskCompletionSource<bool>>> sendQueue =
-	        new ConcurrentQueue<Tuple<ArchipelagoPacketBase, TaskCompletionSource<bool>>>();
+        readonly BlockingCollection<Tuple<ArchipelagoPacketBase, TaskCompletionSource<bool>>> sendQueue =
+	        new BlockingCollection<Tuple<ArchipelagoPacketBase, TaskCompletionSource<bool>>>();
 
         /// <summary>
         ///     The URL of the host that the socket is connected to.
@@ -250,7 +250,7 @@ namespace Archipelago.MultiClient.Net.Helpers
             var task = new TaskCompletionSource<bool>();
 
             foreach (var packet in packets)
-                sendQueue.Enqueue(new Tuple<ArchipelagoPacketBase, TaskCompletionSource<bool>>(packet, task));
+                sendQueue.Add(new Tuple<ArchipelagoPacketBase, TaskCompletionSource<bool>>(packet, task));
 
             return task.Task;
         }
@@ -260,7 +260,10 @@ namespace Archipelago.MultiClient.Net.Helpers
             var packetList = new List<ArchipelagoPacketBase>();
             var tasks = new List<TaskCompletionSource<bool>>();
 
-            while (sendQueue.TryDequeue(out var packetTuple))
+            var firstPacketTuple = sendQueue.Take();
+            packetList.Add(firstPacketTuple.Item1);
+            tasks.Add(firstPacketTuple.Item2);
+            while (sendQueue.TryTake(out var packetTuple))
             {
                 packetList.Add(packetTuple.Item1);
                 tasks.Add(packetTuple.Item2);
