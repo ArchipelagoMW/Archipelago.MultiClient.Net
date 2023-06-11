@@ -2,9 +2,9 @@ name: Build Solution
 
 on:
   push:
-    branches: [ main, V4_development ]
+    branches: [ main ]
   pull_request:
-    branches: [ main, V4_development ]
+    branches: [ main ]
 
 jobs:
   build:
@@ -35,6 +35,9 @@ jobs:
 
     - name: Run Tests (.net 4.0)
       run: dotnet test Archipelago.MultiClient.Net.Tests/bin/Release/net472/Archipelago.MultiClient.Net.Tests.dll -l "trx;LogFileName=TestResults_net40.trx"
+
+    - name: Run Tests (.net 4.5)
+      run: dotnet test Archipelago.MultiClient.Net.Tests/bin/Release/net47/Archipelago.MultiClient.Net.Tests.dll -l "trx;LogFileName=TestResults_net45.trx"
 
     - name: Run Tests (.net standard 2.0)
       run: dotnet test Archipelago.MultiClient.Net.Tests/bin/Release/net48/Archipelago.MultiClient.Net.Tests.dll -l "trx;LogFileName=TestResults_standard20.trx"

@@ -144,9 +144,15 @@ namespace Archipelago.MultiClient.Net.Helpers
 
                 if (result.MessageType == WebSocketMessageType.Close)
                 {
-                    await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, CancellationToken.None);
-
-                    OnSocketClosed();
+	                try
+	                {
+		                await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, CancellationToken.None);
+	                }
+	                catch
+	                {
+	                }
+					
+					OnSocketClosed();
                 }
                 else
                 {
