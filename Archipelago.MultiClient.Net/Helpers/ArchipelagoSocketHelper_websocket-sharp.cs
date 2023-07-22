@@ -154,7 +154,7 @@ namespace Archipelago.MultiClient.Net.Helpers
             if (webSocket != null && webSocket.IsAlive)
                 webSocket.CloseAsync();
             else
-                disconnectAsyncTask.SetResult(false);
+                disconnectAsyncTask.TrySetResult(false);
 
             return disconnectAsyncTask.Task;
         }
@@ -327,9 +327,9 @@ namespace Archipelago.MultiClient.Net.Helpers
                 var packetAsJson = JsonConvert.SerializeObject(packets);
                 webSocket.SendAsync(packetAsJson, success => {
                     if (!success)
-                        taskCompletionSource.SetException(new Exception("Failed to send packets async"));
+                        taskCompletionSource.TrySetException(new Exception("Failed to send packets async"));
                     else
-                        taskCompletionSource.SetResult(true);
+                        taskCompletionSource.TrySetResult(true);
                 });
 
                 if (PacketsSent != null)
@@ -337,7 +337,7 @@ namespace Archipelago.MultiClient.Net.Helpers
             }
             else
             {
-                taskCompletionSource.SetException(new ArchipelagoSocketClosedException());
+                taskCompletionSource.TrySetException(new ArchipelagoSocketClosedException());
             }
 
             return taskCompletionSource.Task;
@@ -348,7 +348,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         {
 #if !NET35
             if (connectAsyncTask != null)
-                connectAsyncTask.SetResult(true);
+                connectAsyncTask.TrySetResult(true);
 #endif
             
             if (SocketOpened != null)
@@ -359,7 +359,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         {
 #if !NET35
             if (disconnectAsyncTask != null)
-                disconnectAsyncTask.SetResult(true);
+                disconnectAsyncTask.TrySetResult(true);
 #endif
 			if (Uri.Scheme == "unspecified" && sender == webSocket && webSocket.Url.Scheme == "wss")
 				return; //we ignore the first connection failure for unspecified protocol

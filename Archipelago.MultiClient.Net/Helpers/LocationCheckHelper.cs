@@ -116,7 +116,7 @@ namespace Archipelago.MultiClient.Net.Helpers
                     if (awaitingLocationInfoPacket)
                     {
                         if (locationInfoPacketCallbackTask != null)
-                            locationInfoPacketCallbackTask.SetResult(locationInfoPacket);
+                            locationInfoPacketCallbackTask.TrySetResult(locationInfoPacket);
 
                         awaitingLocationInfoPacket = false;
                         locationInfoPacketCallbackTask = null;

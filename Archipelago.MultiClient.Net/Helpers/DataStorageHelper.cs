@@ -56,7 +56,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 #else
                         if (asyncRetrievalTasks.TryGetValue(data.Key, out var asyncRetrievalTask))
                         {
-                            asyncRetrievalTask.SetResult(data.Value);
+                            asyncRetrievalTask.TrySetResult(data.Value);
 
                             asyncRetrievalTasks.Remove(data.Key);
                         }

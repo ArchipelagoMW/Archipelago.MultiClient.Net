@@ -218,7 +218,7 @@ namespace Archipelago.MultiClient.Net
 			if (!roomInfoPacketTask.Task.IsCompleted)
             {
                 loginResultTask = new TaskCompletionSource<LoginResult>();
-                loginResultTask.SetResult(new LoginFailure("You are not connected, run ConnectAsync() first"));
+                loginResultTask.TrySetResult(new LoginFailure("You are not connected, run ConnectAsync() first"));
                 return loginResultTask.Task;
             }
 
@@ -230,7 +230,7 @@ namespace Archipelago.MultiClient.Net
             }
             catch (ArchipelagoSocketClosedException)
             {
-                loginResultTask.SetResult(new LoginFailure("You are not connected, run ConnectAsync() first"));
+                loginResultTask.TrySetResult(new LoginFailure("You are not connected, run ConnectAsync() first"));
                 return loginResultTask.Task;
             }
 
