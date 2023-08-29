@@ -268,9 +268,10 @@ namespace Archipelago.MultiClient.Net.Tests
 				    (p, key, value) => p.Key == key && p.Operations[0].Value.Type == JTokenType.Integer && (int)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Max),
 				new CompoundAssignmentTest<int>("Inplace Minimum", 10, (sut, key, value) => sut[key] >>= value,
 				    (p, key, value) => p.Key == key && p.Operations[0].Value.Type == JTokenType.Integer && (int)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Min),
-
+#if !NET471
 				new CompoundAssignmentTest<BigInteger>("Inplace Addition", BigInteger.Parse("9223372036854775808"), (sut, key, value) => sut[key] += value,
 					(p, key, value) => p.Key == key && p.Operations[0].Value.Type == JTokenType.Integer && p.Operations[0].Value.ToString() == "9223372036854775808" && p.Operations[0].OperationType == OperationType.Add),
+#endif
 			};
 
         [TestCaseSource(nameof(CompoundAssignmentTests))]
