@@ -8,6 +8,7 @@ using System.Linq;
 
 #if !NET35
 using System.Threading.Tasks;
+using System.Numerics;
 #endif
 
 namespace Archipelago.MultiClient.Net.Models
@@ -48,7 +49,7 @@ namespace Archipelago.MultiClient.Net.Models
             Operations.Add(new OperationSpecification { OperationType = operationType, Value = value });
             Callbacks = source.Callbacks;
         }
-        internal DataStorageElement(DataStorageElement source, Callback callback) : this(source.Context)
+		internal DataStorageElement(DataStorageElement source, Callback callback) : this(source.Context)
         {
             Operations = source.Operations.ToList();
             Callbacks = source.Callbacks;
@@ -56,10 +57,16 @@ namespace Archipelago.MultiClient.Net.Models
         }
 
 #pragma warning disable CS1591
+#if !NET35
+	    public static DataStorageElement operator +(DataStorageElement a, int b) => new DataStorageElement(a, OperationType.Add, b);
+	    public static DataStorageElement operator +(DataStorageElement a, long b) => new DataStorageElement(a, OperationType.Add, b);
+	    public static DataStorageElement operator +(DataStorageElement a, BigInteger b) => new DataStorageElement(a, OperationType.Add, JToken.Parse(b.ToString()));
+#endif
+
 		public static DataStorageElement operator ++(DataStorageElement a) => new DataStorageElement(a, OperationType.Add, 1);
         public static DataStorageElement operator --(DataStorageElement a) => new DataStorageElement(a, OperationType.Add, -1);
         public static DataStorageElement operator +(DataStorageElement a, JToken b) => new DataStorageElement(a, OperationType.Add, b);
-        public static DataStorageElement operator +(DataStorageElement a, IEnumerable b) => new DataStorageElement(a, OperationType.Add, JArray.FromObject(b));
+		public static DataStorageElement operator +(DataStorageElement a, IEnumerable b) => new DataStorageElement(a, OperationType.Add, JArray.FromObject(b));
         public static DataStorageElement operator +(DataStorageElement a, OperationSpecification s) => new DataStorageElement(a, s.OperationType, s.Value);
         public static DataStorageElement operator +(DataStorageElement a, Callback c) => new DataStorageElement(a, c);
         public static DataStorageElement operator *(DataStorageElement a, JToken b) => new DataStorageElement(a, OperationType.Mul, b);
