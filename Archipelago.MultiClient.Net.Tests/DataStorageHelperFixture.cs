@@ -270,8 +270,21 @@ namespace Archipelago.MultiClient.Net.Tests
 				    (p, key, value) => p.Key == key && p.Operations[0].Value.Type == JTokenType.Integer && (int)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Min),
 
 #if !NET471
+	            new CompoundAssignmentTest<BigInteger>("Assignment", BigInteger.Parse("9223372036854775808"), (sut, key, value) => sut[key] = value,
+		            (p, key, value) => p.Key == key && p.Operations[0].Value.Type == JTokenType.Integer && p.Operations[0].Value.ToString() == "9223372036854775808" && p.Operations[0].OperationType == OperationType.Replace),
 				new CompoundAssignmentTest<BigInteger>("Inplace Addition", BigInteger.Parse("9223372036854775808"), (sut, key, value) => sut[key] += value,
 					(p, key, value) => p.Key == key && p.Operations[0].Value.Type == JTokenType.Integer && p.Operations[0].Value.ToString() == "9223372036854775808" && p.Operations[0].OperationType == OperationType.Add),
+				new CompoundAssignmentTest<BigInteger>("Inplace Subtraction", BigInteger.Parse("9223372036854775808"), (sut, key, value) => sut[key] -= value,
+					(p, key, value) => p.Key == key && p.Operations[0].Value.Type == JTokenType.Integer && p.Operations[0].Value.ToString() == "-9223372036854775808" && p.Operations[0].OperationType == OperationType.Add),
+				new CompoundAssignmentTest<BigInteger>("Inplace Multiplication", BigInteger.Parse("9223372036854775808"), (sut, key, value) => sut[key] *= value,
+					(p, key, value) => p.Key == key && p.Operations[0].Value.Type == JTokenType.Integer && p.Operations[0].Value.ToString() == "9223372036854775808" && p.Operations[0].OperationType == OperationType.Mul),
+				// 1 / BigInterger is not posiable in c# unless we get super creative with math
+				//new CompoundAssignmentTest<BigInteger>("Inplace Division", BigInteger.Parse("9223372036854775808"), (sut, key, value) => sut[key] /= value,
+				//	(p, key, value) => p.Key == key && p.Operations[0].Value.Type == JTokenType.Integer && p.Operations[0].Value.ToString() == "9223372036854775808" && p.Operations[0].OperationType == OperationType.Mul),
+				new CompoundAssignmentTest<BigInteger>("Inplace Modulus", BigInteger.Parse("9223372036854775808"), (sut, key, value) => sut[key] %= value,
+					(p, key, value) => p.Key == key && p.Operations[0].Value.Type == JTokenType.Integer && p.Operations[0].Value.ToString() == "9223372036854775808" && p.Operations[0].OperationType == OperationType.Mod),
+				new CompoundAssignmentTest<BigInteger>("Inplace Exponentiation", BigInteger.Parse("9223372036854775808"), (sut, key, value) => sut[key] ^= value,
+					(p, key, value) => p.Key == key && p.Operations[0].Value.Type == JTokenType.Integer && p.Operations[0].Value.ToString() == "9223372036854775808" && p.Operations[0].OperationType == OperationType.Pow),
 #endif
 			};
 
@@ -291,7 +304,37 @@ namespace Archipelago.MultiClient.Net.Tests
             socket.Received().SendPacketAsync(Arg.Is<SetPacket>(p => validatePacket(p, "Key", value) && p.Operations.Length == 1));
         }
 
-        public static TestCaseData[] AssignmentTests =>
+		public static TestCaseData[] CompoundAssignmentThrowsTests =>
+			new TestCaseData[] {
+				// Replace with propoer bitshifting
+				new CompoundAssignmentThrowsTest<int>("Inplace Maximum", 10, (sut, key, value) => sut[key] <<= value,
+					new InvalidOperationException("DataStorage[Key] << value is nolonger supported, Use + Operation.Min(value) instead")),
+				new CompoundAssignmentThrowsTest<int>("Inplace Minimum", 10, (sut, key, value) => sut[key] >>= value,
+					new InvalidOperationException("DataStorage[Key] >> value is nolonger supported, Use + Operation.Max(value) instead")),
+#if !NET471
+				// 1 / BigInterger is not posiable in c# unless we get super creative with math
+				new CompoundAssignmentThrowsTest<BigInteger>("Inplace Division", BigInteger.Parse("9223372036854775808"), (sut, key, value) => sut[key] /= value,
+					new InvalidOperationException("DataStorage[Key] / BitInterger is not supported, due to loss of pricision when using interger division")),
+#endif
+	};
+
+		[TestCaseSource(nameof(CompoundAssignmentThrowsTests))]
+        public void Should_throw_on_unsupported_Assignment_correctly<T>(
+	        T value, Action<DataStorageHelper, string, T> action,
+	        Exception expectedException)
+        {
+	        var socket = Substitute.For<IArchipelagoSocketHelper>();
+	        var connectionInfo = Substitute.For<IConnectionInfoProvider>();
+
+	        var sut = new DataStorageHelper(socket, connectionInfo);
+
+	        var thrownException = Assert.Throws(expectedException.GetType(), () => action(sut, "Key", value));
+			Assert.That(thrownException.Message, Is.EqualTo(expectedException.Message));
+			
+	        socket.DidNotReceive().SendPacket(Arg.Any<GetPacket>());
+        }
+
+		public static TestCaseData[] AssignmentTests =>
             new TestCaseData[] {
                 new AssignmentTest<int>("Addition", 30, (sut, key) => sut[key] + 5, 35),
                 new AssignmentTest<long>("Addition", 1000L, (sut, key) => sut[key] + 10L, 1010L),
@@ -984,7 +1027,19 @@ namespace Archipelago.MultiClient.Net.Tests
             }
         }
 
-        class AssignmentTest<T> : TestCaseData
+        class CompoundAssignmentThrowsTest<T> : TestCaseData
+        {
+	        public CompoundAssignmentThrowsTest(string type, T value, Action<DataStorageHelper, string, T> action, Exception expectedException)
+		        : base(value, action, expectedException)
+	        {
+		        if (value == null)
+			        TestName = $"{type} 'null' ({typeof(T)})";
+		        else
+			        TestName = $"{type} {value} ({typeof(T)})";
+	        }
+        }
+
+		class AssignmentTest<T> : TestCaseData
         {
             public AssignmentTest(string type, T baseValue, Func<DataStorageHelper, string, T> action, T expectedValue)
                 : base(baseValue, action, expectedValue)
