@@ -96,9 +96,9 @@ namespace Archipelago.MultiClient.Net.Models
         public static DataStorageElement operator /(DataStorageElement a, decimal b) => new DataStorageElement(a, OperationType.Mul, JToken.FromObject(1m / b));
         
 		[Obsolete("Use + Operation.Min() instead")]
-        public static DataStorageElement operator >>(DataStorageElement a, int b) => new DataStorageElement(a, OperationType.Min, b);
+        public static DataStorageElement operator >>(DataStorageElement a, int b) => throw new InvalidOperationException("DataStorage[Key] >> value is nolonger supported, Use + Operation.Max(value) instead");
         [Obsolete("Use + Operation.Max() instead")]
-		public static DataStorageElement operator <<(DataStorageElement a, int b) => new DataStorageElement(a, OperationType.Max, b);
+		public static DataStorageElement operator <<(DataStorageElement a, int b) => throw new InvalidOperationException("DataStorage[Key] << value is nolonger supported, Use + Operation.Min(value) instead");
 
 		public static implicit operator DataStorageElement(bool b) => new DataStorageElement(OperationType.Replace, b);
 		public static implicit operator DataStorageElement(int i) => new DataStorageElement(OperationType.Replace, i);
@@ -159,11 +159,93 @@ namespace Archipelago.MultiClient.Net.Models
 		public static DataStorageElement operator -(DataStorageElement a, BigInteger b) => new DataStorageElement(a, OperationType.Add, JToken.Parse((-b).ToString()));
 		public static DataStorageElement operator /(DataStorageElement a, BigInteger b) =>
 			throw new InvalidOperationException(
-				"DataStorage[Key] / BigInterger is not supported, due to loss of pricision when using interger division");
+				"DataStorage[Key] / BigInterger is not supported, due to loss of precision when using integer division");
 
 		public static implicit operator DataStorageElement(BigInteger bi) => new DataStorageElement(OperationType.Replace, JToken.Parse(bi.ToString()));
 
-		public static implicit operator BigInteger(DataStorageElement e) => new BigInteger(RetrieveAndReturnStringValue(e));
+		public static implicit operator BigInteger(DataStorageElement e) => RetrieveAndReturnBigIntegerValue<BigInteger>(e);
+		public static implicit operator BigInteger?(DataStorageElement e) => RetrieveAndReturnBigIntegerValue<BigInteger?>(e);
+		
+
+		static T RetrieveAndReturnBigIntegerValue<T>(DataStorageElement e)
+		{
+			if (e.cachedValue != null)
+			{
+				return BigInteger.TryParse(e.cachedValue.ToString(), out var cachedBigInteger)
+					? (T)Convert.ChangeType(cachedBigInteger, IsNullable<T>() ? Nullable.GetUnderlyingType(typeof(T)) : typeof(T))
+					: default;
+			}
+
+			var value = BigInteger.TryParse(e.Context.GetData(e.Context.Key).ToString(), out var parsedValue)
+				? parsedValue
+				: (BigInteger?)null;
+
+			if (!value.HasValue && !IsNullable<T>())
+				value = Activator.CreateInstance<BigInteger>();
+			
+			foreach (var operation in e.Operations)
+			{
+				var opperatorValue = BigInteger.Parse(operation.Value.ToString());
+				switch (operation.OperationType)
+				{ 
+					case OperationType.Replace:
+						value = opperatorValue;
+						break;
+
+					case OperationType.Add:
+						value += opperatorValue;
+						break;
+
+					case OperationType.Mul:
+						value *= opperatorValue;
+						break;
+
+					case OperationType.Mod:
+						value %= opperatorValue;
+						break;
+
+					case OperationType.Pow:
+						value = BigInteger.Pow(value.Value, (int)operation.Value);
+						break;
+
+					case OperationType.Max:
+						if (opperatorValue > value)
+							value = opperatorValue;
+						break;
+
+					case OperationType.Min:
+						if (opperatorValue < value)
+							value = opperatorValue;
+						break;
+
+					case OperationType.Xor:
+						value ^= opperatorValue;
+						break;
+
+					case OperationType.Or:
+						value |= opperatorValue;
+						break;
+
+					case OperationType.And:
+						value &= opperatorValue;
+						break;
+
+					case OperationType.LeftShift:
+						value <<= (int)operation.Value;
+						break;
+
+					case OperationType.RightShift:
+						value >>= (int)operation.Value;
+						break;
+				}
+			}
+
+			e.cachedValue = JToken.Parse(value.ToString());
+
+            return value.HasValue
+	            ? (T)Convert.ChangeType(value.Value, IsNullable<T>() ? Nullable.GetUnderlyingType(typeof(T)) : typeof(T))
+	            : default;
+		}
 #endif
 
 
@@ -311,7 +393,8 @@ namespace Archipelago.MultiClient.Net.Models
 				: default;
         }
 
-        static T RetrieveAndReturnDecimalValue<T>(DataStorageElement e)
+
+		static T RetrieveAndReturnDecimalValue<T>(DataStorageElement e)
         {
             if (e.cachedValue != null)
                 return e.cachedValue.ToObject<T>();

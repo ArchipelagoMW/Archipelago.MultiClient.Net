@@ -263,12 +263,6 @@ namespace Archipelago.MultiClient.Net.Tests
 				new CompoundAssignmentTest<OperationSpecification>("Inplace Addition", Operation.Min(10), (sut, key, value) => sut[key] += value,
 					(p, key, value) => p.Key == key && p.Operations[0].OperationType == OperationType.Min && p.Operations[0].Value == value.Value),
 
-				//TODO Remove
-				new CompoundAssignmentTest<int>("Inplace Maximum", 10, (sut, key, value) => sut[key] <<= value,
-				    (p, key, value) => p.Key == key && p.Operations[0].Value.Type == JTokenType.Integer && (int)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Max),
-				new CompoundAssignmentTest<int>("Inplace Minimum", 10, (sut, key, value) => sut[key] >>= value,
-				    (p, key, value) => p.Key == key && p.Operations[0].Value.Type == JTokenType.Integer && (int)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Min),
-
 #if !NET471
 	            new CompoundAssignmentTest<BigInteger>("Assignment", BigInteger.Parse("9223372036854775808"), (sut, key, value) => sut[key] = value,
 		            (p, key, value) => p.Key == key && p.Operations[0].Value.Type == JTokenType.Integer && p.Operations[0].Value.ToString() == "9223372036854775808" && p.Operations[0].OperationType == OperationType.Replace),
@@ -278,9 +272,6 @@ namespace Archipelago.MultiClient.Net.Tests
 					(p, key, value) => p.Key == key && p.Operations[0].Value.Type == JTokenType.Integer && p.Operations[0].Value.ToString() == "-9223372036854775808" && p.Operations[0].OperationType == OperationType.Add),
 				new CompoundAssignmentTest<BigInteger>("Inplace Multiplication", BigInteger.Parse("9223372036854775808"), (sut, key, value) => sut[key] *= value,
 					(p, key, value) => p.Key == key && p.Operations[0].Value.Type == JTokenType.Integer && p.Operations[0].Value.ToString() == "9223372036854775808" && p.Operations[0].OperationType == OperationType.Mul),
-				// 1 / BigInterger is not posiable in c# unless we get super creative with math
-				//new CompoundAssignmentTest<BigInteger>("Inplace Division", BigInteger.Parse("9223372036854775808"), (sut, key, value) => sut[key] /= value,
-				//	(p, key, value) => p.Key == key && p.Operations[0].Value.Type == JTokenType.Integer && p.Operations[0].Value.ToString() == "9223372036854775808" && p.Operations[0].OperationType == OperationType.Mul),
 				new CompoundAssignmentTest<BigInteger>("Inplace Modulus", BigInteger.Parse("9223372036854775808"), (sut, key, value) => sut[key] %= value,
 					(p, key, value) => p.Key == key && p.Operations[0].Value.Type == JTokenType.Integer && p.Operations[0].Value.ToString() == "9223372036854775808" && p.Operations[0].OperationType == OperationType.Mod),
 				new CompoundAssignmentTest<BigInteger>("Inplace Exponentiation", BigInteger.Parse("9223372036854775808"), (sut, key, value) => sut[key] ^= value,
@@ -314,7 +305,7 @@ namespace Archipelago.MultiClient.Net.Tests
 #if !NET471
 				// 1 / BigInterger is not posiable in c# unless we get super creative with math
 				new CompoundAssignmentThrowsTest<BigInteger>("Inplace Division", BigInteger.Parse("9223372036854775808"), (sut, key, value) => sut[key] /= value,
-					new InvalidOperationException("DataStorage[Key] / BitInterger is not supported, due to loss of pricision when using interger division")),
+					new InvalidOperationException("DataStorage[Key] / BigInterger is not supported, due to loss of precision when using integer division")),
 #endif
 	};
 
@@ -393,11 +384,10 @@ namespace Archipelago.MultiClient.Net.Tests
                 new AssignmentTest<int>("Minimum", 2, (sut, key) => sut[key] + Operation.Min(5), 2),
                 new AssignmentTest<int>("Minimum", 20, (sut, key) => sut[key] + Operation.Min(5), 5),
 
-				//TODO: Remove
-                new AssignmentTest<int>("Maximum", 2, (sut, key) => sut[key] << 5, 5),
-                new AssignmentTest<int>("Maximum", 20, (sut, key) => sut[key] << 5, 20),
-                new AssignmentTest<int>("Minimum", 2, (sut, key) => sut[key] >> 5, 2),
-                new AssignmentTest<int>("Minimum", 20, (sut, key) => sut[key] >> 5, 5),
+#if !NET471
+				//Beeg int 
+				//TODO Add
+#endif
 			};
 
         [TestCaseSource(nameof(AssignmentTests))]
@@ -417,7 +407,36 @@ namespace Archipelago.MultiClient.Net.Tests
             Assert.That(result, Is.EqualTo(expectedValue));
         }
 
-        [Test]
+		public static TestCaseData[] AssignmentThrowTests =>
+			new TestCaseData[] {
+				new AssignmentThrowTest<int>("Maximum", 2, (sut, key) => sut[key] << 5, 
+					new InvalidOperationException("DataStorage[Key] << value is nolonger supported, Use + Operation.Min(value) instead")),
+				new AssignmentThrowTest<int>("Maximum", 20, (sut, key) => sut[key] << 5,
+					new InvalidOperationException("DataStorage[Key] << value is nolonger supported, Use + Operation.Min(value) instead")),
+				new AssignmentThrowTest<int>("Minimum", 2, (sut, key) => sut[key] >> 5,
+					new InvalidOperationException("DataStorage[Key] >> value is nolonger supported, Use + Operation.Max(value) instead")),
+				new AssignmentThrowTest<int>("Minimum", 20, (sut, key) => sut[key] >> 5,
+					new InvalidOperationException("DataStorage[Key] >> value is nolonger supported, Use + Operation.Max(value) instead")),
+		};
+
+		[TestCaseSource(nameof(AssignmentThrowTests))]
+        public void Should_throw_Assignment_correctly<T>(T baseValue, Func<DataStorageHelper, string, T> action, Exception expectedException)
+        {
+	        var socket = Substitute.For<IArchipelagoSocketHelper>();
+	        var connectionInfo = Substitute.For<IConnectionInfoProvider>();
+
+	        var sut = new DataStorageHelper(socket, connectionInfo);
+
+	        Exception thrownException = default;
+
+	        ExecuteAsyncWithDelay(
+		        () => thrownException = Assert.Throws(expectedException.GetType(), () => action(sut, "Key")),
+		        () => RaiseRetrieved(socket, "Key", JToken.FromObject(baseValue)));
+
+			Assert.That(thrownException.Message, Is.EqualTo(expectedException.Message));
+		}
+
+		[Test]
         public void Should_throw_on_invalid_operation_on_string()
         {
             var socket = Substitute.For<IArchipelagoSocketHelper>();
@@ -1050,5 +1069,17 @@ namespace Archipelago.MultiClient.Net.Tests
 					TestName = $"{type} {baseValue} ({typeof(T)})";
             }
         }
-    }
+
+		class AssignmentThrowTest<T> : TestCaseData
+		{
+			public AssignmentThrowTest(string type, T baseValue, Func<DataStorageHelper, string, T> action, Exception expectedException)
+				: base(baseValue, action, expectedException)
+			{
+				if (baseValue == null)
+					TestName = $"{type} 'null' ({typeof(T)})";
+				else
+					TestName = $"{type} {baseValue} ({typeof(T)})";
+			}
+		}
+	}
 }
