@@ -10,9 +10,9 @@
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<RepositoryUrl>https://github.com/ArchipelagoMW/Archipelago.MultiClient.Net</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
-		<AssemblyVersion>5.0.6.0</AssemblyVersion>
-		<FileVersion>5.0.6.0</FileVersion>
-		<Version>5.0.6</Version>
+		<AssemblyVersion>6.0.0.0</AssemblyVersion>
+		<FileVersion>6.0.0.0</FileVersion>
+		<Version>6.0.0</Version>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageRequireLicenseAcceptance>False</PackageRequireLicenseAcceptance>
 		<PackageIcon>blue-icon.png</PackageIcon>
@@ -42,7 +42,7 @@
 		<None Include="..\README.md" Pack="true" PackagePath="\" />
 	</ItemGroup>
 
-	<ItemGroup Condition="'$(TargetFramework)' == 'net35' Or '$(TargetFramework)' == 'net40'">
+	<ItemGroup Condition="'$(TargetFramework)' == 'net35'">
 		<Reference Include="Newtonsoft.Json">
 			<HintPath>..\DLLs\net35\Newtonsoft.Json.dll</HintPath>
 		</Reference>
@@ -51,9 +51,18 @@
 		</Reference>
 	</ItemGroup>
 
+	<ItemGroup Condition="'$(TargetFramework)' == 'net40'">
+		<Reference Include="Newtonsoft.Json">
+			<HintPath>..\DLLs\net40\Newtonsoft.Json.dll</HintPath>
+		</Reference>
+		<Reference Include="websocket-sharp">
+			<HintPath>..\DLLs\websocket-sharp.dll</HintPath>
+		</Reference>
+	</ItemGroup>
+
 	<ItemGroup Condition="'$(TargetFramework)' == 'net45'">
 		<Reference Include="Newtonsoft.Json">
-			<HintPath>..\DLLs\net35\Newtonsoft.Json.dll</HintPath>
+			<HintPath>..\DLLs\net45\Newtonsoft.Json.dll</HintPath>
 		</Reference>
 	</ItemGroup>
 

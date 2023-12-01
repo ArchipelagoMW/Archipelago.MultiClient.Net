@@ -8,6 +8,7 @@ using NUnit.Framework;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
 using Callback = Archipelago.MultiClient.Net.Models.Callback;
@@ -72,43 +73,43 @@ namespace Archipelago.MultiClient.Net.Tests
 		public static TestCaseData[] CompoundAssignmentTests =>
             new TestCaseData[] {
 	            new CompoundAssignmentTest<bool>("Assignment", true, (sut, key, value) => sut[key] = value,
-		            (p, key, value) => p.Key == key && (bool)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Replace),
+		            (p, key, value) => p.Key == key && p.Operations[0].Value.Type == JTokenType.Boolean && (bool)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Replace),
 	            new CompoundAssignmentTest<bool?>("Assignment", true, (sut, key, value) => sut[key] = value,
-		            (p, key, value) => p.Key == key && (bool)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Replace),
+		            (p, key, value) => p.Key == key && p.Operations[0].Value.Type == JTokenType.Boolean && (bool)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Replace),
 	            new CompoundAssignmentTest<bool?>("Assignment", null, (sut, key, value) => sut[key] = value,
 		            (p, key, value) => p.Key == key && p.Operations[0].Value.Type == JTokenType.Null && p.Operations[0].OperationType == OperationType.Replace),
 				new CompoundAssignmentTest<int?>("Assignment", 30, (sut, key, value) => sut[key] = value,
-		            (p, key, value) => p.Key == key && (int)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Replace),
+		            (p, key, value) => p.Key == key && p.Operations[0].Value.Type == JTokenType.Integer && (int)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Replace),
 				new CompoundAssignmentTest<int>("Assignment", 30, (sut, key, value) => sut[key] = value,
-                    (p, key, value) => p.Key == key && (int)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Replace),
+                    (p, key, value) => p.Key == key && p.Operations[0].Value.Type == JTokenType.Integer && (int)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Replace),
 				new CompoundAssignmentTest<int?>("Assignment", null, (sut, key, value) => sut[key] = value,
 					(p, key, value) => p.Key == key && p.Operations[0].Value.Type == JTokenType.Null && p.Operations[0].OperationType == OperationType.Replace),
 				new CompoundAssignmentTest<long>("Assignment", 300L, (sut, key, value) => sut[key] = value,
-					(p, key, value) => p.Key == key && (long)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Replace),
+					(p, key, value) => p.Key == key && p.Operations[0].Value.Type == JTokenType.Integer && (long)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Replace),
 				new CompoundAssignmentTest<long?>("Assignment", 300L, (sut, key, value) => sut[key] = value,
-					(p, key, value) => p.Key == key && (long)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Replace),
+					(p, key, value) => p.Key == key && p.Operations[0].Value.Type == JTokenType.Integer && (long)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Replace),
 				new CompoundAssignmentTest<long?>("Assignment", null, (sut, key, value) => sut[key] = value,
 					(p, key, value) => p.Key == key && p.Operations[0].Value.Type == JTokenType.Null && p.Operations[0].OperationType == OperationType.Replace),
 				new CompoundAssignmentTest<decimal>("Assignment", 3.003m, (sut, key, value) => sut[key] = value,
-					(p, key, value) => p.Key == key && (decimal)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Replace),
+					(p, key, value) => p.Key == key && p.Operations[0].Value.Type == JTokenType.Float && (decimal)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Replace),
 				new CompoundAssignmentTest<decimal?>("Assignment", 3.003m, (sut, key, value) => sut[key] = value,
-					(p, key, value) => p.Key == key && (decimal)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Replace),
+					(p, key, value) => p.Key == key && p.Operations[0].Value.Type == JTokenType.Float && (decimal)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Replace),
 				new CompoundAssignmentTest<decimal?>("Assignment", null, (sut, key, value) => sut[key] = value,
 					(p, key, value) => p.Key == key && p.Operations[0].Value.Type == JTokenType.Null && p.Operations[0].OperationType == OperationType.Replace),
 				new CompoundAssignmentTest<double>("Assignment", 3.03d, (sut, key, value) => sut[key] = value,
-					(p, key, value) => p.Key == key && (double)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Replace),
+					(p, key, value) => p.Key == key && p.Operations[0].Value.Type == JTokenType.Float && (double)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Replace),
 				new CompoundAssignmentTest<double?>("Assignment", 3.03d, (sut, key, value) => sut[key] = value,
-					(p, key, value) => p.Key == key && (double)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Replace),
+					(p, key, value) => p.Key == key && p.Operations[0].Value.Type == JTokenType.Float && (double)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Replace),
 				new CompoundAssignmentTest<double?>("Assignment", null, (sut, key, value) => sut[key] = value,
 					(p, key, value) => p.Key == key && p.Operations[0].Value.Type == JTokenType.Null && p.Operations[0].OperationType == OperationType.Replace),
 				new CompoundAssignmentTest<float>("Assignment", 3f, (sut, key, value) => sut[key] = value,
-					(p, key, value) => p.Key == key && (float)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Replace),
+					(p, key, value) => p.Key == key && p.Operations[0].Value.Type == JTokenType.Float && (float)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Replace),
 				new CompoundAssignmentTest<float?>("Assignment", 3f, (sut, key, value) => sut[key] = value,
-					(p, key, value) => p.Key == key && (float)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Replace),
+					(p, key, value) => p.Key == key && p.Operations[0].Value.Type == JTokenType.Float && (float)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Replace),
 				new CompoundAssignmentTest<float?>("Assignment", null, (sut, key, value) => sut[key] = value,
 					(p, key, value) => p.Key == key && p.Operations[0].Value.Type == JTokenType.Null && p.Operations[0].OperationType == OperationType.Replace),
 				new CompoundAssignmentTest<string>("Assignment", "test", (sut, key, value) => sut[key] = value,
-				    (p, key, value) => p.Key == key && (string)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Replace),
+				    (p, key, value) => p.Key == key && p.Operations[0].Value.Type == JTokenType.String && (string)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Replace),
 				new CompoundAssignmentTest<string>("Assignment", null, (sut, key, value) => sut[key] = value,
 					(p, key, value) =>p.Key == key && p.Operations[0].Value.Type == JTokenType.Null && p.Operations[0].OperationType == OperationType.Replace),
 				new CompoundAssignmentTest<bool[]>("Assignment", new []{ true, false }, (sut, key, value) => sut[key] = value,
@@ -146,17 +147,17 @@ namespace Archipelago.MultiClient.Net.Tests
 				new CompoundAssignmentTest<List<object>>("Assignment", new List<object>() { "Hello", 101 }, (sut, key, value) => sut[key] = value,
 				    (p, key, value) => p.Key == key && p.Operations[0].OperationType == OperationType.Replace && p.Operations[0].Value is JArray),
 				new CompoundAssignmentTest<int>("Inplace Addition", 10, (sut, key, value) => sut[key] += value,
-				    (p, key, value) => p.Key == key && (int)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Add),
+				    (p, key, value) => p.Key == key && p.Operations[0].Value.Type == JTokenType.Integer && (int)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Add),
 				new CompoundAssignmentTest<long>("Inplace Addition", 300L, (sut, key, value) => sut[key] += value,
-				    (p, key, value) => p.Key == key && (long)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Add),
+				    (p, key, value) => p.Key == key && p.Operations[0].Value.Type == JTokenType.Integer && (long)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Add),
 				new CompoundAssignmentTest<decimal>("Inplace Addition", 3.003m, (sut, key, value) => sut[key] += value,
-				    (p, key, value) => p.Key == key && (decimal)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Add),
+				    (p, key, value) => p.Key == key && p.Operations[0].Value.Type == JTokenType.Float && (decimal)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Add),
 				new CompoundAssignmentTest<double>("Inplace Addition", 3.03d, (sut, key, value) => sut[key] += value,
-				    (p, key, value) => p.Key == key && (double)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Add),
+				    (p, key, value) => p.Key == key && p.Operations[0].Value.Type == JTokenType.Float && (double)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Add),
 				new CompoundAssignmentTest<float>("Inplace Addition", 3f, (sut, key, value) => sut[key] += value,
-				    (p, key, value) => p.Key == key && (float)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Add),
+				    (p, key, value) => p.Key == key && p.Operations[0].Value.Type == JTokenType.Float && (float)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Add),
 				new CompoundAssignmentTest<string>("Inplace Addition", "test", (sut, key, value) => sut[key] += value,
-				    (p, key, value) => p.Key == key && (string)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Add),
+				    (p, key, value) => p.Key == key && p.Operations[0].Value.Type == JTokenType.String && (string)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Add),
 				new CompoundAssignmentTest<IList>("Inplace Addition", new []{ 1, 2 }, (sut, key, value) => sut[key] += value,
 				    (p, key, value) => p.Key == key && p.Operations[0].OperationType == OperationType.Add && p.Operations[0].Value is JArray),
 				new CompoundAssignmentTest<bool[]>("Inplace Addition", new []{ true, false }, (sut, key, value) => sut[key] += value,
@@ -204,70 +205,79 @@ namespace Archipelago.MultiClient.Net.Tests
 				new CompoundAssignmentTest<OperationSpecification>("Inplace Addition", Bitwise.RightShift(8), (sut, key, value) => sut[key] += value,
 				    (p, key, value) => p.Key == key && p.Operations[0].OperationType == OperationType.RightShift && p.Operations[0].Value == value.Value),
 				new CompoundAssignmentTest<int>("Inplace Subtraction", 10, (sut, key, value) => sut[key] -= value,
-				    (p, key, value) => p.Key == key && -(int)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Add),
+				    (p, key, value) => p.Key == key && p.Operations[0].Value.Type == JTokenType.Integer && -(int)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Add),
 				new CompoundAssignmentTest<long>("Inplace Subtraction", 300L, (sut, key, value) => sut[key] -= value,
-				    (p, key, value) => p.Key == key && -(long)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Add),
+				    (p, key, value) => p.Key == key && p.Operations[0].Value.Type == JTokenType.Integer && -(long)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Add),
 				new CompoundAssignmentTest<decimal>("Inplace Subtraction", 3.003m, (sut, key, value) => sut[key] -= value,
-				    (p, key, value) => p.Key == key && -(decimal)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Add),
+				    (p, key, value) => p.Key == key && p.Operations[0].Value.Type == JTokenType.Float && -(decimal)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Add),
 				new CompoundAssignmentTest<double>("Inplace Subtraction", 3.03d, (sut, key, value) => sut[key] -= value,
-				    (p, key, value) => p.Key == key && -(double)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Add),
+				    (p, key, value) => p.Key == key && p.Operations[0].Value.Type == JTokenType.Float && -(double)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Add),
 				new CompoundAssignmentTest<float>("Inplace Subtraction", 3f, (sut, key, value) => sut[key] -= value,
-				    (p, key, value) => p.Key == key && -(float)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Add),
+				    (p, key, value) => p.Key == key && p.Operations[0].Value.Type == JTokenType.Float && -(float)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Add),
 				new CompoundAssignmentTest<int>("Inplace Multiplication", 10, (sut, key, value) => sut[key] *= value,
-				    (p, key, value) => p.Key == key && (int)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Mul),
+				    (p, key, value) => p.Key == key && p.Operations[0].Value.Type == JTokenType.Integer && (int)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Mul),
 				new CompoundAssignmentTest<long>("Inplace Multiplication", 300L, (sut, key, value) => sut[key] *= value,
-				    (p, key, value) => p.Key == key && (long)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Mul),
+				    (p, key, value) => p.Key == key && p.Operations[0].Value.Type == JTokenType.Integer && (long)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Mul),
 				new CompoundAssignmentTest<decimal>("Inplace Multiplication", 3.003m, (sut, key, value) => sut[key] *= value,
-				    (p, key, value) => p.Key == key && (decimal)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Mul),
+				    (p, key, value) => p.Key == key && p.Operations[0].Value.Type == JTokenType.Float && (decimal)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Mul),
 				new CompoundAssignmentTest<double>("Inplace Multiplication", 3.03d, (sut, key, value) => sut[key] *= value,
-				    (p, key, value) => p.Key == key && (double)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Mul),
+				    (p, key, value) => p.Key == key && p.Operations[0].Value.Type == JTokenType.Float && (double)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Mul),
 				new CompoundAssignmentTest<float>("Inplace Multiplication", 3f, (sut, key, value) => sut[key] *= value,
-				    (p, key, value) => p.Key == key && (float)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Mul),
+				    (p, key, value) => p.Key == key && p.Operations[0].Value.Type == JTokenType.Float && (float)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Mul),
 				new CompoundAssignmentTest<int>("Inplace Division", 10, (sut, key, value) => sut[key] /= value,
-				    (p, key, value) => p.Key == key && (decimal)p.Operations[0].Value == 1m/value && p.Operations[0].OperationType == OperationType.Mul),
+				    (p, key, value) => p.Key == key && p.Operations[0].Value.Type == JTokenType.Float && (decimal)p.Operations[0].Value == 1m/value && p.Operations[0].OperationType == OperationType.Mul),
 				new CompoundAssignmentTest<long>("Inplace Division", 300L, (sut, key, value) => sut[key] /= value,
-				    (p, key, value) => p.Key == key && (decimal)p.Operations[0].Value == 1m/value && p.Operations[0].OperationType == OperationType.Mul),
+				    (p, key, value) => p.Key == key && p.Operations[0].Value.Type == JTokenType.Float && (decimal)p.Operations[0].Value == 1m/value && p.Operations[0].OperationType == OperationType.Mul),
 				new CompoundAssignmentTest<decimal>("Inplace Division", 3.003m, (sut, key, value) => sut[key] /= value,
-				    (p, key, value) => p.Key == key && (decimal)p.Operations[0].Value == 1m/value && p.Operations[0].OperationType == OperationType.Mul),
+				    (p, key, value) => p.Key == key && p.Operations[0].Value.Type == JTokenType.Float && (decimal)p.Operations[0].Value == 1m/value && p.Operations[0].OperationType == OperationType.Mul),
 				new CompoundAssignmentTest<double>("Inplace Division", 3.03d, (sut, key, value) => sut[key] /= value,
-				    (p, key, value) => p.Key == key && (double)p.Operations[0].Value == 1d/value && p.Operations[0].OperationType == OperationType.Mul),
+				    (p, key, value) => p.Key == key && p.Operations[0].Value.Type == JTokenType.Float && (double)p.Operations[0].Value == 1d/value && p.Operations[0].OperationType == OperationType.Mul),
 				new CompoundAssignmentTest<float>("Inplace Division", 3f, (sut, key, value) => sut[key] /= value,
-				    (p, key, value) => p.Key == key && (double)p.Operations[0].Value == 1d/value && p.Operations[0].OperationType == OperationType.Mul),
+				    (p, key, value) => p.Key == key && p.Operations[0].Value.Type == JTokenType.Float && (double)p.Operations[0].Value == 1d/value && p.Operations[0].OperationType == OperationType.Mul),
 				new CompoundAssignmentTest<int>("Inplace Modulus", 10, (sut, key, value) => sut[key] %= value,
-				    (p, key, value) => p.Key == key && (int)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Mod),
+				    (p, key, value) => p.Key == key && p.Operations[0].Value.Type == JTokenType.Integer && (int)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Mod),
 				new CompoundAssignmentTest<long>("Inplace Modulus", 300L, (sut, key, value) => sut[key] %= value,
-				    (p, key, value) => p.Key == key && (long)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Mod),
+				    (p, key, value) => p.Key == key && p.Operations[0].Value.Type == JTokenType.Integer && (long)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Mod),
 				new CompoundAssignmentTest<decimal>("Inplace Modulus", 3.003m, (sut, key, value) => sut[key] %= value,
-				    (p, key, value) => p.Key == key && (decimal)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Mod),
+				    (p, key, value) => p.Key == key && p.Operations[0].Value.Type == JTokenType.Float && (decimal)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Mod),
 				new CompoundAssignmentTest<double>("Inplace Modulus", 3.03d, (sut, key, value) => sut[key] %= value,
-				    (p, key, value) => p.Key == key && (double)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Mod),
+				    (p, key, value) => p.Key == key && p.Operations[0].Value.Type == JTokenType.Float && (double)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Mod),
 				new CompoundAssignmentTest<float>("Inplace Modulus", 3f, (sut, key, value) => sut[key] %= value,
-				    (p, key, value) => p.Key == key && (float)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Mod),
+				    (p, key, value) => p.Key == key && p.Operations[0].Value.Type == JTokenType.Float && (float)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Mod),
 				new CompoundAssignmentTest<int>("Inplace Exponentiation", 10, (sut, key, value) => sut[key] ^= value,
-				    (p, key, value) => p.Key == key && (int)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Pow),
+				    (p, key, value) => p.Key == key && p.Operations[0].Value.Type == JTokenType.Integer && (int)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Pow),
 				new CompoundAssignmentTest<long>("Inplace Exponentiation", 300L, (sut, key, value) => sut[key] ^= value,
-				    (p, key, value) => p.Key == key && (long)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Pow),
+				    (p, key, value) => p.Key == key && p.Operations[0].Value.Type == JTokenType.Integer && (long)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Pow),
 				new CompoundAssignmentTest<decimal>("Inplace Exponentiation", 3.003m, (sut, key, value) => sut[key] ^= value,
-				    (p, key, value) => p.Key == key && (decimal)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Pow),
+				    (p, key, value) => p.Key == key && p.Operations[0].Value.Type == JTokenType.Float && (decimal)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Pow),
 				new CompoundAssignmentTest<double>("Inplace Exponentiation", 3.03d, (sut, key, value) => sut[key] ^= value,
-				    (p, key, value) => p.Key == key && (double)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Pow),
+				    (p, key, value) => p.Key == key && p.Operations[0].Value.Type == JTokenType.Float && (double)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Pow),
 				new CompoundAssignmentTest<float>("Inplace Exponentiation", 3f, (sut, key, value) => sut[key] ^= value,
-				    (p, key, value) => p.Key == key && (float)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Pow),
+				    (p, key, value) => p.Key == key && p.Operations[0].Value.Type == JTokenType.Float && (float)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Pow),
 				new CompoundAssignmentTest<int>("Postfix Addition", 0, (sut, key, value) => sut[key]++,
-				    (p, key, value) => p.Key == key && (int)p.Operations[0].Value == 1 && p.Operations[0].OperationType == OperationType.Add),
+				    (p, key, value) => p.Key == key && p.Operations[0].Value.Type == JTokenType.Integer && (int)p.Operations[0].Value == 1 && p.Operations[0].OperationType == OperationType.Add),
 				new CompoundAssignmentTest<int>("Postfix Subtraction", 0, (sut, key, value) => sut[key]--,
-				    (p, key, value) => p.Key == key && (int)p.Operations[0].Value == -1 && p.Operations[0].OperationType == OperationType.Add),
+				    (p, key, value) => p.Key == key && p.Operations[0].Value.Type == JTokenType.Integer && (int)p.Operations[0].Value == -1 && p.Operations[0].OperationType == OperationType.Add),
 				new CompoundAssignmentTest<OperationSpecification>("Inplace Addition", Operation.Max(10), (sut, key, value) => sut[key] += value,
 					(p, key, value) => p.Key == key && p.Operations[0].OperationType == OperationType.Max && p.Operations[0].Value == value.Value),
 				new CompoundAssignmentTest<OperationSpecification>("Inplace Addition", Operation.Min(10), (sut, key, value) => sut[key] += value,
 					(p, key, value) => p.Key == key && p.Operations[0].OperationType == OperationType.Min && p.Operations[0].Value == value.Value),
 
-				//TODO Remove
-				new CompoundAssignmentTest<int>("Inplace Maximum", 10, (sut, key, value) => sut[key] <<= value,
-				    (p, key, value) => p.Key == key && (int)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Max),
-				new CompoundAssignmentTest<int>("Inplace Minimum", 10, (sut, key, value) => sut[key] >>= value,
-				    (p, key, value) => p.Key == key && (int)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Min)
-            };
+#if !NET471
+	            new CompoundAssignmentTest<BigInteger>("Assignment", BigInteger.Parse("9223372036854775808"), (sut, key, value) => sut[key] = value,
+		            (p, key, value) => p.Key == key && p.Operations[0].Value.Type == JTokenType.Integer && p.Operations[0].Value.ToString() == "9223372036854775808" && p.Operations[0].OperationType == OperationType.Replace),
+				new CompoundAssignmentTest<BigInteger>("Inplace Addition", BigInteger.Parse("9223372036854775808"), (sut, key, value) => sut[key] += value,
+					(p, key, value) => p.Key == key && p.Operations[0].Value.Type == JTokenType.Integer && p.Operations[0].Value.ToString() == "9223372036854775808" && p.Operations[0].OperationType == OperationType.Add),
+				new CompoundAssignmentTest<BigInteger>("Inplace Subtraction", BigInteger.Parse("9223372036854775808"), (sut, key, value) => sut[key] -= value,
+					(p, key, value) => p.Key == key && p.Operations[0].Value.Type == JTokenType.Integer && p.Operations[0].Value.ToString() == "-9223372036854775808" && p.Operations[0].OperationType == OperationType.Add),
+				new CompoundAssignmentTest<BigInteger>("Inplace Multiplication", BigInteger.Parse("9223372036854775808"), (sut, key, value) => sut[key] *= value,
+					(p, key, value) => p.Key == key && p.Operations[0].Value.Type == JTokenType.Integer && p.Operations[0].Value.ToString() == "9223372036854775808" && p.Operations[0].OperationType == OperationType.Mul),
+				new CompoundAssignmentTest<BigInteger>("Inplace Modulus", BigInteger.Parse("9223372036854775808"), (sut, key, value) => sut[key] %= value,
+					(p, key, value) => p.Key == key && p.Operations[0].Value.Type == JTokenType.Integer && p.Operations[0].Value.ToString() == "9223372036854775808" && p.Operations[0].OperationType == OperationType.Mod),
+				new CompoundAssignmentTest<BigInteger>("Inplace Exponentiation", BigInteger.Parse("9223372036854775808"), (sut, key, value) => sut[key] ^= value,
+					(p, key, value) => p.Key == key && p.Operations[0].Value.Type == JTokenType.Integer && p.Operations[0].Value.ToString() == "9223372036854775808" && p.Operations[0].OperationType == OperationType.Pow),
+#endif
+			};
 
         [TestCaseSource(nameof(CompoundAssignmentTests))]
         public void Should_handle_compound_Assignment_correctly<T>(
@@ -285,7 +295,37 @@ namespace Archipelago.MultiClient.Net.Tests
             socket.Received().SendPacketAsync(Arg.Is<SetPacket>(p => validatePacket(p, "Key", value) && p.Operations.Length == 1));
         }
 
-        public static TestCaseData[] AssignmentTests =>
+		public static TestCaseData[] CompoundAssignmentThrowsTests =>
+			new TestCaseData[] {
+				// Replace with propoer bitshifting
+				new CompoundAssignmentThrowsTest<int>("Inplace Maximum", 10, (sut, key, value) => sut[key] <<= value,
+					new InvalidOperationException("DataStorage[Key] << value is nolonger supported, Use + Operation.Min(value) instead")),
+				new CompoundAssignmentThrowsTest<int>("Inplace Minimum", 10, (sut, key, value) => sut[key] >>= value,
+					new InvalidOperationException("DataStorage[Key] >> value is nolonger supported, Use + Operation.Max(value) instead")),
+#if !NET471
+				// 1 / BigInterger is not posiable in c# unless we get super creative with math
+				new CompoundAssignmentThrowsTest<BigInteger>("Inplace Division", BigInteger.Parse("9223372036854775808"), (sut, key, value) => sut[key] /= value,
+					new InvalidOperationException("DataStorage[Key] / BigInterger is not supported, due to loss of precision when using integer division")),
+#endif
+	};
+
+		[TestCaseSource(nameof(CompoundAssignmentThrowsTests))]
+        public void Should_throw_on_unsupported_Assignment_correctly<T>(
+	        T value, Action<DataStorageHelper, string, T> action,
+	        Exception expectedException)
+        {
+	        var socket = Substitute.For<IArchipelagoSocketHelper>();
+	        var connectionInfo = Substitute.For<IConnectionInfoProvider>();
+
+	        var sut = new DataStorageHelper(socket, connectionInfo);
+
+	        var thrownException = Assert.Throws(expectedException.GetType(), () => action(sut, "Key", value));
+			Assert.That(thrownException.Message, Is.EqualTo(expectedException.Message));
+			
+	        socket.DidNotReceive().SendPacket(Arg.Any<GetPacket>());
+        }
+
+		public static TestCaseData[] AssignmentTests =>
             new TestCaseData[] {
                 new AssignmentTest<int>("Addition", 30, (sut, key) => sut[key] + 5, 35),
                 new AssignmentTest<long>("Addition", 1000L, (sut, key) => sut[key] + 10L, 1010L),
@@ -344,11 +384,18 @@ namespace Archipelago.MultiClient.Net.Tests
                 new AssignmentTest<int>("Minimum", 2, (sut, key) => sut[key] + Operation.Min(5), 2),
                 new AssignmentTest<int>("Minimum", 20, (sut, key) => sut[key] + Operation.Min(5), 5),
 
-				//TODO: Remove
-                new AssignmentTest<int>("Maximum", 2, (sut, key) => sut[key] << 5, 5),
-                new AssignmentTest<int>("Maximum", 20, (sut, key) => sut[key] << 5, 20),
-                new AssignmentTest<int>("Minimum", 2, (sut, key) => sut[key] >> 5, 2),
-                new AssignmentTest<int>("Minimum", 20, (sut, key) => sut[key] >> 5, 5),
+#if !NET471
+				//Beeg int 
+				new AssignmentTest<BigInteger>("Addition", BigInteger.Parse("9223372036854775800"), (sut, key) => sut[key] + 8, BigInteger.Parse("9223372036854775808")),
+				new AssignmentTest<BigInteger>("Subtraction", BigInteger.Parse("9223372036854775808"), (sut, key) => sut[key] - BigInteger.Parse("5808"), BigInteger.Parse("9223372036854770000")),
+				new AssignmentTest<BigInteger>("Multiplication", BigInteger.Parse("10000000000"), (sut, key) => sut[key] * 10000000000, BigInteger.Parse("100000000000000000000")),
+				new AssignmentTest<BigInteger>("Modulus", BigInteger.Parse("10"), (sut, key) => sut[key] % 3, BigInteger.Parse("1")),
+				new AssignmentTest<BigInteger>("Exponentiation", BigInteger.Parse("20"), (sut, key) => sut[key] ^ 200, 
+					BigInteger.Parse("160693804425899027554196209234116260252220299378279283530137600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000\r\n")),
+				new AssignmentTest<BigInteger>("Maximum", BigInteger.Parse("20"), (sut, key) => sut[key] + Operation.Max(BigInteger.Parse("50")), BigInteger.Parse("50")),
+				new AssignmentTest<BigInteger>("Minimum", BigInteger.Parse("2"), (sut, key) => sut[key] + Operation.Min(BigInteger.Parse("5")), BigInteger.Parse("2")),
+
+#endif
 			};
 
         [TestCaseSource(nameof(AssignmentTests))]
@@ -368,7 +415,40 @@ namespace Archipelago.MultiClient.Net.Tests
             Assert.That(result, Is.EqualTo(expectedValue));
         }
 
-        [Test]
+		public static TestCaseData[] AssignmentThrowTests =>
+			new TestCaseData[] {
+				new AssignmentThrowTest<int>("Maximum", 2, (sut, key) => sut[key] << 5, 
+					new InvalidOperationException("DataStorage[Key] << value is nolonger supported, Use + Operation.Min(value) instead")),
+				new AssignmentThrowTest<int>("Maximum", 20, (sut, key) => sut[key] << 5,
+					new InvalidOperationException("DataStorage[Key] << value is nolonger supported, Use + Operation.Min(value) instead")),
+				new AssignmentThrowTest<int>("Minimum", 2, (sut, key) => sut[key] >> 5,
+					new InvalidOperationException("DataStorage[Key] >> value is nolonger supported, Use + Operation.Max(value) instead")),
+				new AssignmentThrowTest<int>("Minimum", 20, (sut, key) => sut[key] >> 5,
+					new InvalidOperationException("DataStorage[Key] >> value is nolonger supported, Use + Operation.Max(value) instead")),
+#if !NET471
+				new AssignmentThrowTest<BigInteger>("Division", BigInteger.Parse("10"), (sut, key) => sut[key] / 2.5,
+					new InvalidOperationException($"DataStorage[Key] cannot be converted to BigInterger as its value its not an integer number, value: {1/2.5}")),
+#endif
+		};
+
+		[TestCaseSource(nameof(AssignmentThrowTests))]
+        public void Should_throw_Assignment_correctly<T>(T baseValue, Func<DataStorageHelper, string, T> action, Exception expectedException)
+        {
+	        var socket = Substitute.For<IArchipelagoSocketHelper>();
+	        var connectionInfo = Substitute.For<IConnectionInfoProvider>();
+
+	        var sut = new DataStorageHelper(socket, connectionInfo);
+
+	        Exception thrownException = default;
+
+	        ExecuteAsyncWithDelay(
+		        () => thrownException = Assert.Throws(expectedException.GetType(), () => action(sut, "Key")),
+		        () => RaiseRetrieved(socket, "Key", JToken.FromObject(baseValue)));
+
+			Assert.That(thrownException.Message, Is.EqualTo(expectedException.Message));
+		}
+
+		[Test]
         public void Should_throw_on_invalid_operation_on_string()
         {
             var socket = Substitute.For<IArchipelagoSocketHelper>();
@@ -978,7 +1058,19 @@ namespace Archipelago.MultiClient.Net.Tests
             }
         }
 
-        class AssignmentTest<T> : TestCaseData
+        class CompoundAssignmentThrowsTest<T> : TestCaseData
+        {
+	        public CompoundAssignmentThrowsTest(string type, T value, Action<DataStorageHelper, string, T> action, Exception expectedException)
+		        : base(value, action, expectedException)
+	        {
+		        if (value == null)
+			        TestName = $"{type} 'null' ({typeof(T)})";
+		        else
+			        TestName = $"{type} {value} ({typeof(T)})";
+	        }
+        }
+
+		class AssignmentTest<T> : TestCaseData
         {
             public AssignmentTest(string type, T baseValue, Func<DataStorageHelper, string, T> action, T expectedValue)
                 : base(baseValue, action, expectedValue)
@@ -989,5 +1081,17 @@ namespace Archipelago.MultiClient.Net.Tests
 					TestName = $"{type} {baseValue} ({typeof(T)})";
             }
         }
-    }
+
+		class AssignmentThrowTest<T> : TestCaseData
+		{
+			public AssignmentThrowTest(string type, T baseValue, Func<DataStorageHelper, string, T> action, Exception expectedException)
+				: base(baseValue, action, expectedException)
+			{
+				if (baseValue == null)
+					TestName = $"{type} 'null' ({typeof(T)})";
+				else
+					TestName = $"{type} {baseValue} ({typeof(T)})";
+			}
+		}
+	}
 }

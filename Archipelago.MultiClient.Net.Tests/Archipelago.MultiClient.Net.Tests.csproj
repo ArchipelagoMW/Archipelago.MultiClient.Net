@@ -36,7 +36,7 @@
 
 	<ItemGroup Condition="'$(TargetFramework)' == 'net472'">
 		<Reference Include="Newtonsoft.Json">
-			<HintPath>..\DLLs\net35\Newtonsoft.Json.dll</HintPath>
+			<HintPath>..\DLLs\net40\Newtonsoft.Json.dll</HintPath>
 		</Reference>
 	</ItemGroup>
 	<ItemGroup Condition="'$(TargetFramework)' == 'net472' AND '$(Configuration)' == 'Debug'">
@@ -52,7 +52,7 @@
 
 	<ItemGroup Condition="'$(TargetFramework)' == 'net47'">
 		<Reference Include="Newtonsoft.Json">
-			<HintPath>..\DLLs\net35\Newtonsoft.Json.dll</HintPath>
+			<HintPath>..\DLLs\net45\Newtonsoft.Json.dll</HintPath>
 		</Reference>
 	</ItemGroup>
 	<ItemGroup Condition="'$(TargetFramework)' == 'net47' AND '$(Configuration)' == 'Debug'">
