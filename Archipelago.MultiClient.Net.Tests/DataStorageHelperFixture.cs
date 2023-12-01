@@ -386,7 +386,15 @@ namespace Archipelago.MultiClient.Net.Tests
 
 #if !NET471
 				//Beeg int 
-				//TODO Add
+				new AssignmentTest<BigInteger>("Addition", BigInteger.Parse("9223372036854775800"), (sut, key) => sut[key] + 8, BigInteger.Parse("9223372036854775808")),
+				new AssignmentTest<BigInteger>("Subtraction", BigInteger.Parse("9223372036854775808"), (sut, key) => sut[key] - BigInteger.Parse("5808"), BigInteger.Parse("9223372036854770000")),
+				new AssignmentTest<BigInteger>("Multiplication", BigInteger.Parse("10000000000"), (sut, key) => sut[key] * 10000000000, BigInteger.Parse("100000000000000000000")),
+				new AssignmentTest<BigInteger>("Modulus", BigInteger.Parse("10"), (sut, key) => sut[key] % 3, BigInteger.Parse("1")),
+				new AssignmentTest<BigInteger>("Exponentiation", BigInteger.Parse("20"), (sut, key) => sut[key] ^ 200, 
+					BigInteger.Parse("160693804425899027554196209234116260252220299378279283530137600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000\r\n")),
+				new AssignmentTest<BigInteger>("Maximum", BigInteger.Parse("20"), (sut, key) => sut[key] + Operation.Max(BigInteger.Parse("50")), BigInteger.Parse("50")),
+				new AssignmentTest<BigInteger>("Minimum", BigInteger.Parse("2"), (sut, key) => sut[key] + Operation.Min(BigInteger.Parse("5")), BigInteger.Parse("2")),
+
 #endif
 			};
 
@@ -417,6 +425,10 @@ namespace Archipelago.MultiClient.Net.Tests
 					new InvalidOperationException("DataStorage[Key] >> value is nolonger supported, Use + Operation.Max(value) instead")),
 				new AssignmentThrowTest<int>("Minimum", 20, (sut, key) => sut[key] >> 5,
 					new InvalidOperationException("DataStorage[Key] >> value is nolonger supported, Use + Operation.Max(value) instead")),
+#if !NET471
+				new AssignmentThrowTest<BigInteger>("Division", BigInteger.Parse("10"), (sut, key) => sut[key] / 2.5,
+					new InvalidOperationException($"DataStorage[Key] cannot be converted to BigInterger as its value its not an integer number, value: {1/2.5}")),
+#endif
 		};
 
 		[TestCaseSource(nameof(AssignmentThrowTests))]

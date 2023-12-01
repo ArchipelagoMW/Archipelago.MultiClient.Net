@@ -1,15 +1,18 @@
 ﻿using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Helpers;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Newtonsoft.Json.Linq;
+using System.Globalization;
 
 #if !NET35
 using System.Threading.Tasks;
 using System.Numerics;
+using System.Text.RegularExpressions;
 #endif
+
 
 namespace Archipelago.MultiClient.Net.Models
 {
@@ -39,7 +42,7 @@ namespace Archipelago.MultiClient.Net.Models
         }
         internal DataStorageElement(OperationType operationType, JToken value)
         {
-            Operations = new List<OperationSpecification>(1) {
+			Operations = new List<OperationSpecification>(1) {
                 new OperationSpecification { OperationType = operationType, Value = value }
             };
         }
@@ -182,26 +185,28 @@ namespace Archipelago.MultiClient.Net.Models
 
 			if (!value.HasValue && !IsNullable<T>())
 				value = Activator.CreateInstance<BigInteger>();
-			
+		
 			foreach (var operation in e.Operations)
 			{
-				var opperatorValue = BigInteger.Parse(operation.Value.ToString());
+				if (!BigInteger.TryParse(operation.Value.ToString(), NumberStyles.AllowLeadingSign, null, out var operatorValue))
+					throw new InvalidOperationException($"DataStorage[Key] cannot be converted to BigInterger as its value its not an integer number, value: {operation.Value}");
+
 				switch (operation.OperationType)
 				{ 
 					case OperationType.Replace:
-						value = opperatorValue;
+						value = operatorValue;
 						break;
 
 					case OperationType.Add:
-						value += opperatorValue;
+						value += operatorValue;
 						break;
 
 					case OperationType.Mul:
-						value *= opperatorValue;
+						value *= operatorValue;
 						break;
 
 					case OperationType.Mod:
-						value %= opperatorValue;
+						value %= operatorValue;
 						break;
 
 					case OperationType.Pow:
@@ -209,25 +214,25 @@ namespace Archipelago.MultiClient.Net.Models
 						break;
 
 					case OperationType.Max:
-						if (opperatorValue > value)
-							value = opperatorValue;
+						if (operatorValue > value)
+							value = operatorValue;
 						break;
 
 					case OperationType.Min:
-						if (opperatorValue < value)
-							value = opperatorValue;
+						if (operatorValue < value)
+							value = operatorValue;
 						break;
 
 					case OperationType.Xor:
-						value ^= opperatorValue;
+						value ^= operatorValue;
 						break;
 
 					case OperationType.Or:
-						value |= opperatorValue;
+						value |= operatorValue;
 						break;
 
 					case OperationType.And:
-						value &= opperatorValue;
+						value &= operatorValue;
 						break;
 
 					case OperationType.LeftShift:
