@@ -547,6 +547,346 @@ namespace Archipelago.MultiClient.Net.Tests
 			Assert.IsNull(itemNameGroups);
 		}
 
+		[Test]
+		public void GetLocationNameGroups_should_return_item_name_groups_for_current_player_slot()
+		{
+			var socket = Substitute.For<IArchipelagoSocketHelper>();
+			var connectionInfo = Substitute.For<IConnectionInfoProvider>();
+			connectionInfo.Game.Returns("MY Game");
+
+			var sut = new DataStorageHelper(socket, connectionInfo);
+
+			Dictionary<string, string[]> slotData = null;
+
+			var serverItemNameGroups = new Dictionary<string, string[]> {
+				{ "Group1", new[] { "A", "B" } },
+				{ "Group3", new[] { "Q", "B" } },
+			};
+
+			ExecuteAsyncWithDelay(
+				() => { slotData = sut.GetLocationNameGroups(); },
+				() => RaiseRetrieved(socket, "_read_location_name_groups_MY Game", JObject.FromObject(serverItemNameGroups)));
+
+			socket.Received().SendPacketAsync(Arg.Is<GetPacket>(p => p.Keys.FirstOrDefault() == "_read_location_name_groups_MY Game"));
+
+			Assert.IsNotNull(slotData);
+
+			Assert.That(slotData["Group1"][0], Is.EqualTo("A"));
+			Assert.That(slotData["Group1"][1], Is.EqualTo("B"));
+			Assert.That(slotData["Group3"][0], Is.EqualTo("Q"));
+			Assert.That(slotData["Group3"][1], Is.EqualTo("B"));
+		}
+
+		[Test]
+		public void GetLocationNameGroups_should_return_null_for_non_existing_game()
+		{
+			var socket = Substitute.For<IArchipelagoSocketHelper>();
+			var connectionInfo = Substitute.For<IConnectionInfoProvider>();
+
+			var sut = new DataStorageHelper(socket, connectionInfo);
+
+			Dictionary<string, string[]> locationNameGroups = null;
+
+			ExecuteAsyncWithDelay(
+				() => { locationNameGroups = sut.GetLocationNameGroups("NOT A REAL GAME"); },
+				() => RaiseRetrieved(socket, "_read_location_name_groups_NOT A REAL GAME", JValue.CreateNull()));
+
+			socket.Received().SendPacketAsync(Arg.Is<GetPacket>(p => p.Keys.FirstOrDefault() == "_read_location_name_groups_NOT A REAL GAME"));
+
+			Assert.IsNull(locationNameGroups);
+		}
+
+		[Test]
+		public void GetLocationNameGroupsAsync_should_return_item_name_groups_for_current_player_slot()
+		{
+			var socket = Substitute.For<IArchipelagoSocketHelper>();
+			var connectionInfo = Substitute.For<IConnectionInfoProvider>();
+			connectionInfo.Game.Returns("Below Zero");
+
+			var sut = new DataStorageHelper(socket, connectionInfo);
+
+			Dictionary<string, string[]> locationNameGroups = null;
+
+			var serverItemNameGroups = new Dictionary<string, string[]> {
+				{ "Group1", new[] { "A", "B" } },
+				{ "Group3", new[] { "Q", "B" } },
+			};
+
+#if NET471
+			bool itemNameGroupsCallbackReceived = false;
+
+			ExecuteAsyncWithDelay(
+				() => {
+					sut.GetLocationNameGroupsAsync(t => {
+						itemNameGroupsCallbackReceived = true;
+						locationNameGroups = t;
+					});
+				},
+				() => RaiseRetrieved(socket, "_read_location_name_groups_Below Zero", JObject.FromObject(serverItemNameGroups)));
+
+			while (!itemNameGroupsCallbackReceived)
+				Thread.Sleep(10);
+#else
+			ExecuteAsyncWithDelay(
+				() => { locationNameGroups = sut.GetLocationNameGroupsAsync().Result; },
+				() => RaiseRetrieved(socket, "_read_location_name_groups_Below Zero", JObject.FromObject(serverItemNameGroups)));
+#endif
+
+			socket.Received().SendPacketAsync(Arg.Is<GetPacket>(p => p.Keys.FirstOrDefault() == "_read_location_name_groups_Below Zero"));
+
+			Assert.IsNotNull(locationNameGroups);
+
+			Assert.That(locationNameGroups["Group1"][0], Is.EqualTo("A"));
+			Assert.That(locationNameGroups["Group1"][1], Is.EqualTo("B"));
+			Assert.That(locationNameGroups["Group3"][0], Is.EqualTo("Q"));
+			Assert.That(locationNameGroups["Group3"][1], Is.EqualTo("B"));
+		}
+
+		[Test]
+		public void GetLocationNameGroupsAsync_should_return_null_for_non_existing_game()
+		{
+			var socket = Substitute.For<IArchipelagoSocketHelper>();
+			var connectionInfo = Substitute.For<IConnectionInfoProvider>();
+
+			var sut = new DataStorageHelper(socket, connectionInfo);
+
+			Dictionary<string, string[]> locationNameGroups = null;
+
+#if NET471
+			bool slotDataCallbackReceived = false;
+
+			ExecuteAsyncWithDelay(
+				() => {
+					sut.GetLocationNameGroupsAsync(t => {
+						slotDataCallbackReceived = true;
+						locationNameGroups = t;
+					}, "YoloTheGame");
+				},
+				() => RaiseRetrieved(socket, "_read_location_name_groups_YoloTheGame", JValue.CreateNull()));
+
+			while (!slotDataCallbackReceived)
+				Thread.Sleep(10);
+#else
+			ExecuteAsyncWithDelay(
+				() => { locationNameGroups = sut.GetLocationNameGroupsAsync("YoloTheGame").Result; },
+				() => RaiseRetrieved(socket, "_read_location_name_groups_YoloTheGame", JValue.CreateNull()));
+#endif
+
+			socket.Received().SendPacketAsync(Arg.Is<GetPacket>(p => p.Keys.FirstOrDefault() == "_read_location_name_groups_YoloTheGame"));
+
+			Assert.IsNull(locationNameGroups);
+		}
+
+		[Test]
+		public void GetClientStatus_should_return_status_for_current_player_slot()
+		{
+			var socket = Substitute.For<IArchipelagoSocketHelper>();
+			var connectionInfo = Substitute.For<IConnectionInfoProvider>();
+			connectionInfo.Slot.Returns(8);
+			connectionInfo.Team.Returns(2);
+
+			var sut = new DataStorageHelper(socket, connectionInfo);
+
+			ArchipelagoClientState? status = null;
+
+			ExecuteAsyncWithDelay(
+				() => { status = sut.GetClientStatus(); },
+				() => RaiseRetrieved(socket, "_read_client_status_2_8", new JValue((int)ArchipelagoClientState.ClientPlaying)));
+
+			socket.Received().SendPacketAsync(Arg.Is<GetPacket>(p => p.Keys.FirstOrDefault() == "_read_client_status_2_8"));
+
+			Assert.IsNotNull(status);
+			Assert.That(status, Is.EqualTo(ArchipelagoClientState.ClientPlaying));
+		}
+
+		[Test]
+		public void GetClientStatusAsync_should_return_hints_for_current_player_slot()
+		{
+			var socket = Substitute.For<IArchipelagoSocketHelper>();
+			var connectionInfo = Substitute.For<IConnectionInfoProvider>();
+			connectionInfo.Slot.Returns(7);
+			connectionInfo.Team.Returns(3);
+
+			var sut = new DataStorageHelper(socket, connectionInfo);
+
+			ArchipelagoClientState? status = null;
+
+#if NET471
+			bool statusCallbackReceived = false;
+
+			ExecuteAsyncWithDelay(
+				() => { 
+					sut.GetClientStatusAsync(t => {
+						statusCallbackReceived = true; 
+						status = t;
+					});
+				},
+				() => RaiseRetrieved(socket, "_read_client_status_3_7", new JValue((int)ArchipelagoClientState.ClientReady)));
+
+			while (!statusCallbackReceived)
+				Thread.Sleep(10);
+#else
+			ExecuteAsyncWithDelay(
+				() => { status = sut.GetClientStatusAsync().Result; },
+				() => RaiseRetrieved(socket, "_read_client_status3_7", new JValue((int)ArchipelagoClientState.ClientReady)));
+#endif
+
+			socket.Received().SendPacketAsync(Arg.Is<GetPacket>(p => p.Keys.FirstOrDefault() == "_read_client_status_3_7"));
+
+			Assert.IsNotNull(status);
+			Assert.That(status, Is.EqualTo(ArchipelagoClientState.ClientPlaying));
+		}
+
+		[Test]
+		public void TrackClientStatus_true_should_call_callback_for_status_changes_and_request_initial_value()
+		{
+			var socket = Substitute.For<IArchipelagoSocketHelper>();
+			var connectionInfo = Substitute.For<IConnectionInfoProvider>();
+			connectionInfo.Slot.Returns(7);
+			connectionInfo.Team.Returns(3);
+
+			var sut = new DataStorageHelper(socket, connectionInfo);
+
+			int statusCallbackCount = 0;
+			ArchipelagoClientState? status = null;
+
+			// ReSharper disable once RedundantArgumentDefaultValue
+			ExecuteAsyncWithDelay(
+				() => {
+					sut.TrackClientStatus(t => {
+						statusCallbackCount++;
+						status = t;
+					}, true);
+				},
+				() =>
+				{
+					RaiseRetrieved(socket, "_read_client_status_3_7", new JValue((int)ArchipelagoClientState.ClientGoal));
+					RaiseWSetReply(socket, "_read_client_status_3_7", new JValue((int)ArchipelagoClientState.ClientGoal));
+				});
+
+			while (statusCallbackCount < 2)
+				Thread.Sleep(10);
+
+			Received.InOrder(() =>
+			{
+				socket.SendPacketAsync(Arg.Is<SetNotifyPacket>(p => p.Keys.FirstOrDefault() == "_read_client_status_3_7"));
+				socket.SendPacketAsync(Arg.Is<GetPacket>(p => p.Keys.FirstOrDefault() == "_read_client_status_3_7"));
+			});
+
+			Assert.IsNotNull(status);
+			Assert.That(status, Is.EqualTo(ArchipelagoClientState.ClientGoal));
+		}
+
+		[Test]
+		public void TracClientStatus_false_should_call_callback_for_hint_changes_but_not_request_initial_value()
+		{
+			var socket = Substitute.For<IArchipelagoSocketHelper>();
+			var connectionInfo = Substitute.For<IConnectionInfoProvider>();
+			connectionInfo.Slot.Returns(8);
+			connectionInfo.Team.Returns(6);
+
+			var sut = new DataStorageHelper(socket, connectionInfo);
+
+			bool statusCallbackReceived = false;
+			ArchipelagoClientState? status = null;
+
+			ExecuteAsyncWithDelay(
+				() => {
+					sut.TrackClientStatus(t => {
+						statusCallbackReceived = true;
+						status = t;
+					}, false);
+				},
+				() => RaiseWSetReply(socket, "_read_client_status_6_8", new JValue((int)ArchipelagoClientState.ClientConnected)));
+
+			while (!statusCallbackReceived)
+				Thread.Sleep(10);
+
+			socket.Received().SendPacketAsync(Arg.Is<SetNotifyPacket>(p => p.Keys.FirstOrDefault() == "_read_client_status_6_8"));
+			socket.DidNotReceive().SendPacketAsync(Arg.Any<GetPacket>());
+
+			Assert.IsNotNull(status);
+			Assert.That(status, Is.EqualTo(ArchipelagoClientState.ClientConnected));
+		}
+
+		[Test]
+		public void GetClientStatus_should_return_unknown_for_non_existing_slot()
+		{
+			var socket = Substitute.For<IArchipelagoSocketHelper>();
+			var connectionInfo = Substitute.For<IConnectionInfoProvider>();
+
+			var sut = new DataStorageHelper(socket, connectionInfo);
+
+			ArchipelagoClientState? statusBySlot = null;
+			ArchipelagoClientState? statusBySlotAndTeam = null;
+
+			ExecuteAsyncWithDelay(
+				() => { statusBySlot = sut.GetClientStatus(11); },
+				() => RaiseRetrieved(socket, "_read_client_status_0_11", JValue.CreateNull()));
+			ExecuteAsyncWithDelay(
+				() => { statusBySlotAndTeam = sut.GetClientStatus(11, 2); },
+				() => RaiseRetrieved(socket, "_read_client_status_2_11", JValue.CreateNull()));
+
+			socket.Received().SendPacketAsync(Arg.Is<GetPacket>(p => p.Keys.FirstOrDefault() == "_read_client_status_0_11"));
+			socket.Received().SendPacketAsync(Arg.Is<GetPacket>(p => p.Keys.FirstOrDefault() == "_read_client_status_2_11"));
+
+			Assert.IsNotNull(statusBySlot);
+			Assert.That(statusBySlot, Is.EqualTo(ArchipelagoClientState.ClientUnknown));
+			Assert.IsNotNull(statusBySlotAndTeam);
+			Assert.That(statusBySlotAndTeam, Is.EqualTo(ArchipelagoClientState.ClientUnknown));
+		}
+
+		[Test]
+		public void GetClientStatusAsync_should_return_null_for_non_existing_slot()
+		{
+			var socket = Substitute.For<IArchipelagoSocketHelper>();
+			var connectionInfo = Substitute.For<IConnectionInfoProvider>();
+
+			var sut = new DataStorageHelper(socket, connectionInfo);
+
+			ArchipelagoClientState? statusBySlot = null;
+			ArchipelagoClientState? statusBySlotAndTeam = null;
+
+#if NET471
+			bool statusBySlotCallbackReceived = false;
+			bool statusBySlotAndTeamCallbackReceived = false;
+
+			ExecuteAsyncWithDelay(
+				() => { 
+					sut.GetClientStatusAsync(t => {
+						statusBySlotCallbackReceived = true;
+						statusBySlot = t;
+					}, 11);
+				},
+				() => RaiseRetrieved(socket, "_read_client_status_0_11", JValue.CreateNull()));
+			ExecuteAsyncWithDelay(
+				() => { 
+					sut.GetClientStatusAsync(t => {
+						statusBySlotAndTeamCallbackReceived = true;
+						statusBySlotAndTeam = t;
+					}, 11, 11);
+				},
+				() => RaiseRetrieved(socket, "_read_client_status_11_11", JValue.CreateNull()));
+
+			while (!statusBySlotCallbackReceived || !statusBySlotAndTeamCallbackReceived)
+				Thread.Sleep(10);
+#else
+			ExecuteAsyncWithDelay(
+				() => { statusBySlot = sut.GetClientStatusAsync(11).Result; },
+				() => RaiseRetrieved(socket, "_read_client_status_0_11", JValue.CreateNull()));
+			ExecuteAsyncWithDelay(
+				() => { statusBySlotAndTeam = sut.GetClientStatusAsync(11, 11).Result; },
+				() => RaiseRetrieved(socket, "__read_client_status_11_11", JValue.CreateNull()));
+#endif
+			socket.Received().SendPacketAsync(Arg.Is<GetPacket>(p => p.Keys.FirstOrDefault() == "_read_client_status_0_11"));
+			socket.Received().SendPacketAsync(Arg.Is<GetPacket>(p => p.Keys.FirstOrDefault() == "_read_hints_11_11"));
+
+			Assert.IsNotNull(statusBySlot);
+			Assert.That(statusBySlot, Is.EqualTo(ArchipelagoClientState.ClientUnknown));
+			Assert.IsNotNull(statusBySlotAndTeam);
+			Assert.That(statusBySlotAndTeam, Is.EqualTo(ArchipelagoClientState.ClientUnknown));
+		}
+
 		public static void ExecuteAsyncWithDelay(Action retrieve, Action raiseEvent)
 		{
 			Task.WaitAll(new[] {
