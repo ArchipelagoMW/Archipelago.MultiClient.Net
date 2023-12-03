@@ -18,6 +18,10 @@ namespace Archipelago.MultiClient.Net.Helpers
 			this[Scope.ReadOnly, $"slot_data_{slot ?? connectionInfoProvider.Slot}"];
 		DataStorageElement GetItemNameGroupsElement(string game = null) =>
 			this[Scope.ReadOnly, $"item_name_groups_{game ?? connectionInfoProvider.Game}"];
+		DataStorageElement GetLocationNameGroupsElement(string game = null) =>
+			this[Scope.ReadOnly, $"location_name_groups_{game ?? connectionInfoProvider.Game}"];
+		DataStorageElement GetClientStatusElement(int? slot = null, int? team = null) =>
+			this[Scope.ReadOnly, $"client_status_{team ?? connectionInfoProvider.Team}_{slot ?? connectionInfoProvider.Slot}"];
 
 		/// <summary>
 		/// Retrieves all unlocked hints for the specified player slot and team
@@ -67,8 +71,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 				GetHintsAsync(slot, team).ContinueWith(t => onHintsUpdated(t.Result));
 #endif
 		}
-
-
+		
 		/// <summary>
 		/// Retrieves the custom slot data for the specified slot
 		/// </summary>
@@ -121,5 +124,84 @@ namespace Archipelago.MultiClient.Net.Helpers
 		public Task<Dictionary<string, string[]>> GetItemNameGroupsAsync(string game = null) =>
 			GetItemNameGroupsElement(game).GetAsync<Dictionary<string, string[]>>();
 #endif
+
+		/// <summary>
+		/// Retrieves the defined location name groups for the specified game
+		/// </summary>
+		/// <param name="game">the game name to request location name groups for, defaults to the current player's game if left empty</param>
+		/// <returns>An Dictionary with location group names for keys and an array of location names as value</returns>
+		public Dictionary<string, string[]> GetLocationNameGroups(string game = null) =>
+			GetLocationNameGroupsElement(game).To<Dictionary<string, string[]>>();
+
+#if NET35
+		/// <summary>
+		/// Retrieves the defined location name groups for the specified game
+		/// </summary>
+		/// <param name="onLocationNameGroupsRetrieved">the method to call with the retrieved location name groups</param>
+		/// <param name="game">the game name to request location name groups for, defaults to the current player's game if left empty</param>
+		/// <returns>An Dictionary with location group names for keys and an array of location names as value</returns>
+		public void GetLocationNameGroupsAsync(Action<Dictionary<string, string[]>> onLocationNameGroupsRetrieved, string game = null) =>
+			GetLocationNameGroupsElement(game).GetAsync(t => onLocationNameGroupsRetrieved(t?.ToObject<Dictionary<string, string[]>>()));
+#else
+		/// <summary>
+		/// Retrieves the defined location name groups for the specified game
+		/// </summary>
+		/// <param name="game">the game name to request location name groups for, defaults to the current player's game if left empty</param>
+		/// <returns>An Dictionary with location group names for keys and an array of location names as value</returns>
+		public Task<Dictionary<string, string[]>> GetLocationNameGroupsAsync(string game = null) =>
+			GetLocationNameGroupsElement(game).GetAsync<Dictionary<string, string[]>>();
+#endif
+		//TODO add unit tests
+
+		/// <summary>
+		/// Retrieves the client status for the specified player slot and team
+		/// </summary>
+		/// <param name="slot">the slot id of the player to request the status for, defaults to the current player's slot if left empty</param>
+		/// <param name="team">the team id of the player to request the status for, defaults to the current player's team if left empty</param>
+		/// <returns>The status of the client or null if the slot or team does not exist</returns>
+		public ArchipelagoClientState GetClientStatus(int? slot = null, int? team = null) =>
+			GetClientStatusElement(slot, team).To<ArchipelagoClientState?>() ?? ArchipelagoClientState.ClientUnknown;
+#if NET35
+		/// <summary>
+		/// Retrieves the client status for the specified player slot and team
+		/// </summary>
+		/// <param name="onStatusRetrieved">the method to call with the retrieved client status</param>
+		/// <param name="slot">the slot id of the player to request the status for, defaults to the current player's slot if left empty</param>
+		/// <param name="team">the team id of the player to request the status for, defaults to the current player's team if left empty</param>
+		/// <returns>The status of the client or null if the slot or team does not exist</returns>
+		public void GetClientStatusAsync(Action<ArchipelagoClientState> onStatusRetrieved, int? slot = null, int? team = null) =>
+			GetClientStatusElement(slot, team).GetAsync(t => onStatusRetrieved(t.ToObject<ArchipelagoClientState?>() ?? ArchipelagoClientState.ClientUnknown));
+#else
+		/// <summary>
+		/// Retrieves the client status for the specified player slot and team
+		/// </summary>
+		/// <param name="slot">the slot id of the player to request the status for, defaults to the current player's slot if left empty</param>
+		/// <param name="team">the team id of the player to request the status for, defaults to the current player's team if left empty</param>
+		/// <returns>The status of the client or null if the slot or team does not exist</returns>
+		public Task<ArchipelagoClientState> GetClientStatusAsync(int? slot = null, int? team = null) =>
+			GetClientStatusElement(slot, team)
+				.GetAsync<ArchipelagoClientState?>()
+				.ContinueWith(r => r.Result ?? ArchipelagoClientState.ClientUnknown);
+#endif
+
+		/// <summary>
+		/// Sets a callback to be called with all updates to the client status for the specified player slot and team
+		/// </summary>
+		/// <param name="onStatusUpdated">the method to call with the updated hints</param>
+		/// <param name="retrieveCurrentClientStatus">should the current status be retrieved or just the updates</param>
+		/// <param name="slot">the slot id of the player to request the status for, defaults to the current player's slot if left empty</param>
+		/// <param name="team">the team id of the player to request the status for, defaults to the current player's team if left empty</param>
+		public void TrackClientStatus(Action<ArchipelagoClientState> onStatusUpdated,
+			bool retrieveCurrentClientStatus = true, int? slot = null, int? team = null)
+		{
+			GetClientStatusElement(slot, team).OnValueChanged += (_, newValue) => onStatusUpdated(newValue.ToObject<ArchipelagoClientState>());
+
+			if (retrieveCurrentClientStatus)
+#if NET35
+				GetClientStatusAsync(onStatusUpdated, slot, team);
+#else
+				GetClientStatusAsync(slot, team).ContinueWith(t => onStatusUpdated(t.Result));
+#endif
+		}
 	}
 }
