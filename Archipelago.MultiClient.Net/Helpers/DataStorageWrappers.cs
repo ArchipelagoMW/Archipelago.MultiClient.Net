@@ -160,7 +160,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 		/// <param name="team">the team id of the player to request the status for, defaults to the current player's team if left empty</param>
 		/// <returns>The status of the client or null if the slot or team does not exist</returns>
 		public ArchipelagoClientState GetClientStatus(int? slot = null, int? team = null) =>
-			GetClientStatusElement(slot, team).To<ArchipelagoClientState>();
+			GetClientStatusElement(slot, team).To<ArchipelagoClientState?>() ?? ArchipelagoClientState.ClientUnknown;
 #if NET35
 		/// <summary>
 		/// Retrieves the client status for the specified player slot and team
@@ -170,7 +170,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 		/// <param name="team">the team id of the player to request the status for, defaults to the current player's team if left empty</param>
 		/// <returns>The status of the client or null if the slot or team does not exist</returns>
 		public void GetClientStatusAsync(Action<ArchipelagoClientState> onStatusRetrieved, int? slot = null, int? team = null) =>
-			GetClientStatusElement(slot, team).GetAsync(t => onStatusRetrieved(t.ToObject<ArchipelagoClientState>()));
+			GetClientStatusElement(slot, team).GetAsync(t => onStatusRetrieved(t.ToObject<ArchipelagoClientState?>() ?? ArchipelagoClientState.ClientUnknown));
 #else
 		/// <summary>
 		/// Retrieves the client status for the specified player slot and team
@@ -179,7 +179,9 @@ namespace Archipelago.MultiClient.Net.Helpers
 		/// <param name="team">the team id of the player to request the status for, defaults to the current player's team if left empty</param>
 		/// <returns>The status of the client or null if the slot or team does not exist</returns>
 		public Task<ArchipelagoClientState> GetClientStatusAsync(int? slot = null, int? team = null) =>
-			GetClientStatusElement(slot, team).GetAsync<ArchipelagoClientState>();
+			GetClientStatusElement(slot, team)
+				.GetAsync<ArchipelagoClientState?>()
+				.ContinueWith(r => r.Result ?? ArchipelagoClientState.ClientUnknown);
 #endif
 
 		/// <summary>

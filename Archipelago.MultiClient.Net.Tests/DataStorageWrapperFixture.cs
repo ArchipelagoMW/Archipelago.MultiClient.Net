@@ -286,6 +286,7 @@ namespace Archipelago.MultiClient.Net.Tests
 				() => { hintBySlotAndTeam = sut.GetHintsAsync(11, 11).Result; },
 				() => RaiseRetrieved(socket, "_read_hints_11_11", JValue.CreateNull()));
 #endif
+			socket.Received().SendPacketAsync(Arg.Is<GetPacket>(p => p.Keys.FirstOrDefault() == "_read_hints_0_11"));
 			socket.Received().SendPacketAsync(Arg.Is<GetPacket>(p => p.Keys.FirstOrDefault() == "_read_hints_11_11"));
 
 			Assert.Null(hintsBySlot);
@@ -728,13 +729,13 @@ namespace Archipelago.MultiClient.Net.Tests
 #else
 			ExecuteAsyncWithDelay(
 				() => { status = sut.GetClientStatusAsync().Result; },
-				() => RaiseRetrieved(socket, "_read_client_status3_7", new JValue((int)ArchipelagoClientState.ClientReady)));
+				() => RaiseRetrieved(socket, "_read_client_status_3_7", new JValue((int)ArchipelagoClientState.ClientReady)));
 #endif
 
 			socket.Received().SendPacketAsync(Arg.Is<GetPacket>(p => p.Keys.FirstOrDefault() == "_read_client_status_3_7"));
 
 			Assert.IsNotNull(status);
-			Assert.That(status, Is.EqualTo(ArchipelagoClientState.ClientPlaying));
+			Assert.That(status, Is.EqualTo(ArchipelagoClientState.ClientReady));
 		}
 
 		[Test]
@@ -837,7 +838,7 @@ namespace Archipelago.MultiClient.Net.Tests
 		}
 
 		[Test]
-		public void GetClientStatusAsync_should_return_null_for_non_existing_slot()
+		public void GetClientStatusAsync_should_return_unknown_for_non_existing_slot()
 		{
 			var socket = Substitute.For<IArchipelagoSocketHelper>();
 			var connectionInfo = Substitute.For<IConnectionInfoProvider>();
@@ -876,10 +877,10 @@ namespace Archipelago.MultiClient.Net.Tests
 				() => RaiseRetrieved(socket, "_read_client_status_0_11", JValue.CreateNull()));
 			ExecuteAsyncWithDelay(
 				() => { statusBySlotAndTeam = sut.GetClientStatusAsync(11, 11).Result; },
-				() => RaiseRetrieved(socket, "__read_client_status_11_11", JValue.CreateNull()));
+				() => RaiseRetrieved(socket, "_read_client_status_11_11", JValue.CreateNull()));
 #endif
 			socket.Received().SendPacketAsync(Arg.Is<GetPacket>(p => p.Keys.FirstOrDefault() == "_read_client_status_0_11"));
-			socket.Received().SendPacketAsync(Arg.Is<GetPacket>(p => p.Keys.FirstOrDefault() == "_read_hints_11_11"));
+			socket.Received().SendPacketAsync(Arg.Is<GetPacket>(p => p.Keys.FirstOrDefault() == "_read_client_status_11_11"));
 
 			Assert.IsNotNull(statusBySlot);
 			Assert.That(statusBySlot, Is.EqualTo(ArchipelagoClientState.ClientUnknown));
