@@ -1,7 +1,6 @@
 ﻿using Archipelago.MultiClient.Net.Helpers;
 using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -36,29 +35,11 @@ namespace Archipelago.MultiClient.Net.Cache
             switch (packet)
             {
                 case RoomInfoPacket roomInfoPacket:
+	                if (FileSystemDataPackageProvider == null)
+						FileSystemDataPackageProvider = new FileSystemCheckSumDataPackageProvider();
 
-	                List<string> invalidated;
-
-					if (roomInfoPacket.Version == null || roomInfoPacket.Version.ToVersion() < new Version(0, 4, 0))
-	                {
-						if (FileSystemDataPackageProvider == null)
-							FileSystemDataPackageProvider = new FileSystemVersionBasedDataPackageProvider();
-
-						AddArchipelagoGame(roomInfoPacket);
-
-						LoadDataPackageFromFileCacheByVersion(roomInfoPacket.Games);
-
-						invalidated = GetCacheInvalidatedGamesByVersion(roomInfoPacket);
-					}
-	                else
-	                {
-		                if (FileSystemDataPackageProvider == null)
-							FileSystemDataPackageProvider = new FileSystemCheckSumDataPackageProvider();
-
-						invalidated = GetCacheInvalidatedGamesByChecksum(roomInfoPacket);
-					}
-					
-                    if (invalidated.Any())
+					var invalidated = GetCacheInvalidatedGamesByChecksum(roomInfoPacket);
+					if (invalidated.Any())
                     {
                         socket.SendPacket(new GetDataPackagePacket
                         {
@@ -78,26 +59,7 @@ namespace Archipelago.MultiClient.Net.Cache
 		        .Distinct()
 		        .ToArray();
 
-        void LoadDataPackageFromFileCacheByVersion(string[] games)
-        {
-            foreach (var game in games)
-                if (TryGetGameDataFromFileCacheByVersion(game, out var cachedPackage))
-                    dataPackages[game] = cachedPackage;
-        }
-
-        bool TryGetGameDataFromFileCacheByVersion(string game, out GameData gameData)
-        {
-            if (FileSystemDataPackageProvider.TryGetDataPackage(game, "", out var cachedGameData))
-            {
-                gameData = cachedGameData;
-                return true;
-            }
-
-            gameData = null;
-            return false;
-        }
-
-        public bool TryGetDataPackageFromCache(out DataPackage package)
+		public bool TryGetDataPackageFromCache(out DataPackage package)
         {
             package = new DataPackage { Games = dataPackages };
 
@@ -122,33 +84,8 @@ namespace Archipelago.MultiClient.Net.Cache
             {
                 dataPackages[packageGameData.Key] = packageGameData.Value;
 
-				if (FileSystemDataPackageProvider is IFileSystemDataVersionBasedPackageProvider && packageGameData.Value.Version == 0)
-					continue;
-
                 FileSystemDataPackageProvider.SaveDataPackageToFile(packageGameData.Key, packageGameData.Value);
             }
-        }
-        
-        List<string> GetCacheInvalidatedGamesByVersion(RoomInfoPacket packet)
-        {
-            var gamesNeedingUpdating = new List<string>();
-
-            foreach (var game in packet.Games)
-            {
-                if (packet.DataPackageVersions != null 
-                    && packet.DataPackageVersions.ContainsKey(game) 
-                    && dataPackages.TryGetValue(game, out var gameData))
-                {
-                    if (gameData.Version != packet.DataPackageVersions[game])
-                        gamesNeedingUpdating.Add(game);
-                }
-                else
-                {
-                    gamesNeedingUpdating.Add(game);
-                }
-            }
-
-            return gamesNeedingUpdating;
         }
 
         List<string> GetCacheInvalidatedGamesByChecksum(RoomInfoPacket packet)
@@ -158,16 +95,12 @@ namespace Archipelago.MultiClient.Net.Cache
 	        foreach (var game in packet.Games)
 	        {
 		        if (packet.DataPackageChecksums != null
-		            && packet.DataPackageChecksums.TryGetValue(game, out var checksum)
-		            && FileSystemDataPackageProvider.TryGetDataPackage(game, checksum, out var gameData)
-		            && gameData.Checksum == checksum)
-		        {
-			        dataPackages[game] = gameData;
-		        }
+				            && packet.DataPackageChecksums.TryGetValue(game, out var checksum)
+				            && FileSystemDataPackageProvider.TryGetDataPackage(game, checksum, out var gameData)
+				            && gameData.Checksum == checksum)
+					dataPackages[game] = gameData;
 		        else
-		        {
 			        gamesNeedingUpdating.Add(game);
-		        }
 	        }
 
 	        return gamesNeedingUpdating;
