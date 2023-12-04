@@ -216,5 +216,7 @@ namespace Archipelago.MultiClient.Net.Tests
 
             Assert.That(sut.Index, Is.EqualTo(2));
         }
-    }
+
+        //TODO ADD item name retreival + duplicated ideez
+	}
 }

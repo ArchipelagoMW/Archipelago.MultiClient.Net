@@ -533,5 +533,7 @@ namespace Archipelago.MultiClient.Net.Tests
             await scoutTask;
         }
 #endif
+
+		//TODO ADD location name retreival + duplicated ideez
     }
 }

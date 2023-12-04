@@ -263,7 +263,89 @@ namespace Archipelago.MultiClient.Net.Tests
 			));
 		}
 
-        class TestGameData : GameData
+
+		[Test]
+		public void Should_allow_overlapping_ids()
+		{
+			var localDataPackage = new DataPackage
+			{
+				Games = new Dictionary<string, GameData> {
+					{ "One", new TestGameData("1") },
+					{ "Two", new TestGameData("3") },
+					{ "Archipelago", new TestGameData("3") },
+				}
+			};
+
+			var roomInfo = new RoomInfoPacket
+			{
+				Version = new NetworkVersion(0, 4, 0),
+				Games = new[] { "One", "Two", "Archipelago" },
+				DataPackageChecksums = new Dictionary<string, string> {
+					{ "One", "2" },
+					{ "Two", "1" },
+					{ "Archipelago", "3" }
+				}
+			};
+
+			var serverDataPackage = new DataPackagePacket
+			{
+				DataPackage = new DataPackage
+				{
+					Games = new Dictionary<string, GameData> {
+						{ "One", new TestGameData("2") {
+							ItemLookup = new Dictionary<string, long> {
+								{ "GameOneItem", 20 },
+								{ "DuplicatedName", 15 }
+							},
+							LocationLookup = new Dictionary<string, long> {
+								{ "GameOneLocation", 20 },
+								{ "DuplicatedName", 15 }
+							}
+						}},
+						{ "Two", new TestGameData("1") {
+							ItemLookup = new Dictionary<string, long> {
+								{ "GameTwoItem", 20 },
+								{ "DuplicatedName", 30 }
+							},
+							LocationLookup = new Dictionary<string, long> {
+								{ "GameTwoLocation", 20 },
+								{ "DuplicatedName", 15 }
+							}
+						}}
+					}
+				}
+			};
+
+			var socket = Substitute.For<IArchipelagoSocketHelper>();
+			var fileSystemDataPackageProvider = Substitute.For<IFileSystemDataPackageProvider>();
+			fileSystemDataPackageProvider.TryGetDataPackage("", "", out _)
+				.ReturnsForAnyArgs(x => {
+					x[2] = localDataPackage.Games[x.ArgAt<string>(0)];
+					return true;
+				});
+
+			var sut = new DataPackageCache(socket, fileSystemDataPackageProvider);
+
+			socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(roomInfo);
+			socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(serverDataPackage);
+
+			sut.TryGetDataPackageFromCache(out var inMemoryDataPackage);
+
+			Assert.IsTrue(inMemoryDataPackage.Games.Count == 3
+			  && inMemoryDataPackage.Games["One"].Checksum == "2"
+			  && inMemoryDataPackage.Games["One"].ItemLookup["GameOneItem"] == 20
+			  && inMemoryDataPackage.Games["One"].ItemLookup["DuplicatedName"] == 15
+			  && inMemoryDataPackage.Games["One"].LocationLookup["GameOneLocation"] == 20
+			  && inMemoryDataPackage.Games["One"].LocationLookup["DuplicatedName"] == 15
+			  && inMemoryDataPackage.Games["Two"].Checksum == "1"
+			  && inMemoryDataPackage.Games["Two"].ItemLookup["GameTwoItem"] == 20
+			  && inMemoryDataPackage.Games["Two"].ItemLookup["DuplicatedName"] == 30
+			  && inMemoryDataPackage.Games["Two"].LocationLookup["GameTwoLocation"] == 20
+			  && inMemoryDataPackage.Games["Two"].LocationLookup["DuplicatedName"] == 15
+			  && inMemoryDataPackage.Games["Archipelago"].Checksum == "3");
+		}
+
+		class TestGameData : GameData
         {
 	        public TestGameData(string checksum)
 	        {
