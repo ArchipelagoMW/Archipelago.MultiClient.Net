@@ -217,6 +217,49 @@ namespace Archipelago.MultiClient.Net.Tests
             Assert.That(sut.Index, Is.EqualTo(2));
         }
 
-        //TODO ADD item name retreival + duplicated ideez
-	}
+		//TODO ADD item name retrieval + duplicated ideez
+
+
+		[Test]
+		public void Retrieving_item_name_from_id_use_current_game_as_base()
+		{
+			var socket = Substitute.For<IArchipelagoSocketHelper>();
+            var locationHelper = Substitute.For<ILocationCheckHelper>();
+            var cache = Substitute.For<IDataPackageCache>();
+            var connectionInfo = Substitute.For<IConnectionInfoProvider>();
+
+            var sut = new ReceivedItemsHelper(socket, locationHelper, cache, connectionInfo);
+
+            var localCache = new DataPackage
+            {
+	            Games = new Dictionary<string, GameData>
+	            {
+		            ["Game1"] = new GameData {
+			            ItemLookup = new Dictionary<string, long> {
+				            ["Game1Item"] = 1337
+			            }
+		            },
+		            ["Game2"] = new GameData {
+			            ItemLookup = new Dictionary<string, long> {
+				            ["Game2Item"] = 1337
+			            }
+		            },
+				}
+            };
+
+            connectionInfo.Game.Returns("Game2");
+			cache.TryGetDataPackageFromCache(out Arg.Any<DataPackage>()).Returns(x =>
+            {
+	            x[0] = localCache;
+	            return true;
+            });
+
+
+            var itenName = sut.GetItemName(1337);
+
+			Assert.That(itenName, Is.EqualTo("Game2Item"));
+		}
+
+		//TODO negative item ideez
+    }
 }

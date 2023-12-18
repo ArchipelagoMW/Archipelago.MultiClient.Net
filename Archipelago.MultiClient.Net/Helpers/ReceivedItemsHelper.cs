@@ -36,6 +36,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         readonly IArchipelagoSocketHelper socket;
         readonly ILocationCheckHelper locationsHelper;
         readonly IDataPackageCache dataPackageCache;
+        readonly IConnectionInfoProvider connectionInfoProvider;
 
         ConcurrentQueue<NetworkItem> itemQueue; 
 
@@ -51,13 +52,16 @@ namespace Archipelago.MultiClient.Net.Helpers
         public delegate void ItemReceivedHandler(ReceivedItemsHelper helper);
         public event ItemReceivedHandler ItemReceived;
 
-        internal ReceivedItemsHelper(IArchipelagoSocketHelper socket, ILocationCheckHelper locationsHelper, IDataPackageCache dataPackageCache)
+        internal ReceivedItemsHelper(
+	        IArchipelagoSocketHelper socket, ILocationCheckHelper locationsHelper, 
+	        IDataPackageCache dataPackageCache, IConnectionInfoProvider connectionInfoProvider)
         {
             this.socket = socket;
             this.locationsHelper = locationsHelper;
             this.dataPackageCache = dataPackageCache;
+            this.connectionInfoProvider = connectionInfoProvider;
 
-			itemQueue = new ConcurrentQueue<NetworkItem>();
+            itemQueue = new ConcurrentQueue<NetworkItem>();
 			allItemsReceived = new ConcurrentList<NetworkItem>();
 			itemLookupCache = new Dictionary<long, string>();
 			cachedReceivedItems = allItemsReceived.AsReadOnlyCollection();
@@ -120,8 +124,11 @@ namespace Archipelago.MultiClient.Net.Helpers
         }
 
 		/// <inheritdoc/>
-        public string GetItemName(long id)
-        {
+        public string GetItemName(long id, string game = null)
+		{
+			if (game == null)
+				game = connectionInfoProvider.Game ?? "Archipelago";
+
             if (itemLookupCache.TryGetValue(id, out var name))
                 return name;
 
