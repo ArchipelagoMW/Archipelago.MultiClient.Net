@@ -1,4 +1,4 @@
-﻿using Archipelago.MultiClient.Net.Cache;
+﻿using Archipelago.MultiClient.Net.DataPackage;
 using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Helpers;
 using Archipelago.MultiClient.Net.Models;
@@ -65,7 +65,7 @@ namespace Archipelago.MultiClient.Net.Tests
 
 			var session = CreateTestSession(socket, fileSystemDataPackageProvider);
 
-			SetupRoomInfoPacket(socket, new RoomInfoPacket { Games = Array.Empty<string>() });
+			SetupRoomInfoPacket(socket, new RoomInfoPacket { Games = new []{ "Game1" } });
 			SetupLoginResultPacket(socket, new ConnectionRefusedPacket());
 
 			var result = session.TryConnectAndLogin("", "", ItemsHandlingFlags.NoItems);
@@ -146,9 +146,9 @@ namespace Archipelago.MultiClient.Net.Tests
 			IFileSystemDataPackageProvider fileSystemDataPackageProvider)
 		{
 			var dataPackageCache = new DataPackageCache(socket, fileSystemDataPackageProvider);
-			var locations = new LocationCheckHelper(socket, dataPackageCache);
-			var items = new ReceivedItemsHelper(socket, locations, dataPackageCache);
 			var connectionInfo = new ConnectionInfoHelper(socket);
+			var locations = new LocationCheckHelper(socket, dataPackageCache, connectionInfo);
+			var items = new ReceivedItemsHelper(socket, locations, dataPackageCache, connectionInfo);
 			var players = new PlayerHelper(socket, connectionInfo);
 			var roomState = new RoomStateHelper(socket, locations);
 			var dataStorage = new DataStorageHelper(socket, connectionInfo);

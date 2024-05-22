@@ -1,4 +1,4 @@
-﻿using Archipelago.MultiClient.Net.Cache;
+﻿using Archipelago.MultiClient.Net.DataPackage;
 using Archipelago.MultiClient.Net.Helpers;
 using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
@@ -20,8 +20,9 @@ namespace Archipelago.MultiClient.Net.Tests
         {
             var socket = Substitute.For<IArchipelagoSocketHelper>();
             var cache = Substitute.For<IDataPackageCache>();
+			var connectionInfo = Substitute.For<IConnectionInfoProvider>();
 
-            ILocationCheckHelper sut = new LocationCheckHelper(socket, cache);
+            ILocationCheckHelper sut = new LocationCheckHelper(socket, cache, connectionInfo);
 
             Assert.DoesNotThrow(() => {
                 sut.CompleteLocationChecks(null);
@@ -41,10 +42,11 @@ namespace Archipelago.MultiClient.Net.Tests
         {
             var socket = Substitute.For<IArchipelagoSocketHelper>();
             var cache = Substitute.For<IDataPackageCache>();
+			var connectionInfo = Substitute.For<IConnectionInfoProvider>();
 
-            var sut = new LocationCheckHelper(socket, cache);
+            ILocationCheckHelper sut = new LocationCheckHelper(socket, cache, connectionInfo);
 
-            var connectedPacket = new ConnectedPacket
+			var connectedPacket = new ConnectedPacket
             {
                 LocationsChecked = new long[]{ 1, 3 },
                 MissingChecks = new long[]{ 2 }
@@ -65,12 +67,13 @@ namespace Archipelago.MultiClient.Net.Tests
         [Test]
         public void Should_also_load_initial_missing_locations_send_by_server_if_no_location_has_been_checked_yet()
         {
-            var socket = Substitute.For<IArchipelagoSocketHelper>();
-            var cache = Substitute.For<IDataPackageCache>();
+	        var socket = Substitute.For<IArchipelagoSocketHelper>();
+	        var cache = Substitute.For<IDataPackageCache>();
+	        var connectionInfo = Substitute.For<IConnectionInfoProvider>();
 
-            var sut = new LocationCheckHelper(socket, cache);
+	        ILocationCheckHelper sut = new LocationCheckHelper(socket, cache, connectionInfo);
 
-            var connectedPacket = new ConnectedPacket
+			var connectedPacket = new ConnectedPacket
             {
                 LocationsChecked = Array.Empty<long>(),
                 MissingChecks = new long[] { 1, 2 }
@@ -90,12 +93,13 @@ namespace Archipelago.MultiClient.Net.Tests
         [Test]
         public void Should_also_load_initial_checked_locations_send_by_server_if_no_location_is_missing()
         {
-            var socket = Substitute.For<IArchipelagoSocketHelper>();
-            var cache = Substitute.For<IDataPackageCache>();
+	        var socket = Substitute.For<IArchipelagoSocketHelper>();
+	        var cache = Substitute.For<IDataPackageCache>();
+	        var connectionInfo = Substitute.For<IConnectionInfoProvider>();
 
-            var sut = new LocationCheckHelper(socket, cache);
+	        ILocationCheckHelper sut = new LocationCheckHelper(socket, cache, connectionInfo);
 
-            var connectedPacket = new ConnectedPacket
+			var connectedPacket = new ConnectedPacket
             {
                 LocationsChecked = new long[] { 1, 2 },
                 MissingChecks = Array.Empty<long>()
@@ -115,12 +119,13 @@ namespace Archipelago.MultiClient.Net.Tests
         [Test]
         public void Should_add_locations_checked_by_client()
         {
-            var socket = Substitute.For<IArchipelagoSocketHelper>();
-            var cache = Substitute.For<IDataPackageCache>();
+	        var socket = Substitute.For<IArchipelagoSocketHelper>();
+	        var cache = Substitute.For<IDataPackageCache>();
+	        var connectionInfo = Substitute.For<IConnectionInfoProvider>();
 
-            var sut = new LocationCheckHelper(socket, cache);
+	        ILocationCheckHelper sut = new LocationCheckHelper(socket, cache, connectionInfo);
 
-            var connectedPacket = new ConnectedPacket
+			var connectedPacket = new ConnectedPacket
             {
                 LocationsChecked = new long[]{ 1 },
                 MissingChecks = new long[]{ 2, 3 }
@@ -149,12 +154,13 @@ namespace Archipelago.MultiClient.Net.Tests
         [Test]
         public void Should_add_locations_that_do_not_exists()
         {
-            var socket = Substitute.For<IArchipelagoSocketHelper>();
-            var cache = Substitute.For<IDataPackageCache>();
+	        var socket = Substitute.For<IArchipelagoSocketHelper>();
+	        var cache = Substitute.For<IDataPackageCache>();
+	        var connectionInfo = Substitute.For<IConnectionInfoProvider>();
 
-            var sut = new LocationCheckHelper(socket, cache);
+	        ILocationCheckHelper sut = new LocationCheckHelper(socket, cache, connectionInfo);
 
-            var connectedPacket = new ConnectedPacket
+			var connectedPacket = new ConnectedPacket
             {
                 LocationsChecked = Array.Empty<long>(),
                 MissingChecks = Array.Empty<long>()
@@ -181,12 +187,13 @@ namespace Archipelago.MultiClient.Net.Tests
         [Test]
         public void Should_check_locations_send_by_the_server()
         {
-            var socket = Substitute.For<IArchipelagoSocketHelper>();
-            var cache = Substitute.For<IDataPackageCache>();
+	        var socket = Substitute.For<IArchipelagoSocketHelper>();
+	        var cache = Substitute.For<IDataPackageCache>();
+	        var connectionInfo = Substitute.For<IConnectionInfoProvider>();
 
-            var sut = new LocationCheckHelper(socket, cache);
+	        ILocationCheckHelper sut = new LocationCheckHelper(socket, cache, connectionInfo);
 
-            var connectedPacket = new ConnectedPacket
+			var connectedPacket = new ConnectedPacket
             {
                 LocationsChecked = Array.Empty<long>(),
                 MissingChecks = new long[]{ 1, 2, 3 }
@@ -214,12 +221,13 @@ namespace Archipelago.MultiClient.Net.Tests
         public void Enumeration_over_collection_should_not_throw_when_new_data_is_received()
 
         {
-            var socket = Substitute.For<IArchipelagoSocketHelper>();
-            var cache = Substitute.For<IDataPackageCache>();
+	        var socket = Substitute.For<IArchipelagoSocketHelper>();
+	        var cache = Substitute.For<IDataPackageCache>();
+	        var connectionInfo = Substitute.For<IConnectionInfoProvider>();
 
-            var sut = new LocationCheckHelper(socket, cache);
+	        ILocationCheckHelper sut = new LocationCheckHelper(socket, cache, connectionInfo);
 
-            var connectedPacket = new ConnectedPacket
+			var connectedPacket = new ConnectedPacket
             {
                 LocationsChecked = new long[]{ 1, 2, 3 },
                 MissingChecks = new long[]{ 4 }
@@ -260,12 +268,13 @@ namespace Archipelago.MultiClient.Net.Tests
         [Test]
         public void Should_call_event_handler_when_new_locations_are_checked_by_client()
         {
-            var socket = Substitute.For<IArchipelagoSocketHelper>();
-            var cache = Substitute.For<IDataPackageCache>();
+	        var socket = Substitute.For<IArchipelagoSocketHelper>();
+	        var cache = Substitute.For<IDataPackageCache>();
+	        var connectionInfo = Substitute.For<IConnectionInfoProvider>();
 
-            var sut = new LocationCheckHelper(socket, cache);
+	        ILocationCheckHelper sut = new LocationCheckHelper(socket, cache, connectionInfo);
 
-            var newCheckedLocations = new List<long[]>();
+			var newCheckedLocations = new List<long[]>();
 
             sut.CheckedLocationsUpdated += l =>
             {
@@ -289,12 +298,13 @@ namespace Archipelago.MultiClient.Net.Tests
         [Test]
         public void Should_call_event_handler_when_new_locations_are_checked_by_server()
         {
-            var socket = Substitute.For<IArchipelagoSocketHelper>();
-            var cache = Substitute.For<IDataPackageCache>();
+	        var socket = Substitute.For<IArchipelagoSocketHelper>();
+	        var cache = Substitute.For<IDataPackageCache>();
+	        var connectionInfo = Substitute.For<IConnectionInfoProvider>();
 
-            var sut = new LocationCheckHelper(socket, cache);
+	        ILocationCheckHelper sut = new LocationCheckHelper(socket, cache, connectionInfo);
 
-            var newCheckedLocations = new List<long[]>();
+			var newCheckedLocations = new List<long[]>();
 
             sut.CheckedLocationsUpdated += l =>
             {
@@ -324,12 +334,13 @@ namespace Archipelago.MultiClient.Net.Tests
         [Test]
         public void Should_not_call_event_handler_when_no_new_locations_are_checked()
         {
-            var socket = Substitute.For<IArchipelagoSocketHelper>();
-            var cache = Substitute.For<IDataPackageCache>();
+	        var socket = Substitute.For<IArchipelagoSocketHelper>();
+	        var cache = Substitute.For<IDataPackageCache>();
+	        var connectionInfo = Substitute.For<IConnectionInfoProvider>();
 
-            var sut = new LocationCheckHelper(socket, cache);
+	        ILocationCheckHelper sut = new LocationCheckHelper(socket, cache, connectionInfo);
 
-            var connectedPacket = new ConnectedPacket
+			var connectedPacket = new ConnectedPacket
             {
                 LocationsChecked = new long[]{ 1, 2 },
                 MissingChecks = new long[]{ 3 }
@@ -367,12 +378,13 @@ namespace Archipelago.MultiClient.Net.Tests
         [Test]
         public void Should_not_check_duplicated_locations()
         {
-            var socket = Substitute.For<IArchipelagoSocketHelper>();
-            var cache = Substitute.For<IDataPackageCache>();
+	        var socket = Substitute.For<IArchipelagoSocketHelper>();
+	        var cache = Substitute.For<IDataPackageCache>();
+	        var connectionInfo = Substitute.For<IConnectionInfoProvider>();
 
-            var sut = new LocationCheckHelper(socket, cache);
+	        ILocationCheckHelper sut = new LocationCheckHelper(socket, cache, connectionInfo);
 
-            var connectedPacket = new ConnectedPacket
+			var connectedPacket = new ConnectedPacket
             {
                 LocationsChecked = Array.Empty<long>(),
                 MissingChecks = new long[]{ 1, 2, 3 }
@@ -407,12 +419,13 @@ namespace Archipelago.MultiClient.Net.Tests
         [Test]
         public void Should_not_send_location_checks_already_confirmed_by_the_server()
 		{
-	        var socket = Substitute.For<IArchipelagoSocketHelper>();
-	        var cache = Substitute.For<IDataPackageCache>();
+			var socket = Substitute.For<IArchipelagoSocketHelper>();
+			var cache = Substitute.For<IDataPackageCache>();
+			var connectionInfo = Substitute.For<IConnectionInfoProvider>();
 
-	        var sut = new LocationCheckHelper(socket, cache);
+			ILocationCheckHelper sut = new LocationCheckHelper(socket, cache, connectionInfo);
 
-	        var connectedPacket = new ConnectedPacket
+			var connectedPacket = new ConnectedPacket
 	        {
 		        LocationsChecked = new long[] { 1, 2 },
 		        MissingChecks = new long[] { 3, 4, 5, 6 },
@@ -435,12 +448,13 @@ namespace Archipelago.MultiClient.Net.Tests
 		[Test]
         public void Should_re_send_location_checks_already_checked_but_not_confirmed_by_server()
 		{
-	        var socket = Substitute.For<IArchipelagoSocketHelper>();
-	        var cache = Substitute.For<IDataPackageCache>();
+			var socket = Substitute.For<IArchipelagoSocketHelper>();
+			var cache = Substitute.For<IDataPackageCache>();
+			var connectionInfo = Substitute.For<IConnectionInfoProvider>();
 
-	        var sut = new LocationCheckHelper(socket, cache);
+			ILocationCheckHelper sut = new LocationCheckHelper(socket, cache, connectionInfo);
 
-	        var connectedPacket = new ConnectedPacket
+			var connectedPacket = new ConnectedPacket
 	        {
 		        LocationsChecked = new long[] { 1 },
 		        MissingChecks = new long[] { 2, 3, 4, 5, 6 },
@@ -466,10 +480,11 @@ namespace Archipelago.MultiClient.Net.Tests
         {
 	        var socket = Substitute.For<IArchipelagoSocketHelper>();
 	        var cache = Substitute.For<IDataPackageCache>();
+	        var connectionInfo = Substitute.For<IConnectionInfoProvider>();
 
-	        var sut = new LocationCheckHelper(socket, cache);
+	        ILocationCheckHelper sut = new LocationCheckHelper(socket, cache, connectionInfo);
 
-	        var connectedPacket = new ConnectedPacket
+			var connectedPacket = new ConnectedPacket
 	        {
 		        LocationsChecked = new long[] { 1, 2, 3 },
 		        MissingChecks = new long[] { 5, 6 },
@@ -485,12 +500,13 @@ namespace Archipelago.MultiClient.Net.Tests
         [Test]
         public void Should_not_fail_when_room_update_is_missing_location_checks()
         {
-	        var socket = Substitute.For<IArchipelagoSocketHelper>();
-	        var cache = Substitute.For<IDataPackageCache>();
+			var socket = Substitute.For<IArchipelagoSocketHelper>();
+			var cache = Substitute.For<IDataPackageCache>();
+			var connectionInfo = Substitute.For<IConnectionInfoProvider>();
 
-	        _ = new LocationCheckHelper(socket, cache);
+			_ = new LocationCheckHelper(socket, cache, connectionInfo);
 
-	        var connectedPacket = new ConnectedPacket
+			var connectedPacket = new ConnectedPacket
 	        {
 		        LocationsChecked = Array.Empty<long>(),
 		        MissingChecks = new long[] { 1, 2, 3 }
@@ -512,12 +528,13 @@ namespace Archipelago.MultiClient.Net.Tests
 		[Test]
         public async Task Should_scout_locations_async()
         {
-            var socket = Substitute.For<IArchipelagoSocketHelper>();
-            var cache = Substitute.For<IDataPackageCache>();
+	        var socket = Substitute.For<IArchipelagoSocketHelper>();
+	        var cache = Substitute.For<IDataPackageCache>();
+	        var connectionInfo = Substitute.For<IConnectionInfoProvider>();
 
-            var sut = new LocationCheckHelper(socket, cache);
+	        ILocationCheckHelper sut = new LocationCheckHelper(socket, cache, connectionInfo);
 
-            var locationScoutResponse = new LocationInfoPacket()
+			var locationScoutResponse = new LocationInfoPacket()
             {
                 Locations = new [] { new NetworkItem { Location = 1 } }
             };

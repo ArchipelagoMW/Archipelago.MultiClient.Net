@@ -1,4 +1,4 @@
-﻿using Archipelago.MultiClient.Net.Cache;
+﻿using Archipelago.MultiClient.Net.DataPackage;
 using Archipelago.MultiClient.Net.Helpers;
 using System;
 
@@ -20,7 +20,7 @@ namespace Archipelago.MultiClient.Net
             var socket = new ArchipelagoSocketHelper(uri);
             var dataPackageCache = new DataPackageCache(socket);
             var connectionInfo = new ConnectionInfoHelper(socket);
-			var locations = new LocationCheckHelper(socket, dataPackageCache);
+			var locations = new LocationCheckHelper(socket, dataPackageCache, connectionInfo);
             var items = new ReceivedItemsHelper(socket, locations, dataPackageCache, connectionInfo);
 			var players = new PlayerHelper(socket, connectionInfo);
             var roomState = new RoomStateHelper(socket, locations);

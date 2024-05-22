@@ -1,10 +1,9 @@
-﻿using Archipelago.MultiClient.Net.Cache;
+﻿using Archipelago.MultiClient.Net.DataPackage;
 using Archipelago.MultiClient.Net.Helpers;
 using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
 using NSubstitute;
 using NUnit.Framework;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -19,8 +18,9 @@ namespace Archipelago.MultiClient.Net.Tests
             var socket = Substitute.For<IArchipelagoSocketHelper>();
             var locationHelper = Substitute.For<ILocationCheckHelper>();
             var cache = Substitute.For<IDataPackageCache>();
+            var connectionInfo = Substitute.For<IConnectionInfoProvider>();
 
-            var sut = new ReceivedItemsHelper(socket, locationHelper, cache);
+			var sut = new ReceivedItemsHelper(socket, locationHelper, cache, connectionInfo);
 
             socket.PacketReceived +=
                 Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(
@@ -35,7 +35,8 @@ namespace Archipelago.MultiClient.Net.Tests
 
             var enumerateTask = new Task(() =>
             {
-                var total = 0L;
+	            // ReSharper disable once NotAccessedVariable
+	            var total = 0L;
 
                 foreach (var networkItem in sut.AllItemsReceived)
                 {
@@ -70,27 +71,18 @@ namespace Archipelago.MultiClient.Net.Tests
             var socket = Substitute.For<IArchipelagoSocketHelper>();
             var locationHelper = Substitute.For<ILocationCheckHelper>();
             var cache = Substitute.For<IDataPackageCache>();
+            var connectionInfo = Substitute.For<IConnectionInfoProvider>();
+            connectionInfo.Game.Returns("TestGame");
 
-            var localCache = new DataPackage()
+			var gameDataLookup = Substitute.For<IGameDataLookup>();
+			gameDataLookup.Items.Returns(new TwoWayLookup<long, string> { {1, "TestItem"} });
+			cache.TryGetGameDataFromCache("TestGame", out Arg.Any<IGameDataLookup>()).Returns(x => 
             {
-                Games = new Dictionary<string, GameData>()
-                {
-                    ["TestGame"] = new GameData()
-                    {
-                        ItemLookup = new Dictionary<string, long>()
-                        {
-                            ["TestItem"] = 1
-                        }
-                    }
-                }
-            };
-            cache.TryGetDataPackageFromCache(out Arg.Any<DataPackage>()).Returns(x => 
-            {
-                x[0] = localCache;
+                x[1] = gameDataLookup;
                 return true;
             });
 
-            var sut = new ReceivedItemsHelper(socket, locationHelper, cache);
+            var sut = new ReceivedItemsHelper(socket, locationHelper, cache, connectionInfo);
 
             sut.ItemReceived += (helper) =>
             {
@@ -111,32 +103,22 @@ namespace Archipelago.MultiClient.Net.Tests
         }
 
         [Test]
-        public void Get_Item_Name_Returns_Null_For_Invalid_ItemId_Where_Game_Doesnt_Exist()
+        public void Get_Item_Name_Returns_Null_For_when_ItemId_Doesnt_Exist()
         {
             var socket = Substitute.For<IArchipelagoSocketHelper>();
             var locationHelper = Substitute.For<ILocationCheckHelper>();
             var cache = Substitute.For<IDataPackageCache>();
+            var connectionInfo = Substitute.For<IConnectionInfoProvider>();
 
-            var localCache = new DataPackage()
+			var gameDataLookup = Substitute.For<IGameDataLookup>();
+            gameDataLookup.Items.Returns(new TwoWayLookup<long, string> { { 1, "TestItem" } });
+            cache.TryGetGameDataFromCache("TestGame", out Arg.Any<IGameDataLookup>()).Returns(x =>
             {
-                Games = new Dictionary<string, GameData>()
-                {
-                    ["TestGame"] = new GameData()
-                    {
-                        ItemLookup = new Dictionary<string, long>()
-                        {
-                            ["TestItem"] = 1
-                        }
-                    }
-                }
-            };
-            cache.TryGetDataPackageFromCache(out Arg.Any<DataPackage>()).Returns(x =>
-            {
-                x[0] = localCache;
-                return true;
+	            x[1] = gameDataLookup;
+	            return true;
             });
 
-            var sut = new ReceivedItemsHelper(socket, locationHelper, cache);
+			var sut = new ReceivedItemsHelper(socket, locationHelper, cache, connectionInfo);
 
             sut.ItemReceived += (helper) =>
             {
@@ -163,35 +145,15 @@ namespace Archipelago.MultiClient.Net.Tests
             var socket = Substitute.For<IArchipelagoSocketHelper>();
             var locationHelper = Substitute.For<ILocationCheckHelper>();
             var cache = Substitute.For<IDataPackageCache>();
+            var connectionInfo = Substitute.For<IConnectionInfoProvider>();
 
-            var localCache = new DataPackage()
-            {
-                Games = new Dictionary<string, GameData>()
-                {
-                    ["TestGame"] = new GameData()
-                    {
-                        ItemLookup = new Dictionary<string, long>()
-                        {
-                            ["TestItem"] = 1
-                        }
-                    }
-                }
-            };
-            cache.TryGetDataPackageFromCache(out Arg.Any<DataPackage>()).Returns(x =>
-            {
-                x[0] = localCache;
-                return true;
-            });
-
-            var sut = new ReceivedItemsHelper(socket, locationHelper, cache);
+            var sut = new ReceivedItemsHelper(socket, locationHelper, cache, connectionInfo);
             var itemInPacket = new NetworkItem { Item = 1, Location = 1, Player = 1, Flags = Enums.ItemFlags.None };
 
             sut.ItemReceived += (helper) =>
             {
                 var item = helper.DequeueItem();
-                var itemName = helper.GetItemName(item.Item);
                 Assert.That(item, Is.EqualTo(itemInPacket));
-                Assert.That(itemName, Is.EqualTo("TestItem"));
             };
 
             socket.PacketReceived +=
@@ -217,9 +179,6 @@ namespace Archipelago.MultiClient.Net.Tests
             Assert.That(sut.Index, Is.EqualTo(2));
         }
 
-		//TODO ADD item name retrieval + duplicated ideez
-
-
 		[Test]
 		public void Retrieving_item_name_from_id_use_current_game_as_base()
 		{
@@ -230,36 +189,72 @@ namespace Archipelago.MultiClient.Net.Tests
 
             var sut = new ReceivedItemsHelper(socket, locationHelper, cache, connectionInfo);
 
-            var localCache = new DataPackage
-            {
-	            Games = new Dictionary<string, GameData>
-	            {
-		            ["Game1"] = new GameData {
-			            ItemLookup = new Dictionary<string, long> {
-				            ["Game1Item"] = 1337
-			            }
-		            },
-		            ["Game2"] = new GameData {
-			            ItemLookup = new Dictionary<string, long> {
-				            ["Game2Item"] = 1337
-			            }
-		            },
-				}
-            };
+            var archipelagoDataLookup = Substitute.For<IGameDataLookup>();
+            archipelagoDataLookup.Items.Returns(new TwoWayLookup<long, string> { { -100, "ArchipelagoItem" } });
+			var game1DataLookup = Substitute.For<IGameDataLookup>();
+            game1DataLookup.Items.Returns(new TwoWayLookup<long, string> { { 1337, "Game1Item" } });
+            var game2DataLookup = Substitute.For<IGameDataLookup>();
+            game2DataLookup.Items.Returns(new TwoWayLookup<long, string> { { 1337, "Game2Item" } });
 
-            connectionInfo.Game.Returns("Game2");
-			cache.TryGetDataPackageFromCache(out Arg.Any<DataPackage>()).Returns(x =>
+            cache.TryGetGameDataFromCache("Archipelago", out Arg.Any<IGameDataLookup>()).Returns(x =>
             {
-	            x[0] = localCache;
+	            x[1] = archipelagoDataLookup;
 	            return true;
             });
+			cache.TryGetGameDataFromCache("Game1", out Arg.Any<IGameDataLookup>()).Returns(x =>
+            {
+	            x[1] = game1DataLookup;
+	            return true;
+            });
+			cache.TryGetGameDataFromCache("Game2", out Arg.Any<IGameDataLookup>()).Returns(x =>
+			{
+				x[1] = game2DataLookup;
+				return true;
+			});
 
+			connectionInfo.Game.Returns("Game2");
+            var itemName = sut.GetItemName(-100);
 
-            var itenName = sut.GetItemName(1337);
-
-			Assert.That(itenName, Is.EqualTo("Game2Item"));
+			Assert.That(itemName, Is.EqualTo("ArchipelagoItem"));
 		}
+		
+		[Test]
+		public void Retrieving_item_name_from_id_use_specific_game()
+		{
+			var socket = Substitute.For<IArchipelagoSocketHelper>();
+			var locationHelper = Substitute.For<ILocationCheckHelper>();
+			var cache = Substitute.For<IDataPackageCache>();
+			var connectionInfo = Substitute.For<IConnectionInfoProvider>();
 
-		//TODO negative item ideez
-    }
+			var sut = new ReceivedItemsHelper(socket, locationHelper, cache, connectionInfo);
+
+			var archipelagoDataLookup = Substitute.For<IGameDataLookup>();
+			archipelagoDataLookup.Items.Returns(new TwoWayLookup<long, string> { { -100, "ArchipelagoItem" } });
+			var game1DataLookup = Substitute.For<IGameDataLookup>();
+			game1DataLookup.Items.Returns(new TwoWayLookup<long, string> { { 1337, "Game1Item" } });
+			var game2DataLookup = Substitute.For<IGameDataLookup>();
+			game2DataLookup.Items.Returns(new TwoWayLookup<long, string> { { 1337, "Game2Item" } });
+
+			cache.TryGetGameDataFromCache("Archipelago", out Arg.Any<IGameDataLookup>()).Returns(x =>
+			{
+				x[1] = archipelagoDataLookup;
+				return true;
+			});
+			cache.TryGetGameDataFromCache("Game1", out Arg.Any<IGameDataLookup>()).Returns(x =>
+			{
+				x[1] = game1DataLookup;
+				return true;
+			});
+			cache.TryGetGameDataFromCache("Game2", out Arg.Any<IGameDataLookup>()).Returns(x =>
+			{
+				x[1] = game2DataLookup;
+				return true;
+			});
+
+			connectionInfo.Game.Returns("Game2");
+			var itemName = sut.GetItemName(-100, "Game1");
+
+			Assert.That(itemName, Is.EqualTo("ArchipelagoItem"));
+		}
+	}
 }

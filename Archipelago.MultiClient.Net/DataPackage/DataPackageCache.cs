@@ -1,16 +1,16 @@
 ﻿using Archipelago.MultiClient.Net.Helpers;
-using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Archipelago.MultiClient.Net.Cache
+namespace Archipelago.MultiClient.Net.DataPackage
 {
     class DataPackageCache : IDataPackageCache
     {
         readonly IArchipelagoSocketHelper socket;
 
-        readonly Dictionary<string, GameData> dataPackages = new Dictionary<string, GameData>();
+        // ReSharper disable once ArrangeObjectCreationWhenTypeEvident
+        readonly Dictionary<string, IGameDataLookup> inMemoryCache = new Dictionary<string, IGameDataLookup>();
 
 		internal IFileSystemDataPackageProvider FileSystemDataPackageProvider;
 
@@ -53,22 +53,25 @@ namespace Archipelago.MultiClient.Net.Cache
             }
         }
 
+		//TODO find out if Archipelago needs to be manually added
+		/*
 		static void AddArchipelagoGame(RoomInfoPacket roomInfoPacket) => 
 	        roomInfoPacket.Games = roomInfoPacket.Games
 		        .Concat(new[] { "Archipelago" })
 		        .Distinct()
 		        .ToArray();
+		*/
 
-		public bool TryGetDataPackageFromCache(out DataPackage package)
+		public bool TryGetDataPackageFromCache(out Dictionary<string, IGameDataLookup> gameData)
         {
-            package = new DataPackage { Games = dataPackages };
+			gameData = inMemoryCache;
 
-            return dataPackages.Count > 1;
+            return inMemoryCache.Any();
         }
 
-        public bool TryGetGameDataFromCache(string game, out GameData gameData)
+        public bool TryGetGameDataFromCache(string game, out IGameDataLookup gameData)
         {
-            if (dataPackages.TryGetValue(game, out var cachedGameData))
+            if (inMemoryCache.TryGetValue(game, out var cachedGameData))
             {
                 gameData = cachedGameData;
                 return true;
@@ -78,13 +81,13 @@ namespace Archipelago.MultiClient.Net.Cache
             return false;
         }
 
-        internal void UpdateDataPackageFromServer(DataPackage package)
+        internal void UpdateDataPackageFromServer(Models.DataPackage package)
         {
             foreach (var packageGameData in package.Games)
             {
-                dataPackages[packageGameData.Key] = packageGameData.Value;
+                inMemoryCache[packageGameData.Key] = new GameDataLookup(packageGameData.Value);
 
-                FileSystemDataPackageProvider.SaveDataPackageToFile(packageGameData.Key, packageGameData.Value);
+				FileSystemDataPackageProvider.SaveDataPackageToFile(packageGameData.Key, packageGameData.Value);
             }
         }
 
@@ -98,8 +101,8 @@ namespace Archipelago.MultiClient.Net.Cache
 				            && packet.DataPackageChecksums.TryGetValue(game, out var checksum)
 				            && FileSystemDataPackageProvider.TryGetDataPackage(game, checksum, out var gameData)
 				            && gameData.Checksum == checksum)
-					dataPackages[game] = gameData;
-		        else
+					inMemoryCache[game] = new GameDataLookup(gameData);
+				else
 			        gamesNeedingUpdating.Add(game);
 	        }
 
