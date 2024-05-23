@@ -20,10 +20,10 @@ namespace Archipelago.MultiClient.Net
             var socket = new ArchipelagoSocketHelper(uri);
             var dataPackageCache = new DataPackageCache(socket);
             var connectionInfo = new ConnectionInfoHelper(socket);
+            var players = new PlayerHelper(socket, connectionInfo);
 			var locations = new LocationCheckHelper(socket, dataPackageCache, connectionInfo);
-            var items = new ReceivedItemsHelper(socket, locations, dataPackageCache, connectionInfo);
-			var players = new PlayerHelper(socket, connectionInfo);
-            var roomState = new RoomStateHelper(socket, locations);
+            var items = new ReceivedItemsHelper(socket, locations, dataPackageCache, connectionInfo, players);
+			var roomState = new RoomStateHelper(socket, locations);
 			var dataStorage = new DataStorageHelper(socket, connectionInfo);
             var messageLog = new MessageLogHelper(socket, items, locations, players, connectionInfo);
 

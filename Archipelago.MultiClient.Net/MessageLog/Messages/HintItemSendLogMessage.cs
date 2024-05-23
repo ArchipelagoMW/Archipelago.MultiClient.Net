@@ -19,8 +19,9 @@ namespace Archipelago.MultiClient.Net.MessageLog.Messages
 
 		internal HintItemSendLogMessage(MessagePart[] parts, 
 			IPlayerHelper players, IConnectionInfoProvider connectionInfo, 
-			int receiver, int sender, NetworkItem item, bool found) 
-			: base(parts, players, connectionInfo, receiver, sender, item)
+			int receiver, int sender, NetworkItem item, bool found, 
+			IReceivedItemsHelper receivedItemsHelper, ILocationCheckHelper locationCheckHelper) 
+			: base(parts, players, connectionInfo, receiver, sender, item, receivedItemsHelper, locationCheckHelper)
 		{
 			IsFound = found;
 		}

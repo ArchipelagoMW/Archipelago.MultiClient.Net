@@ -92,8 +92,7 @@ namespace Archipelago.MultiClient.Net
             
             socket.PacketReceived += Socket_PacketReceived;
         }
-
-
+		
         void Socket_PacketReceived(ArchipelagoPacketBase packet)
         {
             switch (packet)

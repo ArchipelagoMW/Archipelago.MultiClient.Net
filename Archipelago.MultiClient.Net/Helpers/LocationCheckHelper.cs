@@ -1,6 +1,7 @@
 ﻿using Archipelago.MultiClient.Net.ConcurrentCollection;
 using Archipelago.MultiClient.Net.DataPackage;
 using Archipelago.MultiClient.Net.Enums;
+using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -99,7 +100,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 	    /// <exception cref="T:Archipelago.MultiClient.Net.Exceptions.ArchipelagoSocketClosedException">
 	    ///     The websocket connection is not alive.
 	    /// </exception>
-	    void ScoutLocationsAsync(Action<LocationInfoPacket> callback = null, bool createAsHint = false, params long[] ids);
+	    void ScoutLocationsAsync(Action<Dictionary<long, ScoutedItemInfo>> callback = null, bool createAsHint = false, params long[] ids);
 
 		/// <summary>
 		///     Ask the server for the items which are present in the provided location ids.
@@ -119,7 +120,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 		/// <exception cref="T:Archipelago.MultiClient.Net.Exceptions.ArchipelagoSocketClosedException">
 		///     The websocket connection is not alive.
 		/// </exception>
-		void ScoutLocationsAsync(Action<LocationInfoPacket> callback = null, params long[] ids);
+		void ScoutLocationsAsync(Action<Dictionary<long, ScoutedItemInfo>> callback = null, params long[] ids);
 #else
 		/// <summary>
 		///     Ask the server for the items which are present in the provided location ids.
@@ -138,7 +139,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 		/// <exception cref="T:Archipelago.MultiClient.Net.Exceptions.ArchipelagoSocketClosedException">
 		///     The websocket connection is not alive.
 		/// </exception>
-		Task<LocationInfoPacket> ScoutLocationsAsync(bool createAsHint, params long[] ids);
+		Task<Dictionary<long, ScoutedItemInfo>> ScoutLocationsAsync(bool createAsHint, params long[] ids);
 
         /// <summary>
         ///     Ask the server for the items which are present in the provided location ids.
@@ -154,22 +155,22 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// <exception cref="T:Archipelago.MultiClient.Net.Exceptions.ArchipelagoSocketClosedException">
         ///     The websocket connection is not alive.
         /// </exception>
-        Task<LocationInfoPacket> ScoutLocationsAsync(params long[] ids);
+        Task<Dictionary<long, ScoutedItemInfo>> ScoutLocationsAsync(params long[] ids);
 #endif
 
-        /// <summary>
-        ///     Get the Id of a location from its name. Useful when a game knows its locations by name but not by Archipelago Id.
-        /// </summary>
-        /// <param name="game">
-        ///     The game to look up the locations from
-        /// </param>
-        /// <param name="locationName">
-        ///     The name of the location to check the Id for. Must match the contents of the datapackage.
-        /// </param>
-        /// <returns>
-        ///     Returns the locationId for the location name that was given or -1 if no location was found.
-        /// </returns>
-        long GetLocationIdFromName(string game, string locationName);
+		/// <summary>
+		///     Get the Id of a location from its name. Useful when a game knows its locations by name but not by Archipelago Id.
+		/// </summary>
+		/// <param name="game">
+		///     The game to look up the locations from
+		/// </param>
+		/// <param name="locationName">
+		///     The name of the location to check the Id for. Must match the contents of the datapackage.
+		/// </param>
+		/// <returns>
+		///     Returns the locationId for the location name that was given or -1 if no location was found.
+		/// </returns>
+		long GetLocationIdFromName(string game, string locationName);
 
         /// <summary>
         ///     Get the name of a location from its id. Useful when receiving a packet and it is necessary to find the name of the location.
@@ -206,6 +207,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         readonly IArchipelagoSocketHelper socket;
         readonly IDataPackageCache cache;
         readonly IConnectionInfoProvider connectionInfoProvider;
+        readonly IPlayerHelper players;
 
 		bool awaitingLocationInfoPacket;
 #if NET35
@@ -220,7 +222,8 @@ namespace Archipelago.MultiClient.Net.Helpers
 	    /// <inheritdoc/>
 		public ReadOnlyCollection<long> AllMissingLocations => missingLocations;
 
-        internal LocationCheckHelper(IArchipelagoSocketHelper socket, IDataPackageCache cache, IConnectionInfoProvider connectionInfoProvider)
+        internal LocationCheckHelper(IArchipelagoSocketHelper socket, IDataPackageCache cache, 
+	        IConnectionInfoProvider connectionInfoProvider, IPlayerHelper players)
         {
             this.socket = socket;
             this.cache = cache;
@@ -343,7 +346,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 
 #if NET35
 	    /// <inheritdoc/>
-		public void ScoutLocationsAsync(Action<LocationInfoPacket> callback = null, bool createAsHint = false, params long[] ids)
+		public void ScoutLocationsAsync(Action<Dictionary<long, ScoutedItemInfo>> callback = null, bool createAsHint = false, params long[] ids)
         {
             socket.SendPacketAsync(new LocationScoutsPacket()
             {
@@ -351,16 +354,24 @@ namespace Archipelago.MultiClient.Net.Helpers
                 CreateAsHint = createAsHint
             });
             awaitingLocationInfoPacket = true;
-            locationInfoPacketCallback = callback;
+            locationInfoPacketCallback = (scoutResult) =>
+            {
+				var items = scoutResult.Locations.ToDictionary(
+					i => i.Location,
+					i => new ScoutedItemInfo(i, connectionInfoProvider.Game, error, this,
+						players.Players[connectionInfoProvider.Team][i.Player]));
+
+				callback(items);
+            };
         }
 
 		/// <inheritdoc/>
-		public void ScoutLocationsAsync(Action<LocationInfoPacket> callback = null, params long[] ids) =>
+		public void ScoutLocationsAsync(Action<Dictionary<long, ScoutedItemInfo>> callback = null, params long[] ids) =>
 	        // Maintain backwards compatibility if createAsHint parameter is not specified.
 	        ScoutLocationsAsync(callback, false, ids);
 #else
 	    /// <inheritdoc/>
-		public Task<LocationInfoPacket> ScoutLocationsAsync(bool createAsHint, params long[] ids)
+		public Task<Dictionary<long, ScoutedItemInfo>> ScoutLocationsAsync(bool createAsHint, params long[] ids)
         {
             locationInfoPacketCallbackTask = new TaskCompletionSource<LocationInfoPacket>();
             awaitingLocationInfoPacket = true;
@@ -375,7 +386,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         }
 
 	    /// <inheritdoc/>
-        public Task<LocationInfoPacket> ScoutLocationsAsync(params long[] ids) =>
+        public Task<Dictionary<long, ScoutedItemInfo>> ScoutLocationsAsync(params long[] ids) =>
 	        ScoutLocationsAsync(false, ids); // Maintain backwards compatibility if createAsHint parameter is not specified.
 #endif
 

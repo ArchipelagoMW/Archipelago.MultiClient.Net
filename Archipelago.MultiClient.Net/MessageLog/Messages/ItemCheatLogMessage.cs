@@ -13,8 +13,9 @@ namespace Archipelago.MultiClient.Net.MessageLog.Messages
 	{
 		internal ItemCheatLogMessage(MessagePart[] parts, 
 			IPlayerHelper players, IConnectionInfoProvider connectionInfo, 
-			int team, int slot, NetworkItem item)
-			: base(parts, players, connectionInfo, slot, 0, item, team)
+			int team, int slot, NetworkItem item,
+			IReceivedItemsHelper receivedItemsHelper, ILocationCheckHelper locationCheckHelper)
+			: base(parts, players, connectionInfo, slot, 0, item, team, receivedItemsHelper, locationCheckHelper)
 		{
 		}
 	}

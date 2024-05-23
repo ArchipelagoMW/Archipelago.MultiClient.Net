@@ -39,7 +39,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 		/// <summary>
 		/// Full list of all items received
 		/// </summary>
-		ReadOnlyCollection<NetworkItem> AllItemsReceived { get; }
+		ReadOnlyCollection<ItemInfo> AllItemsReceived { get; }
 
 		/// <summary>
 		///     Event triggered when an item is received. fires once for each item received
@@ -64,18 +64,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 		/// <exception cref="T:System.InvalidOperationException">
 		///     The <see cref="T:System.Collections.Generic.Queue`1" /> is empty.
 		/// </exception>
-		NetworkItem PeekItem();
-
-		/// <summary>
-		///     Peek the name of next item on the queue to be handled.
-		/// </summary>
-		/// <returns>
-		///     The name of the item as a string, or null if no such item is found.
-		/// </returns>
-		/// <exception cref="T:System.InvalidOperationException">
-		///     The <see cref="T:System.Collections.Generic.Queue`1" /> is empty.
-		/// </exception>
-		string PeekItemName();
+		ItemInfo PeekItem();
 
 		/// <summary>
 		///     Dequeues and returns the next item on the queue to be handled.
@@ -86,7 +75,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 		/// <exception cref="T:System.InvalidOperationException">
 		///     The <see cref="T:System.Collections.Generic.Queue`1" /> is empty.
 		/// </exception>
-		NetworkItem DequeueItem();
+		ItemInfo DequeueItem();
     }
 
 	/// <inheritdoc/>
@@ -96,17 +85,18 @@ namespace Archipelago.MultiClient.Net.Helpers
         readonly ILocationCheckHelper locationsHelper;
         readonly IDataPackageCache dataPackageCache;
         readonly IConnectionInfoProvider connectionInfoProvider;
+        readonly IPlayerHelper playerHelper;
 
-        ConcurrentQueue<NetworkItem> itemQueue; 
+		ConcurrentQueue<ItemInfo> itemQueue; 
 
-        readonly IConcurrentList<NetworkItem> allItemsReceived;
+        readonly IConcurrentList<ItemInfo> allItemsReceived;
 
-        ReadOnlyCollection<NetworkItem> cachedReceivedItems;
+        ReadOnlyCollection<ItemInfo> cachedReceivedItems;
 		
 		/// <inheritdoc/>
 		public int Index => cachedReceivedItems.Count;
 		/// <inheritdoc/>
-		public ReadOnlyCollection<NetworkItem> AllItemsReceived => cachedReceivedItems;
+		public ReadOnlyCollection<ItemInfo> AllItemsReceived => cachedReceivedItems;
 
 		/// <inheritdoc/>
 		public delegate void ItemReceivedHandler(ReceivedItemsHelper helper);
@@ -115,15 +105,17 @@ namespace Archipelago.MultiClient.Net.Helpers
 
         internal ReceivedItemsHelper(
 	        IArchipelagoSocketHelper socket, ILocationCheckHelper locationsHelper, 
-	        IDataPackageCache dataPackageCache, IConnectionInfoProvider connectionInfoProvider)
+	        IDataPackageCache dataPackageCache, IConnectionInfoProvider connectionInfoProvider,
+			IPlayerHelper playerHelper)
         {
             this.socket = socket;
             this.locationsHelper = locationsHelper;
             this.dataPackageCache = dataPackageCache;
             this.connectionInfoProvider = connectionInfoProvider;
+			this.playerHelper = playerHelper;
 
-            itemQueue = new ConcurrentQueue<NetworkItem>();
-			allItemsReceived = new ConcurrentList<NetworkItem>();
+            itemQueue = new ConcurrentQueue<ItemInfo>();
+			allItemsReceived = new ConcurrentList<ItemInfo>();
 			cachedReceivedItems = allItemsReceived.AsReadOnlyCollection();
 
 			socket.PacketReceived += Socket_PacketReceived;
@@ -133,21 +125,14 @@ namespace Archipelago.MultiClient.Net.Helpers
 		public bool Any() => !itemQueue.IsEmpty;
 
         /// <inheritdoc/>
-		public NetworkItem PeekItem()
+		public ItemInfo PeekItem()
         {
             itemQueue.TryPeek(out var item);
             return item;
         }
 
         /// <inheritdoc/>
-		public string PeekItemName()
-        {
-            itemQueue.TryPeek(out var item);
-            return GetItemName(item.Item);
-        }
-
-        /// <inheritdoc/>
-		public NetworkItem DequeueItem()
+		public ItemInfo DequeueItem()
         {
             itemQueue.TryDequeue(out var item);
             return item;
@@ -191,8 +176,10 @@ namespace Archipelago.MultiClient.Net.Helpers
                         break;
                     }
 
-                    foreach (var item in receivedItemsPacket.Items)
+                    foreach (var networkItem in receivedItemsPacket.Items)
                     {
+	                    var item = new ItemInfo(networkItem, connectionInfoProvider.Game, this, locationsHelper, new PlayerInfo());
+						
                         allItemsReceived.Add(item);
                         itemQueue.Enqueue(item);
 
@@ -216,9 +203,12 @@ namespace Archipelago.MultiClient.Net.Helpers
 #endif
             allItemsReceived.Clear();
 
-            foreach (var item in receivedItemsPacket.Items)
+            foreach (var networkItem in receivedItemsPacket.Items)
             {
-                itemQueue.Enqueue(item);
+	            var player = playerHelper.Players[connectionInfoProvider.Team][networkItem.Player];
+	            var item = new ItemInfo(networkItem, connectionInfoProvider.Game, this, locationsHelper, player);
+
+				itemQueue.Enqueue(item);
                 allItemsReceived.Add(item);
 
                 cachedReceivedItems = allItemsReceived.AsReadOnlyCollection();
