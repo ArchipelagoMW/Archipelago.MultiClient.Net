@@ -83,7 +83,7 @@ namespace Archipelago.MultiClient.Net.Helpers
     {
         readonly IArchipelagoSocketHelper socket;
         readonly ILocationCheckHelper locationsHelper;
-        readonly IDataPackageCache dataPackageCache;
+        readonly IItemInfoResolver itemInfoResolver;
         readonly IConnectionInfoProvider connectionInfoProvider;
         readonly IPlayerHelper playerHelper;
 
@@ -104,13 +104,13 @@ namespace Archipelago.MultiClient.Net.Helpers
 		public event ItemReceivedHandler ItemReceived;
 
         internal ReceivedItemsHelper(
-	        IArchipelagoSocketHelper socket, ILocationCheckHelper locationsHelper, 
-	        IDataPackageCache dataPackageCache, IConnectionInfoProvider connectionInfoProvider,
+	        IArchipelagoSocketHelper socket, ILocationCheckHelper locationsHelper,
+	        IItemInfoResolver itemInfoResolver, IConnectionInfoProvider connectionInfoProvider,
 			IPlayerHelper playerHelper)
         {
             this.socket = socket;
             this.locationsHelper = locationsHelper;
-            this.dataPackageCache = dataPackageCache;
+            this.itemInfoResolver = itemInfoResolver;
             this.connectionInfoProvider = connectionInfoProvider;
 			this.playerHelper = playerHelper;
 
@@ -139,23 +139,9 @@ namespace Archipelago.MultiClient.Net.Helpers
         }
 
 		/// <inheritdoc/>
-        public string GetItemName(long id, string game = null)
-		{
-			if (game == null)
-				game = connectionInfoProvider.Game ?? "Archipelago";
+        public string GetItemName(long id, string game = null) => itemInfoResolver.GetItemName(id, game);
 
-			if (id < 0)
-				game = "Archipelago";
-
-			if (!dataPackageCache.TryGetGameDataFromCache(game, out var dataPackage))
-                return null;
-
-            return dataPackage.Items.TryGetValue(id, out var itemName)
-				? itemName
-				: null;
-        }
-
-        void Socket_PacketReceived(ArchipelagoPacketBase packet)
+		void Socket_PacketReceived(ArchipelagoPacketBase packet)
         {
             switch (packet.PacketType)
             {
@@ -178,7 +164,8 @@ namespace Archipelago.MultiClient.Net.Helpers
 
                     foreach (var networkItem in receivedItemsPacket.Items)
                     {
-	                    var item = new ItemInfo(networkItem, connectionInfoProvider.Game, this, locationsHelper, new PlayerInfo());
+	                    var playerForItem = playerHelper.Players[connectionInfoProvider.Team][networkItem.Player];
+						var item = new ItemInfo(networkItem, connectionInfoProvider.Game, itemInfoResolver, playerForItem);
 						
                         allItemsReceived.Add(item);
                         itemQueue.Enqueue(item);
@@ -199,14 +186,14 @@ namespace Archipelago.MultiClient.Net.Helpers
 #if NET35
             itemQueue.Clear();
 #else
-            itemQueue = new ConcurrentQueue<NetworkItem>();
+            itemQueue = new ConcurrentQueue<ItemInfo>();
 #endif
-            allItemsReceived.Clear();
+			allItemsReceived.Clear();
 
             foreach (var networkItem in receivedItemsPacket.Items)
             {
-	            var player = playerHelper.Players[connectionInfoProvider.Team][networkItem.Player];
-	            var item = new ItemInfo(networkItem, connectionInfoProvider.Game, this, locationsHelper, player);
+	            var playerForItem = playerHelper.Players[connectionInfoProvider.Team][networkItem.Player];
+	            var item = new ItemInfo(networkItem, connectionInfoProvider.Game, itemInfoResolver, playerForItem);
 
 				itemQueue.Enqueue(item);
                 allItemsReceived.Add(item);

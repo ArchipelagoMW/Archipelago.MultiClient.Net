@@ -1,4 +1,5 @@
-﻿using Archipelago.MultiClient.Net.Helpers;
+﻿using Archipelago.MultiClient.Net.DataPackage;
+using Archipelago.MultiClient.Net.Helpers;
 using Archipelago.MultiClient.Net.MessageLog.Parts;
 using Archipelago.MultiClient.Net.Models;
 using System;
@@ -58,16 +59,15 @@ namespace Archipelago.MultiClient.Net.MessageLog.Messages
 
 		internal ItemSendLogMessage(MessagePart[] parts,
 			IPlayerHelper players, IConnectionInfoProvider connectionInfo,
-			int receiver, int sender, NetworkItem item,
-			IReceivedItemsHelper receivedItemsHelper, ILocationCheckHelper locationCheckHelper) 
-			: this(parts, players, connectionInfo, receiver, sender, item, connectionInfo.Team, receivedItemsHelper, locationCheckHelper)
+			int receiver, int sender, NetworkItem item, IItemInfoResolver itemInfoResolver)
+			: this(parts, players, connectionInfo, receiver, sender, item, connectionInfo.Team, itemInfoResolver)
 		{
 		}
 
 		internal ItemSendLogMessage(MessagePart[] parts,
 			IPlayerHelper players, IConnectionInfoProvider connectionInfo,
 			int receiver, int sender, NetworkItem item, int team,
-			IReceivedItemsHelper receivedItemsHelper, ILocationCheckHelper locationCheckHelper) : base(parts)
+			IItemInfoResolver itemInfoResolver) : base(parts)
 		{
 			var playerList = players.Players;
 
@@ -88,7 +88,7 @@ namespace Archipelago.MultiClient.Net.MessageLog.Messages
 				|| Receiver.IsSharingGroupWith(connectionInfo.Team, connectionInfo.Slot)
 				|| Sender.IsSharingGroupWith(connectionInfo.Team, connectionInfo.Slot);
 
-			Item = new ItemInfo(item, Receiver.Game, receivedItemsHelper, locationCheckHelper, Sender);
+			Item = new ItemInfo(item, Receiver.Game, itemInfoResolver, Sender);
 		}
 	}
 }

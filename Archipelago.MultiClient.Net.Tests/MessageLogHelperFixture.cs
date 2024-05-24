@@ -1,4 +1,5 @@
-﻿using Archipelago.MultiClient.Net.Enums;
+﻿using Archipelago.MultiClient.Net.DataPackage;
+using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Helpers;
 using Archipelago.MultiClient.Net.MessageLog.Messages;
 using Archipelago.MultiClient.Net.MessageLog.Parts;
@@ -19,15 +20,15 @@ namespace Archipelago.MultiClient.Net.Tests
         public void Should_convert_print_json_packet_into_string()
         {
             var socket = Substitute.For<IArchipelagoSocketHelper>();
-            var locations = Substitute.For<ILocationCheckHelper>();
-            locations.GetLocationNameFromId(6L).Returns("Text6");
+			var itemInfoResolver = Substitute.For<IItemInfoResolver>();
+			itemInfoResolver.GetLocationName(6L).Returns("Text6");
             var items = Substitute.For<IReceivedItemsHelper>();
             items.GetItemName(4L).Returns("Text4");
             var players = Substitute.For<IPlayerHelper>();
             players.GetPlayerAlias(8).Returns("Text8");
             var connectionInfo = Substitute.For<IConnectionInfoProvider>();
 
-            var sut = new MessageLogHelper(socket, items, locations, players, connectionInfo);
+            var sut = new MessageLogHelper(socket, itemInfoResolver, players, connectionInfo);
 
             string toStringResult = null;
 
@@ -59,8 +60,8 @@ namespace Archipelago.MultiClient.Net.Tests
         public void Should_get_parsed_data_for_print_json_packet()
         {
             var socket = Substitute.For<IArchipelagoSocketHelper>();
-            var locations = Substitute.For<ILocationCheckHelper>();
-            locations.GetLocationNameFromId(6L).Returns("Text6");
+            var itemInfoResolver = Substitute.For<IItemInfoResolver>();
+            itemInfoResolver.GetLocationName(6L).Returns("Text6");
             var items = Substitute.For<IReceivedItemsHelper>();
             items.GetItemName(4L).Returns("Text4");
             var players = Substitute.For<IPlayerHelper>();
@@ -68,7 +69,7 @@ namespace Archipelago.MultiClient.Net.Tests
             var connectionInfo = Substitute.For<IConnectionInfoProvider>();
             connectionInfo.Slot.Returns(0);
 
-            var sut = new MessageLogHelper(socket, items, locations, players, connectionInfo);
+            var sut = new MessageLogHelper(socket, itemInfoResolver, players, connectionInfo);
 
             MessagePart[] parts = null;
 
@@ -149,14 +150,13 @@ namespace Archipelago.MultiClient.Net.Tests
         public void Should_mark_local_player_as_magenta()
         {
             var socket = Substitute.For<IArchipelagoSocketHelper>();
-            var locations = Substitute.For<ILocationCheckHelper>();
-            var items = Substitute.For<IReceivedItemsHelper>();
-            var players = Substitute.For<IPlayerHelper>();
+            var itemInfoResolver = Substitute.For<IItemInfoResolver>();
+			var players = Substitute.For<IPlayerHelper>();
             players.GetPlayerAlias(4).Returns("LocalPlayer");
             var connectionInfo = Substitute.For<IConnectionInfoProvider>();
             connectionInfo.Slot.Returns(4);
 
-            var sut = new MessageLogHelper(socket, items, locations, players, connectionInfo);
+            var sut = new MessageLogHelper(socket, itemInfoResolver, players, connectionInfo);
 
             MessagePart[] parts = null;
 
@@ -186,13 +186,12 @@ namespace Archipelago.MultiClient.Net.Tests
         public void Should_mark_progression_items_as_the_correct_color(ItemFlags itemFlags, Color expectedColor)
         {
             var socket = Substitute.For<IArchipelagoSocketHelper>();
-            var locations = Substitute.For<ILocationCheckHelper>();
-            var items = Substitute.For<IReceivedItemsHelper>();
-            items.GetItemName(1L).Returns("ItemFour");
+            var itemInfoResolver = Substitute.For<IItemInfoResolver>();
+            itemInfoResolver.GetItemName(1L).Returns("ItemFour");
             var players = Substitute.For<IPlayerHelper>();
             var connectionInfo = Substitute.For<IConnectionInfoProvider>();
 
-            var sut = new MessageLogHelper(socket, items, locations, players, connectionInfo);
+            var sut = new MessageLogHelper(socket, itemInfoResolver, players, connectionInfo);
 
             MessagePart[] parts = null;
 
@@ -220,12 +219,11 @@ namespace Archipelago.MultiClient.Net.Tests
         public void Should_split_new_lines_in_separate_messages_for_print_json_package()
         {
             var socket = Substitute.For<IArchipelagoSocketHelper>();
-            var locations = Substitute.For<ILocationCheckHelper>();
-            var items = Substitute.For<IReceivedItemsHelper>();
-            var players = Substitute.For<IPlayerHelper>();
+            var itemInfoResolver = Substitute.For<IItemInfoResolver>();
+			var players = Substitute.For<IPlayerHelper>();
             var connectionInfo = Substitute.For<IConnectionInfoProvider>();
 
-            var sut = new MessageLogHelper(socket, items, locations, players, connectionInfo);
+            var sut = new MessageLogHelper(socket, itemInfoResolver, players, connectionInfo);
 
             var logMessage = new List<LogMessage>(3);
 
@@ -262,15 +260,14 @@ namespace Archipelago.MultiClient.Net.Tests
         public void Should_not_go_boom_when_datapackage_doesnt_know_certain_values()
         {
             var socket = Substitute.For<IArchipelagoSocketHelper>();
-            var locations = Substitute.For<ILocationCheckHelper>();
-            locations.GetLocationNameFromId(Arg.Any<long>()).Returns((string)null);
-            var items = Substitute.For<IReceivedItemsHelper>();
-            items.GetItemName(Arg.Any<long>()).Returns((string)null);
+            var itemInfoResolver = Substitute.For<IItemInfoResolver>();
+			itemInfoResolver.GetLocationName(Arg.Any<long>()).Returns((string)null);
+            itemInfoResolver.GetItemName(Arg.Any<long>()).Returns((string)null);
             var players = Substitute.For<IPlayerHelper>();
             players.GetPlayerAlias(Arg.Any<int>()).Returns((string)null);
             var connectionInfo = Substitute.For<IConnectionInfoProvider>();
 
-            var sut = new MessageLogHelper(socket, items, locations, players, connectionInfo);
+            var sut = new MessageLogHelper(socket, itemInfoResolver, players, connectionInfo);
 
             MessagePart[] parts = null;
 
@@ -308,8 +305,7 @@ namespace Archipelago.MultiClient.Net.Tests
 		public void Should_preserve_extra_properties_on_ItemPrintJsonPacket()
 		{
 			var socket = Substitute.For<IArchipelagoSocketHelper>();
-			var locations = Substitute.For<ILocationCheckHelper>();
-			var items = Substitute.For<IReceivedItemsHelper>();
+			var itemInfoResolver = Substitute.For<IItemInfoResolver>();
 			var players = Substitute.For<IPlayerHelper>();
 			players.GetPlayerAlias(5).Returns("LocalPlayer");
 
@@ -324,7 +320,7 @@ namespace Archipelago.MultiClient.Net.Tests
 			connectionInfo.Team.Returns(0);
 			connectionInfo.Slot.Returns(5);
 
-			var sut = new MessageLogHelper(socket, items, locations, players, connectionInfo);
+			var sut = new MessageLogHelper(socket, itemInfoResolver, players, connectionInfo);
 
 			ItemSendLogMessage logMessage = null;
 
@@ -359,8 +355,7 @@ namespace Archipelago.MultiClient.Net.Tests
 		public void Should_preserve_extra_properties_on_ItemCheatPrintJsonPacket()
 		{
 			var socket = Substitute.For<IArchipelagoSocketHelper>();
-			var locations = Substitute.For<ILocationCheckHelper>();
-			var items = Substitute.For<IReceivedItemsHelper>();
+			var itemInfoResolver = Substitute.For<IItemInfoResolver>();
 			var players = Substitute.For<IPlayerHelper>();
 			players.GetPlayerAlias(2).Returns("LocalPlayer");
 			players.Players.Returns(GetPlayerCollection(new List<PlayerInfo> {
@@ -371,7 +366,7 @@ namespace Archipelago.MultiClient.Net.Tests
 			connectionInfo.Team.Returns(0);
 			connectionInfo.Slot.Returns(2);
 
-			var sut = new MessageLogHelper(socket, items, locations, players, connectionInfo);
+			var sut = new MessageLogHelper(socket, itemInfoResolver, players, connectionInfo);
 
 			ItemCheatLogMessage logMessage = null;
 
@@ -405,8 +400,7 @@ namespace Archipelago.MultiClient.Net.Tests
 		public void Should_preserve_extra_properties_on_HintPrintJsonPacket()
 		{
 			var socket = Substitute.For<IArchipelagoSocketHelper>();
-			var locations = Substitute.For<ILocationCheckHelper>();
-			var items = Substitute.For<IReceivedItemsHelper>();
+			var itemInfoResolver = Substitute.For<IItemInfoResolver>();
 			var players = Substitute.For<IPlayerHelper>();
 			players.GetPlayerAlias(5).Returns("LocalPlayer");
 			players.Players.Returns(GetPlayerCollection(new List<PlayerInfo> {
@@ -420,7 +414,7 @@ namespace Archipelago.MultiClient.Net.Tests
 			connectionInfo.Team.Returns(0);
 			connectionInfo.Slot.Returns(5);
 
-			var sut = new MessageLogHelper(socket, items, locations, players, connectionInfo);
+			var sut = new MessageLogHelper(socket, itemInfoResolver, players, connectionInfo);
 
 			HintItemSendLogMessage logMessage = null;
 
@@ -458,8 +452,7 @@ namespace Archipelago.MultiClient.Net.Tests
 		public void Should_preserve_extra_properties_on_JoinPrintJsonPacket()
 		{
 			var socket = Substitute.For<IArchipelagoSocketHelper>();
-			var locations = Substitute.For<ILocationCheckHelper>();
-			var items = Substitute.For<IReceivedItemsHelper>();
+			var itemInfoResolver = Substitute.For<IItemInfoResolver>();
 			var players = Substitute.For<IPlayerHelper>();
 			players.GetPlayerAlias(5).Returns("LocalPlayer");
 			players.Players.Returns(GetPlayerCollection(new List<PlayerInfo> {
@@ -473,7 +466,7 @@ namespace Archipelago.MultiClient.Net.Tests
 			connectionInfo.Team.Returns(0);
 			connectionInfo.Slot.Returns(5);
 
-			var sut = new MessageLogHelper(socket, items, locations, players, connectionInfo);
+			var sut = new MessageLogHelper(socket, itemInfoResolver, players, connectionInfo);
 
 			JoinLogMessage logMessage = null;
 
@@ -506,8 +499,7 @@ namespace Archipelago.MultiClient.Net.Tests
 		public void Should_preserve_extra_properties_on_LeavePrintJsonPacket()
 		{
 			var socket = Substitute.For<IArchipelagoSocketHelper>();
-			var locations = Substitute.For<ILocationCheckHelper>();
-			var items = Substitute.For<IReceivedItemsHelper>();
+			var itemInfoResolver = Substitute.For<IItemInfoResolver>();
 			var players = Substitute.For<IPlayerHelper>();
 			players.GetPlayerAlias(5).Returns("LocalPlayer");
 			players.Players.Returns(GetPlayerCollection(new List<PlayerInfo> {
@@ -521,7 +513,7 @@ namespace Archipelago.MultiClient.Net.Tests
 			connectionInfo.Team.Returns(0);
 			connectionInfo.Slot.Returns(5);
 
-			var sut = new MessageLogHelper(socket, items, locations, players, connectionInfo);
+			var sut = new MessageLogHelper(socket, itemInfoResolver, players, connectionInfo);
 
 			LeaveLogMessage logMessage = null;
 
@@ -551,8 +543,7 @@ namespace Archipelago.MultiClient.Net.Tests
 		public void Should_preserve_extra_properties_on_ChatPrintJsonPacket()
 		{
 			var socket = Substitute.For<IArchipelagoSocketHelper>();
-			var locations = Substitute.For<ILocationCheckHelper>();
-			var items = Substitute.For<IReceivedItemsHelper>();
+			var itemInfoResolver = Substitute.For<IItemInfoResolver>();
 			var players = Substitute.For<IPlayerHelper>();
 			players.GetPlayerAlias(5).Returns("LocalPlayer");
 			players.Players.Returns(GetPlayerCollection(new List<PlayerInfo> {
@@ -566,7 +557,7 @@ namespace Archipelago.MultiClient.Net.Tests
 			connectionInfo.Team.Returns(0);
 			connectionInfo.Slot.Returns(5);
 
-			var sut = new MessageLogHelper(socket, items, locations, players, connectionInfo);
+			var sut = new MessageLogHelper(socket, itemInfoResolver, players, connectionInfo);
 
 			ChatLogMessage logMessage = null;
 
@@ -599,8 +590,7 @@ namespace Archipelago.MultiClient.Net.Tests
 		public void Should_preserve_extra_properties_on_ServerChatPrintJsonPacket()
 		{
 			var socket = Substitute.For<IArchipelagoSocketHelper>();
-			var locations = Substitute.For<ILocationCheckHelper>();
-			var items = Substitute.For<IReceivedItemsHelper>();
+			var itemInfoResolver = Substitute.For<IItemInfoResolver>();
 			var players = Substitute.For<IPlayerHelper>();
 			players.GetPlayerAlias(5).Returns("LocalPlayer");
 			players.Players.Returns(GetPlayerCollection(new List<PlayerInfo> {
@@ -614,7 +604,7 @@ namespace Archipelago.MultiClient.Net.Tests
 			connectionInfo.Team.Returns(0);
 			connectionInfo.Slot.Returns(5);
 
-			var sut = new MessageLogHelper(socket, items, locations, players, connectionInfo);
+			var sut = new MessageLogHelper(socket, itemInfoResolver, players, connectionInfo);
 
 			ServerChatLogMessage logMessage = null;
 
@@ -638,8 +628,7 @@ namespace Archipelago.MultiClient.Net.Tests
 		public void Should_preserve_extra_properties_on_TutorialPrintJsonPacket()
 		{
 			var socket = Substitute.For<IArchipelagoSocketHelper>();
-			var locations = Substitute.For<ILocationCheckHelper>();
-			var items = Substitute.For<IReceivedItemsHelper>();
+			var itemInfoResolver = Substitute.For<IItemInfoResolver>();
 			var players = Substitute.For<IPlayerHelper>();
 			players.GetPlayerAlias(5).Returns("LocalPlayer");
 			players.Players.Returns(GetPlayerCollection(new List<PlayerInfo> {
@@ -653,7 +642,7 @@ namespace Archipelago.MultiClient.Net.Tests
 			connectionInfo.Team.Returns(0);
 			connectionInfo.Slot.Returns(5);
 
-			var sut = new MessageLogHelper(socket, items, locations, players, connectionInfo);
+			var sut = new MessageLogHelper(socket, itemInfoResolver, players, connectionInfo);
 
 			TutorialLogMessage logMessage = null;
 
@@ -674,8 +663,7 @@ namespace Archipelago.MultiClient.Net.Tests
 		public void Should_preserve_extra_properties_on_TagsChangedPrintJsonPacket()
 		{
 			var socket = Substitute.For<IArchipelagoSocketHelper>();
-			var locations = Substitute.For<ILocationCheckHelper>();
-			var items = Substitute.For<IReceivedItemsHelper>();
+			var itemInfoResolver = Substitute.For<IItemInfoResolver>();
 			var players = Substitute.For<IPlayerHelper>();
 			players.GetPlayerAlias(5).Returns("LocalPlayer");
 			players.Players.Returns(GetPlayerCollection(new List<PlayerInfo> {
@@ -689,7 +677,7 @@ namespace Archipelago.MultiClient.Net.Tests
 			connectionInfo.Team.Returns(0);
 			connectionInfo.Slot.Returns(5);
 
-			var sut = new MessageLogHelper(socket, items, locations, players, connectionInfo);
+			var sut = new MessageLogHelper(socket, itemInfoResolver, players, connectionInfo);
 
 			TagsChangedLogMessage logMessage = null;
 
@@ -722,8 +710,7 @@ namespace Archipelago.MultiClient.Net.Tests
 		public void Should_preserve_extra_properties_on_CommandResultPrintJsonPacket()
 		{
 			var socket = Substitute.For<IArchipelagoSocketHelper>();
-			var locations = Substitute.For<ILocationCheckHelper>();
-			var items = Substitute.For<IReceivedItemsHelper>();
+			var itemInfoResolver = Substitute.For<IItemInfoResolver>();
 			var players = Substitute.For<IPlayerHelper>();
 			players.GetPlayerAlias(5).Returns("LocalPlayer");
 			players.Players.Returns(GetPlayerCollection(new List<PlayerInfo> {
@@ -737,7 +724,7 @@ namespace Archipelago.MultiClient.Net.Tests
 			connectionInfo.Team.Returns(0);
 			connectionInfo.Slot.Returns(5);
 
-			var sut = new MessageLogHelper(socket, items, locations, players, connectionInfo);
+			var sut = new MessageLogHelper(socket, itemInfoResolver, players, connectionInfo);
 
 			CommandResultLogMessage logMessage = null;
 
@@ -758,8 +745,7 @@ namespace Archipelago.MultiClient.Net.Tests
 		public void Should_preserve_extra_properties_on_AdminCommandResultPrintJsonPacket()
 		{
 			var socket = Substitute.For<IArchipelagoSocketHelper>();
-			var locations = Substitute.For<ILocationCheckHelper>();
-			var items = Substitute.For<IReceivedItemsHelper>();
+			var itemInfoResolver = Substitute.For<IItemInfoResolver>();
 			var players = Substitute.For<IPlayerHelper>();
 			players.GetPlayerAlias(5).Returns("LocalPlayer");
 			players.Players.Returns(GetPlayerCollection(new List<PlayerInfo> {
@@ -773,7 +759,7 @@ namespace Archipelago.MultiClient.Net.Tests
 			connectionInfo.Team.Returns(0);
 			connectionInfo.Slot.Returns(5);
 
-			var sut = new MessageLogHelper(socket, items, locations, players, connectionInfo);
+			var sut = new MessageLogHelper(socket, itemInfoResolver, players, connectionInfo);
 
 			AdminCommandResultLogMessage logMessage = null;
 
@@ -794,8 +780,7 @@ namespace Archipelago.MultiClient.Net.Tests
 		public void Should_preserve_extra_properties_on_GoalPrintJsonPacket()
 		{
 			var socket = Substitute.For<IArchipelagoSocketHelper>();
-			var locations = Substitute.For<ILocationCheckHelper>();
-			var items = Substitute.For<IReceivedItemsHelper>();
+			var itemInfoResolver = Substitute.For<IItemInfoResolver>();
 			var players = Substitute.For<IPlayerHelper>();
 			players.GetPlayerAlias(5).Returns("LocalPlayer");
 			players.Players.Returns(GetPlayerCollection(new List<PlayerInfo> {
@@ -809,7 +794,7 @@ namespace Archipelago.MultiClient.Net.Tests
 			connectionInfo.Team.Returns(0);
 			connectionInfo.Slot.Returns(5);
 
-			var sut = new MessageLogHelper(socket, items, locations, players, connectionInfo);
+			var sut = new MessageLogHelper(socket, itemInfoResolver, players, connectionInfo);
 
 			GoalLogMessage logMessage = null;
 
@@ -839,8 +824,7 @@ namespace Archipelago.MultiClient.Net.Tests
 		public void Should_preserve_extra_properties_on_ReleasePrintJsonPacket()
 		{
 			var socket = Substitute.For<IArchipelagoSocketHelper>();
-			var locations = Substitute.For<ILocationCheckHelper>();
-			var items = Substitute.For<IReceivedItemsHelper>();
+			var itemInfoResolver = Substitute.For<IItemInfoResolver>();
 			var players = Substitute.For<IPlayerHelper>();
 			players.GetPlayerAlias(5).Returns("LocalPlayer");
 			players.Players.Returns(GetPlayerCollection(new List<PlayerInfo> {
@@ -854,7 +838,7 @@ namespace Archipelago.MultiClient.Net.Tests
 			connectionInfo.Team.Returns(0);
 			connectionInfo.Slot.Returns(5);
 
-			var sut = new MessageLogHelper(socket, items, locations, players, connectionInfo);
+			var sut = new MessageLogHelper(socket, itemInfoResolver, players, connectionInfo);
 
 			ReleaseLogMessage logMessage = null;
 
@@ -884,8 +868,7 @@ namespace Archipelago.MultiClient.Net.Tests
 		public void Should_preserve_extra_properties_on_CollectPrintJsonPacket()
 		{
 			var socket = Substitute.For<IArchipelagoSocketHelper>();
-			var locations = Substitute.For<ILocationCheckHelper>();
-			var items = Substitute.For<IReceivedItemsHelper>();
+			var itemInfoResolver = Substitute.For<IItemInfoResolver>();
 			var players = Substitute.For<IPlayerHelper>();
 			players.GetPlayerAlias(5).Returns("LocalPlayer");
 			players.Players.Returns(GetPlayerCollection(new List<PlayerInfo> {
@@ -899,7 +882,7 @@ namespace Archipelago.MultiClient.Net.Tests
 			connectionInfo.Team.Returns(0);
 			connectionInfo.Slot.Returns(5);
 
-			var sut = new MessageLogHelper(socket, items, locations, players, connectionInfo);
+			var sut = new MessageLogHelper(socket, itemInfoResolver, players, connectionInfo);
 
 			CollectLogMessage logMessage = null;
 
@@ -929,12 +912,11 @@ namespace Archipelago.MultiClient.Net.Tests
         public void Should_preserve_extra_properties_on_CountdownPrintJsonPacket()
         {
 	        var socket = Substitute.For<IArchipelagoSocketHelper>();
-	        var locations = Substitute.For<ILocationCheckHelper>();
-	        var items = Substitute.For<IReceivedItemsHelper>();
+	        var itemInfoResolver = Substitute.For<IItemInfoResolver>();
 	        var players = Substitute.For<IPlayerHelper>();
 	        var connectionInfo = Substitute.For<IConnectionInfoProvider>();
 
-	        var sut = new MessageLogHelper(socket, items, locations, players, connectionInfo);
+	        var sut = new MessageLogHelper(socket, itemInfoResolver, players, connectionInfo);
 
 	        CountdownLogMessage logMessage = null;
 
@@ -955,10 +937,10 @@ namespace Archipelago.MultiClient.Net.Tests
         }
 
 #if NET471 || NET472
-	    Dictionary<int, ReadOnlyCollection<PlayerInfo>> GetPlayerCollection(IList<PlayerInfo> playerInfos) => 
+	    static Dictionary<int, ReadOnlyCollection<PlayerInfo>> GetPlayerCollection(IList<PlayerInfo> playerInfos) => 
 		    new Dictionary<int, ReadOnlyCollection<PlayerInfo>>(
 #else
-	    ReadOnlyDictionary<int, ReadOnlyCollection<PlayerInfo>> GetPlayerCollection(IList<PlayerInfo> playerInfos) =>
+	    static ReadOnlyDictionary<int, ReadOnlyCollection<PlayerInfo>> GetPlayerCollection(IList<PlayerInfo> playerInfos) =>
 		    new ReadOnlyDictionary<int, ReadOnlyCollection<PlayerInfo>>(
 #endif
 				new Dictionary<int, ReadOnlyCollection<PlayerInfo>> { {

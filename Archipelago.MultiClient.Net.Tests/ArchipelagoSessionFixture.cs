@@ -147,12 +147,13 @@ namespace Archipelago.MultiClient.Net.Tests
 		{
 			var dataPackageCache = new DataPackageCache(socket, fileSystemDataPackageProvider);
 			var connectionInfo = new ConnectionInfoHelper(socket);
-			var locations = new LocationCheckHelper(socket, dataPackageCache, connectionInfo);
-			var items = new ReceivedItemsHelper(socket, locations, dataPackageCache, connectionInfo);
+			var itemInfoResolver = new ItemInfoResolver(dataPackageCache, connectionInfo);
 			var players = new PlayerHelper(socket, connectionInfo);
+			var locations = new LocationCheckHelper(socket, itemInfoResolver,  connectionInfo, players);
+			var items = new ReceivedItemsHelper(socket, locations, itemInfoResolver, connectionInfo, players);
 			var roomState = new RoomStateHelper(socket, locations);
 			var dataStorage = new DataStorageHelper(socket, connectionInfo);
-			var messageLog = new MessageLogHelper(socket, items, locations, players, connectionInfo);
+			var messageLog = new MessageLogHelper(socket, itemInfoResolver, players, connectionInfo);
 
 			return new ArchipelagoSession(socket, items, locations, players, roomState, connectionInfo, dataStorage, messageLog);
 		}

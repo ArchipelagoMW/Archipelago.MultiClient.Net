@@ -1,4 +1,5 @@
-﻿using Archipelago.MultiClient.Net.Enums;
+﻿using Archipelago.MultiClient.Net.DataPackage;
+using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.MessageLog.Messages;
 using Archipelago.MultiClient.Net.MessageLog.Parts;
 using Archipelago.MultiClient.Net.Models;
@@ -21,17 +22,15 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// </summary>
         public event MessageReceivedHandler OnMessageReceived;
 
-        readonly IReceivedItemsHelper items;
-        readonly ILocationCheckHelper locations;
+		readonly IItemInfoResolver itemInfoResolver;
         readonly IPlayerHelper players;
         readonly IConnectionInfoProvider connectionInfo;
 
-        internal MessageLogHelper(IArchipelagoSocketHelper socket,
-            IReceivedItemsHelper items, ILocationCheckHelper locations,
+        internal MessageLogHelper(
+	        IArchipelagoSocketHelper socket, IItemInfoResolver itemInfoResolver,
             IPlayerHelper players, IConnectionInfoProvider connectionInfo)
         {
-            this.items = items;
-            this.locations = locations;
+            this.itemInfoResolver = itemInfoResolver;
             this.players = players;
             this.connectionInfo = connectionInfo;
 
@@ -58,17 +57,17 @@ namespace Archipelago.MultiClient.Net.Helpers
                 {
 	                case ItemPrintJsonPacket itemPrintJson:
 		                message = new ItemSendLogMessage(parts, players, connectionInfo,
-							itemPrintJson.ReceivingPlayer, itemPrintJson.Item.Player, itemPrintJson.Item);
+							itemPrintJson.ReceivingPlayer, itemPrintJson.Item.Player, itemPrintJson.Item, itemInfoResolver);
 		                break;
 	                case ItemCheatPrintJsonPacket itemCheatPrintJson:
 		                message = new ItemCheatLogMessage(parts, players, connectionInfo,
 			                itemCheatPrintJson.Team, itemCheatPrintJson.ReceivingPlayer, 
-			                itemCheatPrintJson.Item);
+			                itemCheatPrintJson.Item, itemInfoResolver);
 		                break;
 					case HintPrintJsonPacket hintPrintJson:
                         message = new HintItemSendLogMessage(parts, players, connectionInfo,
 							hintPrintJson.ReceivingPlayer, hintPrintJson.Item.Player,
-                            hintPrintJson.Item, hintPrintJson.Found.HasValue && hintPrintJson.Found.Value);
+                            hintPrintJson.Item, hintPrintJson.Found.HasValue && hintPrintJson.Found.Value, itemInfoResolver);
                         break;
 	                case JoinPrintJsonPacket joinPrintJson:
 		                message = new JoinLogMessage(parts, players, connectionInfo,
@@ -285,13 +284,13 @@ namespace Archipelago.MultiClient.Net.Helpers
             {
                 case JsonMessagePartType.ItemId:
                 case JsonMessagePartType.ItemName:
-                    return new ItemMessagePart(items, part);
+                    return new ItemMessagePart(itemInfoResolver, part);
                 case JsonMessagePartType.PlayerId:
                 case JsonMessagePartType.PlayerName:
                     return new PlayerMessagePart(players, connectionInfo, part);
                 case JsonMessagePartType.LocationId:
                 case JsonMessagePartType.LocationName:
-                    return new LocationMessagePart(locations, part);
+                    return new LocationMessagePart(itemInfoResolver, part);
                 case JsonMessagePartType.EntranceName:
                     return new EntranceMessagePart(part);
                 default:

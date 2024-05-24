@@ -1,4 +1,5 @@
-﻿using Archipelago.MultiClient.Net.Enums;
+﻿using Archipelago.MultiClient.Net.DataPackage;
+using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Helpers;
 
 namespace Archipelago.MultiClient.Net.Models
@@ -8,8 +9,7 @@ namespace Archipelago.MultiClient.Net.Models
 	/// </summary>
 	public class ItemInfo
 	{
-		readonly IReceivedItemsHelper receivedItemsHelper;
-		readonly ILocationCheckHelper locationCheckHelper;
+		readonly IItemInfoResolver itemInfoResolver;
 
 		/// <summary>
 		/// The item id of the item. Item ids are in the range of ± (2^53)-1.
@@ -34,23 +34,24 @@ namespace Archipelago.MultiClient.Net.Models
 		/// <summary>
 		/// The name of the item
 		/// </summary>
-		public string ItemName => receivedItemsHelper.GetItemName(ItemId, Game);
+		public string ItemName => itemInfoResolver.GetItemName(ItemId, Game);
 
 		/// <summary>
 		/// The name of the location that item is at
 		/// </summary>
-		public string LocationName => locationCheckHelper.GetLocationNameFromId(ItemId, Game);
+		public string LocationName => itemInfoResolver.GetLocationName(ItemId, Game);
 
 		/// <summary>
 		/// The game the item belongs to
 		/// </summary>
 		public string Game { get; }
 
-		public ItemInfo(NetworkItem item, string game,
-			IReceivedItemsHelper receivedItemsHelper, ILocationCheckHelper locationCheckHelper, PlayerInfo player)
+		/// <summary>
+		/// The constructor what else did you expect it to be
+		/// </summary>
+		public ItemInfo(NetworkItem item, string game, IItemInfoResolver itemInfoResolver, PlayerInfo player)
 		{
-			this.receivedItemsHelper = receivedItemsHelper;
-			this.locationCheckHelper = locationCheckHelper;
+			this.itemInfoResolver = itemInfoResolver;
 
 			Game = game;
 			ItemId = item.Item;
@@ -69,12 +70,14 @@ namespace Archipelago.MultiClient.Net.Models
 		/// <summary>
 		/// The player to receive the item
 		/// </summary>
-		public new PlayerInfo Player { get; }
+		public new PlayerInfo Player => base.Player;
 
-		public ScoutedItemInfo(NetworkItem item, string game, IReceivedItemsHelper receivedItemsHelper, ILocationCheckHelper locationCheckHelper, PlayerInfo player) 
-			: base(item, game, receivedItemsHelper, locationCheckHelper, player)
+		/// <summary>
+		/// The constructor what else did you expect it to be
+		/// </summary>
+		public ScoutedItemInfo(NetworkItem item, string game, IItemInfoResolver itemInfoResolver, PlayerInfo player) 
+			: base(item, game, itemInfoResolver, player)
 		{
-			Player = player;
 		}
 	}
 }

@@ -1,4 +1,5 @@
-﻿using Archipelago.MultiClient.Net.Enums;
+﻿using Archipelago.MultiClient.Net.DataPackage;
+using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Helpers;
 using Archipelago.MultiClient.Net.Models;
 
@@ -20,7 +21,7 @@ namespace Archipelago.MultiClient.Net.MessageLog.Parts
 		/// </summary>
 		public long ItemId { get; }
 
-		internal ItemMessagePart(IReceivedItemsHelper items, JsonMessagePart part) : base(MessagePartType.Item, part)
+		internal ItemMessagePart(IItemInfoResolver items, JsonMessagePart part) : base(MessagePartType.Item, part)
 		{
 			Flags = part.Flags ?? ItemFlags.None;
 			Color = GetColor(Flags);

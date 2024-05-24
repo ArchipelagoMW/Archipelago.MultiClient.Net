@@ -205,7 +205,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 		ReadOnlyCollection<long> missingLocations = new ReadOnlyCollection<long>(new long[0]);
 
         readonly IArchipelagoSocketHelper socket;
-        readonly IDataPackageCache cache;
+        readonly IItemInfoResolver itemInfoResolver;
         readonly IConnectionInfoProvider connectionInfoProvider;
         readonly IPlayerHelper players;
 
@@ -213,7 +213,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 #if NET35
         Action<LocationInfoPacket> locationInfoPacketCallback;
 #else
-        TaskCompletionSource<LocationInfoPacket> locationInfoPacketCallbackTask;
+        TaskCompletionSource<Dictionary<long, ScoutedItemInfo>> locationInfoPacketCallbackTask;
 #endif
 	    /// <inheritdoc/>
 		public ReadOnlyCollection<long> AllLocations => allLocations.AsToReadOnlyCollection();
@@ -222,12 +222,13 @@ namespace Archipelago.MultiClient.Net.Helpers
 	    /// <inheritdoc/>
 		public ReadOnlyCollection<long> AllMissingLocations => missingLocations;
 
-        internal LocationCheckHelper(IArchipelagoSocketHelper socket, IDataPackageCache cache, 
+        internal LocationCheckHelper(IArchipelagoSocketHelper socket, IItemInfoResolver itemInfoResolver, 
 	        IConnectionInfoProvider connectionInfoProvider, IPlayerHelper players)
         {
             this.socket = socket;
-            this.cache = cache;
+            this.itemInfoResolver = itemInfoResolver;
 			this.connectionInfoProvider = connectionInfoProvider;
+			this.players = players;
 
             socket.PacketReceived += Socket_PacketReceived;
         }
@@ -275,9 +276,16 @@ namespace Archipelago.MultiClient.Net.Helpers
                 case LocationInfoPacket locationInfoPacket:
                     if (awaitingLocationInfoPacket)
                     {
-                        if (locationInfoPacketCallbackTask != null)
-                            locationInfoPacketCallbackTask.TrySetResult(locationInfoPacket);
+	                    if (locationInfoPacketCallbackTask != null)
+	                    {
+		                    var items = locationInfoPacket.Locations.ToDictionary(
+			                    i => i.Location,
+			                    i => new ScoutedItemInfo(i, connectionInfoProvider.Game, itemInfoResolver,
+				                    players.Players[connectionInfoProvider.Team][i.Player]));
 
+		                    locationInfoPacketCallbackTask.TrySetResult(items);
+						}
+						
                         awaitingLocationInfoPacket = false;
                         locationInfoPacketCallbackTask = null;
                     }
@@ -348,7 +356,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 	    /// <inheritdoc/>
 		public void ScoutLocationsAsync(Action<Dictionary<long, ScoutedItemInfo>> callback = null, bool createAsHint = false, params long[] ids)
         {
-            socket.SendPacketAsync(new LocationScoutsPacket()
+            socket.SendPacketAsync(new LocationScoutsPacket
             {
                 Locations = ids,
                 CreateAsHint = createAsHint
@@ -358,7 +366,7 @@ namespace Archipelago.MultiClient.Net.Helpers
             {
 				var items = scoutResult.Locations.ToDictionary(
 					i => i.Location,
-					i => new ScoutedItemInfo(i, connectionInfoProvider.Game, error, this,
+					i => new ScoutedItemInfo(i, connectionInfoProvider.Game, itemInfoResolver,
 						players.Players[connectionInfoProvider.Team][i.Player]));
 
 				callback(items);
@@ -373,7 +381,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 	    /// <inheritdoc/>
 		public Task<Dictionary<long, ScoutedItemInfo>> ScoutLocationsAsync(bool createAsHint, params long[] ids)
         {
-            locationInfoPacketCallbackTask = new TaskCompletionSource<LocationInfoPacket>();
+            locationInfoPacketCallbackTask = new TaskCompletionSource<Dictionary<long, ScoutedItemInfo>>();
             awaitingLocationInfoPacket = true;
 
             socket.SendPacket(new LocationScoutsPacket()
@@ -391,40 +399,12 @@ namespace Archipelago.MultiClient.Net.Helpers
 #endif
 
 		/// <inheritdoc/>
-		public long GetLocationIdFromName(string game, string locationName)
-        {
-	        if (game == null)
-		        game = connectionInfoProvider.Game ?? "Archipelago";
-			
-	        if (cache.TryGetGameDataFromCache(game, out var gameData))
-		        if (gameData.Locations.TryGetValue(locationName, out var locationIdInGame))
-			        return locationIdInGame;
-
-	        if (cache.TryGetGameDataFromCache("Archipelago", out var archipelagoData))
-		        if (archipelagoData.Locations.TryGetValue(locationName, out var locationIdInArchipelago))
-			        return locationIdInArchipelago;
-
-			return -1; //in hindsight -1 isnt a great return here as its a valid locationid in itzelf
-        }
+		public long GetLocationIdFromName(string game, string locationName) => itemInfoResolver.GetLocationId(locationName, game);
 
 		/// <inheritdoc/>
-		public string GetLocationNameFromId(long locationId, string game = null)
-        {
-			if (game == null)
-	            game = connectionInfoProvider.Game ?? "Archipelago";
+		public string GetLocationNameFromId(long locationId, string game = null) => itemInfoResolver.GetLocationName(locationId, game);
 
-            if (locationId < 0)
-	            game = "Archipelago";
-
-            if (!cache.TryGetGameDataFromCache(game, out var dataPackage))
-	            return null;
-
-            return dataPackage.Locations.TryGetValue(locationId, out var itemName)
-	            ? itemName
-	            : null;
-		}
-
-        void CheckLocations(ICollection<long> locationIds)
+		void CheckLocations(ICollection<long> locationIds)
         {
             if (locationIds == null || !locationIds.Any())
                 return;

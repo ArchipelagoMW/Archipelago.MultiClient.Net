@@ -21,11 +21,12 @@ namespace Archipelago.MultiClient.Net
             var dataPackageCache = new DataPackageCache(socket);
             var connectionInfo = new ConnectionInfoHelper(socket);
             var players = new PlayerHelper(socket, connectionInfo);
-			var locations = new LocationCheckHelper(socket, dataPackageCache, connectionInfo);
-            var items = new ReceivedItemsHelper(socket, locations, dataPackageCache, connectionInfo, players);
+			var itemInfoResolver = new ItemInfoResolver(dataPackageCache, connectionInfo);
+			var locations = new LocationCheckHelper(socket, itemInfoResolver, connectionInfo, players);
+            var items = new ReceivedItemsHelper(socket, locations, itemInfoResolver, connectionInfo, players);
 			var roomState = new RoomStateHelper(socket, locations);
 			var dataStorage = new DataStorageHelper(socket, connectionInfo);
-            var messageLog = new MessageLogHelper(socket, items, locations, players, connectionInfo);
+            var messageLog = new MessageLogHelper(socket, itemInfoResolver, players, connectionInfo);
 
             return new ArchipelagoSession(socket, items, locations, players, roomState, connectionInfo, dataStorage, messageLog);
         }
