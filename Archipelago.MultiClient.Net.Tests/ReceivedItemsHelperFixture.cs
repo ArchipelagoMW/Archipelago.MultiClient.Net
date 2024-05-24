@@ -19,8 +19,9 @@ namespace Archipelago.MultiClient.Net.Tests
             var locationHelper = Substitute.For<ILocationCheckHelper>();
             var cache = Substitute.For<IDataPackageCache>();
             var connectionInfo = Substitute.For<IConnectionInfoProvider>();
+            var players = Substitute.For<IPlayerHelper>();
 
-			var sut = new ReceivedItemsHelper(socket, locationHelper, cache, connectionInfo);
+			var sut = new ReceivedItemsHelper(socket, locationHelper, cache, connectionInfo, players);
 
             socket.PacketReceived +=
                 Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(
@@ -41,7 +42,7 @@ namespace Archipelago.MultiClient.Net.Tests
                 foreach (var networkItem in sut.AllItemsReceived)
                 {
                     Thread.Sleep(1);
-                    total += networkItem.Item;
+                    total += networkItem.ItemId;
                 }
             });
             var receiveNewItemTask = new Task(() =>
@@ -71,7 +72,8 @@ namespace Archipelago.MultiClient.Net.Tests
             var socket = Substitute.For<IArchipelagoSocketHelper>();
             var locationHelper = Substitute.For<ILocationCheckHelper>();
             var cache = Substitute.For<IDataPackageCache>();
-            var connectionInfo = Substitute.For<IConnectionInfoProvider>();
+            var players = Substitute.For<IPlayerHelper>();
+			var connectionInfo = Substitute.For<IConnectionInfoProvider>();
             connectionInfo.Game.Returns("TestGame");
 
 			var gameDataLookup = Substitute.For<IGameDataLookup>();
@@ -82,12 +84,12 @@ namespace Archipelago.MultiClient.Net.Tests
                 return true;
             });
 
-            var sut = new ReceivedItemsHelper(socket, locationHelper, cache, connectionInfo);
+            var sut = new ReceivedItemsHelper(socket, locationHelper, cache, connectionInfo, players);
 
             sut.ItemReceived += (helper) =>
             {
                 var item = helper.DequeueItem();
-                var itemName = helper.GetItemName(item.Item);
+                var itemName = helper.GetItemName(item.ItemId);
                 Assert.That(itemName, Is.EqualTo("TestItem"));
             };
 
@@ -109,6 +111,7 @@ namespace Archipelago.MultiClient.Net.Tests
             var locationHelper = Substitute.For<ILocationCheckHelper>();
             var cache = Substitute.For<IDataPackageCache>();
             var connectionInfo = Substitute.For<IConnectionInfoProvider>();
+            var players = Substitute.For<IPlayerHelper>();
 
 			var gameDataLookup = Substitute.For<IGameDataLookup>();
             gameDataLookup.Items.Returns(new TwoWayLookup<long, string> { { 1, "TestItem" } });
@@ -118,12 +121,12 @@ namespace Archipelago.MultiClient.Net.Tests
 	            return true;
             });
 
-			var sut = new ReceivedItemsHelper(socket, locationHelper, cache, connectionInfo);
+			var sut = new ReceivedItemsHelper(socket, locationHelper, cache, connectionInfo, players);
 
             sut.ItemReceived += (helper) =>
             {
                 var item = helper.DequeueItem();
-                var itemName = helper.GetItemName(item.Item);
+                var itemName = helper.GetItemName(item.ItemId);
                 Assert.That(itemName, Is.Null);
             };
 
@@ -146,8 +149,9 @@ namespace Archipelago.MultiClient.Net.Tests
             var locationHelper = Substitute.For<ILocationCheckHelper>();
             var cache = Substitute.For<IDataPackageCache>();
             var connectionInfo = Substitute.For<IConnectionInfoProvider>();
+            var players = Substitute.For<IPlayerHelper>();
 
-            var sut = new ReceivedItemsHelper(socket, locationHelper, cache, connectionInfo);
+			var sut = new ReceivedItemsHelper(socket, locationHelper, cache, connectionInfo, players);
             var itemInPacket = new NetworkItem { Item = 1, Location = 1, Player = 1, Flags = Enums.ItemFlags.None };
 
             sut.ItemReceived += (helper) =>
@@ -186,8 +190,9 @@ namespace Archipelago.MultiClient.Net.Tests
             var locationHelper = Substitute.For<ILocationCheckHelper>();
             var cache = Substitute.For<IDataPackageCache>();
             var connectionInfo = Substitute.For<IConnectionInfoProvider>();
+            var players = Substitute.For<IPlayerHelper>();
 
-            var sut = new ReceivedItemsHelper(socket, locationHelper, cache, connectionInfo);
+			var sut = new ReceivedItemsHelper(socket, locationHelper, cache, connectionInfo, players);
 
             var archipelagoDataLookup = Substitute.For<IGameDataLookup>();
             archipelagoDataLookup.Items.Returns(new TwoWayLookup<long, string> { { -100, "ArchipelagoItem" } });
@@ -225,8 +230,9 @@ namespace Archipelago.MultiClient.Net.Tests
 			var locationHelper = Substitute.For<ILocationCheckHelper>();
 			var cache = Substitute.For<IDataPackageCache>();
 			var connectionInfo = Substitute.For<IConnectionInfoProvider>();
+			var players = Substitute.For<IPlayerHelper>();
 
-			var sut = new ReceivedItemsHelper(socket, locationHelper, cache, connectionInfo);
+			var sut = new ReceivedItemsHelper(socket, locationHelper, cache, connectionInfo, players);
 
 			var archipelagoDataLookup = Substitute.For<IGameDataLookup>();
 			archipelagoDataLookup.Items.Returns(new TwoWayLookup<long, string> { { -100, "ArchipelagoItem" } });
