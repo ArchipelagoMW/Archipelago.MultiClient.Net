@@ -7,7 +7,7 @@ namespace Archipelago.MultiClient.Net.MessageLog.Messages
 	/// The `PlayerSpecificLogMessage` is send a base class for LogMessage's that are made in the context of a specific player.
 	/// Item player specific messages contain additional information about the specific player.
 	///
-	/// `ItemSendLogMessage` also serves as the base class for <see cref="T:Archipelago.MultiClient.Net.MessageLog.Messages.HintItemSendLogMessage"/> & <see cref="T:Archipelago.MultiClient.Net.MessageLog.Messages.ItemCheatLogMessage"/>
+	/// `ItemSendLogMessage` also serves as the base class for <see cref="T:Archipelago.MultiClient.Net.MessageLog.Messages.HintItemSendLogMessage"/> and <see cref="T:Archipelago.MultiClient.Net.MessageLog.Messages.ItemCheatLogMessage"/>
 	/// </summary>
 	public abstract class PlayerSpecificLogMessage : LogMessage
 	{

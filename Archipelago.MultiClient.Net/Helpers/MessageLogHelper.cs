@@ -12,15 +12,25 @@ namespace Archipelago.MultiClient.Net.Helpers
 	/// <summary>
 	/// Allows clients to easily subscribe to incoming messages and helps formulating those messages correctly
 	/// </summary>
-    public class MessageLogHelper
-    {
-	    /// <inheritdoc />
+	public interface IMessageLogHelper
+	{
+		/// <summary>
+		/// Triggered for each message that should be presented to the player
+		/// </summary>
+		event MessageLogHelper.MessageReceivedHandler OnMessageReceived;
+	}
+
+	///<inheritdoc/>
+	public class MessageLogHelper : IMessageLogHelper
+	{
+		/// <summary>
+		/// Delegate for the OnMessageReceived event
+		/// </summary>
+		/// <param name="message">The log message object, this object can be MessageLog.Messages classes, switch this message based on type to get access to finer details</param>
 		public delegate void MessageReceivedHandler(LogMessage message);
 
-        /// <summary>
-        /// Triggered for each message that should be presented to the player
-        /// </summary>
-        public event MessageReceivedHandler OnMessageReceived;
+		/// <inheritdoc />
+		public event MessageReceivedHandler OnMessageReceived;
 
 		readonly IItemInfoResolver itemInfoResolver;
         readonly IPlayerHelper players;

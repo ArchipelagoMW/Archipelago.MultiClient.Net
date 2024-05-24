@@ -16,8 +16,38 @@ namespace Archipelago.MultiClient.Net.Helpers
 	/// <summary>
 	/// Provides access to a server side data storage to share and store values across sessions and players
 	/// </summary>
-	public partial class DataStorageHelper
-    {
+	public interface IDataStorageHelper : IDataStorageWrapper
+	{
+		/// <summary>
+		/// Stored or retrieves a value from the server side data storage.
+		/// Assignment operations like = or *= will run asynchronously on server only
+		/// The retrievals are done synchronously however this storage is implemented using deferred execution.
+		/// </summary>
+		/// <param name="scope">The scope of the key</param>
+		/// <param name="key">The key for which the value should be stored or retrieved</param>
+		/// <returns>A value </returns>
+		DataStorageElement this[Scope scope, string key] { get; set; }
+
+		/// <summary>
+		/// Stored or retrieves a value from the server side data storage.
+		/// Assignment operations like = or *= will run asynchronously on server only
+		/// The retrievals are done synchronously however this storage is implemented using deferred execution.
+		/// </summary>
+		/// <param name="key">The key under which the value should be stored or retrieved</param>
+		/// <returns>A value </returns>
+		DataStorageElement this[string key] { get; set; }
+	}
+
+	/// <summary>
+	/// Provides access to a server side data storage to share and store values across sessions and players
+	/// </summary>
+	public partial class DataStorageHelper : IDataStorageHelper
+	{
+		/// <summary>
+		/// Delegate for the callback that is called when a value in the data storage is updated
+		/// </summary>
+		/// <param name="originalValue">The original value before the update</param>
+		/// <param name="newValue">the current value</param>
         public delegate void DataStorageUpdatedHandler(JToken originalValue, JToken newValue);
 
         readonly Dictionary<string, DataStorageUpdatedHandler> onValueChangedEventHandlers = new Dictionary<string, DataStorageUpdatedHandler>();
@@ -78,27 +108,14 @@ namespace Archipelago.MultiClient.Net.Helpers
             }
         }
 
-        /// <summary>
-        /// Stored or retrieves a value from the server side data storage.
-        /// Assignment operations like = or *= will run asynchronously on server only
-        /// The retrievals are done synchronously however this storage is implemented using deferred execution.
-        /// </summary>
-        /// <param name="scope">The scope of the key</param>
-        /// <param name="key">The key for which the value should be stored or retrieved</param>
-        /// <returns>A value </returns>
+		/// <inheritdoc />
         public DataStorageElement this[Scope scope, string key]
         {
             get => this[AddScope(scope, key)];
             set => this[AddScope(scope, key)] = value;
         }
-        /// <summary>
-        /// Stored or retrieves a value from the server side data storage.
-        /// Assignment operations like = or *= will run asynchronously on server only
-        /// The retrievals are done synchronously however this storage is implemented using deferred execution.
-        /// </summary>
-        /// <param name="key">The key under which the value should be stored or retrieved</param>
-        /// <returns>A value </returns>
-        public DataStorageElement this[string key]
+		/// <inheritdoc />
+		public DataStorageElement this[string key]
         {
             get => new DataStorageElement(GetContextForKey(key));
             set => SetValue(key, value);

@@ -1,5 +1,8 @@
 ﻿namespace Archipelago.MultiClient.Net.Enums
 {
+	/// <summary>
+	/// The possible reasons for a connection to be refused.
+	/// </summary>
     public enum ConnectionRefusedError
     {
         /// <summary>

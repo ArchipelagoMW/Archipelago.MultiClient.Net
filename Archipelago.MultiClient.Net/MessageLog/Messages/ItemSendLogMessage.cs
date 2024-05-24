@@ -11,7 +11,7 @@ namespace Archipelago.MultiClient.Net.MessageLog.Messages
 	/// The `ItemSendLogMessage` is send in response to a client obtaining an item.
 	/// Item send messages contain additional information about the item that was sent for more specific processing.
 	///
-	/// `ItemSendLogMessage` also serves as the base class for <see cref="T:Archipelago.MultiClient.Net.MessageLog.Messages.HintItemSendLogMessage"/> & <see cref="T:Archipelago.MultiClient.Net.MessageLog.Messages.ItemCheatLogMessage"/>
+	/// `ItemSendLogMessage` also serves as the base class for <see cref="T:Archipelago.MultiClient.Net.MessageLog.Messages.HintItemSendLogMessage"/> and <see cref="T:Archipelago.MultiClient.Net.MessageLog.Messages.ItemCheatLogMessage"/>
 	/// </summary>
 	public class ItemSendLogMessage : LogMessage
 	{
