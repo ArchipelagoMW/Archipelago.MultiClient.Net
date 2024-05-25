@@ -144,15 +144,13 @@ namespace Archipelago.MultiClient.Net.Helpers
 	        if (packet.HintPoints.HasValue)
 		        HintPoints = packet.HintPoints.Value;
 
-			//TODO recalculate hint cost here as this is where locationCheckHelper.AllLocations is not 0 (hopefully depending on order)
-			//should probably unit test this
-			HintCost = (int)Math.Max(0m, locationCheckHelper.AllLocations.Count * 0.01m * HintCostPercentage);
+			var totalAmountOfLocations = packet.LocationsChecked.Length + packet.MissingChecks.Length;
+			HintCost = (int)Math.Max(0m, totalAmountOfLocations * 0.01m * HintCostPercentage);
 		}
 
 		void OnRoomInfoPacketReceived(RoomInfoPacket packet)
         {
 	        HintCostPercentage = packet.HintCostPercentage;
-	        HintCost = (int)Math.Max(0m, locationCheckHelper.AllLocations.Count * 0.01m * packet.HintCostPercentage);
 			LocationCheckPoints = packet.LocationCheckPoints;
             Version = packet.Version?.ToVersion();
             HasPassword = packet.Password;
