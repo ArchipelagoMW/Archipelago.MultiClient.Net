@@ -47,13 +47,19 @@ namespace Archipelago.MultiClient.Net.Models
 		public string Game { get; }
 
 		/// <summary>
+		/// The game the location belongs to
+		/// </summary>
+		public string LocationGame { get; }
+
+		/// <summary>
 		/// The constructor what else did you expect it to be
 		/// </summary>
-		public ItemInfo(NetworkItem item, string game, IItemInfoResolver itemInfoResolver, PlayerInfo player)
+		public ItemInfo(NetworkItem item, string receiverGame, string senderGame, IItemInfoResolver itemInfoResolver, PlayerInfo player)
 		{
 			this.itemInfoResolver = itemInfoResolver;
 
-			Game = game;
+			Game = receiverGame;
+			LocationGame = senderGame;
 			ItemId = item.Item;
 			LocationId = item.Location;
 			Flags = item.Flags;
@@ -75,8 +81,8 @@ namespace Archipelago.MultiClient.Net.Models
 		/// <summary>
 		/// The constructor what else did you expect it to be
 		/// </summary>
-		public ScoutedItemInfo(NetworkItem item, string game, IItemInfoResolver itemInfoResolver, PlayerInfo player) 
-			: base(item, game, itemInfoResolver, player)
+		public ScoutedItemInfo(NetworkItem item, string receiverGame, string senderGame, IItemInfoResolver itemInfoResolver, PlayerInfo player) 
+			: base(item, receiverGame, senderGame, itemInfoResolver, player)
 		{
 		}
 	}

@@ -21,12 +21,13 @@ namespace Archipelago.MultiClient.Net.Tests
         {
             var socket = Substitute.For<IArchipelagoSocketHelper>();
 			var itemInfoResolver = Substitute.For<IItemInfoResolver>();
-			itemInfoResolver.GetLocationName(6L).Returns("Text6");
-            var items = Substitute.For<IReceivedItemsHelper>();
-            items.GetItemName(4L).Returns("Text4");
+			itemInfoResolver.GetLocationName(6L, "Game666").Returns("Text6");
+			itemInfoResolver.GetItemName(4L, "Game123").Returns("Text4");
             var players = Substitute.For<IPlayerHelper>();
             players.GetPlayerAlias(8).Returns("Text8");
-            var connectionInfo = Substitute.For<IConnectionInfoProvider>();
+            players.GetPlayerInfo(123).Returns(new PlayerInfo { Slot = 123, Game = "Game123" });
+            players.GetPlayerInfo(666).Returns(new PlayerInfo { Slot = 666, Game = "Game666" });
+			var connectionInfo = Substitute.For<IConnectionInfoProvider>();
 
             var sut = new MessageLogHelper(socket, itemInfoResolver, players, connectionInfo);
 
@@ -38,12 +39,10 @@ namespace Archipelago.MultiClient.Net.Tests
                 Data = new[] {
                     new JsonMessagePart { Type = null, Text = "Text1" },
                     new JsonMessagePart { Type = JsonMessagePartType.Text, Text = "Text2" },
-                    new JsonMessagePart {
-                        Type = JsonMessagePartType.Color, Text = "Text3", Color = JsonMessagePartColor.Blue
-                    },
-                    new JsonMessagePart { Type = JsonMessagePartType.ItemId, Text = "4", Flags = ItemFlags.None },
+                    new JsonMessagePart { Type = JsonMessagePartType.Color, Text = "Text3", Color = JsonMessagePartColor.Blue },
+                    new JsonMessagePart { Type = JsonMessagePartType.ItemId, Text = "4", Flags = ItemFlags.None, Player = 123 },
                     new JsonMessagePart { Type = JsonMessagePartType.ItemName, Text = "Text5" },
-                    new JsonMessagePart { Type = JsonMessagePartType.LocationId, Text = "6" },
+                    new JsonMessagePart { Type = JsonMessagePartType.LocationId, Text = "6", Player = 666 },
                     new JsonMessagePart { Type = JsonMessagePartType.LocationName, Text = "Text7" },
                     new JsonMessagePart { Type = JsonMessagePartType.PlayerId, Text = "8" },
                     new JsonMessagePart { Type = JsonMessagePartType.PlayerName, Text = "Text9" },
@@ -61,12 +60,13 @@ namespace Archipelago.MultiClient.Net.Tests
         {
             var socket = Substitute.For<IArchipelagoSocketHelper>();
             var itemInfoResolver = Substitute.For<IItemInfoResolver>();
-            itemInfoResolver.GetLocationName(6L).Returns("Text6");
-            var items = Substitute.For<IReceivedItemsHelper>();
-            items.GetItemName(4L).Returns("Text4");
+            itemInfoResolver.GetLocationName(6L, "Game666").Returns("Text6");
+            itemInfoResolver.GetItemName(4L, "Game123").Returns("Text4");
             var players = Substitute.For<IPlayerHelper>();
             players.GetPlayerAlias(8).Returns("Text8");
-            var connectionInfo = Substitute.For<IConnectionInfoProvider>();
+			players.GetPlayerInfo(123).Returns(new PlayerInfo { Slot = 123, Game = "Game123" });
+			players.GetPlayerInfo(666).Returns(new PlayerInfo { Slot = 666, Game = "Game666" });
+			var connectionInfo = Substitute.For<IConnectionInfoProvider>();
             connectionInfo.Slot.Returns(0);
 
             var sut = new MessageLogHelper(socket, itemInfoResolver, players, connectionInfo);
@@ -79,12 +79,10 @@ namespace Archipelago.MultiClient.Net.Tests
                 Data = new[] {
                     new JsonMessagePart { Type = null, Text = "Text1" },
                     new JsonMessagePart { Type = JsonMessagePartType.Text, Text = "Text2" },
-                    new JsonMessagePart {
-                        Type = JsonMessagePartType.Color, Text = "Text3", Color = JsonMessagePartColor.BlueBg
-                    },
-                    new JsonMessagePart { Type = JsonMessagePartType.ItemId, Text = "4", Flags = ItemFlags.None },
+                    new JsonMessagePart { Type = JsonMessagePartType.Color, Text = "Text3", Color = JsonMessagePartColor.BlueBg },
+                    new JsonMessagePart { Type = JsonMessagePartType.ItemId, Text = "4", Flags = ItemFlags.None, Player = 123},
                     new JsonMessagePart { Type = JsonMessagePartType.ItemName, Text = "Text5" },
-                    new JsonMessagePart { Type = JsonMessagePartType.LocationId, Text = "6" },
+                    new JsonMessagePart { Type = JsonMessagePartType.LocationId, Text = "6", Player = 666},
                     new JsonMessagePart { Type = JsonMessagePartType.LocationName, Text = "Text7" },
                     new JsonMessagePart { Type = JsonMessagePartType.PlayerId, Text = "8" },
                     new JsonMessagePart { Type = JsonMessagePartType.PlayerName, Text = "Text9" },
@@ -310,12 +308,13 @@ namespace Archipelago.MultiClient.Net.Tests
 			players.GetPlayerAlias(5).Returns("LocalPlayer");
 
 			players.Players.Returns(GetPlayerCollection(new List<PlayerInfo> {
-				new PlayerInfo { Team = 0, Slot = 1 },
-				new PlayerInfo { Team = 0, Slot = 2 },
-				new PlayerInfo { Team = 0, Slot = 3 },
-				new PlayerInfo { Team = 0, Slot = 4 },
-				new PlayerInfo { Team = 0, Slot = 5 }
+				new PlayerInfo { Team = 0, Slot = 1, Game = "Game1" },
+				new PlayerInfo { Team = 0, Slot = 2, Game = "Game2" },
+				new PlayerInfo { Team = 0, Slot = 3, Game = "Game3" },
+				new PlayerInfo { Team = 0, Slot = 4, Game = "Game4" },
+				new PlayerInfo { Team = 0, Slot = 5, Game = "Game5" }
 			}));
+			players.GetPlayerInfo(Arg.Any<int>(), Arg.Any<int>()).Returns(x => players.Players[x.ArgAt<int>(0)][x.ArgAt<int>(1)]);
 			var connectionInfo = Substitute.For<IConnectionInfoProvider>();
 			connectionInfo.Team.Returns(0);
 			connectionInfo.Slot.Returns(5);
@@ -337,7 +336,13 @@ namespace Archipelago.MultiClient.Net.Tests
 			socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(packet);
 
 			Assert.That(logMessage, Is.Not.Null);
-			Assert.That(logMessage.Item, Is.EqualTo(packet.Item));
+
+			Assert.That(logMessage.Item.ItemId, Is.EqualTo(packet.Item.Item));
+			Assert.That(logMessage.Item.LocationId, Is.EqualTo(packet.Item.Location));
+			Assert.That(logMessage.Item.Player.Slot, Is.EqualTo(packet.Item.Player));
+			Assert.That(logMessage.Item.Flags, Is.EqualTo(packet.Item.Flags));
+			Assert.That(logMessage.Item.Game, Is.EqualTo("Game5"));
+			Assert.That(logMessage.Item.LocationGame, Is.EqualTo("Game3"));
 
 			Assert.That(logMessage.Receiver.Slot, Is.EqualTo(5));
 			Assert.That(logMessage.Sender.Slot, Is.EqualTo(3));
@@ -346,9 +351,6 @@ namespace Archipelago.MultiClient.Net.Tests
 			Assert.That(logMessage.IsSenderTheActivePlayer, Is.EqualTo(false));
 
 			Assert.That(logMessage.IsRelatedToActivePlayer, Is.EqualTo(true));
-
-			Assert.That(logMessage.ReceivingPlayerSlot, Is.EqualTo(5));
-			Assert.That(logMessage.SendingPlayerSlot, Is.EqualTo(3));
 		}
 
 		[Test]
@@ -356,12 +358,14 @@ namespace Archipelago.MultiClient.Net.Tests
 		{
 			var socket = Substitute.For<IArchipelagoSocketHelper>();
 			var itemInfoResolver = Substitute.For<IItemInfoResolver>();
+			
 			var players = Substitute.For<IPlayerHelper>();
 			players.GetPlayerAlias(2).Returns("LocalPlayer");
 			players.Players.Returns(GetPlayerCollection(new List<PlayerInfo> {
-				new PlayerInfo { Team = 0, Slot = 1 },
-				new PlayerInfo { Team = 0, Slot = 2 },
+				new PlayerInfo { Team = 0, Slot = 1, Game = "Game1" },
+				new PlayerInfo { Team = 0, Slot = 2, Game = "Game2" },
 			}));
+			players.GetPlayerInfo(Arg.Any<int>(), Arg.Any<int>()).Returns(x => players.Players[x.ArgAt<int>(0)][x.ArgAt<int>(1)]);
 			var connectionInfo = Substitute.For<IConnectionInfoProvider>();
 			connectionInfo.Team.Returns(0);
 			connectionInfo.Slot.Returns(2);
@@ -375,6 +379,7 @@ namespace Archipelago.MultiClient.Net.Tests
 			var packet = new ItemCheatPrintJsonPacket
 			{
 				Data = new[] { new JsonMessagePart { Text = "" } },
+				//Despite the official docs claiming that the player is the sender, in the case of an item cheat message it is actually the receiver
 				Item = new NetworkItem { Flags = ItemFlags.None, Player = 1, Item = 100, Location = 1000 },
 				ReceivingPlayer = 1,
 				Team = 0,
@@ -384,7 +389,13 @@ namespace Archipelago.MultiClient.Net.Tests
 			socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(packet);
 
 			Assert.That(logMessage, Is.Not.Null);
-			Assert.That(logMessage.Item, Is.EqualTo(packet.Item));
+
+			Assert.That(logMessage.Item.ItemId, Is.EqualTo(packet.Item.Item));
+			Assert.That(logMessage.Item.LocationId, Is.EqualTo(packet.Item.Location));
+			Assert.That(logMessage.Item.Player.Slot, Is.EqualTo(packet.Item.Player));
+			Assert.That(logMessage.Item.Flags, Is.EqualTo(packet.Item.Flags));
+			Assert.That(logMessage.Item.Game, Is.EqualTo("Game1"));
+			Assert.That(logMessage.Item.LocationGame, Is.EqualTo("Archipelago"));
 
 			Assert.That(logMessage.Receiver.Slot, Is.EqualTo(1));
 			Assert.That(logMessage.Sender.Slot, Is.EqualTo(0)); //Slot 0 = Server
@@ -404,12 +415,13 @@ namespace Archipelago.MultiClient.Net.Tests
 			var players = Substitute.For<IPlayerHelper>();
 			players.GetPlayerAlias(5).Returns("LocalPlayer");
 			players.Players.Returns(GetPlayerCollection(new List<PlayerInfo> {
-				new PlayerInfo { Team = 0, Slot = 1 },
-				new PlayerInfo { Team = 0, Slot = 2 },
-				new PlayerInfo { Team = 0, Slot = 3 },
-				new PlayerInfo { Team = 0, Slot = 4 },
-				new PlayerInfo { Team = 0, Slot = 5 }
+				new PlayerInfo { Team = 0, Slot = 1, Game = "Game1" },
+				new PlayerInfo { Team = 0, Slot = 2, Game = "Game2" },
+				new PlayerInfo { Team = 0, Slot = 3, Game = "Game3" },
+				new PlayerInfo { Team = 0, Slot = 4, Game = "Game4" },
+				new PlayerInfo { Team = 0, Slot = 5, Game = "Game5" }
 			}));
+			players.GetPlayerInfo(Arg.Any<int>(), Arg.Any<int>()).Returns(x => players.Players[x.ArgAt<int>(0)][x.ArgAt<int>(1)]);
 			var connectionInfo = Substitute.For<IConnectionInfoProvider>();
 			connectionInfo.Team.Returns(0);
 			connectionInfo.Slot.Returns(5);
@@ -432,7 +444,13 @@ namespace Archipelago.MultiClient.Net.Tests
 			socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(packet);
 
 			Assert.That(logMessage, Is.Not.Null);
-			Assert.That(logMessage.Item, Is.EqualTo(packet.Item));
+
+			Assert.That(logMessage.Item.ItemId, Is.EqualTo(packet.Item.Item));
+			Assert.That(logMessage.Item.LocationId, Is.EqualTo(packet.Item.Location));
+			Assert.That(logMessage.Item.Player.Slot, Is.EqualTo(packet.Item.Player));
+			Assert.That(logMessage.Item.Flags, Is.EqualTo(packet.Item.Flags));
+			Assert.That(logMessage.Item.Game, Is.EqualTo("Game2"));
+			Assert.That(logMessage.Item.LocationGame, Is.EqualTo("Game3"));
 
 			Assert.That(logMessage.Receiver.Slot, Is.EqualTo(2));
 			Assert.That(logMessage.Sender.Slot, Is.EqualTo(3));
@@ -443,9 +461,6 @@ namespace Archipelago.MultiClient.Net.Tests
 			Assert.That(logMessage.IsRelatedToActivePlayer, Is.EqualTo(false));
 
 			Assert.That(logMessage.IsFound, Is.EqualTo(true));
-
-			Assert.That(logMessage.ReceivingPlayerSlot, Is.EqualTo(2));
-			Assert.That(logMessage.SendingPlayerSlot, Is.EqualTo(3));
 		}
 
 		[Test]

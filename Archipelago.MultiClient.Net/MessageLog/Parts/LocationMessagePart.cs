@@ -16,17 +16,26 @@ namespace Archipelago.MultiClient.Net.MessageLog.Parts
 		/// </summary>
 		public long LocationId { get; }
 
-		internal LocationMessagePart(IItemInfoResolver itemInfoResolver, JsonMessagePart part) 
+		/// <summary>
+		/// The player that owns the location
+		/// </summary>
+		public int Player { get; }
+
+		internal LocationMessagePart(IPlayerHelper players, IItemInfoResolver itemInfoResolver, JsonMessagePart part) 
 			: base(MessagePartType.Location, part, Color.Green)
 		{
+			Player = part.Player ?? 0;
+
+			var game = (players.GetPlayerInfo(Player) ?? new PlayerInfo()).Game;
+
 			switch (part.Type)
 			{
 				case JsonMessagePartType.LocationId:
 					LocationId = long.Parse(part.Text);
-					Text = itemInfoResolver.GetItemName(LocationId) ?? $"Location: {LocationId}";
+					Text = itemInfoResolver.GetLocationName(LocationId, game) ?? $"Location: {LocationId}";
 					break;
-				case JsonMessagePartType.PlayerName:
-					LocationId = 0; // we are not going to try to reverse lookup as we don't know the game this location belongs to
+				case JsonMessagePartType.LocationName:
+					LocationId = itemInfoResolver.GetLocationId(part.Text, game);
 					Text = part.Text;
 					break;
 			}

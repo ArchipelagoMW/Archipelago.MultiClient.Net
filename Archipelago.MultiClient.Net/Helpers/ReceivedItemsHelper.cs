@@ -164,8 +164,8 @@ namespace Archipelago.MultiClient.Net.Helpers
 
                     foreach (var networkItem in receivedItemsPacket.Items)
                     {
-	                    var playerForItem = playerHelper.Players[connectionInfoProvider.Team][networkItem.Player];
-						var item = new ItemInfo(networkItem, connectionInfoProvider.Game, itemInfoResolver, playerForItem);
+	                    var sender = playerHelper.GetPlayerInfo(networkItem.Player) ?? new PlayerInfo();
+	                    var item = new ItemInfo(networkItem, connectionInfoProvider.Game, sender.Game, itemInfoResolver, sender);
 						
                         allItemsReceived.Add(item);
                         itemQueue.Enqueue(item);
@@ -192,8 +192,8 @@ namespace Archipelago.MultiClient.Net.Helpers
 
             foreach (var networkItem in receivedItemsPacket.Items)
             {
-	            var playerForItem = playerHelper.Players[connectionInfoProvider.Team][networkItem.Player];
-	            var item = new ItemInfo(networkItem, connectionInfoProvider.Game, itemInfoResolver, playerForItem);
+	            var sender = playerHelper.GetPlayerInfo(networkItem.Player) ?? new PlayerInfo();
+				var item = new ItemInfo(networkItem, connectionInfoProvider.Game, sender.Game, itemInfoResolver, sender);
 
 				itemQueue.Enqueue(item);
                 allItemsReceived.Add(item);

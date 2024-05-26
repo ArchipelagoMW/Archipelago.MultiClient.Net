@@ -242,8 +242,6 @@ namespace Archipelago.MultiClient.Net.Helpers
 		public Task<Dictionary<string, string[]>> GetLocationNameGroupsAsync(string game = null) =>
 			GetLocationNameGroupsElement(game).GetAsync<Dictionary<string, string[]>>();
 #endif
-		//TODO add unit tests
-
 		/// <inheritdoc />
 		public ArchipelagoClientState GetClientStatus(int? slot = null, int? team = null) =>
 			GetClientStatusElement(slot, team).To<ArchipelagoClientState?>() ?? ArchipelagoClientState.ClientUnknown;

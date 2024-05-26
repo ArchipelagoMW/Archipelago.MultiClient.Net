@@ -22,7 +22,7 @@ namespace Archipelago.MultiClient.Net.MessageLog.Messages
 		public bool IsActivePlayer { get; }
 
 		/// <summary>
-		/// True if the player this message is concerning shares any slot groups (e.g. itemlinks) with the current connected player
+		/// True if the player this message is concerning any slot groups (e.g. itemlinks) with the current connected player
 		/// </summary>
 		public bool IsRelatedToActivePlayer { get; }
 

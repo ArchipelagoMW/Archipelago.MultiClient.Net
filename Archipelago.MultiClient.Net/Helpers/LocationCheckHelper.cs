@@ -79,28 +79,52 @@ namespace Archipelago.MultiClient.Net.Helpers
 #endif
 
 #if NET35
-	    /// <summary>
-	    ///     Ask the server for the items which are present in the provided location ids.
-	    /// </summary>
-	    /// <param name="callback">
-	    ///     An action to run once the server responds to the scout packet.
-	    ///     If the argument to the action is null then the server responded with an InvalidPacket response.
-	    /// </param>
-	    /// <param name="createAsHint">
-	    ///     If true, creates a free hint for these locations.
-	    /// </param>
-	    /// <param name="ids">
-	    ///     The locations ids which are to be scouted.
-	    /// </param>
-	    /// <remarks>
-	    ///     Repeated calls of this method before a LocationInfo packet is received will cause the stored
-	    ///     callback to be overwritten with the most recent call. It is recommended you chain calls to this method
-	    ///     within the callbacks themselves or call this only once.
-	    /// </remarks>
-	    /// <exception cref="T:Archipelago.MultiClient.Net.Exceptions.ArchipelagoSocketClosedException">
-	    ///     The websocket connection is not alive.
-	    /// </exception>
-	    void ScoutLocationsAsync(Action<Dictionary<long, ScoutedItemInfo>> callback = null, bool createAsHint = false, params long[] ids);
+		/// <summary>
+		///     Ask the server for the items which are present in the provided location ids.
+		/// </summary>
+		/// <param name="callback">
+		///     An action to run once the server responds to the scout packet.
+		///     If the argument to the action is null then the server responded with an InvalidPacket response.
+		/// </param>
+		/// <param name="hintCreationPolicy">
+		///     Specified if and how an official hint should be created on the server.
+		/// </param>
+		/// <param name="ids">
+		///     The locations ids which are to be scouted.
+		/// </param>
+		/// <remarks>
+		///     Repeated calls of this method before a LocationInfo packet is received will cause the stored
+		///     callback to be overwritten with the most recent call. It is recommended you chain calls to this method
+		///     within the callbacks themselves or call this only once.
+		/// </remarks>
+		/// <exception cref="T:Archipelago.MultiClient.Net.Exceptions.ArchipelagoSocketClosedException">
+		///     The websocket connection is not alive.
+		/// </exception>
+		void ScoutLocationsAsync(Action<Dictionary<long, ScoutedItemInfo>> callback = null,
+		    HintCreationPolicy hintCreationPolicy = HintCreationPolicy.None, params long[] ids);
+
+		/// <summary>
+		///     Ask the server for the items which are present in the provided location ids.
+		/// </summary>
+		/// <param name="callback">
+		///     An action to run once the server responds to the scout packet.
+		///     If the argument to the action is null then the server responded with an InvalidPacket response.
+		/// </param>
+		/// <param name="createAsHint">
+		///     If true, creates a free hint for these locations.
+		/// </param>
+		/// <param name="ids">
+		///     The locations ids which are to be scouted.
+		/// </param>
+		/// <remarks>
+		///     Repeated calls of this method before a LocationInfo packet is received will cause the stored
+		///     callback to be overwritten with the most recent call. It is recommended you chain calls to this method
+		///     within the callbacks themselves or call this only once.
+		/// </remarks>
+		/// <exception cref="T:Archipelago.MultiClient.Net.Exceptions.ArchipelagoSocketClosedException">
+		///     The websocket connection is not alive.
+		/// </exception>
+		void ScoutLocationsAsync(Action<Dictionary<long, ScoutedItemInfo>> callback = null, bool createAsHint = false, params long[] ids);
 
 		/// <summary>
 		///     Ask the server for the items which are present in the provided location ids.
@@ -122,6 +146,25 @@ namespace Archipelago.MultiClient.Net.Helpers
 		/// </exception>
 		void ScoutLocationsAsync(Action<Dictionary<long, ScoutedItemInfo>> callback = null, params long[] ids);
 #else
+		/// <summary>
+		///     Ask the server for the items which are present in the provided location ids.
+		/// </summary>
+		/// <param name="hintCreationPolicy">
+		///     Specified if and how an official hint should be created on the server.
+		/// </param>
+		/// <param name="ids">
+		///     The locations ids which are to be scouted.
+		/// </param>
+		/// <remarks>
+		///     Repeated calls of this method before a LocationInfo packet is received will cause the stored
+		///     callback to be overwritten with the most recent call. It is recommended you chain calls to this method
+		///     within the callbacks themselves or call this only once.
+		/// </remarks>
+		/// <exception cref="T:Archipelago.MultiClient.Net.Exceptions.ArchipelagoSocketClosedException">
+		///     The websocket connection is not alive.
+		/// </exception>
+		Task<Dictionary<long, ScoutedItemInfo>> ScoutLocationsAsync(HintCreationPolicy hintCreationPolicy, params long[] ids);
+
 		/// <summary>
 		///     Ask the server for the items which are present in the provided location ids.
 		/// </summary>
@@ -279,9 +322,10 @@ namespace Archipelago.MultiClient.Net.Helpers
 	                    if (locationInfoPacketCallbackTask != null)
 	                    {
 		                    var items = locationInfoPacket.Locations.ToDictionary(
-			                    i => i.Location,
-			                    i => new ScoutedItemInfo(i, connectionInfoProvider.Game, itemInfoResolver,
-				                    players.Players[connectionInfoProvider.Team][i.Player]));
+			                    item => item.Location,
+			                    item => new ScoutedItemInfo(item, (players.GetPlayerInfo(item.Player) ?? new PlayerInfo()).Game, 
+				                    connectionInfoProvider.Game, itemInfoResolver,
+									players.GetPlayerInfo(item.Player) ?? new PlayerInfo()));
 
 		                    locationInfoPacketCallbackTask.TrySetResult(items);
 						}
@@ -349,29 +393,38 @@ namespace Archipelago.MultiClient.Net.Helpers
 		LocationChecksPacket GetLocationChecksPacket() =>
 		    new LocationChecksPacket
 		    {
-			    Locations = locationsChecked.AsToReadOnlyCollectionExcept(serverConfirmedChecks).ToArray()
+			    Locations = locationsChecked
+				    .AsToReadOnlyCollectionExcept(serverConfirmedChecks)
+				    .ToArray()
 		    };
 
 #if NET35
 	    /// <inheritdoc/>
-		public void ScoutLocationsAsync(Action<Dictionary<long, ScoutedItemInfo>> callback = null, bool createAsHint = false, params long[] ids)
+		public void ScoutLocationsAsync(Action<Dictionary<long, ScoutedItemInfo>> callback = null, 
+		    HintCreationPolicy hintCreationPolicy = HintCreationPolicy.None, params long[] ids)
         {
             socket.SendPacketAsync(new LocationScoutsPacket
             {
                 Locations = ids,
-                CreateAsHint = createAsHint
-            });
+                CreateAsHint = (int)hintCreationPolicy
+			});
             awaitingLocationInfoPacket = true;
             locationInfoPacketCallback = (scoutResult) =>
             {
 				var items = scoutResult.Locations.ToDictionary(
-					i => i.Location,
-					i => new ScoutedItemInfo(i, connectionInfoProvider.Game, itemInfoResolver,
-						players.Players[connectionInfoProvider.Team][i.Player]));
+					item => item.Location,
+					item => new ScoutedItemInfo(item, (players.GetPlayerInfo(item.Player) ?? new PlayerInfo()).Game, 
+						connectionInfoProvider.Game, itemInfoResolver,
+						players.GetPlayerInfo(item.Player) ?? new PlayerInfo()));
 
 				callback(items);
             };
         }
+
+	    /// <inheritdoc/>
+	    public void ScoutLocationsAsync(Action<Dictionary<long, ScoutedItemInfo>> callback = null, bool createAsHint = false, params long[] ids) =>
+		    // Maintain backwards compatibility if createAsHint parameter is not specified.
+		    ScoutLocationsAsync(callback, createAsHint ? HintCreationPolicy.CreateAndAnnounce : HintCreationPolicy.None, ids);
 
 		/// <inheritdoc/>
 		public void ScoutLocationsAsync(Action<Dictionary<long, ScoutedItemInfo>> callback = null, params long[] ids) =>
@@ -379,22 +432,26 @@ namespace Archipelago.MultiClient.Net.Helpers
 	        ScoutLocationsAsync(callback, false, ids);
 #else
 	    /// <inheritdoc/>
-		public Task<Dictionary<long, ScoutedItemInfo>> ScoutLocationsAsync(bool createAsHint, params long[] ids)
+		public Task<Dictionary<long, ScoutedItemInfo>> ScoutLocationsAsync(HintCreationPolicy hintCreationPolicy, params long[] ids)
         {
             locationInfoPacketCallbackTask = new TaskCompletionSource<Dictionary<long, ScoutedItemInfo>>();
             awaitingLocationInfoPacket = true;
 
-            socket.SendPacket(new LocationScoutsPacket()
+            socket.SendPacket(new LocationScoutsPacket
             {
                 Locations = ids,
-                CreateAsHint = createAsHint
-            });
+                CreateAsHint = (int)hintCreationPolicy
+			});
 
             return locationInfoPacketCallbackTask.Task;
         }
 
 	    /// <inheritdoc/>
-        public Task<Dictionary<long, ScoutedItemInfo>> ScoutLocationsAsync(params long[] ids) =>
+	    public Task<Dictionary<long, ScoutedItemInfo>> ScoutLocationsAsync(bool createAsHint, params long[] ids) =>
+			ScoutLocationsAsync(createAsHint ? HintCreationPolicy.CreateAndAnnounce : HintCreationPolicy.None, ids);
+
+		/// <inheritdoc/>
+		public Task<Dictionary<long, ScoutedItemInfo>> ScoutLocationsAsync(params long[] ids) =>
 	        ScoutLocationsAsync(false, ids); // Maintain backwards compatibility if createAsHint parameter is not specified.
 #endif
 
@@ -413,10 +470,11 @@ namespace Archipelago.MultiClient.Net.Helpers
 
             foreach (var locationId in locationIds)
             {
-                allLocations.TryAdd(locationId);
-
-                if (locationsChecked.TryAdd(locationId))
-                    newLocations.Add(locationId);
+	            if (allLocations.Contains(locationId))
+	            {
+		            if (locationsChecked.TryAdd(locationId))
+			            newLocations.Add(locationId);
+	            }
             }
 
             missingLocations = allLocations.AsToReadOnlyCollectionExcept(locationsChecked);

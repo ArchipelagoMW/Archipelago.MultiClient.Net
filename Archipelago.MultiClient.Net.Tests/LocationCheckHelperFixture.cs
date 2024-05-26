@@ -6,6 +6,7 @@ using NSubstitute;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -156,41 +157,7 @@ namespace Archipelago.MultiClient.Net.Tests
             Assert.That(sut.AllMissingLocations, Is.Empty);
         }
 
-        [Test]
-        public void Should_add_locations_that_do_not_exists()
-        {
-	        var socket = Substitute.For<IArchipelagoSocketHelper>();
-	        var itemInfoResolver = Substitute.For<IItemInfoResolver>();
-	        var connectionInfo = Substitute.For<IConnectionInfoProvider>();
-	        var players = Substitute.For<IPlayerHelper>();
-
-	        ILocationCheckHelper sut = new LocationCheckHelper(socket, itemInfoResolver, connectionInfo, players);
-
-			var connectedPacket = new ConnectedPacket
-            {
-                LocationsChecked = Array.Empty<long>(),
-                MissingChecks = Array.Empty<long>()
-            };
-
-            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(connectedPacket);
-
-            sut.CompleteLocationChecks(1);
-#if NET471
-            sut.CompleteLocationChecksAsync(b => { }, 2);
-#else
-            sut.CompleteLocationChecksAsync(2).Wait();
-#endif
-
-            Assert.Contains(1, sut.AllLocations);
-            Assert.Contains(2, sut.AllLocations);
-
-            Assert.Contains(1, sut.AllLocationsChecked);
-            Assert.Contains(2, sut.AllLocationsChecked);
-
-            Assert.That(sut.AllMissingLocations, Is.Empty);
-        }
-
-        [Test]
+		[Test]
         public void Should_check_locations_send_by_the_server()
         {
 	        var socket = Substitute.For<IArchipelagoSocketHelper>();
@@ -270,37 +237,6 @@ namespace Archipelago.MultiClient.Net.Tests
 
                 Task.WaitAll(enumerateTask, receiveNewItemTask);
             });
-        }
-
-        [Test]
-        public void Should_call_event_handler_when_new_locations_are_checked_by_client()
-        {
-	        var socket = Substitute.For<IArchipelagoSocketHelper>();
-	        var itemInfoResolver = Substitute.For<IItemInfoResolver>();
-	        var connectionInfo = Substitute.For<IConnectionInfoProvider>();
-	        var players = Substitute.For<IPlayerHelper>();
-
-	        ILocationCheckHelper sut = new LocationCheckHelper(socket, itemInfoResolver, connectionInfo, players);
-
-			var newCheckedLocations = new List<long[]>();
-
-            sut.CheckedLocationsUpdated += l =>
-            {
-                newCheckedLocations.Add(l.ToArray());
-            };
-
-            sut.CompleteLocationChecks(1, 2);
-#if NET471
-            sut.CompleteLocationChecksAsync(b => { }, 3);
-#else
-            sut.CompleteLocationChecksAsync(3).Wait();
-#endif
-
-            Assert.That(newCheckedLocations.Count, Is.EqualTo(2));
-
-            Assert.Contains(1, newCheckedLocations[0]);
-            Assert.Contains(2, newCheckedLocations[0]);
-            Assert.Contains(3, newCheckedLocations[1]);
         }
 
         [Test]
@@ -545,10 +481,24 @@ namespace Archipelago.MultiClient.Net.Tests
         {
 	        var socket = Substitute.For<IArchipelagoSocketHelper>();
 	        var itemInfoResolver = Substitute.For<IItemInfoResolver>();
-	        var connectionInfo = Substitute.For<IConnectionInfoProvider>();
-	        var players = Substitute.For<IPlayerHelper>();
+			var connectionInfo = Substitute.For<IConnectionInfoProvider>();
+			connectionInfo.Team.Returns(1);
+			connectionInfo.Slot.Returns(2);
 
-	        ILocationCheckHelper sut = new LocationCheckHelper(socket, itemInfoResolver, connectionInfo, players);
+			var players = Substitute.For<IPlayerHelper>();
+#if NET472
+	        players.Players.Returns(
+		        new Dictionary<int, ReadOnlyCollection<PlayerInfo>> {
+			        { 1, new ReadOnlyCollection<PlayerInfo>(new List<PlayerInfo> { null, null, new PlayerInfo() }) }
+		        });
+#else
+	        players.Players.Returns(new ReadOnlyDictionary<int, ReadOnlyCollection<PlayerInfo>>(
+		        new Dictionary<int, ReadOnlyCollection<PlayerInfo>> {
+			        { 1, new ReadOnlyCollection<PlayerInfo>(new List<PlayerInfo> { null, null, new PlayerInfo() }) }
+				}));
+#endif
+
+			ILocationCheckHelper sut = new LocationCheckHelper(socket, itemInfoResolver, connectionInfo, players);
 
 			var locationScoutResponse = new LocationInfoPacket()
             {
@@ -563,8 +513,31 @@ namespace Archipelago.MultiClient.Net.Tests
 
             Assert.That(scoutTask.IsCompleted, Is.True);
 
-            await scoutTask;
+			await scoutTask;
         }
 #endif
-    }
+		
+	    [Test]
+	    public void Should_ignore_non_existing_locations()
+	    {
+		    var socket = Substitute.For<IArchipelagoSocketHelper>();
+		    var itemInfoResolver = Substitute.For<IItemInfoResolver>();
+		    var connectionInfo = Substitute.For<IConnectionInfoProvider>();
+		    var players = Substitute.For<IPlayerHelper>();
+
+		    ILocationCheckHelper sut = new LocationCheckHelper(socket, itemInfoResolver, connectionInfo, players);
+
+		    var connectedPacket = new ConnectedPacket
+		    {
+			    LocationsChecked = new long[] { 1, 2, 3 },
+			    MissingChecks = new long[] { 5, 6 },
+		    };
+
+		    socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(connectedPacket);
+
+		    sut.CompleteLocationChecks(5, 7);
+
+		    socket.Received().SendPacket(Arg.Is<LocationChecksPacket>(p => p.Locations.Length == 1 && p.Locations[0] == 5));
+	    }
+	}
 }

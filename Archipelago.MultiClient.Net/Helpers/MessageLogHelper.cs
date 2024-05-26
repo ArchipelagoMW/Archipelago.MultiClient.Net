@@ -294,13 +294,13 @@ namespace Archipelago.MultiClient.Net.Helpers
             {
                 case JsonMessagePartType.ItemId:
                 case JsonMessagePartType.ItemName:
-                    return new ItemMessagePart(itemInfoResolver, part);
+                    return new ItemMessagePart(players, itemInfoResolver, part);
                 case JsonMessagePartType.PlayerId:
                 case JsonMessagePartType.PlayerName:
                     return new PlayerMessagePart(players, connectionInfo, part);
                 case JsonMessagePartType.LocationId:
                 case JsonMessagePartType.LocationName:
-                    return new LocationMessagePart(itemInfoResolver, part);
+                    return new LocationMessagePart(players, itemInfoResolver, part);
                 case JsonMessagePartType.EntranceName:
                     return new EntranceMessagePart(part);
                 default:
