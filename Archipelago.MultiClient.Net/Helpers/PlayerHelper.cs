@@ -49,7 +49,22 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// <param name="slot">The slot of which to retrieve the alias</param>
         /// <returns>The player's alias and name in the following format of "Alias (Name)", or null if no such player is found</returns>
         string GetPlayerAliasAndName(int slot);
-    }
+
+		/// <summary>
+		/// Gets the PlayerInfo for the provided team and slot, or null if no such team / slot exists
+		/// </summary>
+		/// <param name="team">the team to lookup the slot in</param>
+		/// <param name="slot">the slot to lookup</param>
+		/// <returns>the playerinfo of corresponding slot, or null if no such slot exists</returns>
+		PlayerInfo GetPlayerInfo(int team, int slot);
+
+		/// <summary>
+		/// Gets the PlayerInfo for the provided team and slot, or null if no such slot exists
+		/// </summary>
+		/// <param name="slot">the slot to lookup</param>
+		/// <returns>the playerinfo of corresponding slot, or null if no such slot exists</returns>
+		PlayerInfo GetPlayerInfo(int slot);
+	}
 
 	/// <inheritdoc/>
     public class PlayerHelper : IPlayerHelper
@@ -72,6 +87,16 @@ namespace Archipelago.MultiClient.Net.Helpers
 
 	    /// <inheritdoc/>
 		public IEnumerable<PlayerInfo> AllPlayers => players.SelectMany(kvp => kvp.Value);
+
+	    /// <inheritdoc/>
+	    public PlayerInfo GetPlayerInfo(int team, int slot) =>
+		    players.Count > team && players[team].Count > slot
+			    ? players[team][slot]
+			    : null;
+
+	    /// <inheritdoc/>
+		public PlayerInfo GetPlayerInfo(int slot) =>
+		    GetPlayerInfo(connectionInfo.Team, slot);
 
 		internal PlayerHelper(IArchipelagoSocketHelper socket, IConnectionInfoProvider connectionInfo)
         {
@@ -115,7 +140,7 @@ namespace Archipelago.MultiClient.Net.Helpers
             return $"{playerInfo.Alias} ({playerInfo.Name})";
         }
 
-        void PacketReceived(ArchipelagoPacketBase packet)
+		void PacketReceived(ArchipelagoPacketBase packet)
         {
             switch (packet)
             {

@@ -31,37 +31,38 @@ namespace Archipelago.MultiClient.Net
 		/// <summary>
 		/// Provides simplified methods to receive items
 		/// </summary>
-        public ReceivedItemsHelper Items { get; }
+        public IReceivedItemsHelper Items { get; }
 
 		/// <summary>
 		/// Provides way to mark locations as checked
 		/// </summary>
-        public LocationCheckHelper Locations { get; }
+        public ILocationCheckHelper Locations { get; }
 
 		/// <summary>
 		/// Provides information about all players in the multiworld
 		/// </summary>
-        public PlayerHelper Players { get; }
+        public IPlayerHelper Players { get; }
 
 		/// <summary>
 		/// Provides access to a server side data storage to share and store values across sessions and players
 		/// </summary>
-        public DataStorageHelper DataStorage { get; }
+        public IDataStorageHelper DataStorage { get; }
 
 		/// <summary>
 		/// Provides information about your current connection
 		/// </summary>
-        public ConnectionInfoHelper ConnectionInfo { get; }
+        public IConnectionInfoProvider ConnectionInfo => connectionInfo;
+		ConnectionInfoHelper connectionInfo;
 
 		/// <summary>
 		/// Provides information about the current state of the server
 		/// </summary>
-        public RoomStateHelper RoomState { get; }
+		public IRoomStateHelper RoomState { get; }
 
 		/// <summary>
 		/// Provides simplified handlers to receive messages about events that happen in the multiworld
 		/// </summary>
-        public MessageLogHelper MessageLog { get; }
+        public IMessageLogHelper MessageLog { get; }
 
 #if NET35
 	    volatile bool awaitingRoomInfo;
@@ -73,27 +74,26 @@ namespace Archipelago.MultiClient.Net
 #endif
 
 		internal ArchipelagoSession(IArchipelagoSocketHelper socket,
-                                    ReceivedItemsHelper items,
-                                    LocationCheckHelper locations,
-                                    PlayerHelper players,
-                                    RoomStateHelper roomState,
-                                    ConnectionInfoHelper connectionInfo,
-                                    DataStorageHelper dataStorage,
-                                    MessageLogHelper messageLog)
+                                    IReceivedItemsHelper items,
+                                    ILocationCheckHelper locations,
+                                    IPlayerHelper players,
+                                    IRoomStateHelper roomState,
+                                    ConnectionInfoHelper connectionInfoHelper,
+                                    IDataStorageHelper dataStorage,
+                                    IMessageLogHelper messageLog)
         {
             Socket = socket;
             Items = items;
             Locations = locations;
             Players = players;
             RoomState = roomState;
-            ConnectionInfo = connectionInfo;
+            connectionInfo = connectionInfoHelper;
             DataStorage = dataStorage;
             MessageLog = messageLog;
             
             socket.PacketReceived += Socket_PacketReceived;
         }
-
-
+		
         void Socket_PacketReceived(ArchipelagoPacketBase packet)
         {
             switch (packet)
@@ -222,7 +222,7 @@ namespace Archipelago.MultiClient.Net
                 return loginResultTask.Task;
             }
 
-            ConnectionInfo.SetConnectionParameters(game, tags, itemsHandlingFlags, uuid);
+			connectionInfo.SetConnectionParameters(game, tags, itemsHandlingFlags, uuid);
 
             try
             {
@@ -277,7 +277,7 @@ namespace Archipelago.MultiClient.Net
 	        Version version = null, string[] tags = null, string uuid = null, string password = null, bool requestSlotData = true)
         {
 #if NET35
-            ConnectionInfo.SetConnectionParameters(game, tags, itemsHandlingFlags, uuid);
+            connectionInfo.SetConnectionParameters(game, tags, itemsHandlingFlags, uuid);
 
             try
             {

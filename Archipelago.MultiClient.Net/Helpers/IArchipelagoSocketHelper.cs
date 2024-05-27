@@ -7,6 +7,9 @@ using System.Threading.Tasks;
 
 namespace Archipelago.MultiClient.Net.Helpers
 {
+	/// <summary>
+	/// Delegates for the events that the IArchipelagoSocketHelper can raise
+	/// </summary>
     public class ArchipelagoSocketHelperDelagates
     {
         public delegate void PacketReceivedHandler(ArchipelagoPacketBase packet);

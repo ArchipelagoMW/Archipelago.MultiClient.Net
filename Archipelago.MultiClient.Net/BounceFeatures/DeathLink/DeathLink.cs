@@ -5,6 +5,9 @@ using System.Collections.Generic;
 
 namespace Archipelago.MultiClient.Net.BounceFeatures.DeathLink
 {
+	/// <summary>
+	/// A DeathLink object that gets sent and received via bounce packets.
+	/// </summary>
     public class DeathLink : IEquatable<DeathLink>
     {
 	    /// <summary>
@@ -61,6 +64,7 @@ namespace Archipelago.MultiClient.Net.BounceFeatures.DeathLink
             }
         }
 
+		/// <inheritdoc/>
         public bool Equals(DeathLink other)
         {
             if (ReferenceEquals(null, other))
@@ -76,7 +80,8 @@ namespace Archipelago.MultiClient.Net.BounceFeatures.DeathLink
                    && Timestamp.Second == other.Timestamp.Second;
         }
 
-        public override bool Equals(object obj)
+		/// <inheritdoc/>
+		public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj))
                 return false;
@@ -90,7 +95,8 @@ namespace Archipelago.MultiClient.Net.BounceFeatures.DeathLink
             return Equals((DeathLink)obj);
         }
 
-        public override int GetHashCode()
+		/// <inheritdoc/>
+		public override int GetHashCode()
         {
             unchecked
             {
@@ -101,8 +107,10 @@ namespace Archipelago.MultiClient.Net.BounceFeatures.DeathLink
             }
         }
 
-        public static bool operator ==(DeathLink lhs, DeathLink rhs) => lhs?.Equals(rhs) ?? rhs is null;
-
-        public static bool operator !=(DeathLink lhs, DeathLink rhs) => !(lhs == rhs);
-    }
+#pragma warning disable CS1591
+		public static bool operator ==(DeathLink lhs, DeathLink rhs) => lhs?.Equals(rhs) ?? rhs is null;
+		
+		public static bool operator !=(DeathLink lhs, DeathLink rhs) => !(lhs == rhs);
+#pragma warning restore CS1591
+	}
 }

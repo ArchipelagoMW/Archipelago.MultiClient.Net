@@ -7,7 +7,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 	/// <summary>
 	/// Provides information about your current connection
 	/// </summary>
-	interface IConnectionInfoProvider
+	public interface IConnectionInfoProvider
     {
         /// <summary>
         /// The game you are connected to or an empty string otherwise

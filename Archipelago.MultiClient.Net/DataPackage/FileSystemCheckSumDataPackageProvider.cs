@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 using System;
 using System.IO;
 
-namespace Archipelago.MultiClient.Net.Cache
+namespace Archipelago.MultiClient.Net.DataPackage
 {
 	class FileSystemCheckSumDataPackageProvider : IFileSystemDataPackageProvider
 	{
@@ -43,7 +43,7 @@ namespace Archipelago.MultiClient.Net.Cache
 		public void SaveDataPackageToFile(string game, GameData gameData)
 		{
 			var folderPath = Path.Combine(CacheFolder, GetFileSystemSafeFileName(game));
-			var filePath = Path.Combine(folderPath, $"{gameData.Checksum}.json");
+			var filePath = Path.Combine(folderPath, $"{GetFileSystemSafeFileName(gameData.Checksum)}.json");
 
 			try
 			{

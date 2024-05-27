@@ -98,11 +98,6 @@ namespace Archipelago.MultiClient.Net.Models
         public static DataStorageElement operator /(DataStorageElement a, double b) => new DataStorageElement(a, OperationType.Mul, JToken.FromObject(1d / b));
         public static DataStorageElement operator /(DataStorageElement a, decimal b) => new DataStorageElement(a, OperationType.Mul, JToken.FromObject(1m / b));
         
-		[Obsolete("Use + Operation.Min() instead")]
-        public static DataStorageElement operator >>(DataStorageElement a, int b) => throw new InvalidOperationException("DataStorage[Key] >> value is nolonger supported, Use + Operation.Max(value) instead");
-        [Obsolete("Use + Operation.Max() instead")]
-		public static DataStorageElement operator <<(DataStorageElement a, int b) => throw new InvalidOperationException("DataStorage[Key] << value is nolonger supported, Use + Operation.Min(value) instead");
-
 		public static implicit operator DataStorageElement(bool b) => new DataStorageElement(OperationType.Replace, b);
 		public static implicit operator DataStorageElement(int i) => new DataStorageElement(OperationType.Replace, i);
 		public static implicit operator DataStorageElement(long l) => new DataStorageElement(OperationType.Replace, l);

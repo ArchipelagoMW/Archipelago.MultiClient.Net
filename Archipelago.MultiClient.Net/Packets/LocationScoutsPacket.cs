@@ -11,6 +11,6 @@ namespace Archipelago.MultiClient.Net.Packets
         public long[] Locations { get; set; }
 
         [JsonProperty("create_as_hint")]
-        public bool CreateAsHint { get; set; }
+        public int CreateAsHint { get; set; }
     }
 }

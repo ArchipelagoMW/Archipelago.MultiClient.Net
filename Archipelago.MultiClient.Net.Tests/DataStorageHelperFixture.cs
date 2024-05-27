@@ -297,11 +297,6 @@ namespace Archipelago.MultiClient.Net.Tests
 
 		public static TestCaseData[] CompoundAssignmentThrowsTests =>
 			new TestCaseData[] {
-				// Replace with propoer bitshifting
-				new CompoundAssignmentThrowsTest<int>("Inplace Maximum", 10, (sut, key, value) => sut[key] <<= value,
-					new InvalidOperationException("DataStorage[Key] << value is nolonger supported, Use + Operation.Min(value) instead")),
-				new CompoundAssignmentThrowsTest<int>("Inplace Minimum", 10, (sut, key, value) => sut[key] >>= value,
-					new InvalidOperationException("DataStorage[Key] >> value is nolonger supported, Use + Operation.Max(value) instead")),
 #if !NET471
 				// 1 / BigInterger is not posiable in c# unless we get super creative with math
 				new CompoundAssignmentThrowsTest<BigInteger>("Inplace Division", BigInteger.Parse("9223372036854775808"), (sut, key, value) => sut[key] /= value,
@@ -417,14 +412,6 @@ namespace Archipelago.MultiClient.Net.Tests
 
 		public static TestCaseData[] AssignmentThrowTests =>
 			new TestCaseData[] {
-				new AssignmentThrowTest<int>("Maximum", 2, (sut, key) => sut[key] << 5, 
-					new InvalidOperationException("DataStorage[Key] << value is nolonger supported, Use + Operation.Min(value) instead")),
-				new AssignmentThrowTest<int>("Maximum", 20, (sut, key) => sut[key] << 5,
-					new InvalidOperationException("DataStorage[Key] << value is nolonger supported, Use + Operation.Min(value) instead")),
-				new AssignmentThrowTest<int>("Minimum", 2, (sut, key) => sut[key] >> 5,
-					new InvalidOperationException("DataStorage[Key] >> value is nolonger supported, Use + Operation.Max(value) instead")),
-				new AssignmentThrowTest<int>("Minimum", 20, (sut, key) => sut[key] >> 5,
-					new InvalidOperationException("DataStorage[Key] >> value is nolonger supported, Use + Operation.Max(value) instead")),
 #if !NET471
 				new AssignmentThrowTest<BigInteger>("Division", BigInteger.Parse("10"), (sut, key) => sut[key] / 2.5,
 					new InvalidOperationException($"DataStorage[Key] cannot be converted to BigInterger as its value its not an integer number, value: {1/2.5}")),
@@ -992,24 +979,6 @@ namespace Archipelago.MultiClient.Net.Tests
 			socket.DidNotReceive().SendPacket(Arg.Any<GetPacket>());
 			socket.DidNotReceive().SendPacketAsync(Arg.Any<SetPacket>());
 		}
-
-		/*
-        [Test]
-        public void Should_allow_list_opperations()
-        {
-	        var socket = Substitute.For<IArchipelagoSocketHelper>();
-	        var connectionInfo = Substitute.For<IConnectionInfoProvider>();
-
-	        var sut = new DataStorageHelper(socket, connectionInfo);
-
-			//TODO define syntax
-	        sut.Lists["list"] = new string[] { "a", "b" };
-			sut["list"].GetAsync<string>() = new string[] { "a", "b" };
-			sut.List<string>()["list"] 
-
-			socket.DidNotReceive().SendPacket(Arg.Any<GetPacket>());
-	        socket.DidNotReceive().SendPacketAsync(Arg.Any<SetPacket>());
-        }*/
 
 		public static void ExecuteAsyncWithDelay(Action retrieve, Action raiseEvent)
         {

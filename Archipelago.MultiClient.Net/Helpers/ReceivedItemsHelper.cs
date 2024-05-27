@@ -1,11 +1,9 @@
-﻿using Archipelago.MultiClient.Net.Cache;
-using Archipelago.MultiClient.Net.ConcurrentCollection;
+﻿using Archipelago.MultiClient.Net.ConcurrentCollection;
+using Archipelago.MultiClient.Net.DataPackage;
 using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
 
 #if !NET35
 using System.Collections.Concurrent;
@@ -18,16 +16,66 @@ namespace Archipelago.MultiClient.Net.Helpers
 	/// </summary>
 	public interface IReceivedItemsHelper
     {
-	    /// <summary>
-	    ///     Perform a lookup using the DataPackage sent as a source of truth to lookup a particular item id for a particular game.
-	    /// </summary>
-	    /// <param name="id">
-	    ///     Id of the item to lookup.
-	    /// </param>
-	    /// <returns>
-	    ///     The name of the item as a string, or null if no such item is found.
-	    /// </returns>
-		string GetItemName(long id);
+		/// <summary>
+		///     Perform a lookup using the DataPackage sent as a source of truth to lookup a particular item id for a particular game.
+		/// </summary>
+		/// <param name="id">
+		///     Id of the item to lookup.
+		/// </param>
+		/// <param name="game">
+		///     The game to lookup the item id for, if null will look in the game the local player is connected to.
+		///		Negative item ids are always looked up under the Archipelago game
+		/// </param>
+		/// <returns>
+		///     The name of the item as a string, or null if no such item is found.
+		/// </returns>
+		string GetItemName(long id, string game = null);
+
+		/// <summary>
+		/// Total number of items received
+		/// </summary>
+		int Index { get; }
+
+		/// <summary>
+		/// Full list of all items received
+		/// </summary>
+		ReadOnlyCollection<ItemInfo> AllItemsReceived { get; }
+
+		/// <summary>
+		///     Event triggered when an item is received. fires once for each item received
+		/// </summary>
+		event ReceivedItemsHelper.ItemReceivedHandler ItemReceived;
+
+		/// <summary>
+		///     Check whether there are any items in the queue. 
+		/// </summary>
+		/// <returns>
+		///     True if the queue is not empty, otherwise false.
+		/// </returns>
+		bool Any();
+
+		/// <summary>
+		///     Peek the next item on the queue to be handled. 
+		///     The item will remain on the queue until dequeued with <see cref="DequeueItem"/>.
+		/// </summary>
+		/// <returns>
+		///     The next item to be handled as a <see cref="NetworkItem"/>, or null if no such item is found.
+		/// </returns>
+		/// <exception cref="T:System.InvalidOperationException">
+		///     The <see cref="T:System.Collections.Generic.Queue`1" /> is empty.
+		/// </exception>
+		ItemInfo PeekItem();
+
+		/// <summary>
+		///     Dequeues and returns the next item on the queue to be handled.
+		/// </summary>
+		/// <returns>
+		///     The next item to be handled as a <see cref="NetworkItem"/>.
+		/// </returns>
+		/// <exception cref="T:System.InvalidOperationException">
+		///     The <see cref="T:System.Collections.Generic.Queue`1" /> is empty.
+		/// </exception>
+		ItemInfo DequeueItem();
     }
 
 	/// <inheritdoc/>
@@ -35,110 +83,65 @@ namespace Archipelago.MultiClient.Net.Helpers
     {
         readonly IArchipelagoSocketHelper socket;
         readonly ILocationCheckHelper locationsHelper;
-        readonly IDataPackageCache dataPackageCache;
+        readonly IItemInfoResolver itemInfoResolver;
+        readonly IConnectionInfoProvider connectionInfoProvider;
+        readonly IPlayerHelper playerHelper;
 
-        ConcurrentQueue<NetworkItem> itemQueue; 
+		ConcurrentQueue<ItemInfo> itemQueue; 
 
-        readonly IConcurrentList<NetworkItem> allItemsReceived;
+        readonly IConcurrentList<ItemInfo> allItemsReceived;
 
-        Dictionary<long, string> itemLookupCache;
-
-        ReadOnlyCollection<NetworkItem> cachedReceivedItems;
+        ReadOnlyCollection<ItemInfo> cachedReceivedItems;
 		
+		/// <inheritdoc/>
 		public int Index => cachedReceivedItems.Count;
-        public ReadOnlyCollection<NetworkItem> AllItemsReceived => cachedReceivedItems;
+		/// <inheritdoc/>
+		public ReadOnlyCollection<ItemInfo> AllItemsReceived => cachedReceivedItems;
 
-        public delegate void ItemReceivedHandler(ReceivedItemsHelper helper);
-        public event ItemReceivedHandler ItemReceived;
+		/// <inheritdoc/>
+		public delegate void ItemReceivedHandler(ReceivedItemsHelper helper);
+		/// <inheritdoc/>
+		public event ItemReceivedHandler ItemReceived;
 
-        internal ReceivedItemsHelper(IArchipelagoSocketHelper socket, ILocationCheckHelper locationsHelper, IDataPackageCache dataPackageCache)
+        internal ReceivedItemsHelper(
+	        IArchipelagoSocketHelper socket, ILocationCheckHelper locationsHelper,
+	        IItemInfoResolver itemInfoResolver, IConnectionInfoProvider connectionInfoProvider,
+			IPlayerHelper playerHelper)
         {
             this.socket = socket;
             this.locationsHelper = locationsHelper;
-            this.dataPackageCache = dataPackageCache;
+            this.itemInfoResolver = itemInfoResolver;
+            this.connectionInfoProvider = connectionInfoProvider;
+			this.playerHelper = playerHelper;
 
-			itemQueue = new ConcurrentQueue<NetworkItem>();
-			allItemsReceived = new ConcurrentList<NetworkItem>();
-			itemLookupCache = new Dictionary<long, string>();
+            itemQueue = new ConcurrentQueue<ItemInfo>();
+			allItemsReceived = new ConcurrentList<ItemInfo>();
 			cachedReceivedItems = allItemsReceived.AsReadOnlyCollection();
 
 			socket.PacketReceived += Socket_PacketReceived;
         }
 
-        /// <summary>
-        ///     Check whether there are any items in the queue. 
-        /// </summary>
-        /// <returns>
-        ///     True if the queue is not empty, otherwise false.
-        /// </returns>
-        public bool Any() => !itemQueue.IsEmpty;
+        /// <inheritdoc/>
+		public bool Any() => !itemQueue.IsEmpty;
 
-        /// <summary>
-        ///     Peek the next item on the queue to be handled. 
-        ///     The item will remain on the queue until dequeued with <see cref="DequeueItem"/>.
-        /// </summary>
-        /// <returns>
-        ///     The next item to be handled as a <see cref="NetworkItem"/>, or null if no such item is found.
-        /// </returns>
-        /// <exception cref="T:System.InvalidOperationException">
-        ///     The <see cref="T:System.Collections.Generic.Queue`1" /> is empty.
-        /// </exception>
-        public NetworkItem PeekItem()
+        /// <inheritdoc/>
+		public ItemInfo PeekItem()
         {
             itemQueue.TryPeek(out var item);
             return item;
         }
 
-        /// <summary>
-        ///     Peek the name of next item on the queue to be handled.
-        /// </summary>
-        /// <returns>
-        ///     The name of the item as a string, or null if no such item is found.
-        /// </returns>
-        /// <exception cref="T:System.InvalidOperationException">
-        ///     The <see cref="T:System.Collections.Generic.Queue`1" /> is empty.
-        /// </exception>
-        public string PeekItemName()
-        {
-            itemQueue.TryPeek(out var item);
-            return GetItemName(item.Item);
-        }
-
-        /// <summary>
-        ///     Dequeues and returns the next item on the queue to be handled.
-        /// </summary>
-        /// <returns>
-        ///     The next item to be handled as a <see cref="NetworkItem"/>.
-        /// </returns>
-        /// <exception cref="T:System.InvalidOperationException">
-        ///     The <see cref="T:System.Collections.Generic.Queue`1" /> is empty.
-        /// </exception>
-        public NetworkItem DequeueItem()
+        /// <inheritdoc/>
+		public ItemInfo DequeueItem()
         {
             itemQueue.TryDequeue(out var item);
             return item;
         }
 
 		/// <inheritdoc/>
-        public string GetItemName(long id)
-        {
-            if (itemLookupCache.TryGetValue(id, out var name))
-                return name;
+        public string GetItemName(long id, string game = null) => itemInfoResolver.GetItemName(id, game);
 
-            if (!dataPackageCache.TryGetDataPackageFromCache(out var dataPackage))
-                return null;
-            
-            itemLookupCache = dataPackage.Games
-	            .Select(x => x.Value)
-	            .SelectMany(x => x.ItemLookup)
-	            .ToDictionary(x => x.Value, x => x.Key);
-
-            return itemLookupCache.TryGetValue(id, out var itemName)
-                ? itemName
-                : null;
-        }
-
-        void Socket_PacketReceived(ArchipelagoPacketBase packet)
+		void Socket_PacketReceived(ArchipelagoPacketBase packet)
         {
             switch (packet.PacketType)
             {
@@ -159,8 +162,11 @@ namespace Archipelago.MultiClient.Net.Helpers
                         break;
                     }
 
-                    foreach (var item in receivedItemsPacket.Items)
+                    foreach (var networkItem in receivedItemsPacket.Items)
                     {
+	                    var sender = playerHelper.GetPlayerInfo(networkItem.Player) ?? new PlayerInfo();
+	                    var item = new ItemInfo(networkItem, connectionInfoProvider.Game, sender.Game, itemInfoResolver, sender);
+						
                         allItemsReceived.Add(item);
                         itemQueue.Enqueue(item);
 
@@ -180,13 +186,16 @@ namespace Archipelago.MultiClient.Net.Helpers
 #if NET35
             itemQueue.Clear();
 #else
-            itemQueue = new ConcurrentQueue<NetworkItem>();
+            itemQueue = new ConcurrentQueue<ItemInfo>();
 #endif
-            allItemsReceived.Clear();
+			allItemsReceived.Clear();
 
-            foreach (var item in receivedItemsPacket.Items)
+            foreach (var networkItem in receivedItemsPacket.Items)
             {
-                itemQueue.Enqueue(item);
+	            var sender = playerHelper.GetPlayerInfo(networkItem.Player) ?? new PlayerInfo();
+				var item = new ItemInfo(networkItem, connectionInfoProvider.Game, sender.Game, itemInfoResolver, sender);
+
+				itemQueue.Enqueue(item);
                 allItemsReceived.Add(item);
 
                 cachedReceivedItems = allItemsReceived.AsReadOnlyCollection();
