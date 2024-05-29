@@ -5,14 +5,14 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json.Linq;
-using System.Globalization;
 
 #if !NET35
 using System.Threading.Tasks;
 using System.Numerics;
-using System.Text.RegularExpressions;
+using System.Globalization;
 #endif
 
+// ReSharper disable ArrangeObjectCreationWhenTypeEvident
 
 namespace Archipelago.MultiClient.Net.Models
 {
@@ -30,11 +30,12 @@ namespace Archipelago.MultiClient.Net.Models
             remove => Context.RemoveHandler(Context.Key, value);
         }
 
-        internal DataStorageElementContext Context;
+		internal DataStorageElementContext Context;
         internal List<OperationSpecification> Operations = new List<OperationSpecification>(0);
         internal DataStorageHelper.DataStorageUpdatedHandler Callbacks;
+        internal Dictionary<string, JToken> AdditionalArguments = new Dictionary<string, JToken>(0);
 
-        JToken cachedValue;
+		JToken cachedValue;
 
         internal DataStorageElement(DataStorageElementContext context)
         {
@@ -49,15 +50,27 @@ namespace Archipelago.MultiClient.Net.Models
         internal DataStorageElement(DataStorageElement source, OperationType operationType, JToken value) : this(source.Context)
         {
             Operations = source.Operations.ToList();
-            Operations.Add(new OperationSpecification { OperationType = operationType, Value = value });
             Callbacks = source.Callbacks;
-        }
+            AdditionalArguments = source.AdditionalArguments;
+
+            Operations.Add(new OperationSpecification { OperationType = operationType, Value = value });
+		}
 		internal DataStorageElement(DataStorageElement source, Callback callback) : this(source.Context)
         {
             Operations = source.Operations.ToList();
             Callbacks = source.Callbacks;
-            Callbacks += callback.Method;
+            AdditionalArguments = source.AdditionalArguments;
+
+			Callbacks += callback.Method;
         }
+		internal DataStorageElement(DataStorageElement source, AdditionalArgument additionalArgument) : this(source.Context)
+		{
+			Operations = source.Operations.ToList();
+			Callbacks = source.Callbacks;
+			AdditionalArguments = source.AdditionalArguments;
+
+			AdditionalArguments[additionalArgument.Key] = additionalArgument.Value;
+		}
 
 #pragma warning disable CS1591
 		public static DataStorageElement operator ++(DataStorageElement a) => new DataStorageElement(a, OperationType.Add, 1);
@@ -72,6 +85,7 @@ namespace Archipelago.MultiClient.Net.Models
 		public static DataStorageElement operator +(DataStorageElement a, IEnumerable b) => new DataStorageElement(a, OperationType.Add, JArray.FromObject(b));
         public static DataStorageElement operator +(DataStorageElement a, OperationSpecification s) => new DataStorageElement(a, s.OperationType, s.Value);
         public static DataStorageElement operator +(DataStorageElement a, Callback c) => new DataStorageElement(a, c);
+        public static DataStorageElement operator +(DataStorageElement a, AdditionalArgument arg) => new DataStorageElement(a, arg);
 		public static DataStorageElement operator *(DataStorageElement a, int b) => new DataStorageElement(a, OperationType.Mul, b);
         public static DataStorageElement operator *(DataStorageElement a, long b) => new DataStorageElement(a, OperationType.Mul, b);
         public static DataStorageElement operator *(DataStorageElement a, float b) => new DataStorageElement(a, OperationType.Mul, b);
@@ -164,7 +178,6 @@ namespace Archipelago.MultiClient.Net.Models
 		public static implicit operator BigInteger(DataStorageElement e) => RetrieveAndReturnBigIntegerValue<BigInteger>(e);
 		public static implicit operator BigInteger?(DataStorageElement e) => RetrieveAndReturnBigIntegerValue<BigInteger?>(e);
 		
-
 		static T RetrieveAndReturnBigIntegerValue<T>(DataStorageElement e)
 		{
 			if (e.cachedValue != null)
@@ -183,6 +196,9 @@ namespace Archipelago.MultiClient.Net.Models
 		
 			foreach (var operation in e.Operations)
 			{
+				if (operation.OperationType == OperationType.Floor || operation.OperationType == OperationType.Ceil)
+					continue;
+
 				if (!BigInteger.TryParse(operation.Value.ToString(), NumberStyles.AllowLeadingSign, null, out var operatorValue))
 					throw new InvalidOperationException($"DataStorage[Key] cannot be converted to BigInterger as its value its not an integer number, value: {operation.Value}");
 
@@ -392,8 +408,7 @@ namespace Archipelago.MultiClient.Net.Models
 				? (T)Convert.ChangeType(value.Value, IsNullable<T>() ? Nullable.GetUnderlyingType(typeof(T)) : typeof(T))
 				: default;
         }
-
-
+		
 		static T RetrieveAndReturnDecimalValue<T>(DataStorageElement e)
         {
             if (e.cachedValue != null)
@@ -455,7 +470,15 @@ namespace Archipelago.MultiClient.Net.Models
                     case OperationType.RightShift:
                         value = (long)value >> (int)operation.Value;
                         break;
-                }
+
+					case OperationType.Floor:
+						value = Math.Floor(value.Value);
+						break;
+
+                    case OperationType.Ceil:
+	                    value = Math.Ceiling(value.Value);
+	                    break;
+				}
             }
 
             e.cachedValue = value;
