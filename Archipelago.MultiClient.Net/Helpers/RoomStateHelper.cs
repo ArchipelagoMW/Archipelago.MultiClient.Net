@@ -37,6 +37,11 @@ namespace Archipelago.MultiClient.Net.Helpers
 		Version Version { get; }
 
 		/// <summary>
+		/// The version of Archipelago which generated the multiworld.
+		/// </summary>
+		Version GeneratorVersion { get; }
+
+		/// <summary>
 		/// Denoted whether a password is required to join this room.
 		/// </summary>
 		bool HasPassword { get; }
@@ -97,6 +102,8 @@ namespace Archipelago.MultiClient.Net.Helpers
 	    ///<inheritdoc/>
 		public Version Version { get; private set; }
 	    ///<inheritdoc/>
+		public Version GeneratorVersion { get; private set; }
+		///<inheritdoc/>
 		public bool HasPassword { get; private set; }
 	    ///<inheritdoc/>
 		public Permissions ReleasePermissions { get; private set; }
@@ -153,6 +160,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 	        HintCostPercentage = packet.HintCostPercentage;
 			LocationCheckPoints = packet.LocationCheckPoints;
             Version = packet.Version?.ToVersion();
+			GeneratorVersion = packet.GeneratorVersion?.ToVersion();
             HasPassword = packet.Password;
             Seed = packet.SeedName;
             RoomInfoSendTime = UnixTimeConverter.UnixTimeStampToDateTime(packet.Timestamp);

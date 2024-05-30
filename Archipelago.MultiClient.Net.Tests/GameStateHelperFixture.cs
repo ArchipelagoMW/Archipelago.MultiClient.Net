@@ -227,6 +227,12 @@ namespace Archipelago.MultiClient.Net.Tests
                     new RoomInfoPacket { Version = new NetworkVersion(1, 2, 3) },
                     s => s.Version, new Version(1, 2, 3)),
 
+                // Generator Version
+                RoomStateHelperTest.Create(
+	                "Should_read_generator_version",
+	                new RoomInfoPacket { GeneratorVersion = new NetworkVersion(5, 6, 9) },
+	                s => s.GeneratorVersion, new Version(5, 6, 9)),
+
                 // Seed
                 RoomStateHelperTest.Create(
                     "Should_read_seed",
