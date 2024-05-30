@@ -8,10 +8,13 @@ using NUnit.Framework;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
 using Callback = Archipelago.MultiClient.Net.Models.Callback;
+
+#if !NET471
+using System.Numerics;
+#endif
 
 // ReSharper disable All
 // ReSharper disable UnusedVariable
@@ -194,15 +197,15 @@ namespace Archipelago.MultiClient.Net.Tests
 				    (p, key, value) => p.Key == key && p.Operations[0].OperationType == OperationType.Add && p.Operations[0].Value is JArray),
 				new CompoundAssignmentTest<List<object>>("Inplace Addition", new List<object>() { "Hello", 101 }, (sut, key, value) => sut[key] += value,
 				    (p, key, value) => p.Key == key && p.Operations[0].OperationType == OperationType.Add && p.Operations[0].Value is JArray),
-				new CompoundAssignmentTest<OperationSpecification>("Inplace Addition", Bitwise.Xor(0xFF), (sut, key, value) => sut[key] += value,
+				new CompoundAssignmentTest<OperationSpecification>("Inplace Addition of Operator", Bitwise.Xor(0xFF), (sut, key, value) => sut[key] += value,
 				    (p, key, value) => p.Key == key && p.Operations[0].OperationType == OperationType.Xor && p.Operations[0].Value == value.Value),
-				new CompoundAssignmentTest<OperationSpecification>("Inplace Addition", Bitwise.Or(0x00F0), (sut, key, value) => sut[key] += value,
+				new CompoundAssignmentTest<OperationSpecification>("Inplace Addition of Operator", Bitwise.Or(0x00F0), (sut, key, value) => sut[key] += value,
 				    (p, key, value) => p.Key == key && p.Operations[0].OperationType == OperationType.Or && p.Operations[0].Value == value.Value),
-				new CompoundAssignmentTest<OperationSpecification>("Inplace Addition", Bitwise.And(0b01011), (sut, key, value) => sut[key] += value,
+				new CompoundAssignmentTest<OperationSpecification>("Inplace Addition of Operator", Bitwise.And(0b01011), (sut, key, value) => sut[key] += value,
 				    (p, key, value) => p.Key == key && p.Operations[0].OperationType == OperationType.And && p.Operations[0].Value == value.Value),
-				new CompoundAssignmentTest<OperationSpecification>("Inplace Addition", Bitwise.LeftShift(4), (sut, key, value) => sut[key] += value,
+				new CompoundAssignmentTest<OperationSpecification>("Inplace Addition of Operator", Bitwise.LeftShift(4), (sut, key, value) => sut[key] += value,
 				    (p, key, value) => p.Key == key && p.Operations[0].OperationType == OperationType.LeftShift && p.Operations[0].Value == value.Value),
-				new CompoundAssignmentTest<OperationSpecification>("Inplace Addition", Bitwise.RightShift(8), (sut, key, value) => sut[key] += value,
+				new CompoundAssignmentTest<OperationSpecification>("Inplace Addition of Operator", Bitwise.RightShift(8), (sut, key, value) => sut[key] += value,
 				    (p, key, value) => p.Key == key && p.Operations[0].OperationType == OperationType.RightShift && p.Operations[0].Value == value.Value),
 				new CompoundAssignmentTest<int>("Inplace Subtraction", 10, (sut, key, value) => sut[key] -= value,
 				    (p, key, value) => p.Key == key && p.Operations[0].Value.Type == JTokenType.Integer && -(int)p.Operations[0].Value == value && p.Operations[0].OperationType == OperationType.Add),
@@ -258,10 +261,15 @@ namespace Archipelago.MultiClient.Net.Tests
 				    (p, key, value) => p.Key == key && p.Operations[0].Value.Type == JTokenType.Integer && (int)p.Operations[0].Value == 1 && p.Operations[0].OperationType == OperationType.Add),
 				new CompoundAssignmentTest<int>("Postfix Subtraction", 0, (sut, key, value) => sut[key]--,
 				    (p, key, value) => p.Key == key && p.Operations[0].Value.Type == JTokenType.Integer && (int)p.Operations[0].Value == -1 && p.Operations[0].OperationType == OperationType.Add),
-				new CompoundAssignmentTest<OperationSpecification>("Inplace Addition", Operation.Max(10), (sut, key, value) => sut[key] += value,
+				new CompoundAssignmentTest<OperationSpecification>("Inplace Addition of Operator", Operation.Max(10), (sut, key, value) => sut[key] += value,
 					(p, key, value) => p.Key == key && p.Operations[0].OperationType == OperationType.Max && p.Operations[0].Value == value.Value),
-				new CompoundAssignmentTest<OperationSpecification>("Inplace Addition", Operation.Min(10), (sut, key, value) => sut[key] += value,
+				new CompoundAssignmentTest<OperationSpecification>("Inplace Addition of Operator", Operation.Min(10), (sut, key, value) => sut[key] += value,
 					(p, key, value) => p.Key == key && p.Operations[0].OperationType == OperationType.Min && p.Operations[0].Value == value.Value),
+				new CompoundAssignmentTest<OperationSpecification>("Flooring", Operation.Floor(), (sut, key, value) => sut[key] += value,
+					(p, key, value) => p.Key == key && p.Operations[0].Value == null && p.Operations[0].OperationType == OperationType.Floor),
+				new CompoundAssignmentTest<OperationSpecification>("Ceiling", Operation.Ceiling(), (sut, key, value) => sut[key] += value,
+					(p, key, value) => p.Key == key && p.Operations[0].Value == null && p.Operations[0].OperationType == OperationType.Ceil),
+
 
 #if !NET471
 	            new CompoundAssignmentTest<BigInteger>("Assignment", BigInteger.Parse("9223372036854775808"), (sut, key, value) => sut[key] = value,
@@ -344,11 +352,11 @@ namespace Archipelago.MultiClient.Net.Tests
                 new AssignmentTest<List<float>>("Addition", new List<float>{ 2f }, (sut, key) => sut[key] + new List<float>{ 3f }, new List<float>{ 2f, 3f }),
                 new AssignmentTest<List<string>>("Addition", new List<string>{ "A" }, (sut, key) => sut[key] + new List<string>{ "B" }, new List<string>{ "A", "B" }),
                 new AssignmentTest<List<object>>("Addition", new List<object>{ 1 }, (sut, key) => sut[key] + new List<object>{ "C" }, new List<object>{ 1, "C" }),
-                new AssignmentTest<long>("Addition", 0xF0, (sut, key) => sut[key] + Bitwise.Xor(0xFF), 0x0F),
-                new AssignmentTest<long>("Addition", 0xF0, (sut, key) => sut[key] + Bitwise.Or(0x0F), 0xFF),
-                new AssignmentTest<long>("Addition", 0xFF, (sut, key) => sut[key] + Bitwise.And(0x0F), 0x0F),
-                new AssignmentTest<long>("Addition", 0b101, (sut, key) => sut[key] + Bitwise.LeftShift(1), 0b1010),
-                new AssignmentTest<long>("Addition", 0b101, (sut, key) => sut[key] + Bitwise.RightShift(2), 0b1),
+                new AssignmentTest<long>("Xor", 0xF0, (sut, key) => sut[key] + Bitwise.Xor(0xFF), 0x0F),
+                new AssignmentTest<long>("Or", 0xF0, (sut, key) => sut[key] + Bitwise.Or(0x0F), 0xFF),
+                new AssignmentTest<long>("And", 0xFF, (sut, key) => sut[key] + Bitwise.And(0x0F), 0x0F),
+                new AssignmentTest<long>("LeftShift", 0b101, (sut, key) => sut[key] + Bitwise.LeftShift(1), 0b1010),
+                new AssignmentTest<long>("RigttShift", 0b101, (sut, key) => sut[key] + Bitwise.RightShift(2), 0b1),
                 new AssignmentTest<int>("Subtraction", 30, (sut, key) => sut[key] - 5, 25),
                 new AssignmentTest<long>("Subtraction", 1000L, (sut, key) => sut[key] - 10L, 990L),
                 new AssignmentTest<decimal>("Subtraction", 1.001m, (sut, key) => sut[key] - 0.2m, 0.801m),
@@ -378,7 +386,13 @@ namespace Archipelago.MultiClient.Net.Tests
                 new AssignmentTest<int>("Maximum", 20, (sut, key) => sut[key] + Operation.Max(5), 20),
                 new AssignmentTest<int>("Minimum", 2, (sut, key) => sut[key] + Operation.Min(5), 2),
                 new AssignmentTest<int>("Minimum", 20, (sut, key) => sut[key] + Operation.Min(5), 5),
-
+                new AssignmentTest<decimal>("Floor", 13.0856m, (sut, key) => sut[key] + Operation.Floor(), 13),
+                new AssignmentTest<double>("Floor", 3.33d, (sut, key) => sut[key] + Operation.Floor(), 3),
+                new AssignmentTest<float>("Floor", 2.2f, (sut, key) => sut[key] + Operation.Floor(), 2),
+                new AssignmentTest<decimal>("Ceiling", 13.0856m, (sut, key) => sut[key] + Operation.Ceiling(), 14),
+                new AssignmentTest<double>("Ceiling", 3.33d, (sut, key) => sut[key] + Operation.Ceiling(), 4),
+                new AssignmentTest<float>("Ceiling", 2.2f, (sut, key) => sut[key] + Operation.Ceiling(), 3),
+				
 #if !NET471
 				//Beeg int 
 				new AssignmentTest<BigInteger>("Addition", BigInteger.Parse("9223372036854775800"), (sut, key) => sut[key] + 8, BigInteger.Parse("9223372036854775808")),
@@ -388,8 +402,8 @@ namespace Archipelago.MultiClient.Net.Tests
 				new AssignmentTest<BigInteger>("Exponentiation", BigInteger.Parse("20"), (sut, key) => sut[key] ^ 200, 
 					BigInteger.Parse("160693804425899027554196209234116260252220299378279283530137600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000\r\n")),
 				new AssignmentTest<BigInteger>("Maximum", BigInteger.Parse("20"), (sut, key) => sut[key] + Operation.Max(BigInteger.Parse("50")), BigInteger.Parse("50")),
-				new AssignmentTest<BigInteger>("Minimum", BigInteger.Parse("2"), (sut, key) => sut[key] + Operation.Min(BigInteger.Parse("5")), BigInteger.Parse("2")),
-
+				new AssignmentTest<BigInteger>("Floor", BigInteger.Parse("200"), (sut, key) => sut[key] + Operation.Floor(), BigInteger.Parse("200")),
+				new AssignmentTest<BigInteger>("Ceiling", BigInteger.Parse("200"), (sut, key) => sut[key] + Operation.Ceiling(), BigInteger.Parse("200")),
 #endif
 			};
 
@@ -484,16 +498,16 @@ namespace Archipelago.MultiClient.Net.Tests
             object newValueB = null;
             object newValueC = null;
 
-            sut["Key"].OnValueChanged += (o, n) =>
+            sut["Key"].OnValueChanged += (o, n, _) =>
             {
                 oldValueA = (int)o;
                 newValueA = (int)n;
             };
-            sut["KeyB"].OnValueChanged += (o, n) =>
+            sut["KeyB"].OnValueChanged += (o, n, _) =>
             {
                 newValueB = (string)n;
             };
-            sut["KeyB"].OnValueChanged += (o, n) =>
+            sut["KeyB"].OnValueChanged += (o, n, _) =>
             {
                 newValueC = (string)n;
             };
@@ -524,7 +538,7 @@ namespace Archipelago.MultiClient.Net.Tests
 
             int callbackCount = 0;
 
-            void OnValueChanged(object oldValue, object newValue)
+            void OnValueChanged(object oldValue, object newValue, Dictionary<string, JToken> additionalArguments)
             {
                 callbackCount++;
             }
@@ -709,19 +723,19 @@ namespace Archipelago.MultiClient.Net.Tests
 
             socket.SendPacketAsync(Arg.Do<SetPacket>(p => {
                 if (p.Key == "DP1")
-                    callback1Reference = p.Reference.Value;
+                    callback1Reference = (Guid)p.AdditionalArguments["Reference"];
                 if (p.Key == "DP2")
-                    callback2Reference = p.Reference.Value;
+	                callback2Reference = (Guid)p.AdditionalArguments["Reference"];
             }));
 
-            sut[Scope.Global, "DP1"] = ((sut[Scope.Global, "DP1"] + 50) + Operation.Max(0)) + Callback.Add((o, n) =>
+            sut[Scope.Global, "DP1"] = ((sut[Scope.Global, "DP1"] + 50) + Operation.Max(0)) + Callback.Add((o, n, _) =>
             {
                 actualDepleteValue1 = (decimal)n - (decimal)o;
             });
-            sut["DP2"] = ((sut["DP2"] - 11.53m) + Operation.Max(0)) + Callback.Add((o, n) =>
+            sut["DP2"] = ((sut["DP2"] - 11.53m) + Operation.Max(0)) + Callback.Add((o, n, _) =>
             {
                 actualDepleteValue2 = (decimal)n - (decimal)o;
-            });
+            }) + AdditionalArgument.Add("yarg", 10);
 
             socket.Received().SendPacketAsync(Arg.Is<SetPacket>(
                 p => p.Key == "DP1" && p.WantReply == true && p.Operations.Length == 2
@@ -730,7 +744,8 @@ namespace Archipelago.MultiClient.Net.Tests
             socket.Received().SendPacketAsync(Arg.Is<SetPacket>(
                 p => p.Key == "DP2" && p.WantReply == true && p.Operations.Length == 2
                      && p.Operations[0].OperationType == OperationType.Add && (decimal)p.Operations[0].Value == -11.53m
-                     && p.Operations[1].OperationType == OperationType.Max && (int)p.Operations[1].Value == 0));
+                     && p.Operations[1].OperationType == OperationType.Max && (int)p.Operations[1].Value == 0
+                     && (int)p.AdditionalArguments["yarg"] == 10));
 
             var setReplyPacketA = new SetReplyPacket()
             {
@@ -743,14 +758,17 @@ namespace Archipelago.MultiClient.Net.Tests
                 Key = "DP1",
                 Value = 120,
                 OriginalValue = 70,
-                Reference = callback1Reference
+                AdditionalArguments = new Dictionary<string, JToken> { { "Reference", callback1Reference } }
             };
             var setReplyPacketC = new SetReplyPacket()
             {
                 Key = "DP2",
                 Value = 0m,
                 OriginalValue = 10.36m,
-                Reference = callback2Reference
+                AdditionalArguments = new Dictionary<string, JToken> {
+	                { "Reference", callback2Reference },
+					{ "yarg", 10 }
+                }
             };
             socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(setReplyPacketA);
             socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(setReplyPacketB);

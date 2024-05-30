@@ -21,7 +21,9 @@
         RightShift,
 		Remove,
 		Pop,
-		Update
+		Update,
+		Floor,
+		Ceil
 #pragma warning restore CS1591
     }
 }

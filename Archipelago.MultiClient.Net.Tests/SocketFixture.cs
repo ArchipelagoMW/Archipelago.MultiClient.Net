@@ -14,14 +14,14 @@ namespace Archipelago.MultiClient.Net.Tests
 	[TestFixture]
 	class SocketFixture
 	{
-		const string WssServer = "archipelago.gg:33459";
-		const string WsServer = "archipelago.gg:62176";
+		const string WssServer = "archipelago.gg:43929";
+		const string WsServer = "localhost:38281";
 
 		[TestCase("ws://" + WsServer)]
 		[TestCase("wss://" + WssServer)]
 		[TestCase("unspecified://" + WsServer)]
 		[TestCase("unspecified://" + WssServer)]
-		public void Should_connect_over_wss(string server)
+		public void Should_connect_over_ws_or_wss(string server)
 		{
 			var socketIsOpen = false;
 			var errors = "";
@@ -46,9 +46,7 @@ namespace Archipelago.MultiClient.Net.Tests
 #endif
 
 			Assert.IsTrue(socketIsOpen);
-
-			if (!string.IsNullOrEmpty(errors))
-				throw new Exception(errors);
+			Assert.That(errors, Is.Empty);
 		}
 
 		[Test]
@@ -87,8 +85,11 @@ namespace Archipelago.MultiClient.Net.Tests
 
 			Assert.IsFalse(socketIsOpen);
 
-			if (!string.IsNullOrEmpty(errors))
-				throw new Exception(errors);
+#if NET471 || NET472
+			Assert.That(errors, Is.Empty);
+#else
+			Assert.IsTrue(errors.StartsWith("Socket error received:"));
+#endif
 		}
 
 		[Test]
@@ -127,8 +128,11 @@ namespace Archipelago.MultiClient.Net.Tests
 
 			Assert.IsFalse(socketIsOpen);
 
-			if (!string.IsNullOrEmpty(errors))
-				throw new Exception(errors);
+#if NET471 || NET472
+			Assert.That(errors, Is.Empty);
+#else
+			Assert.IsTrue(errors.StartsWith("Socket error received:"));
+#endif
 		}
 	}
 }

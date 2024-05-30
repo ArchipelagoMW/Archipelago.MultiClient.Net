@@ -13,6 +13,9 @@ namespace Archipelago.MultiClient.Net.Packets
         [JsonProperty("version")]
         public NetworkVersion Version { get; set; }
 
+        [JsonProperty("generator_version")]
+		public NetworkVersion GeneratorVersion { get; set; }
+
         [JsonProperty("tags")]
         public string[] Tags { get; set; }
 

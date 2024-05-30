@@ -53,15 +53,6 @@ namespace Archipelago.MultiClient.Net.DataPackage
             }
         }
 
-		//TODO find out if Archipelago needs to be manually added
-		/*
-		static void AddArchipelagoGame(RoomInfoPacket roomInfoPacket) => 
-	        roomInfoPacket.Games = roomInfoPacket.Games
-		        .Concat(new[] { "Archipelago" })
-		        .Distinct()
-		        .ToArray();
-		*/
-
 		public bool TryGetDataPackageFromCache(out Dictionary<string, IGameDataLookup> gameData)
         {
 			gameData = inMemoryCache;

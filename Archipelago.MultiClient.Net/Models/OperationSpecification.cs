@@ -9,6 +9,8 @@ using System.Collections;
 using System.Numerics;
 #endif
 
+// ReSharper disable ArrangeObjectCreationWhenTypeEvident
+
 namespace Archipelago.MultiClient.Net.Models
 {
 	/// <summary>
@@ -69,6 +71,7 @@ namespace Archipelago.MultiClient.Net.Models
 		/// <param name="i">The value to compare to</param>
 		public static OperationSpecification Max(int i) =>
 			new OperationSpecification { OperationType = OperationType.Max, Value = i };
+		/// <inheritdoc cref="Max(int)"/>
 		public static OperationSpecification Max(long i) =>
 			new OperationSpecification { OperationType = OperationType.Max, Value = i };
 		/// <inheritdoc cref="Max(int)"/>
@@ -102,6 +105,7 @@ namespace Archipelago.MultiClient.Net.Models
 		/// <param name="value">The index or key to remove</param>
 		public static OperationSpecification Pop(int value) =>
 			new OperationSpecification { OperationType = OperationType.Pop, Value = value };
+		/// <inheritdoc cref="Pop(int)"/>
 		public static OperationSpecification Pop(JToken value) =>
 		    new OperationSpecification { OperationType = OperationType.Pop, Value = value };
 
@@ -112,6 +116,18 @@ namespace Archipelago.MultiClient.Net.Models
 		/// <param name="dictionary">The dictionary to merge in</param>
 		public static OperationSpecification Update(IDictionary dictionary) =>
 		    new OperationSpecification { OperationType = OperationType.Update, Value = JObject.FromObject(dictionary) };
+
+		/// <summary>
+		/// Performs a Math.Floor() on the store its current value
+		/// </summary>
+		public static OperationSpecification Floor() =>
+			new OperationSpecification { OperationType = OperationType.Floor, Value = null };
+
+		/// <summary>
+		/// Performs a Math.Ceiling() on the store its current value
+		/// </summary>
+		public static OperationSpecification Ceiling() =>
+			new OperationSpecification { OperationType = OperationType.Ceil, Value = null };
 	}
 
 	/// <summary>
@@ -154,11 +170,18 @@ namespace Archipelago.MultiClient.Net.Models
 	    public static OperationSpecification And(BigInteger i) =>
 		    new OperationSpecification { OperationType = OperationType.And, Value = JToken.Parse(i.ToString()) };
 #endif
-
+		/// <summary>
+		/// Performs a bitwise left shift on the store its current value by the provided amount
+		/// </summary>
+		/// <param name="i">the amount to shift</param>
 		public static OperationSpecification LeftShift(long i) =>
             new OperationSpecification { OperationType = OperationType.LeftShift, Value = i };
 
-        public static OperationSpecification RightShift(long i) =>
+		/// <summary>
+		/// Performs a bitwise right shift on the store its current value by the provided amount
+		/// </summary>
+		/// <param name="i">the amount to shift</param>
+		public static OperationSpecification RightShift(long i) =>
             new OperationSpecification { OperationType = OperationType.RightShift, Value = i };
     }
 
@@ -180,4 +203,25 @@ namespace Archipelago.MultiClient.Net.Models
 		public static Callback Add(DataStorageHelper.DataStorageUpdatedHandler callback) => 
             new Callback { Method = callback };
     }
+
+	/// <summary>
+	/// Provides a way to add additional arguments to the DataStorage operation
+	/// additional arguments are send back by the server and can be checked in callbacks or handlers
+	/// </summary>
+	public class AdditionalArgument
+	{
+		internal string Key { get; set; }
+		internal JToken Value { get; set; }
+
+		AdditionalArgument() { }
+
+		/// <summary>
+		/// Adds an additional argument to the current datastorage operations.
+		/// additional arguments are send back by the server and can be checked in callbacks or handlers
+		/// </summary>
+		/// <param name="name">The name of the argument</param>
+		/// <param name="value">The value of the argument</param>
+		public static AdditionalArgument Add(string name, JToken value) =>
+			new AdditionalArgument { Key = name, Value = value };
+	}
 }

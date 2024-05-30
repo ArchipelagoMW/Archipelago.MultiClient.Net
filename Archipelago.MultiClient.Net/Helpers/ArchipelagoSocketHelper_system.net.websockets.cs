@@ -77,23 +77,46 @@ namespace Archipelago.MultiClient.Net.Helpers
 
         async Task ConnectToProvidedUri(Uri uri)
         {
-			if (uri.Scheme != "unspecified")
-				await webSocket.ConnectAsync(uri, CancellationToken.None);
+	        if (uri.Scheme != "unspecified")
+	        {
+		        try
+		        {
+			        await webSocket.ConnectAsync(uri, CancellationToken.None);
+		        }
+		        catch (Exception e)
+		        {
+			        OnError(e);
+			        throw;
+		        }
+			}
 			else
 			{
+				var errors = new List<Exception>(0);
 				try
 				{
-					await ConnectToProvidedUri(uri.AsWss());
+					await webSocket.ConnectAsync(uri.AsWss(), CancellationToken.None);
 
 					if (webSocket.State == WebSocketState.Open)
 						return;
 				}
-				catch
+				catch(Exception e)
 				{
+					errors.Add(e);
 					webSocket = new ClientWebSocket();
 				}
 
-				await ConnectToProvidedUri(uri.AsWs());
+				try
+				{
+					await webSocket.ConnectAsync(uri.AsWs(), CancellationToken.None);
+				}
+				catch (Exception e)
+				{
+					errors.Add(e);
+
+					OnError(new AggregateException(errors));
+
+					throw;
+				}
 			}
 		} 
 

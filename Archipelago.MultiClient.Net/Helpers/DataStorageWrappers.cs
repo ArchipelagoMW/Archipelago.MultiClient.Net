@@ -192,7 +192,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 		public void TrackHints(Action<Hint[]> onHintsUpdated, 
 			bool retrieveCurrentlyUnlockedHints = true, int? slot = null, int? team = null)
 		{
-			GetHintsElement(slot, team).OnValueChanged += (_, newValue) => onHintsUpdated(newValue.ToObject<Hint[]>());
+			GetHintsElement(slot, team).OnValueChanged += (_, newValue, x) => onHintsUpdated(newValue.ToObject<Hint[]>());
 
 			if (retrieveCurrentlyUnlockedHints)
 #if NET35
@@ -261,7 +261,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 		public void TrackClientStatus(Action<ArchipelagoClientState> onStatusUpdated,
 			bool retrieveCurrentClientStatus = true, int? slot = null, int? team = null)
 		{
-			GetClientStatusElement(slot, team).OnValueChanged += (_, newValue) => onStatusUpdated(newValue.ToObject<ArchipelagoClientState>());
+			GetClientStatusElement(slot, team).OnValueChanged += (_, newValue, x) => onStatusUpdated(newValue.ToObject<ArchipelagoClientState>());
 
 			if (retrieveCurrentClientStatus)
 #if NET35
