@@ -3,7 +3,7 @@
 		<TargetFrameworks>net35;net40;net45;netstandard2.0;net6.0</TargetFrameworks>
 		<AssemblyTitle>Archipelago.MultiClient.Net</AssemblyTitle>
 		<Product>Archipelago.MultiClient.Net</Product>
-		<Copyright>Copyright © 2023</Copyright>
+		<Copyright>Copyright © 2024</Copyright>
 		<OutputPath>bin\$(Configuration)\</OutputPath>
 		<Description>A client library for use with .NET based prog-langs for interfacing with Archipelago hosts.</Description>
 		<PackageProjectUrl>https://github.com/ArchipelagoMW/Archipelago.MultiClient.Net</PackageProjectUrl>
@@ -12,7 +12,7 @@
 		<RepositoryType>git</RepositoryType>
 		<AssemblyVersion>6.0.0.0</AssemblyVersion>
 		<FileVersion>6.0.0.0</FileVersion>
-		<Version>6.0.0-rc1</Version>
+		<Version>6.0.0-rc3</Version>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageRequireLicenseAcceptance>False</PackageRequireLicenseAcceptance>
 		<PackageIcon>blue-icon.png</PackageIcon>

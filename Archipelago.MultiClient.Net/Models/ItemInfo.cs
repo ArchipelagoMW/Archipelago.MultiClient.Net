@@ -32,19 +32,29 @@ namespace Archipelago.MultiClient.Net.Models
 		public ItemFlags Flags { get; }
 
 		/// <summary>
-		/// The name of the item
+		/// The name of the item, null if the name cannot be resolved
 		/// </summary>
-		public string ItemName => itemInfoResolver.GetItemName(ItemId, Game);
+		public string ItemName => itemInfoResolver.GetItemName(ItemId, ItemGame);
 
 		/// <summary>
-		/// The name of the location that item is at
+		/// The name of the item for display purposes, returns a fallback string containing the ItemId if the name cannot be resolved 
 		/// </summary>
-		public string LocationName => itemInfoResolver.GetLocationName(ItemId, Game);
+		public string ItemDisplayName => ItemName ?? $"Item: {ItemId}";
+
+		/// <summary>
+		/// The name of the location that item is at, null if the name cannot be resolved
+		/// </summary>
+		public string LocationName => itemInfoResolver.GetLocationName(LocationId, LocationGame);
+
+		/// <summary>
+		/// The name of the location for display purposes, returns a fallback string containing the LocationId if the name cannot be resolved 
+		/// </summary>
+		public string LocationDisplayName => LocationName ?? $"Location: {LocationId}";
 
 		/// <summary>
 		/// The game the item belongs to
 		/// </summary>
-		public string Game { get; }
+		public string ItemGame { get; }
 
 		/// <summary>
 		/// The game the location belongs to
@@ -58,12 +68,11 @@ namespace Archipelago.MultiClient.Net.Models
 		{
 			this.itemInfoResolver = itemInfoResolver;
 
-			Game = receiverGame;
+			ItemGame = receiverGame;
 			LocationGame = senderGame;
 			ItemId = item.Item;
 			LocationId = item.Location;
 			Flags = item.Flags;
-
 			Player = player;
 		}
 	}

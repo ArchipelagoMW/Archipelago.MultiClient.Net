@@ -261,6 +261,16 @@ namespace Archipelago.MultiClient.Net.Helpers
 		/// <param name="slot">The slot to check</param>
 		/// <returns></returns>
         public bool IsSharingGroupWith(int team, int slot) => 
-			Team == team && Groups != null && Groups.Any(g => g.GroupMembers.Any(m => m == slot));
-    }
+			Team == team && Slot == slot || (Groups != null && Groups.Any(g => g.GroupMembers.Any(m => m == slot)));
+
+		/// <summary>
+		/// Converts the PlayerInfo to the slot
+		/// </summary>
+		public static implicit operator int(PlayerInfo p) => p.Slot;
+
+		/// <summary>
+		/// Returns the Alias of the player
+		/// </summary>
+		public override string ToString() => Alias;
+	}
 }
