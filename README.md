@@ -4,6 +4,8 @@ A client library for use with .NET based applications for interfacing with Archi
 
 # Documentation
 
+### URI: https://archipelagomw.github.io/Archipelago.MultiClient.Net/index.html
+
 ## Create Session Instance
 
 ```csharp
