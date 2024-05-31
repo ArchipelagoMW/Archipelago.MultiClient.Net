@@ -304,9 +304,10 @@ namespace Archipelago.MultiClient.Net.Tests
 		{
 			var socket = Substitute.For<IArchipelagoSocketHelper>();
 			var itemInfoResolver = Substitute.For<IItemInfoResolver>();
+			itemInfoResolver.GetItemName(Arg.Any<long>(), Arg.Any<string>()).Returns(_ => null);
+			itemInfoResolver.GetLocationName(1000L, "Game3").Returns("ItemAtLocation1000InGame3");
 			var players = Substitute.For<IPlayerHelper>();
 			players.GetPlayerAlias(5).Returns("LocalPlayer");
-
 			players.Players.Returns(GetPlayerCollection(new List<PlayerInfo> {
 				new PlayerInfo { Team = 0, Slot = 1, Game = "Game1" },
 				new PlayerInfo { Team = 0, Slot = 2, Game = "Game2" },
@@ -341,8 +342,12 @@ namespace Archipelago.MultiClient.Net.Tests
 			Assert.That(logMessage.Item.LocationId, Is.EqualTo(packet.Item.Location));
 			Assert.That(logMessage.Item.Player.Slot, Is.EqualTo(packet.Item.Player));
 			Assert.That(logMessage.Item.Flags, Is.EqualTo(packet.Item.Flags));
-			Assert.That(logMessage.Item.Game, Is.EqualTo("Game5"));
+			Assert.That(logMessage.Item.ItemGame, Is.EqualTo("Game5"));
 			Assert.That(logMessage.Item.LocationGame, Is.EqualTo("Game3"));
+			Assert.That(logMessage.Item.ItemName, Is.Null);
+			Assert.That(logMessage.Item.ItemDisplayName, Is.EqualTo($"Item: {packet.Item.Item}"));
+			Assert.That(logMessage.Item.LocationName, Is.EqualTo("ItemAtLocation1000InGame3"));
+			Assert.That(logMessage.Item.LocationDisplayName, Is.EqualTo("ItemAtLocation1000InGame3"));
 
 			Assert.That(logMessage.Receiver.Slot, Is.EqualTo(5));
 			Assert.That(logMessage.Sender.Slot, Is.EqualTo(3));
@@ -358,7 +363,8 @@ namespace Archipelago.MultiClient.Net.Tests
 		{
 			var socket = Substitute.For<IArchipelagoSocketHelper>();
 			var itemInfoResolver = Substitute.For<IItemInfoResolver>();
-			
+			itemInfoResolver.GetItemName(Arg.Any<long>(), Arg.Any<string>()).Returns(_ => null);
+			itemInfoResolver.GetLocationName(Arg.Any<long>(), Arg.Any<string>()).Returns(_ => null);
 			var players = Substitute.For<IPlayerHelper>();
 			players.GetPlayerAlias(2).Returns("LocalPlayer");
 			players.Players.Returns(GetPlayerCollection(new List<PlayerInfo> {
@@ -379,7 +385,7 @@ namespace Archipelago.MultiClient.Net.Tests
 			var packet = new ItemCheatPrintJsonPacket
 			{
 				Data = new[] { new JsonMessagePart { Text = "" } },
-				//Despite the official docs claiming that the player is the sender, in the case of an item cheat message it is actually the receiver
+				//Despite the official docs claiming that the player is the sender, in the case of an item cheat message it is actually the slot who executed the command
 				Item = new NetworkItem { Flags = ItemFlags.None, Player = 1, Item = 100, Location = 1000 },
 				ReceivingPlayer = 1,
 				Team = 0,
@@ -394,8 +400,12 @@ namespace Archipelago.MultiClient.Net.Tests
 			Assert.That(logMessage.Item.LocationId, Is.EqualTo(packet.Item.Location));
 			Assert.That(logMessage.Item.Player.Slot, Is.EqualTo(packet.Item.Player));
 			Assert.That(logMessage.Item.Flags, Is.EqualTo(packet.Item.Flags));
-			Assert.That(logMessage.Item.Game, Is.EqualTo("Game1"));
+			Assert.That(logMessage.Item.ItemGame, Is.EqualTo("Game1"));
 			Assert.That(logMessage.Item.LocationGame, Is.EqualTo("Archipelago"));
+			Assert.That(logMessage.Item.ItemName, Is.Null);
+			Assert.That(logMessage.Item.ItemDisplayName, Is.EqualTo($"Item: {packet.Item.Item}"));
+			Assert.That(logMessage.Item.LocationName, Is.Null);
+			Assert.That(logMessage.Item.LocationDisplayName, Is.EqualTo($"Location: {packet.Item.Location}"));
 
 			Assert.That(logMessage.Receiver.Slot, Is.EqualTo(1));
 			Assert.That(logMessage.Sender.Slot, Is.EqualTo(0)); //Slot 0 = Server
@@ -412,6 +422,8 @@ namespace Archipelago.MultiClient.Net.Tests
 		{
 			var socket = Substitute.For<IArchipelagoSocketHelper>();
 			var itemInfoResolver = Substitute.For<IItemInfoResolver>();
+			itemInfoResolver.GetItemName(100L, "Game2").Returns("Item100FromGame3");
+			itemInfoResolver.GetLocationName(Arg.Any<long>(), Arg.Any<string>()).Returns(_ => null);
 			var players = Substitute.For<IPlayerHelper>();
 			players.GetPlayerAlias(5).Returns("LocalPlayer");
 			players.Players.Returns(GetPlayerCollection(new List<PlayerInfo> {
@@ -449,8 +461,12 @@ namespace Archipelago.MultiClient.Net.Tests
 			Assert.That(logMessage.Item.LocationId, Is.EqualTo(packet.Item.Location));
 			Assert.That(logMessage.Item.Player.Slot, Is.EqualTo(packet.Item.Player));
 			Assert.That(logMessage.Item.Flags, Is.EqualTo(packet.Item.Flags));
-			Assert.That(logMessage.Item.Game, Is.EqualTo("Game2"));
+			Assert.That(logMessage.Item.ItemGame, Is.EqualTo("Game2"));
 			Assert.That(logMessage.Item.LocationGame, Is.EqualTo("Game3"));
+			Assert.That(logMessage.Item.ItemName, Is.EqualTo("Item100FromGame3"));
+			Assert.That(logMessage.Item.ItemDisplayName, Is.EqualTo("Item100FromGame3"));
+			Assert.That(logMessage.Item.LocationName, Is.Null);
+			Assert.That(logMessage.Item.LocationDisplayName, Is.EqualTo($"Location: {packet.Item.Location}"));
 
 			Assert.That(logMessage.Receiver.Slot, Is.EqualTo(2));
 			Assert.That(logMessage.Sender.Slot, Is.EqualTo(3));

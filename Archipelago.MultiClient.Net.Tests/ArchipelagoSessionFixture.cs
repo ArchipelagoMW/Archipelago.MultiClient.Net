@@ -142,6 +142,45 @@ namespace Archipelago.MultiClient.Net.Tests
 			Assert.That(successful.Team, Is.EqualTo(3));
 		}
 
+		[Test]
+		public void Should_say_text()
+		{
+			var socket = Substitute.For<IArchipelagoSocketHelper>();
+			var fileSystemDataPackageProvider = Substitute.For<IFileSystemDataPackageProvider>();
+
+			var session = CreateTestSession(socket, fileSystemDataPackageProvider);
+
+			session.Say("!message for server");
+
+			socket.Received().SendPacket(Arg.Is<SayPacket>(p => p.Text == "!message for server"));
+		}
+
+		[Test]
+		public void Should_update_client_status()
+		{
+			var socket = Substitute.For<IArchipelagoSocketHelper>();
+			var fileSystemDataPackageProvider = Substitute.For<IFileSystemDataPackageProvider>();
+
+			var session = CreateTestSession(socket, fileSystemDataPackageProvider);
+
+			session.SetClientState(ArchipelagoClientState.ClientReady);
+
+			socket.Received().SendPacket(Arg.Is<StatusUpdatePacket>(p => p.Status == ArchipelagoClientState.ClientReady));
+		}
+
+		[Test]
+		public void Should_update_client_goal()
+		{
+			var socket = Substitute.For<IArchipelagoSocketHelper>();
+			var fileSystemDataPackageProvider = Substitute.For<IFileSystemDataPackageProvider>();
+
+			var session = CreateTestSession(socket, fileSystemDataPackageProvider);
+
+			session.SetGoalAchieved();
+
+			socket.Received().SendPacket(Arg.Is<StatusUpdatePacket>(p => p.Status == ArchipelagoClientState.ClientGoal));
+		}
+
 		static ArchipelagoSession CreateTestSession(IArchipelagoSocketHelper socket,
 			IFileSystemDataPackageProvider fileSystemDataPackageProvider)
 		{

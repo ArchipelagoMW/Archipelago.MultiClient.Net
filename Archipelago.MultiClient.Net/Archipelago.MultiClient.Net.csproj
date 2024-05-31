@@ -12,7 +12,7 @@
 		<RepositoryType>git</RepositoryType>
 		<AssemblyVersion>6.0.0.0</AssemblyVersion>
 		<FileVersion>6.0.0.0</FileVersion>
-		<Version>6.0.0-rc3</Version>
+		<Version>6.0.0-rc4</Version>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageRequireLicenseAcceptance>False</PackageRequireLicenseAcceptance>
 		<PackageIcon>blue-icon.png</PackageIcon>

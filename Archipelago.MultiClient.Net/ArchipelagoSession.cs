@@ -19,7 +19,7 @@ namespace Archipelago.MultiClient.Net
 	/// <summary>
 	/// `ArchipelagoSession` is the overarching class to access and modify and respond to the multiworld state
 	/// </summary>
-	public class ArchipelagoSession
+	public partial class ArchipelagoSession
     {
         const int ArchipelagoConnectionTimeoutInSeconds = 4;
 
