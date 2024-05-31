@@ -7,7 +7,7 @@ namespace Archipelago.MultiClient.Net.MessageLog.Messages
 	/// The `PlayerSpecificLogMessage` is send a base class for LogMessage's that are made in the context of a specific player.
 	/// Item player specific messages contain additional information about the specific player.
 	///
-	/// `ItemSendLogMessage` also serves as the base class for <see cref="T:Archipelago.MultiClient.Net.MessageLog.Messages.HintItemSendLogMessage"/> & <see cref="T:Archipelago.MultiClient.Net.MessageLog.Messages.ItemCheatLogMessage"/>
+	/// `ItemSendLogMessage` also serves as the base class for <see cref="T:Archipelago.MultiClient.Net.MessageLog.Messages.HintItemSendLogMessage"/> and <see cref="T:Archipelago.MultiClient.Net.MessageLog.Messages.ItemCheatLogMessage"/>
 	/// </summary>
 	public abstract class PlayerSpecificLogMessage : LogMessage
 	{
@@ -22,7 +22,7 @@ namespace Archipelago.MultiClient.Net.MessageLog.Messages
 		public bool IsActivePlayer { get; }
 
 		/// <summary>
-		/// True if the player this message is concerning shares any slot groups (e.g. itemlinks) with the current connected player
+		/// True if the player this message is concerning any slot groups (e.g. itemlinks) with the current connected player
 		/// </summary>
 		public bool IsRelatedToActivePlayer { get; }
 

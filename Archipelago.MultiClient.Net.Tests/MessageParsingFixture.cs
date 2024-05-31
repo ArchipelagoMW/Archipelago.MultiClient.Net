@@ -29,7 +29,6 @@ namespace Archipelago.MultiClient.Net.Tests
 			Assert.That(roomInfoPacket.Version.Major, Is.EqualTo(0));
 			Assert.That(roomInfoPacket.Version.Minor, Is.EqualTo(3));
 			Assert.That(roomInfoPacket.Version.Build, Is.EqualTo(5));
-			Assert.That(roomInfoPacket.DataPackageVersions.Count, Is.EqualTo(34));
 			Assert.That(roomInfoPacket.Games.Length, Is.EqualTo(1));
 			Assert.That(roomInfoPacket.HintCostPercentage, Is.EqualTo(10));
 			Assert.That(roomInfoPacket.LocationCheckPoints, Is.EqualTo(1));

@@ -1,4 +1,4 @@
-﻿using Archipelago.MultiClient.Net.Cache;
+﻿using Archipelago.MultiClient.Net.DataPackage;
 using Archipelago.MultiClient.Net.Helpers;
 using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
@@ -11,8 +11,7 @@ namespace Archipelago.MultiClient.Net.Tests
 {
 	//use Directory C:\Users\<current_user>\AppData\Local\Archipelago\Cache\<game>\<checksum>.json
 	//retention 1 month since last modified, update File.SetLastWriteTime(file, modifiedTime) in use
-
-
+	
 	[TestFixture]
     public class DataPackageFileSystemCacheFixture
     {
@@ -58,7 +57,7 @@ namespace Archipelago.MultiClient.Net.Tests
         [Test]
         public void Should_not_request_data_when_local_contains_a_file_with_same_checksum()
         {
-            var localDataPackage = new DataPackage {
+            var localDataPackage = new Models.DataPackage {
                 Games = new Dictionary<string, GameData> {
                     { "One", new TestGameData("3") },
                     { "Two", new TestGameData("4") },
@@ -94,7 +93,7 @@ namespace Archipelago.MultiClient.Net.Tests
 		[Test]
         public void Should_only_request_data_for_games_that_a_have_different_checksum_then_cached()
         {
-            var localDataPackage = new DataPackage
+            var localDataPackage = new Models.DataPackage
             {
                 Games = new Dictionary<string, GameData> {
                     { "One", new TestGameData("3") },
@@ -137,7 +136,7 @@ namespace Archipelago.MultiClient.Net.Tests
         public void Should_save_received_datapackage_contents()
         {
             var serverDataPackage = new DataPackagePacket {
-                DataPackage = new DataPackage {
+                DataPackage = new Models.DataPackage {
                     Games = new Dictionary<string, GameData> {
                         { 
                             "One", new GameData {
@@ -175,7 +174,7 @@ namespace Archipelago.MultiClient.Net.Tests
         [Test]
         public void Should_merge_received_datapackage_with_cached_version()
         {
-            var localDataPackage = new DataPackage
+            var localDataPackage = new Models.DataPackage
             {
                 Games = new Dictionary<string, GameData> {
                     { "One", new TestGameData("1") },
@@ -197,7 +196,7 @@ namespace Archipelago.MultiClient.Net.Tests
 
             var serverDataPackage = new DataPackagePacket
             {
-                DataPackage = new DataPackage
+                DataPackage = new Models.DataPackage
                 {
                     Games = new Dictionary<string, GameData> {
                         { "Two", new TestGameData("6") }
@@ -220,16 +219,16 @@ namespace Archipelago.MultiClient.Net.Tests
 
             sut.TryGetDataPackageFromCache(out var inMemoryDataPackage);
 
-            Assert.IsTrue(inMemoryDataPackage.Games.Count == 3
-                          && inMemoryDataPackage.Games["One"].Checksum == "1"
-                          && inMemoryDataPackage.Games["Two"].Checksum == "6"
-                          && inMemoryDataPackage.Games["Archipelago"].Checksum == "3");
+            Assert.IsTrue(inMemoryDataPackage.Count == 3
+                          && inMemoryDataPackage["One"].Checksum == "1"
+                          && inMemoryDataPackage["Two"].Checksum == "6"
+                          && inMemoryDataPackage["Archipelago"].Checksum == "3");
         }
 
         [Test]
         public void Should_request_data_package_for_games_the_server_fails_to_send_the_version_for()
         {
-	        var localDataPackage = new DataPackage
+	        var localDataPackage = new Models.DataPackage
 	        {
 		        Games = new Dictionary<string, GameData> {
 			        { "One", new TestGameData("1") },
@@ -263,7 +262,89 @@ namespace Archipelago.MultiClient.Net.Tests
 			));
 		}
 
-        class TestGameData : GameData
+
+		[Test]
+		public void Should_allow_overlapping_ids()
+		{
+			var localDataPackage = new Models.DataPackage
+			{
+				Games = new Dictionary<string, GameData> {
+					{ "One", new TestGameData("1") },
+					{ "Two", new TestGameData("3") },
+					{ "Archipelago", new TestGameData("3") },
+				}
+			};
+
+			var roomInfo = new RoomInfoPacket
+			{
+				Version = new NetworkVersion(0, 4, 0),
+				Games = new[] { "One", "Two", "Archipelago" },
+				DataPackageChecksums = new Dictionary<string, string> {
+					{ "One", "2" },
+					{ "Two", "1" },
+					{ "Archipelago", "3" }
+				}
+			};
+
+			var serverDataPackage = new DataPackagePacket
+			{
+				DataPackage = new Models.DataPackage
+				{
+					Games = new Dictionary<string, GameData> {
+						{ "One", new TestGameData("2") {
+							ItemLookup = new Dictionary<string, long> {
+								{ "GameOneItem", 20 },
+								{ "DuplicatedName", 15 }
+							},
+							LocationLookup = new Dictionary<string, long> {
+								{ "GameOneLocation", 20 },
+								{ "DuplicatedName", 15 }
+							}
+						}},
+						{ "Two", new TestGameData("1") {
+							ItemLookup = new Dictionary<string, long> {
+								{ "GameTwoItem", 20 },
+								{ "DuplicatedName", 30 }
+							},
+							LocationLookup = new Dictionary<string, long> {
+								{ "GameTwoLocation", 20 },
+								{ "DuplicatedName", 15 }
+							}
+						}}
+					}
+				}
+			};
+
+			var socket = Substitute.For<IArchipelagoSocketHelper>();
+			var fileSystemDataPackageProvider = Substitute.For<IFileSystemDataPackageProvider>();
+			fileSystemDataPackageProvider.TryGetDataPackage("", "", out _)
+				.ReturnsForAnyArgs(x => {
+					x[2] = localDataPackage.Games[x.ArgAt<string>(0)];
+					return true;
+				});
+
+			var sut = new DataPackageCache(socket, fileSystemDataPackageProvider);
+
+			socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(roomInfo);
+			socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(serverDataPackage);
+
+			sut.TryGetDataPackageFromCache(out var inMemoryDataPackage);
+
+			Assert.IsTrue(inMemoryDataPackage.Count == 3
+			  && inMemoryDataPackage["One"].Checksum == "2"
+			  && inMemoryDataPackage["One"].Items["GameOneItem"] == 20
+			  && inMemoryDataPackage["One"].Items["DuplicatedName"] == 15
+			  && inMemoryDataPackage["One"].Locations["GameOneLocation"] == 20
+			  && inMemoryDataPackage["One"].Locations["DuplicatedName"] == 15
+			  && inMemoryDataPackage["Two"].Checksum == "1"
+			  && inMemoryDataPackage["Two"].Items["GameTwoItem"] == 20
+			  && inMemoryDataPackage["Two"].Items["DuplicatedName"] == 30
+			  && inMemoryDataPackage["Two"].Locations["GameTwoLocation"] == 20
+			  && inMemoryDataPackage["Two"].Locations["DuplicatedName"] == 15
+			  && inMemoryDataPackage["Archipelago"].Checksum == "3");
+		}
+
+		class TestGameData : GameData
         {
 	        public TestGameData(string checksum)
 	        {

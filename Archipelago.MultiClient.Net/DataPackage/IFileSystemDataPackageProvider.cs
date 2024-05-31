@@ -1,6 +1,6 @@
 ﻿using Archipelago.MultiClient.Net.Models;
 
-namespace Archipelago.MultiClient.Net.Cache
+namespace Archipelago.MultiClient.Net.DataPackage
 {
 	interface IFileSystemDataPackageProvider
 	{

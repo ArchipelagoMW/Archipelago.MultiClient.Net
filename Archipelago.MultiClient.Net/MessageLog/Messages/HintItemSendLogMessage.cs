@@ -1,4 +1,5 @@
-﻿using Archipelago.MultiClient.Net.Helpers;
+﻿using Archipelago.MultiClient.Net.DataPackage;
+using Archipelago.MultiClient.Net.Helpers;
 using Archipelago.MultiClient.Net.MessageLog.Parts;
 using Archipelago.MultiClient.Net.Models;
 
@@ -19,8 +20,8 @@ namespace Archipelago.MultiClient.Net.MessageLog.Messages
 
 		internal HintItemSendLogMessage(MessagePart[] parts, 
 			IPlayerHelper players, IConnectionInfoProvider connectionInfo, 
-			int receiver, int sender, NetworkItem item, bool found) 
-			: base(parts, players, connectionInfo, receiver, sender, item)
+			int receiver, int sender, NetworkItem item, bool found, IItemInfoResolver itemInfoResolver) 
+			: base(parts, players, connectionInfo, receiver, sender, item, itemInfoResolver)
 		{
 			IsFound = found;
 		}

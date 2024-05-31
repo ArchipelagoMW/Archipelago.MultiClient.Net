@@ -1,5 +1,4 @@
 ﻿using Archipelago.MultiClient.Net.Enums;
-using Archipelago.MultiClient.Net.Models;
 using Newtonsoft.Json;
 
 namespace Archipelago.MultiClient.Net.Packets
@@ -9,6 +8,6 @@ namespace Archipelago.MultiClient.Net.Packets
         public override ArchipelagoPacketType PacketType => ArchipelagoPacketType.DataPackage;
 
         [JsonProperty("data")]
-        public DataPackage DataPackage { get; set; }
+        public Models.DataPackage DataPackage { get; set; }
     }
 }

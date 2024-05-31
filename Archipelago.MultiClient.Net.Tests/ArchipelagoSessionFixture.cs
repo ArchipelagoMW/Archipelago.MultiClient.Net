@@ -1,4 +1,4 @@
-﻿using Archipelago.MultiClient.Net.Cache;
+﻿using Archipelago.MultiClient.Net.DataPackage;
 using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Helpers;
 using Archipelago.MultiClient.Net.Models;
@@ -65,7 +65,7 @@ namespace Archipelago.MultiClient.Net.Tests
 
 			var session = CreateTestSession(socket, fileSystemDataPackageProvider);
 
-			SetupRoomInfoPacket(socket, new RoomInfoPacket { Games = Array.Empty<string>() });
+			SetupRoomInfoPacket(socket, new RoomInfoPacket { Games = new []{ "Game1" } });
 			SetupLoginResultPacket(socket, new ConnectionRefusedPacket());
 
 			var result = session.TryConnectAndLogin("", "", ItemsHandlingFlags.NoItems);
@@ -142,17 +142,57 @@ namespace Archipelago.MultiClient.Net.Tests
 			Assert.That(successful.Team, Is.EqualTo(3));
 		}
 
+		[Test]
+		public void Should_say_text()
+		{
+			var socket = Substitute.For<IArchipelagoSocketHelper>();
+			var fileSystemDataPackageProvider = Substitute.For<IFileSystemDataPackageProvider>();
+
+			var session = CreateTestSession(socket, fileSystemDataPackageProvider);
+
+			session.Say("!message for server");
+
+			socket.Received().SendPacket(Arg.Is<SayPacket>(p => p.Text == "!message for server"));
+		}
+
+		[Test]
+		public void Should_update_client_status()
+		{
+			var socket = Substitute.For<IArchipelagoSocketHelper>();
+			var fileSystemDataPackageProvider = Substitute.For<IFileSystemDataPackageProvider>();
+
+			var session = CreateTestSession(socket, fileSystemDataPackageProvider);
+
+			session.SetClientState(ArchipelagoClientState.ClientReady);
+
+			socket.Received().SendPacket(Arg.Is<StatusUpdatePacket>(p => p.Status == ArchipelagoClientState.ClientReady));
+		}
+
+		[Test]
+		public void Should_update_client_goal()
+		{
+			var socket = Substitute.For<IArchipelagoSocketHelper>();
+			var fileSystemDataPackageProvider = Substitute.For<IFileSystemDataPackageProvider>();
+
+			var session = CreateTestSession(socket, fileSystemDataPackageProvider);
+
+			session.SetGoalAchieved();
+
+			socket.Received().SendPacket(Arg.Is<StatusUpdatePacket>(p => p.Status == ArchipelagoClientState.ClientGoal));
+		}
+
 		static ArchipelagoSession CreateTestSession(IArchipelagoSocketHelper socket,
 			IFileSystemDataPackageProvider fileSystemDataPackageProvider)
 		{
 			var dataPackageCache = new DataPackageCache(socket, fileSystemDataPackageProvider);
-			var locations = new LocationCheckHelper(socket, dataPackageCache);
-			var items = new ReceivedItemsHelper(socket, locations, dataPackageCache);
 			var connectionInfo = new ConnectionInfoHelper(socket);
+			var itemInfoResolver = new ItemInfoResolver(dataPackageCache, connectionInfo);
 			var players = new PlayerHelper(socket, connectionInfo);
+			var locations = new LocationCheckHelper(socket, itemInfoResolver,  connectionInfo, players);
+			var items = new ReceivedItemsHelper(socket, locations, itemInfoResolver, connectionInfo, players);
 			var roomState = new RoomStateHelper(socket, locations);
 			var dataStorage = new DataStorageHelper(socket, connectionInfo);
-			var messageLog = new MessageLogHelper(socket, items, locations, players, connectionInfo);
+			var messageLog = new MessageLogHelper(socket, itemInfoResolver, players, connectionInfo);
 
 			return new ArchipelagoSession(socket, items, locations, players, roomState, connectionInfo, dataStorage, messageLog);
 		}

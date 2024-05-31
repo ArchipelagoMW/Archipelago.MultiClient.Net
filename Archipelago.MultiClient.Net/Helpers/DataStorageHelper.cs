@@ -4,6 +4,7 @@ using Archipelago.MultiClient.Net.Packets;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 
 #if NET35
 using System.Threading;
@@ -16,11 +17,42 @@ namespace Archipelago.MultiClient.Net.Helpers
 	/// <summary>
 	/// Provides access to a server side data storage to share and store values across sessions and players
 	/// </summary>
-	public partial class DataStorageHelper
-    {
-        public delegate void DataStorageUpdatedHandler(JToken originalValue, JToken newValue);
+	public interface IDataStorageHelper : IDataStorageWrapper
+	{
+		/// <summary>
+		/// Stored or retrieves a value from the server side data storage.
+		/// Assignment operations like = or *= will run asynchronously on server only
+		/// The retrievals are done synchronously however this storage is implemented using deferred execution.
+		/// </summary>
+		/// <param name="scope">The scope of the key</param>
+		/// <param name="key">The key for which the value should be stored or retrieved</param>
+		/// <returns>A value </returns>
+		DataStorageElement this[Scope scope, string key] { get; set; }
 
-        readonly Dictionary<string, DataStorageUpdatedHandler> onValueChangedEventHandlers = new Dictionary<string, DataStorageUpdatedHandler>();
+		/// <summary>
+		/// Stored or retrieves a value from the server side data storage.
+		/// Assignment operations like = or *= will run asynchronously on server only
+		/// The retrievals are done synchronously however this storage is implemented using deferred execution.
+		/// </summary>
+		/// <param name="key">The key under which the value should be stored or retrieved</param>
+		/// <returns>A value </returns>
+		DataStorageElement this[string key] { get; set; }
+	}
+
+	/// <summary>
+	/// Provides access to a server side data storage to share and store values across sessions and players
+	/// </summary>
+	public partial class DataStorageHelper : IDataStorageHelper
+	{
+		/// <summary>
+		/// Delegate for the callback that is called when a value in the data storage is updated
+		/// </summary>
+		/// <param name="originalValue">The original value before the update</param>
+		/// <param name="newValue">the current value</param>
+		/// <param name="additionalArguments">the additional arguments passed to the set operation</param>
+		public delegate void DataStorageUpdatedHandler(JToken originalValue, JToken newValue, Dictionary<string, JToken> additionalArguments);
+
+		readonly Dictionary<string, DataStorageUpdatedHandler> onValueChangedEventHandlers = new Dictionary<string, DataStorageUpdatedHandler>();
         readonly Dictionary<Guid, DataStorageUpdatedHandler> operationSpecificCallbacks = new Dictionary<Guid, DataStorageUpdatedHandler>();
 #if NET35
         readonly Dictionary<string, Action<JToken>> asyncRetrievalCallbacks = new Dictionary<string, Action<JToken>>();
@@ -64,41 +96,30 @@ namespace Archipelago.MultiClient.Net.Helpers
                     }
                     break;
                 case SetReplyPacket setReplyPacket:
-                    if (setReplyPacket.Reference.HasValue
-                        && operationSpecificCallbacks.TryGetValue(setReplyPacket.Reference.Value, out var operationCallback))
+                    if (setReplyPacket.AdditionalArguments != null 
+                        && setReplyPacket.AdditionalArguments.ContainsKey("Reference")
+                        && setReplyPacket.AdditionalArguments["Reference"].Type == JTokenType.Guid
+                        && operationSpecificCallbacks.TryGetValue((Guid)setReplyPacket.AdditionalArguments["Reference"], out var operationCallback))
                     {
-                        operationCallback(setReplyPacket.OriginalValue, setReplyPacket.Value);
+						operationCallback(setReplyPacket.OriginalValue, setReplyPacket.Value, setReplyPacket.AdditionalArguments);
 
-                        operationSpecificCallbacks.Remove(setReplyPacket.Reference.Value);
+                        operationSpecificCallbacks.Remove((Guid)setReplyPacket.AdditionalArguments["Reference"]);
                     }
 
                     if (onValueChangedEventHandlers.TryGetValue(setReplyPacket.Key, out var handler))
-                        handler(setReplyPacket.OriginalValue, setReplyPacket.Value);
+                        handler(setReplyPacket.OriginalValue, setReplyPacket.Value, setReplyPacket.AdditionalArguments);
                     break;
             }
         }
 
-        /// <summary>
-        /// Stored or retrieves a value from the server side data storage.
-        /// Assignment operations like = or *= will run asynchronously on server only
-        /// The retrievals are done synchronously however this storage is implemented using deferred execution.
-        /// </summary>
-        /// <param name="scope">The scope of the key</param>
-        /// <param name="key">The key for which the value should be stored or retrieved</param>
-        /// <returns>A value </returns>
+		/// <inheritdoc />
         public DataStorageElement this[Scope scope, string key]
         {
             get => this[AddScope(scope, key)];
             set => this[AddScope(scope, key)] = value;
         }
-        /// <summary>
-        /// Stored or retrieves a value from the server side data storage.
-        /// Assignment operations like = or *= will run asynchronously on server only
-        /// The retrievals are done synchronously however this storage is implemented using deferred execution.
-        /// </summary>
-        /// <param name="key">The key under which the value should be stored or retrieved</param>
-        /// <returns>A value </returns>
-        public DataStorageElement this[string key]
+		/// <inheritdoc />
+		public DataStorageElement this[string key]
         {
             get => new DataStorageElement(GetContextForKey(key));
             set => SetValue(key, value);
@@ -199,18 +220,22 @@ namespace Archipelago.MultiClient.Net.Helpers
                 });
             }
 
+			var additionalArguments = e.AdditionalArguments ?? new Dictionary<string, JToken>(0);
+
             if (e.Callbacks != null)
             {
                 var guid = Guid.NewGuid();
 
                 operationSpecificCallbacks[guid] = e.Callbacks;
 
-                socket.SendPacketAsync(new SetPacket
+                additionalArguments["Reference"] = JToken.FromObject(guid);
+				
+				socket.SendPacketAsync(new SetPacket
                 {
                     Key = key,
                     Operations = e.Operations.ToArray(),
                     WantReply = true,
-                    Reference = guid
+					AdditionalArguments = additionalArguments
                 });
             }
             else
@@ -218,8 +243,9 @@ namespace Archipelago.MultiClient.Net.Helpers
                 socket.SendPacketAsync(new SetPacket
                 {
                     Key = key,
-                    Operations = e.Operations.ToArray()
-                });
+                    Operations = e.Operations.ToArray(),
+                    AdditionalArguments = additionalArguments
+				});
             }
         }
 

@@ -2,7 +2,8 @@
 using Archipelago.MultiClient.Net.Models;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using System;
+using System.Collections.Generic;
+using System.Runtime.Serialization;
 
 namespace Archipelago.MultiClient.Net.Packets
 {
@@ -22,6 +23,10 @@ namespace Archipelago.MultiClient.Net.Packets
         [JsonProperty("want_reply")]
         public bool WantReply { get; set; }
 
-        public Guid? Reference { get; set; }
+        [JsonExtensionData]
+		public Dictionary<string, JToken> AdditionalArguments { get; set; }
+
+		[OnDeserialized]
+		internal void OnDeserializedMethod(StreamingContext context) => AdditionalArguments?.Remove("cmd");
     }
 }

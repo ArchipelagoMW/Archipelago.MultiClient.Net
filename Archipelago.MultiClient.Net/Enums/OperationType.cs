@@ -5,7 +5,8 @@
 	/// </summary>
     public enum OperationType
     {
-        Add,
+#pragma warning disable CS1591
+		Add,
         Mul,
         Max,
         Min,
@@ -20,6 +21,9 @@
         RightShift,
 		Remove,
 		Pop,
-		Update
+		Update,
+		Floor,
+		Ceil
+#pragma warning restore CS1591
     }
 }

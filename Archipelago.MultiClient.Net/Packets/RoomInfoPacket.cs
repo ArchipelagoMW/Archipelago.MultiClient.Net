@@ -13,6 +13,9 @@ namespace Archipelago.MultiClient.Net.Packets
         [JsonProperty("version")]
         public NetworkVersion Version { get; set; }
 
+        [JsonProperty("generator_version")]
+		public NetworkVersion GeneratorVersion { get; set; }
+
         [JsonProperty("tags")]
         public string[] Tags { get; set; }
 
@@ -33,10 +36,6 @@ namespace Archipelago.MultiClient.Net.Packets
 
         [JsonProperty("games")]
         public string[] Games { get; set; }
-
-		[Obsolete("use DataPackageChecksums instead")]
-        [JsonProperty("datapackage_versions")]
-        public Dictionary<string, int> DataPackageVersions { get; set; }
 
         [JsonProperty("datapackage_checksums")]
         public Dictionary<string, string> DataPackageChecksums { get; set; }

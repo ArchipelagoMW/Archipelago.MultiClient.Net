@@ -70,32 +70,62 @@ namespace Archipelago.MultiClient.Net.Helpers
 		/// <summary>
 		///     Initiates a connection to the host.
 		/// </summary>
-		public void Connect()
-		{
-			ConnectToProvidedUri(Uri);
-		}
+		public void Connect() => ConnectToProvidedUri(Uri);
 
 		void ConnectToProvidedUri(Uri uri)
 		{
 			if (uri.Scheme != "unspecified")
 			{
-				webSocket = CreateWebSocket(uri);
-				webSocket.Connect();
+				try
+				{
+					webSocket = CreateWebSocket(uri);
+					webSocket.Connect();
+				}
+				catch (Exception e)
+				{
+					OnError(e);
+				}
 			}
 			else
 			{
+				var errors = new List<Exception>();
 				try
 				{
-					ConnectToProvidedUri(uri.AsWss());
+					try
+					{
+						ConnectToProvidedUri(uri.AsWss());
+					}
+					catch (Exception e)
+					{
+						errors.Add(e);
+						throw;
+					}
 
 					if (webSocket.IsAlive)
 						return;
 
-					ConnectToProvidedUri(uri.AsWs());
+					try
+					{
+						ConnectToProvidedUri(uri.AsWs());
+					}
+					catch (Exception e)
+					{
+						errors.Add(e);
+						throw;
+					}
 				}
 				catch
 				{
-					ConnectToProvidedUri(uri.AsWs());
+					try
+					{
+						ConnectToProvidedUri(uri.AsWs());
+					}
+					catch (Exception e)
+					{
+						errors.Add(e);
+						
+						OnError(new AggregateException(errors));
+					}
 				}
 			}
 		}
@@ -383,6 +413,12 @@ namespace Archipelago.MultiClient.Net.Helpers
             if (ErrorReceived != null)
                 ErrorReceived(e.Exception, e.Message);
         }
-    }
+
+        void OnError(Exception e)
+        {
+	        if (ErrorReceived != null)
+		        ErrorReceived(e, e.Message);
+	    }
+	}
 }
 #endif

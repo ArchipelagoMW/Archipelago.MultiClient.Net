@@ -17,146 +17,148 @@ namespace Archipelago.MultiClient.Net.Tests
         public static TestCaseData[] RoomStateHelperTests =>
             new TestCaseData[] {
                 // HintCostPercentage
-                new RoomStateHelperTest<int>(
+                RoomStateHelperTest.Create(
                     "Should_get_and_update_hint_cost_percentage",
                     new RoomInfoPacket { HintCostPercentage = 99 },
                     new RoomUpdatePacket { HintCostPercentage = 777 },
                     s => s.HintCostPercentage, 99, 777),
-                new RoomStateHelperTest<int>(
+                RoomStateHelperTest.Create(
 					"Should_not_update_hint_cost_percentage_when_its_not_provided",
                     new RoomInfoPacket { HintCostPercentage = 99 },
                     new RoomUpdatePacket { HintCostPercentage = null },
                     s => s.HintCostPercentage, 99, 99),
-                new RoomStateHelperTest<int>(
+                RoomStateHelperTest.Create(
 					"Should_update_hint_cost_percentage_to_0_when_its_provided",
                     new RoomInfoPacket { HintCostPercentage = 99 },
                     new RoomUpdatePacket { HintCostPercentage = 0 },
                     s => s.HintCostPercentage, 99, 0),
 
                 // HintCost
-                new RoomStateHelperTest<int>(
+                RoomStateHelperTest.Create(
 	                "Should_get_and_update_hint_cost",
 	                new RoomInfoPacket { HintCostPercentage = 40 },
-	                new RoomUpdatePacket { HintCostPercentage = 25 },
-	                s => s.HintCost, 60, 37),
-                new RoomStateHelperTest<int>(
+	                new ConnectedPacket { LocationsChecked = new long[100], MissingChecks = new long[50] },
+	                s => s.HintCost, 0, 60),
+                RoomStateHelperTest.Create(
 	                "Should_not_update_hint_cost_when_its_not_provided",
-	                new RoomInfoPacket { HintCostPercentage = -10 },
+	                new RoomInfoPacket { HintCostPercentage = 40 },
+					new ConnectedPacket { LocationsChecked = new long[100], MissingChecks = new long[50] },
 	                new RoomUpdatePacket { HintCostPercentage = null },
-	                s => s.HintCost, 0, 0),
-                new RoomStateHelperTest<int>(
+	                s => s.HintCost, 0, 60, 60),
+                RoomStateHelperTest.Create(
 	                "Should_update_hint_cost_to_0_when_its_provided",
-	                new RoomInfoPacket { HintCostPercentage = 99 },
-	                new RoomUpdatePacket { HintCostPercentage = 0 },
-	                s => s.HintCost, 148, 0),
+	                new RoomInfoPacket { HintCostPercentage = 40 },
+	                new ConnectedPacket { LocationsChecked = new long[100], MissingChecks = new long[50] },
+					new RoomUpdatePacket { HintCostPercentage = 0 },
+	                s => s.HintCost, 0, 60, 0),
 
                 // LocationCheckPoints
-                new RoomStateHelperTest<int>(
+                RoomStateHelperTest.Create(
                     "Should_get_and_update_location_check_points",
                     new RoomInfoPacket { LocationCheckPoints = 1 },
                     new RoomUpdatePacket { LocationCheckPoints = 5 },
                     s => s.LocationCheckPoints, 1, 5),
-                new RoomStateHelperTest<int>(
+                RoomStateHelperTest.Create(
                     "Should_not_update_location_check_points_when_its_not_provided",
                     new RoomInfoPacket { LocationCheckPoints = 2 },
                     new RoomUpdatePacket { LocationCheckPoints = null },
                     s => s.LocationCheckPoints, 2, 2),
-                new RoomStateHelperTest<int>(
+                RoomStateHelperTest.Create(
                     "Should_update_location_check_points_to_0_when_its_provided",
                     new RoomInfoPacket { LocationCheckPoints = 3 },
                     new RoomUpdatePacket { LocationCheckPoints = 0 },
                     s => s.LocationCheckPoints, 3, 0),
 
                 // HintPoints
-                new RoomStateHelperTest<int>(
+                RoomStateHelperTest.Create(
                     "Should_update_hint_points",
                     new RoomUpdatePacket { HintPoints = 1337 },
                     new RoomUpdatePacket { HintPoints = 1350 },
                     s => s.HintPoints, 1337, 1350),
-                new RoomStateHelperTest<int>(
+                RoomStateHelperTest.Create(
                     "Should_not_update_hint_points_when_its_not_provided",
                     new RoomUpdatePacket { HintPoints = 1337 },
                     new RoomUpdatePacket { HintPoints = null },
                     s => s.HintPoints, 1337, 1337),
-                new RoomStateHelperTest<int>(
+                RoomStateHelperTest.Create(
                     "Should_update_hint_points_to_0_when_its_provided",
                     new RoomUpdatePacket { HintPoints = 1337 },
                     new RoomUpdatePacket { HintPoints = 0 },
                     s => s.HintPoints, 1337, 0),
 
                 // Tags
-                new RoomStateHelperTest<IReadOnlyCollection<string>>(
+                RoomStateHelperTest.Create(
                     "Should_update_tags",
                     new RoomInfoPacket { Tags = new []{ "Tag1" } },
                     new RoomUpdatePacket { Tags = new []{ "Tag2" } },
                     s => s.ServerTags, new List<string> { "Tag1" }.AsReadOnly(), new List<string> { "Tag2" }.AsReadOnly()),
-                new RoomStateHelperTest<IReadOnlyCollection<string>>(
+                RoomStateHelperTest.Create(
                     "Should_not_update_tags_when_its_not_provided",
                     new RoomInfoPacket { Tags = new []{ "Tag1" } },
                     new RoomUpdatePacket { Tags = null },
                     s => s.ServerTags, new List<string> { "Tag1" }.AsReadOnly(), new List<string> { "Tag1" }.AsReadOnly()),
-                new RoomStateHelperTest<IReadOnlyCollection<string>>(
+                RoomStateHelperTest.Create(
                     "Should_update_tags_to_empty_when_its_provided",
                     new RoomInfoPacket { Tags = new []{ "Tag1" } },
                     new RoomUpdatePacket { Tags = Array.Empty<string>() },
                     s => s.ServerTags, new List<string> { "Tag1" }.AsReadOnly(), new List<string>().AsReadOnly()),
 
                 // Password
-                new RoomStateHelperTest<bool>(
+                RoomStateHelperTest.Create(
                     "Should_get_and_update_password",
                     new RoomInfoPacket { Password = false },
                     new RoomUpdatePacket { Password = true },
                     s => s.HasPassword, false, true),
-                new RoomStateHelperTest<bool>(
+                RoomStateHelperTest.Create(
                     "Should_not_update_password_when_its_not_provided",
                     new RoomInfoPacket { Password = true },
                     new RoomUpdatePacket { Password = null },
                     s => s.HasPassword, true, true),
-                new RoomStateHelperTest<bool>(
+                RoomStateHelperTest.Create(
                     "Should_update_password_to_false_when_its_provided",
                     new RoomInfoPacket { Password = true },
                     new RoomUpdatePacket { Password = false },
                     s => s.HasPassword, true, false),
 
                 // Release Permissions
-                new RoomStateHelperTest<Permissions>(
+                RoomStateHelperTest.Create(
 	                "Should_get_and_update_release_permissions",
 	                new RoomInfoPacket { Permissions = new Dictionary<string, Permissions> { { "release", Permissions.Enabled } } },
 	                new RoomUpdatePacket { Permissions = new Dictionary<string, Permissions> { { "release", Permissions.Goal } } },
 	                s => s.ReleasePermissions, Permissions.Enabled, Permissions.Goal),
-                new RoomStateHelperTest<Permissions>(
+                RoomStateHelperTest.Create(
 					"Should_not_update_release_permissions_when_its_not_provided",
 	                new RoomInfoPacket { Permissions = new Dictionary<string, Permissions> { { "release", Permissions.Disabled } } },
 	                new RoomUpdatePacket { Permissions = null },
 	                s => s.ReleasePermissions, Permissions.Disabled, Permissions.Disabled),
-                new RoomStateHelperTest<Permissions>(
+                RoomStateHelperTest.Create(
 					"Should_update_release_permissions_to_false_when_its_provided",
 	                new RoomInfoPacket { Permissions = new Dictionary<string, Permissions> { { "release", Permissions.Auto } } },
 	                new RoomUpdatePacket { Permissions = new Dictionary<string, Permissions> { { "release", Permissions.Enabled } } },
 	                s => s.ReleasePermissions, Permissions.Auto, Permissions.Enabled),
 
 				//forward compatibility
-                new RoomStateHelperTest<Permissions>(
+				RoomStateHelperTest.Create(
 					"Should_get_and_update_release_permissions_from_forfeit_permissions",
 	                new RoomInfoPacket { Permissions = new Dictionary<string, Permissions> { { "forfeit", Permissions.Enabled } } },
 	                new RoomUpdatePacket { Permissions = new Dictionary<string, Permissions> { { "forfeit", Permissions.Goal } } },
 	                s => s.ReleasePermissions, Permissions.Enabled, Permissions.Goal),
-                new RoomStateHelperTest<Permissions>(
+				RoomStateHelperTest.Create(
 	                "Should_update_release_permissions_to_false_when_its_provided_as_forfeit_permission",
 	                new RoomInfoPacket { Permissions = new Dictionary<string, Permissions> { { "forfeit", Permissions.Auto } } },
 	                new RoomUpdatePacket { Permissions = new Dictionary<string, Permissions> { { "forfeit", Permissions.Enabled } } },
 	                s => s.ReleasePermissions, Permissions.Auto, Permissions.Enabled),
-                new RoomStateHelperTest<Permissions>(
+				RoomStateHelperTest.Create(
 	                "Should_get_and_update_forfeit_permissions_from_release_permissions",
 	                new RoomInfoPacket { Permissions = new Dictionary<string, Permissions> { { "release", Permissions.Enabled } } },
 	                new RoomUpdatePacket { Permissions = new Dictionary<string, Permissions> { { "release", Permissions.Goal } } },
 	                s => s.ReleasePermissions, Permissions.Enabled, Permissions.Goal),
-                new RoomStateHelperTest<Permissions>(
+				RoomStateHelperTest.Create(
 	                "Should_update_forfeit_permissions_to_false_when_its_provided_as_release_permission",
 	                new RoomInfoPacket { Permissions = new Dictionary<string, Permissions> { { "release", Permissions.Auto } } },
 	                new RoomUpdatePacket { Permissions = new Dictionary<string, Permissions> { { "release", Permissions.Enabled } } },
 	                s => s.ReleasePermissions, Permissions.Auto, Permissions.Enabled),
-                new RoomStateHelperTest<Permissions>(
+				RoomStateHelperTest.Create(
 	                "Should_get_and_update_release_permissions_from_release_permissions_over_forfeit_permissions",
 	                new RoomInfoPacket { Permissions = new Dictionary<string, Permissions> {
 		                { "forfeit", Permissions.Auto },
@@ -168,17 +170,17 @@ namespace Archipelago.MultiClient.Net.Tests
 					} },
 					s => s.ReleasePermissions, Permissions.Enabled, Permissions.Auto),
                 // Forfeit Permissions
-                new RoomStateHelperTest<Permissions>(
+                RoomStateHelperTest.Create(
                     "Should_get_and_update_forfeit_permissions",
                     new RoomInfoPacket { Permissions = new Dictionary<string, Permissions> { { "forfeit", Permissions.Enabled } } },
                     new RoomUpdatePacket { Permissions = new Dictionary<string, Permissions> { { "forfeit", Permissions.Goal } } },
                     s => s.ForfeitPermissions, Permissions.Enabled, Permissions.Goal),
-                new RoomStateHelperTest<Permissions>(
+                RoomStateHelperTest.Create(
                     "Should_not_update_forfeit_permissions_when_its_not_provided",
                     new RoomInfoPacket { Permissions = new Dictionary<string, Permissions> { { "forfeit", Permissions.Disabled } } },
                     new RoomUpdatePacket { Permissions = null },
                     s => s.ForfeitPermissions, Permissions.Disabled, Permissions.Disabled),
-                new RoomStateHelperTest<Permissions>(
+                RoomStateHelperTest.Create(
                     "Should_update_forfeit_permissions_to_false_when_its_provided",
                     new RoomInfoPacket { Permissions = new Dictionary<string, Permissions> { { "forfeit", Permissions.Auto } } },
                     new RoomUpdatePacket { Permissions = new Dictionary<string, Permissions> { { "forfeit", Permissions.Enabled } } },
@@ -186,117 +188,139 @@ namespace Archipelago.MultiClient.Net.Tests
 
 
                 // Collect Permissions
-                new RoomStateHelperTest<Permissions>(
+                RoomStateHelperTest.Create(
                     "Should_get_and_collect_permissions",
                     new RoomInfoPacket { Permissions = new Dictionary<string, Permissions> { { "collect", Permissions.Enabled } } },
                     new RoomUpdatePacket { Permissions = new Dictionary<string, Permissions> { { "collect", Permissions.Goal } } },
                     s => s.CollectPermissions, Permissions.Enabled, Permissions.Goal),
-                new RoomStateHelperTest<Permissions>(
+                RoomStateHelperTest.Create(
                     "Should_not_update_collect_permissions_when_its_not_provided",
                     new RoomInfoPacket { Permissions = new Dictionary<string, Permissions> { { "collect", Permissions.Disabled } } },
                     new RoomUpdatePacket { Permissions = null },
                     s => s.CollectPermissions, Permissions.Disabled, Permissions.Disabled),
-                new RoomStateHelperTest<Permissions>(
+                RoomStateHelperTest.Create(
                     "Should_update_collect_permissions_to_enabled_when_its_provided",
                     new RoomInfoPacket { Permissions = new Dictionary<string, Permissions> { { "collect", Permissions.Auto } } },
                     new RoomUpdatePacket { Permissions = new Dictionary<string, Permissions> { { "collect", Permissions.Enabled } } },
                     s => s.CollectPermissions, Permissions.Auto, Permissions.Enabled),
 
                 // Remaining Permissions
-                new RoomStateHelperTest<Permissions>(
+                RoomStateHelperTest.Create(
                     "Should_get_and_update_remaining_permissions",
                     new RoomInfoPacket { Permissions = new Dictionary<string, Permissions> { { "remaining", Permissions.Enabled } } },
                     new RoomUpdatePacket { Permissions = new Dictionary<string, Permissions> { { "remaining", Permissions.Goal } } },
                     s => s.RemainingPermissions, Permissions.Enabled, Permissions.Goal),
-                new RoomStateHelperTest<Permissions>(
+                RoomStateHelperTest.Create(
                     "Should_not_update_remaining_permissions_when_its_not_provided",
                     new RoomInfoPacket { Permissions = new Dictionary<string, Permissions> { { "remaining", Permissions.Disabled } } },
                     new RoomUpdatePacket { Permissions = null },
                     s => s.RemainingPermissions, Permissions.Disabled, Permissions.Disabled),
-                new RoomStateHelperTest<Permissions>(
+                RoomStateHelperTest.Create(
                     "Should_update_remaining_permissions_to_enabled_when_its_provided",
                     new RoomInfoPacket { Permissions = new Dictionary<string, Permissions> { { "remaining", Permissions.Auto } } },
                     new RoomUpdatePacket { Permissions = new Dictionary<string, Permissions> { { "remaining", Permissions.Enabled } } },
                     s => s.RemainingPermissions, Permissions.Auto, Permissions.Enabled),
 
                 // Version
-                new RoomStateHelperTest<Version>(
+                RoomStateHelperTest.Create(
                     "Should_read_version",
                     new RoomInfoPacket { Version = new NetworkVersion(1, 2, 3) },
                     s => s.Version, new Version(1, 2, 3)),
 
+                // Generator Version
+                RoomStateHelperTest.Create(
+	                "Should_read_generator_version",
+	                new RoomInfoPacket { GeneratorVersion = new NetworkVersion(5, 6, 9) },
+	                s => s.GeneratorVersion, new Version(5, 6, 9)),
+
                 // Seed
-                new RoomStateHelperTest<string>(
+                RoomStateHelperTest.Create(
                     "Should_read_seed",
                     new RoomInfoPacket { SeedName = "436191FC1F3CF6410B92" },
                     s => s.Seed, "436191FC1F3CF6410B92"),
 
                 // Time
-                new RoomStateHelperTest<DateTime>(
+                RoomStateHelperTest.Create(
                     "Should_read_time",
                     new RoomInfoPacket { Timestamp = new DateTime(2000, 1, 2, 3, 4, 5).ToUnixTimeStamp() },
                     s => s.RoomInfoSendTime, new DateTime(2000, 1, 2, 3, 4, 5))
             };
 
-        [TestCaseSource(nameof(RoomStateHelperTests))]
-        public void Should_update_values<T>(
-            ArchipelagoPacketBase firstPacket, ArchipelagoPacketBase secondPacket,
-            Func<RoomStateHelper, object> getValue,
-            T expectedValueAfterFirstPacket, T expectedValueAfterSecondPacket)
+		[TestCaseSource(nameof(RoomStateHelperTests))]
+		public void Should_update_values<T>(
+	        ArchipelagoPacketBase firstPacket, ArchipelagoPacketBase secondPacket, ArchipelagoPacketBase thirdPacket,
+	        Func<RoomStateHelper, object> getValue,
+	        T expectedValueAfterFirstPacket, T expectedValueAfterSecondPacket, T expectedValueAfterThirdPacket)
         {
-            var socket = Substitute.For<IArchipelagoSocketHelper>();
-            var locationHelper = Substitute.For<ILocationCheckHelper>();
-            locationHelper.AllLocations.Returns(new ReadOnlyCollection<long>(new long[150]));
+	        var socket = Substitute.For<IArchipelagoSocketHelper>();
+	        var locationHelper = Substitute.For<ILocationCheckHelper>();
+	        locationHelper.AllLocations.Returns(new ReadOnlyCollection<long>(new long[150]));
 
-			var sut = new RoomStateHelper(socket, locationHelper);
+	        var sut = new RoomStateHelper(socket, locationHelper);
 
-            Assert.That(getValue(sut), Is.EqualTo(default(T)),
-                $"initial value before the first RoomInfoPacket is received should be {default(T)} but is {getValue(sut)}");
+	        Assert.That(getValue(sut), Is.EqualTo(default(T)),
+		        $"initial value before the first RoomInfoPacket is received should be {default(T)} but is {getValue(sut)}");
 
-            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(firstPacket);
+	        socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(firstPacket);
 
-            Assert.That(getValue(sut), Is.EqualTo(expectedValueAfterFirstPacket),
-                $"The initial value after the first packet should be {expectedValueAfterFirstPacket} but is {getValue(sut)}");
+	        Assert.That(getValue(sut), Is.EqualTo(expectedValueAfterFirstPacket),
+		        $"The initial value after the first packet should be {expectedValueAfterFirstPacket} but is {getValue(sut)}");
 
-            if (secondPacket != null)
-            {
-                socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(secondPacket);
+	        if (secondPacket != null)
+	        {
+		        socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(secondPacket);
 
-                Assert.That(getValue(sut), Is.EqualTo(expectedValueAfterSecondPacket),
-                    $"The value after the second packet should be {expectedValueAfterSecondPacket} but is {getValue(sut)}");
-            }
-        }
-    }
+		        Assert.That(getValue(sut), Is.EqualTo(expectedValueAfterSecondPacket),
+			        $"The value after the second packet should be {expectedValueAfterSecondPacket} but is {getValue(sut)}");
+	        }
 
-    class RoomStateHelperTest : TestCaseData
+	        if (thirdPacket != null)
+	        {
+		        socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(thirdPacket);
+
+		        Assert.That(getValue(sut), Is.EqualTo(expectedValueAfterThirdPacket),
+			        $"The value after the third packet should be {expectedValueAfterThirdPacket} but is {getValue(sut)}");
+	        }
+		}
+	}
+
+    class RoomStateHelperTestBase : TestCaseData
     {
-        public RoomStateHelperTest(
-            ArchipelagoPacketBase firstPacket, ArchipelagoPacketBase secondPacket,
-            Func<RoomStateHelper, object> getValue,
-            object expectedValueAfterFirstPacket, object expectedValueAfterSecondPacket)
-            : base(firstPacket, secondPacket, getValue, expectedValueAfterFirstPacket, expectedValueAfterSecondPacket)
-        {
-        }
-    }
-
-    class RoomStateHelperTest<T> : RoomStateHelperTest
-    {
-        public RoomStateHelperTest(
+        public RoomStateHelperTestBase(
             string testName,
+            ArchipelagoPacketBase firstPacket, ArchipelagoPacketBase secondPacket, ArchipelagoPacketBase thirdPacket,
+			Func<RoomStateHelper, object> getValue,
+            object expectedValueAfterFirstPacket, object expectedValueAfterSecondPacket, object expectedValueAfterThirdPacket)
+            : base(firstPacket, secondPacket, thirdPacket, getValue, 
+	            expectedValueAfterFirstPacket, expectedValueAfterSecondPacket, expectedValueAfterThirdPacket)
+        {
+	        TestName = testName;
+        }
+    }
+
+    static class RoomStateHelperTest
+    {
+	    public static TestCaseData Create<T>(
+		    string testName,
+		    ArchipelagoPacketBase firstPacket, ArchipelagoPacketBase secondPacket, ArchipelagoPacketBase thirdPacket,
+			Func<RoomStateHelper, T> getValue,
+		    T expectedValueAfterFirstPacket, T expectedValueAfterSecondPacket, T expectedValueAfterThirdPacket) =>
+				new RoomStateHelperTestBase(testName, firstPacket, secondPacket, thirdPacket, s => getValue(s),
+					expectedValueAfterFirstPacket, expectedValueAfterSecondPacket, expectedValueAfterThirdPacket);
+
+	    public static TestCaseData Create<T>(
+			string testName,
             ArchipelagoPacketBase firstPacket, ArchipelagoPacketBase secondPacket,
             Func<RoomStateHelper, T> getValue,
-            T expectedValueAfterFirstPacket, T expectedValueAfterSecondPacket)
-            : base(firstPacket, secondPacket, s => getValue(s), expectedValueAfterFirstPacket, expectedValueAfterSecondPacket)
-        {
-            SetName(testName);
-        }
-        public RoomStateHelperTest(
-            string testName,
+            T expectedValueAfterFirstPacket, T expectedValueAfterSecondPacket) =>
+				Create(testName, firstPacket, secondPacket, null, getValue, 
+					expectedValueAfterFirstPacket, expectedValueAfterSecondPacket, default);
+
+	    public static TestCaseData Create<T>(
+			string testName,
             ArchipelagoPacketBase firstPacket,
             Func<RoomStateHelper, T> getValue,
-            T expectedValueAfterFirstUpdate)
-            : this(testName, firstPacket, null, getValue, expectedValueAfterFirstUpdate, default)
-        {
-        }
+            T expectedValueAfterFirstPacket) =>
+				Create(testName, firstPacket, null, getValue, expectedValueAfterFirstPacket, default);
     }
 }
