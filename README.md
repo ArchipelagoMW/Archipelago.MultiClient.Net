@@ -406,5 +406,3 @@ public static void send_completion()
     Session.Socket.SendPacket(statusUpdatePacket);
 }
 ```
-
-
