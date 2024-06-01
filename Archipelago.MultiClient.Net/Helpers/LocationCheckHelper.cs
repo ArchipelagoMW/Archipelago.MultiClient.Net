@@ -372,7 +372,7 @@ namespace Archipelago.MultiClient.Net.Helpers
             if (packet.Locations.Any())
 				socket.SendPacketAsync(GetLocationChecksPacket(), onComplete);
 		}
-#else
+#elif NET40
 	    /// <inheritdoc/>
 		public Task CompleteLocationChecksAsync(params long[] ids)
 		{
@@ -380,12 +380,24 @@ namespace Archipelago.MultiClient.Net.Helpers
 			return Task.Factory.StartNew(() =>
 			{
 				CheckLocations(ids);
-			}).ContinueWith(t =>
-			{
-				var packet = GetLocationChecksPacket();
 
+				var packet = GetLocationChecksPacket();
 				if (packet.Locations.Any())
-					socket.SendPacketAsync(GetLocationChecksPacket());
+					socket.SendPacketAsync(packet).Wait();
+			});
+		}
+#else
+	    /// <inheritdoc/>
+		public Task CompleteLocationChecksAsync(params long[] ids)
+		{
+			// ReSharper disable once ArrangeMethodOrOperatorBody
+			return Task.Factory.StartNew(async () =>
+			{
+				CheckLocations(ids);
+
+				var packet = GetLocationChecksPacket();
+				if (packet.Locations.Any())
+					await socket.SendPacketAsync(packet);
 			});
 		}
 #endif
