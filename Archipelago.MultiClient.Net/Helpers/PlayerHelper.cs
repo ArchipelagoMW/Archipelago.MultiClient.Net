@@ -271,6 +271,6 @@ namespace Archipelago.MultiClient.Net.Helpers
 		/// <summary>
 		/// Returns the Alias of the player
 		/// </summary>
-		public override string ToString() => Alias;
+		public override string ToString() => Alias ?? Name ?? $"Player: {Slot}";
 	}
 }
