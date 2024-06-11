@@ -1,4 +1,5 @@
-﻿using Archipelago.MultiClient.Net.Enums;
+﻿using Archipelago.MultiClient.Net.DataPackage;
+using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
 using Newtonsoft.Json.Linq;
@@ -62,11 +63,17 @@ namespace Archipelago.MultiClient.Net.Helpers
 
         readonly IArchipelagoSocketHelper socket;
         readonly IConnectionInfoProvider connectionInfoProvider;
+		readonly IItemInfoResolver itemInfoResolver;
+		readonly IPlayerHelper playerHelper;
 
-        internal DataStorageHelper(IArchipelagoSocketHelper socket, IConnectionInfoProvider connectionInfoProvider)
+        internal DataStorageHelper(
+	        IArchipelagoSocketHelper socket, IConnectionInfoProvider connectionInfoProvider, 
+	        IItemInfoResolver itemInfoResolver, IPlayerHelper playerHelper)
         {
             this.socket = socket;
             this.connectionInfoProvider = connectionInfoProvider;
+			this.itemInfoResolver = itemInfoResolver;
+			this.playerHelper = playerHelper;
 
             socket.PacketReceived += OnPacketReceived;
         }

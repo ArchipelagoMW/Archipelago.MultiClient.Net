@@ -65,14 +65,22 @@ namespace Archipelago.MultiClient.Net.Models
 		/// The constructor what else did you expect it to be
 		/// </summary>
 		public ItemInfo(NetworkItem item, string receiverGame, string senderGame, IItemInfoResolver itemInfoResolver, PlayerInfo player)
+			: this(item.Item, item.Location, item.Flags, receiverGame, senderGame, itemInfoResolver, player)
+		{
+		}
+
+		/// <summary>
+		/// The other constructor
+		/// </summary>
+		public ItemInfo(long itemId, long locationId, ItemFlags flags, string receiverGame, string senderGame, IItemInfoResolver itemInfoResolver, PlayerInfo player)
 		{
 			this.itemInfoResolver = itemInfoResolver;
 
 			ItemGame = receiverGame;
 			LocationGame = senderGame;
-			ItemId = item.Item;
-			LocationId = item.Location;
-			Flags = item.Flags;
+			ItemId = itemId;
+			LocationId = locationId;
+			Flags = flags;
 			Player = player;
 		}
 	}
@@ -93,6 +101,39 @@ namespace Archipelago.MultiClient.Net.Models
 		public ScoutedItemInfo(NetworkItem item, string receiverGame, string senderGame, IItemInfoResolver itemInfoResolver, PlayerInfo player) 
 			: base(item, receiverGame, senderGame, itemInfoResolver, player)
 		{
+		}
+	}
+
+	public class HintItemInfo : ItemInfo
+	{
+		/// <summary>
+		/// The player of the world the item belongs to
+		/// </summary>
+		public PlayerInfo ReceivingPlayer { get; }
+
+		/// <summary>
+		/// The player of the world the item is located in
+		/// </summary>
+		public PlayerInfo FindingPlayer => Player;
+
+		/// <summary>
+		/// Whether the location has been marked as checked
+		/// </summary>
+		public bool Found { get; }
+
+		/// <summary>
+		/// The name of the entrance of the location
+		/// </summary>
+		public string Entrance { get; }
+
+		/// <summary>
+		/// The constructor what else did you expect it to be
+		/// </summary>
+		public HintItemInfo(Hint hint, IItemInfoResolver itemInfoResolver, PlayerInfo findingPlayer, PlayerInfo receivingPlayer)
+			: base(hint.ItemId, hint.LocationId, hint.ItemFlags, receivingPlayer.Game, findingPlayer.Game, itemInfoResolver, findingPlayer)
+		{
+			Found = hint.Found;
+			Entrance = hint.Entrance;
 		}
 	}
 }

@@ -2,6 +2,7 @@
 using Archipelago.MultiClient.Net.Models;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 #if NET35
 #else
@@ -21,7 +22,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 		/// <param name="slot">the slot id of the player to request hints for, defaults to the current player's slot if left empty</param>
 		/// <param name="team">the team id of the player to request hints for, defaults to the current player's team if left empty</param>
 		/// <returns>An array of unlocked hints or null if the slot or team does not exist</returns>
-		Hint[] GetHints(int? slot = null, int? team = null);
+		HintItemInfo[] GetHints(int? slot = null, int? team = null);
 
 #if NET35
 		/// <summary>
@@ -31,7 +32,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 		/// <param name="slot">the slot id of the player to request hints for, defaults to the current player's slot if left empty</param>
 		/// <param name="team">the team id of the player to request hints for, defaults to the current player's team if left empty</param>
 		/// <returns>An array of unlocked hints or null if the slot or team does not exist</returns>
-		void GetHintsAsync(Action<Hint[]> onHintsRetrieved, int? slot = null, int? team = null);
+		void GetHintsAsync(Action<HintItemInfo[]> onHintsRetrieved, int? slot = null, int? team = null);
 #else
 		/// <summary>
 		/// Retrieves all unlocked hints for the specified player slot and team
@@ -49,7 +50,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 		/// <param name="retrieveCurrentlyUnlockedHints">should the currently unlocked hints be retrieved or just the updates</param>
 		/// <param name="slot">the slot id of the player to request hints for, defaults to the current player's slot if left empty</param>
 		/// <param name="team">the team id of the player to request hints for, defaults to the current player's team if left empty</param>
-		void TrackHints(Action<Hint[]> onHintsUpdated,
+		void TrackHints(Action<HintItemInfo[]> onHintsUpdated,
 			bool retrieveCurrentlyUnlockedHints = true, int? slot = null, int? team = null);
 
 		/// <summary>
@@ -175,24 +176,43 @@ namespace Archipelago.MultiClient.Net.Helpers
 		DataStorageElement GetClientStatusElement(int? slot = null, int? team = null) =>
 			this[Scope.ReadOnly, $"client_status_{team ?? connectionInfoProvider.Team}_{slot ?? connectionInfoProvider.Slot}"];
 
+
+		HintItemInfo ToHintItemInfo(Hint h)
+			=> new HintItemInfo(h, itemInfoResolver, 
+				playerHelper.GetPlayerInfo(h.FindingPlayer), 
+				playerHelper.GetPlayerInfo(h.ReceivingPlayer));
+
 		/// <inheritdoc />
-		public Hint[] GetHints(int? slot = null, int? team = null) => 
-			GetHintsElement(slot, team).To<Hint[]>();
+		public HintItemInfo[] GetHints(int? slot = null, int? team = null) =>
+			GetHintsElement(slot, team)
+				.To<Hint[]>()
+				.Select(ToHintItemInfo)
+				.ToArray();
+
 #if NET35
 		/// <inheritdoc />
-		public void GetHintsAsync(Action<Hint[]> onHintsRetrieved, int? slot = null, int? team = null) =>
-			GetHintsElement(slot, team).GetAsync(t => onHintsRetrieved(t?.ToObject<Hint[]>()));
+		public void GetHintsAsync(Action<HintItemInfo[]> onHintsRetrieved, int? slot = null, int? team = null) =>
+			GetHintsElement(slot, team).GetAsync(t => onHintsRetrieved(
+				t?.ToObject<Hint[]>()
+				 ?.Select(ToHintItemInfo)
+				 ?.ToArray()));
 #else
 		/// <inheritdoc />
-		public Task<Hint[]> GetHintsAsync(int? slot = null, int? team = null) =>
-			GetHintsElement(slot, team).GetAsync<Hint[]>();
+		public Task<HintItemInfo[]> GetHintsAsync(int? slot = null, int? team = null) =>
+			GetHintsElement(slot, team).GetAsync<Hint[]>()
+				.ContinueWith(t =>
+				{
+					if (t.Status != TaskStatus.RanToCompletion)
+						return null;
+				});
 #endif
 
 		/// <inheritdoc />
-		public void TrackHints(Action<Hint[]> onHintsUpdated, 
+		public void TrackHints(Action<HintItemInfo[]> onHintsUpdated, 
 			bool retrieveCurrentlyUnlockedHints = true, int? slot = null, int? team = null)
 		{
-			GetHintsElement(slot, team).OnValueChanged += (_, newValue, x) => onHintsUpdated(newValue.ToObject<Hint[]>());
+			GetHintsElement(slot, team).OnValueChanged += (_, newValue, x) => 
+				onHintsUpdated(newValue.ToObject<Hint[]>()?.Select(ToHintItemInfo)?.ToArray());
 
 			if (retrieveCurrentlyUnlockedHints)
 #if NET35
