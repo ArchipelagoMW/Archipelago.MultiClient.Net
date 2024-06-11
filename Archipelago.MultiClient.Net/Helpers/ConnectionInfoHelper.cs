@@ -88,7 +88,11 @@ namespace Archipelago.MultiClient.Net.Helpers
                 case ConnectedPacket connectedPacket:
                     Team = connectedPacket.Team;
                     Slot = connectedPacket.Slot;
-	                break;
+
+					if (connectedPacket.SlotInfo != null && connectedPacket.SlotInfo.ContainsKey(Slot))
+						Game = connectedPacket.SlotInfo[Slot].Game;
+
+					break;
                 case ConnectionRefusedPacket _:
                     Reset();
                     break;

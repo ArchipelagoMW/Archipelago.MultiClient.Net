@@ -1,11 +1,11 @@
-﻿using Archipelago.MultiClient.Net.BounceFeatures.DeathLink;
-using Archipelago.MultiClient.Net.Converters;
-using Archipelago.MultiClient.Net.Enums;
+﻿using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Helpers;
+using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
 using NSubstitute;
 using NUnit.Framework;
 using System;
+using System.Collections.Generic;
 
 namespace Archipelago.MultiClient.Net.Tests
 {
@@ -79,5 +79,23 @@ namespace Archipelago.MultiClient.Net.Tests
             Assert.That(sut.ItemsHandlingFlags, Is.EqualTo(ItemsHandlingFlags.NoItems));
             Assert.That(sut.Uuid, Is.Null);
         }
-    }
+
+        [Test]
+        public void Should_take_over_values_from_connected()
+        {
+	        var socket = Substitute.For<IArchipelagoSocketHelper>();
+
+	        var sut = new ConnectionInfoHelper(socket);
+
+	        var connectedPacket = new ConnectedPacket { Team = 23, Slot = 578, SlotInfo = new Dictionary<int, NetworkSlot> {
+		        { 578, new NetworkSlot { Game = "SomeGame" }}
+	        }};
+
+			socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(connectedPacket);
+			
+			Assert.That(sut.Game, Is.EqualTo("SomeGame"));
+	        Assert.That(sut.Team, Is.EqualTo(23));
+	        Assert.That(sut.Slot, Is.EqualTo(578));
+		}
+	}
 }
