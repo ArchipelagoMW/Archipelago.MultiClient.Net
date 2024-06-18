@@ -1,13 +1,13 @@
-﻿using Archipelago.MultiClient.Net.DataPackage;
-using Archipelago.MultiClient.Net.Enums;
+﻿using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Helpers;
 using Newtonsoft.Json;
-using System;
 using System.Runtime.Serialization;
-
 
 namespace Archipelago.MultiClient.Net.Models
 {
+	/// <summary>
+	/// The minimal information needed to deserialize an ItemInfo given the context of an active archipelago session
+	/// </summary>
 	public class MinimalSerializableItemInfo
 	{
 		/// <summary>
@@ -41,6 +41,9 @@ namespace Archipelago.MultiClient.Net.Models
 		public string LocationGame { get; set; }
 	}
 
+	/// <summary>
+	/// An Json Serializable version of an ItemInfo
+	/// </summary>
 	public class SerializableItemInfo : MinimalSerializableItemInfo
 	{
 		/// <summary>
@@ -75,7 +78,14 @@ namespace Archipelago.MultiClient.Net.Models
 		[JsonIgnore]
 		public string LocationDisplayName => LocationName ?? $"Location: {LocationId}";
 
-		public string ToJson(bool full)
+		/// <summary>
+		/// Converts the `SerializableItemInfo` into an json string, either the full length context or a compact context can be preserved
+		/// If the json string contained the full context, then it can be deserialized even when no Archipelago session is provided
+		/// If the json string contained the minimal context, then during deserialization an active archipelago session must be provided for additional context
+		/// </summary>
+		/// <param name="full">Should the json contain the full lengthy context, or just the minimal info to reconstruct it later</param>
+		/// <returns>The json representation of this ItemInfo</returns>
+		public string ToJson(bool full = false)
 		{
 			MinimalSerializableItemInfo objectToSerialize = this;
 
@@ -101,18 +111,25 @@ namespace Archipelago.MultiClient.Net.Models
 			return JsonConvert.SerializeObject(objectToSerialize, serializerSettings);
 		}
 
-
+		/// <summary>
+		/// Converts the json string back to an `SerializableItemInfo`
+		/// If the json string contained the full context, than the optional ArchipelagoSession can be left empty
+		/// If the json string contained the minimal context, the optional ArchipelagoSession should be provided else context will be missing
+		/// </summary>
+		/// <param name="json">the json string to input</param>
+		/// <param name="session">an reference to an active archipelago session to retrieve contexts such as items names and player data</param>
+		/// <returns>The deserialized ItemInfo</returns>
 		public static SerializableItemInfo FromJson(string json, IArchipelagoSession session = null)
 		{
-			if (session == null)
-				return JsonConvert.DeserializeObject<SerializableItemInfo>(json);
-
-			var streamingContext = new ItemInfoStreamingContext {
-				Items = session.Items,
-				Locations = session.Locations,
-				PlayerHelper = session.Players,
-				ConnectionInfo = session.ConnectionInfo
-			};
+			var streamingContext = 
+				session != null
+					? new ItemInfoStreamingContext {
+						Items = session.Items,
+						Locations = session.Locations,
+						PlayerHelper = session.Players,
+						ConnectionInfo = session.ConnectionInfo
+					}
+					: null;
 
 			var serializerSettings = new JsonSerializerSettings
 			{
@@ -125,27 +142,24 @@ namespace Archipelago.MultiClient.Net.Models
 		[OnDeserialized]
 		internal void OnDeserializedMethod(StreamingContext streamingContext)
 		{
+			if (ItemGame == null && LocationGame != null)
+				IsScout = false;
+			else if (ItemGame != null && LocationGame == null)
+				IsScout = true;
+
 			var context = streamingContext.Context as ItemInfoStreamingContext;
 			if (context == null)
 				return;
 
-			if (ItemGame == null && LocationGame != null)
-			{
-				IsScout = false;
-				ItemGame = context.ConnectionInfo.Game;
-			}
-			else if (ItemGame != null && LocationGame == null)
-			{
-				IsScout = true;
+			if (IsScout && LocationGame == null)
 				LocationGame = context.ConnectionInfo.Game;
-			}
+			else if (!IsScout && ItemGame == null)
+				ItemGame = context.ConnectionInfo.Game;
 
 			if (ItemName == null)
 				ItemName = context.Items.GetItemName(ItemId, ItemGame);
-
 			if (LocationName == null)
 				LocationName = context.Locations.GetLocationNameFromId(LocationId, LocationGame);
-
 			if (Player == null)
 				Player = context.PlayerHelper.GetPlayerInfo(PlayerSlot);
 		}
