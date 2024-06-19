@@ -323,9 +323,10 @@ namespace Archipelago.MultiClient.Net.Helpers
 	                    {
 		                    var items = locationInfoPacket.Locations.ToDictionary(
 			                    item => item.Location,
-			                    item => new ScoutedItemInfo(item, (players.GetPlayerInfo(item.Player) ?? new PlayerInfo()).Game, 
-				                    connectionInfoProvider.Game, itemInfoResolver,
-									players.GetPlayerInfo(item.Player) ?? new PlayerInfo()));
+			                    item => {
+				                    var otherPlayer = players.GetPlayerInfo(item.Player) ?? new PlayerInfo();
+									return new ScoutedItemInfo(item, otherPlayer.Game, connectionInfoProvider.Game, itemInfoResolver, otherPlayer);
+			                    });
 
 		                    locationInfoPacketCallbackTask.TrySetResult(items);
 						}
@@ -423,12 +424,12 @@ namespace Archipelago.MultiClient.Net.Helpers
             awaitingLocationInfoPacket = true;
             locationInfoPacketCallback = (scoutResult) =>
             {
-				var items = scoutResult.Locations.ToDictionary(
-					item => item.Location,
-					item => new ScoutedItemInfo(item, (players.GetPlayerInfo(item.Player) ?? new PlayerInfo()).Game, 
-						connectionInfoProvider.Game, itemInfoResolver,
-						players.GetPlayerInfo(item.Player) ?? new PlayerInfo()));
-
+	            var items = scoutResult.Locations.ToDictionary(
+		            item => item.Location,
+		            item => {
+			            var otherPlayer = players.GetPlayerInfo(item.Player) ?? new PlayerInfo();
+			            return new ScoutedItemInfo(item, otherPlayer.Game, connectionInfoProvider.Game, itemInfoResolver, otherPlayer);
+		            });
 				callback(items);
             };
         }

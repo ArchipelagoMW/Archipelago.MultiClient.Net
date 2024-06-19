@@ -1,6 +1,7 @@
 ﻿using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
+using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -272,5 +273,30 @@ namespace Archipelago.MultiClient.Net.Helpers
 		/// Returns the Alias of the player
 		/// </summary>
 		public override string ToString() => Alias ?? Name ?? $"Player: {Slot}";
+
+		/// <summary>
+		/// Creates and Empty PlayerInfo object, should probably not even be exposed
+		/// </summary>
+		public PlayerInfo() {}
+
+		/// <summary>
+		/// Creates and PlayerInfo object, used by json deserialization
+		/// </summary>
+		/// <param name="team">The team of this player</param>
+		/// <param name="slot">The slot of this player</param>
+		/// <param name="name">The name of that player</param>
+		/// <param name="alias">The alias of that player</param>
+		/// <param name="game">The game the player is playing</param>
+		/// <param name="groups">A array of groups this player is part of</param>
+		[JsonConstructor]
+		public PlayerInfo(int team, int slot, string name, string alias, string game, NetworkSlot[] groups)
+		{
+			Team = team;
+			Slot = slot;
+			Name = name;
+			Alias = alias;
+			Game = game;
+			Groups = groups;
+		}
 	}
 }

@@ -75,6 +75,25 @@ namespace Archipelago.MultiClient.Net.Models
 			Flags = item.Flags;
 			Player = player;
 		}
+
+		/// <summary>
+		/// Converts this ItemInfo in to a serializable class that can be converted from and to json
+		/// </summary>
+		/// <returns>an SerializableItemInfo containing all the inforation of the ItemInfo it was created with</returns>
+		public SerializableItemInfo ToSerializable() =>
+			new SerializableItemInfo
+			{
+				IsScout = GetType() == typeof(ScoutedItemInfo),
+				ItemId = ItemId,
+				LocationId = LocationId,
+				PlayerSlot = Player,
+				Player = Player,
+				Flags = Flags,
+				ItemGame = ItemGame,
+				ItemName = ItemName,
+				LocationGame = LocationGame,
+				LocationName = LocationName,
+			};
 	}
 
 	/// <summary>

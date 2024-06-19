@@ -1,4 +1,5 @@
-﻿using Archipelago.MultiClient.Net.Enums;
+﻿using Archipelago.MultiClient.Net.DataPackage;
+using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Exceptions;
 using Archipelago.MultiClient.Net.Helpers;
 using Archipelago.MultiClient.Net.Models;
@@ -19,50 +20,135 @@ namespace Archipelago.MultiClient.Net
 	/// <summary>
 	/// `ArchipelagoSession` is the overarching class to access and modify and respond to the multiworld state
 	/// </summary>
-	public partial class ArchipelagoSession
-    {
-        const int ArchipelagoConnectionTimeoutInSeconds = 4;
-
+	public interface IArchipelagoSession : IArchipelagoSessionActions
+	{
 		/// <summary>
 		/// Provides access to the underlying websocket, so send or receive messages
 		/// </summary>
-		public IArchipelagoSocketHelper Socket { get; }
+		IArchipelagoSocketHelper Socket { get; }
 
 		/// <summary>
 		/// Provides simplified methods to receive items
 		/// </summary>
-        public IReceivedItemsHelper Items { get; }
+		IReceivedItemsHelper Items { get; }
 
 		/// <summary>
 		/// Provides way to mark locations as checked
 		/// </summary>
-        public ILocationCheckHelper Locations { get; }
+		ILocationCheckHelper Locations { get; }
 
 		/// <summary>
 		/// Provides information about all players in the multiworld
 		/// </summary>
-        public IPlayerHelper Players { get; }
+		IPlayerHelper Players { get; }
 
 		/// <summary>
 		/// Provides access to a server side data storage to share and store values across sessions and players
 		/// </summary>
-        public IDataStorageHelper DataStorage { get; }
+		IDataStorageHelper DataStorage { get; }
 
 		/// <summary>
 		/// Provides information about your current connection
 		/// </summary>
-        public IConnectionInfoProvider ConnectionInfo => connectionInfo;
-		ConnectionInfoHelper connectionInfo;
+		IConnectionInfoProvider ConnectionInfo { get; }
 
 		/// <summary>
 		/// Provides information about the current state of the server
 		/// </summary>
-		public IRoomStateHelper RoomState { get; }
+		IRoomStateHelper RoomState { get; }
 
 		/// <summary>
 		/// Provides simplified handlers to receive messages about events that happen in the multiworld
 		/// </summary>
-        public IMessageLogHelper MessageLog { get; }
+		IMessageLogHelper MessageLog { get; }
+
+#if !NET35
+		/// <summary>
+		/// Connect the websocket to the server
+		/// Will wait a few seconds to retrieve the RoomInfoPacket, if the request timesout the task will be canceled
+		/// </summary>
+		/// <returns>The roominfo send from the server</returns>
+		Task<RoomInfoPacket> ConnectAsync();
+
+		/// <summary>
+		///     Attempt to log in to the Archipelago server by opening a websocket connection and sending a Connect packet.
+		///     Determining success for this attempt is done by attaching a listener to Socket.PacketReceived and listening for a Connected packet.
+		/// </summary>
+		/// <param name="game">The game this client is playing.</param>
+		/// <param name="name">The slot name of this client.</param>
+		/// <param name="version">The minimum AP protocol version this client supports.</param>
+		/// <param name="itemsHandlingFlags">Informs the AP server how you want ReceivedItem packets to be sent to you.</param>
+		/// <param name="tags">The tags this client supports.</param>
+		/// <param name="uuid">The uuid of this client.</param>
+		/// <param name="password">The password to connect to this AP room.</param>
+		/// <param name="requestSlotData">Decides if the <see cref="LoginSuccessful"/> result will contain any slot data</param>
+		/// <returns>
+		///     <see cref="T:Archipelago.MultiClient.Net.LoginSuccessful"/> if the connection is succeeded and the server accepted the login attempt.
+		///     <see cref="T:Archipelago.MultiClient.Net.LoginFailure"/> if the connection to the server failed in some way.
+		/// </returns>
+		/// <remarks>
+		///     The connect attempt is synchronous and will lock for up to 5 seconds as it attempts to connect to the server. 
+		///     Most connections are instantaneous however the timeout is 5 seconds before it returns <see cref="T:Archipelago.MultiClient.Net.LoginFailure"/>.
+		/// </remarks>
+		Task<LoginResult> LoginAsync(string game, string name, ItemsHandlingFlags itemsHandlingFlags,
+			Version version = null, string[] tags = null, string uuid = null, string password = null, bool requestSlotData = true);
+#endif
+
+		/// <summary>
+		///     Attempt to log in to the Archipelago server by opening a websocket connection and sending a Connect packet.
+		///     Determining success for this attempt is done by attaching a listener to Socket.PacketReceived and listening for a Connected packet.
+		/// </summary>
+		/// <param name="game">The game this client is playing.</param>
+		/// <param name="name">The slot name of this client.</param>
+		/// <param name="version">The minimum AP protocol version this client supports.</param>
+		/// <param name="itemsHandlingFlags">Informs the AP server how you want ReceivedItem packets to be sent to you.</param>
+		/// <param name="tags">The tags this client supports.</param>
+		/// <param name="uuid">The uuid of this client.</param>
+		/// <param name="password">The password to connect to this AP room.</param>
+		/// <param name="requestSlotData">Decides if the <see cref="LoginSuccessful"/> result will contain any slot data</param>
+		/// <returns>
+		///     <see cref="T:Archipelago.MultiClient.Net.LoginSuccessful"/> if the connection is succeeded and the server accepted the login attempt.
+		///     <see cref="T:Archipelago.MultiClient.Net.LoginFailure"/> if the connection to the server failed in some way.
+		/// </returns>
+		/// <remarks>
+		///     The connect attempt is synchronous and will lock for up to 5 seconds as it attempts to connect to the server. 
+		///     Most connections are instantaneous however the timeout is 5 seconds before it returns <see cref="T:Archipelago.MultiClient.Net.LoginFailure"/>.
+		/// </remarks>
+		LoginResult TryConnectAndLogin(string game, string name, ItemsHandlingFlags itemsHandlingFlags, 
+			Version version = null, string[] tags = null, string uuid = null, string password = null, bool requestSlotData = true);
+	}
+
+	/// <summary>
+	/// `ArchipelagoSession` is the overarching class to access and modify and respond to the multiworld state
+	/// </summary>
+	public partial class ArchipelagoSession : IArchipelagoSession
+    {
+        const int ArchipelagoConnectionTimeoutInSeconds = 4;
+
+		/// <inheritdoc/>
+		public IArchipelagoSocketHelper Socket { get; }
+
+		/// <inheritdoc/>
+		public IReceivedItemsHelper Items { get; }
+
+		/// <inheritdoc/>
+		public ILocationCheckHelper Locations { get; }
+
+		/// <inheritdoc/>
+		public IPlayerHelper Players { get; }
+
+		/// <inheritdoc/>
+		public IDataStorageHelper DataStorage { get; }
+
+		/// <inheritdoc/>
+		public IConnectionInfoProvider ConnectionInfo => connectionInfo;
+		ConnectionInfoHelper connectionInfo;
+
+		/// <inheritdoc/>
+		public IRoomStateHelper RoomState { get; }
+
+		/// <inheritdoc/>
+		public IMessageLogHelper MessageLog { get; }
 
 #if NET35
 	    volatile bool awaitingRoomInfo;
@@ -74,7 +160,7 @@ namespace Archipelago.MultiClient.Net
 #endif
 
 		internal ArchipelagoSession(IArchipelagoSocketHelper socket,
-                                    IReceivedItemsHelper items,
+									IReceivedItemsHelper items,
                                     ILocationCheckHelper locations,
                                     IPlayerHelper players,
                                     IRoomStateHelper roomState,
@@ -161,12 +247,8 @@ namespace Archipelago.MultiClient.Net
         }
 
 #if !NET35
-        /// <summary>
-        /// Connect the websocket to the server
-        /// Will wait a few seconds to retrieve the RoomInfoPacket, if the request timesout the task will be canceled
-        /// </summary>
-        /// <returns>The roominfo send from the server</returns>
-        public Task<RoomInfoPacket> ConnectAsync()
+	    /// <inheritdoc/>
+		public Task<RoomInfoPacket> ConnectAsync()
         {
             roomInfoPacketTask = new TaskCompletionSource<RoomInfoPacket>();
 
@@ -189,27 +271,7 @@ namespace Archipelago.MultiClient.Net
             return roomInfoPacketTask.Task;
         }
 
-		// ReSharper disable once UnusedMember.Global
-		/// <summary>
-		///     Attempt to log in to the Archipelago server by opening a websocket connection and sending a Connect packet.
-		///     Determining success for this attempt is done by attaching a listener to Socket.PacketReceived and listening for a Connected packet.
-		/// </summary>
-		/// <param name="game">The game this client is playing.</param>
-		/// <param name="name">The slot name of this client.</param>
-		/// <param name="version">The minimum AP protocol version this client supports.</param>
-		/// <param name="itemsHandlingFlags">Informs the AP server how you want ReceivedItem packets to be sent to you.</param>
-		/// <param name="tags">The tags this client supports.</param>
-		/// <param name="uuid">The uuid of this client.</param>
-		/// <param name="password">The password to connect to this AP room.</param>
-		/// <param name="requestSlotData">Decides if the <see cref="LoginSuccessful"/> result will contain any slot data</param>
-		/// <returns>
-		///     <see cref="T:Archipelago.MultiClient.Net.LoginSuccessful"/> if the connection is succeeded and the server accepted the login attempt.
-		///     <see cref="T:Archipelago.MultiClient.Net.LoginFailure"/> if the connection to the server failed in some way.
-		/// </returns>
-		/// <remarks>
-		///     The connect attempt is synchronous and will lock for up to 5 seconds as it attempts to connect to the server. 
-		///     Most connections are instantaneous however the timeout is 5 seconds before it returns <see cref="T:Archipelago.MultiClient.Net.LoginFailure"/>.
-		/// </remarks>
+	    /// <inheritdoc/>
 		public Task<LoginResult> LoginAsync(string game, string name, ItemsHandlingFlags itemsHandlingFlags,
             Version version = null, string[] tags = null, string uuid = null, string password = null, bool requestSlotData = true)
         {
@@ -252,27 +314,7 @@ namespace Archipelago.MultiClient.Net
         }
 #endif
 
-		// ReSharper disable once UnusedMember.Global
-		/// <summary>
-		///     Attempt to log in to the Archipelago server by opening a websocket connection and sending a Connect packet.
-		///     Determining success for this attempt is done by attaching a listener to Socket.PacketReceived and listening for a Connected packet.
-		/// </summary>
-		/// <param name="game">The game this client is playing.</param>
-		/// <param name="name">The slot name of this client.</param>
-		/// <param name="version">The minimum AP protocol version this client supports.</param>
-		/// <param name="itemsHandlingFlags">Informs the AP server how you want ReceivedItem packets to be sent to you.</param>
-		/// <param name="tags">The tags this client supports.</param>
-		/// <param name="uuid">The uuid of this client.</param>
-		/// <param name="password">The password to connect to this AP room.</param>
-		/// <param name="requestSlotData">Decides if the <see cref="LoginSuccessful"/> result will contain any slot data</param>
-		/// <returns>
-		///     <see cref="T:Archipelago.MultiClient.Net.LoginSuccessful"/> if the connection is succeeded and the server accepted the login attempt.
-		///     <see cref="T:Archipelago.MultiClient.Net.LoginFailure"/> if the connection to the server failed in some way.
-		/// </returns>
-		/// <remarks>
-		///     The connect attempt is synchronous and will lock for up to 5 seconds as it attempts to connect to the server. 
-		///     Most connections are instantaneous however the timeout is 5 seconds before it returns <see cref="T:Archipelago.MultiClient.Net.LoginFailure"/>.
-		/// </remarks>
+	    /// <inheritdoc/>
 		public LoginResult TryConnectAndLogin(string game, string name, ItemsHandlingFlags itemsHandlingFlags, 
 	        Version version = null, string[] tags = null, string uuid = null, string password = null, bool requestSlotData = true)
         {
