@@ -279,10 +279,16 @@ namespace Archipelago.MultiClient.Net.Helpers
 		/// </summary>
 		public PlayerInfo() {}
 
-		[JsonConstructor]
 		/// <summary>
 		/// Creates and PlayerInfo object, used by json deserialization
 		/// </summary>
+		/// <param name="team">The team of this player</param>
+		/// <param name="slot">The slot of this player</param>
+		/// <param name="name">The name of that player</param>
+		/// <param name="alias">The alias of that player</param>
+		/// <param name="game">The game the player is playing</param>
+		/// <param name="groups">A array of groups this player is part of</param>
+		[JsonConstructor]
 		public PlayerInfo(int team, int slot, string name, string alias, string game, NetworkSlot[] groups)
 		{
 			Team = team;
