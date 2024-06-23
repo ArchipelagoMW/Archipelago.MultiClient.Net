@@ -69,12 +69,6 @@ namespace Archipelago.MultiClient.Net.Tests
 				socket.Connect();
 			});
 			Assert.That(closedMsg, Is.EqualTo("An exception has occurred while attempting to connect."));
-#elif NET472
-			Assert.DoesNotThrowAsync(async () =>
-			{
-				await socket.ConnectAsync();
-			});
-			Assert.That(closedMsg, Is.EqualTo("An exception has occurred while attempting to connect."));
 #else
 			var e = Assert.ThrowsAsync<WebSocketException>(async () =>
 			{
@@ -85,7 +79,7 @@ namespace Archipelago.MultiClient.Net.Tests
 
 			Assert.IsFalse(socketIsOpen);
 
-#if NET471 || NET472
+#if NET471
 			Assert.That(errors, Is.Empty);
 #else
 			Assert.IsTrue(errors.StartsWith("Socket error received:"));
@@ -112,12 +106,6 @@ namespace Archipelago.MultiClient.Net.Tests
 				socket.Connect();
 			});
 			Assert.That(closedMsg, Is.EqualTo("An exception has occurred while attempting to connect."));
-#elif NET472
-			Assert.DoesNotThrowAsync(async () =>
-			{
-				await socket.ConnectAsync();
-			});
-			Assert.That(closedMsg, Is.EqualTo("An exception has occurred while attempting to connect."));
 #else
 			var e = Assert.ThrowsAsync<WebSocketException>(async () =>
 			{
@@ -128,7 +116,7 @@ namespace Archipelago.MultiClient.Net.Tests
 
 			Assert.IsFalse(socketIsOpen);
 
-#if NET471 || NET472
+#if NET471
 			Assert.That(errors, Is.Empty);
 #else
 			Assert.IsTrue(errors.StartsWith("Socket error received:"));

@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<TargetFrameworks>net35;net40;net45;netstandard2.0;net6.0</TargetFrameworks>
+		<TargetFrameworks>net35;net45;netstandard2.0;net6.0</TargetFrameworks>
 		<AssemblyTitle>Archipelago.MultiClient.Net</AssemblyTitle>
 		<Product>Archipelago.MultiClient.Net</Product>
 		<Copyright>Copyright © 2024</Copyright>
@@ -51,15 +51,6 @@
 		</Reference>
 	</ItemGroup>
 
-	<ItemGroup Condition="'$(TargetFramework)' == 'net40'">
-		<Reference Include="Newtonsoft.Json">
-			<HintPath>..\DLLs\net40\Newtonsoft.Json.dll</HintPath>
-		</Reference>
-		<Reference Include="websocket-sharp">
-			<HintPath>..\DLLs\websocket-sharp.dll</HintPath>
-		</Reference>
-	</ItemGroup>
-
 	<ItemGroup Condition="'$(TargetFramework)' == 'net45'">
 		<Reference Include="Newtonsoft.Json">
 			<HintPath>..\DLLs\net45\Newtonsoft.Json.dll</HintPath>
@@ -81,7 +72,7 @@
 			<TfmSpecificPackageFile Include="bin\$(Configuration)\$(TargetFramework)\Newtonsoft.Json.dll">
 				<PackagePath>lib\$(TargetFramework)\Newtonsoft.Json.dll</PackagePath>
 			</TfmSpecificPackageFile>
-			<TfmSpecificPackageFile Include="bin\$(Configuration)\$(TargetFramework)\websocket-sharp.dll" Condition="'$(TargetFramework)' == 'net35' Or '$(TargetFramework)' == 'net40'">
+			<TfmSpecificPackageFile Include="bin\$(Configuration)\$(TargetFramework)\websocket-sharp.dll" Condition="'$(TargetFramework)' == 'net35'">
 				<PackagePath>lib\$(TargetFramework)\websocket-sharp.dll</PackagePath>
 			</TfmSpecificPackageFile>
 		</ItemGroup>

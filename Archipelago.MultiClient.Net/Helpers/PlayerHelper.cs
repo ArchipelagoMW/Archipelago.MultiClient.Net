@@ -16,7 +16,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 		/// <summary>
 		/// A dictionary of all team's containing all their PlayerInfo's index by their slot
 		/// </summary>
-#if NET35 || NET40
+#if NET35
 		Dictionary<int, ReadOnlyCollection<PlayerInfo>> Players { get; }
 #else
 		ReadOnlyDictionary<int, ReadOnlyCollection<PlayerInfo>> Players { get; }
@@ -72,7 +72,7 @@ namespace Archipelago.MultiClient.Net.Helpers
     {
 	    readonly IConnectionInfoProvider connectionInfo;
 
-#if NET35 || NET40
+#if NET35
 	    Dictionary<int, ReadOnlyCollection<PlayerInfo>> players = new Dictionary<int, ReadOnlyCollection<PlayerInfo>>(0);
 #else
 	    ReadOnlyDictionary<int, ReadOnlyCollection<PlayerInfo>> players = 
@@ -80,7 +80,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 #endif
 
 	    /// <inheritdoc/>
-#if NET35 || NET40
+#if NET35
 		public Dictionary<int, ReadOnlyCollection<PlayerInfo>> Players => players;
 #else
 		public ReadOnlyDictionary<int, ReadOnlyCollection<PlayerInfo>> Players => players;
@@ -205,7 +205,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 			foreach (var kvp in playerData)
 				allPlayers[kvp.Key] = new ReadOnlyCollection<PlayerInfo>(kvp.Value);
 
-#if NET35 || NET40
+#if NET35
 	        players = allPlayers;
 #else
 	        players = new ReadOnlyDictionary<int, ReadOnlyCollection<PlayerInfo>>(allPlayers);

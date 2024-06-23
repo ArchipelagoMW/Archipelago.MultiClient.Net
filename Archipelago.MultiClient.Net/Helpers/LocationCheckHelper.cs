@@ -373,20 +373,6 @@ namespace Archipelago.MultiClient.Net.Helpers
             if (packet.Locations.Any())
 				socket.SendPacketAsync(GetLocationChecksPacket(), onComplete);
 		}
-#elif NET40
-	    /// <inheritdoc/>
-		public Task CompleteLocationChecksAsync(params long[] ids)
-		{
-			// ReSharper disable once ArrangeMethodOrOperatorBody
-			return Task.Factory.StartNew(() =>
-			{
-				CheckLocations(ids);
-
-				var packet = GetLocationChecksPacket();
-				if (packet.Locations.Any())
-					socket.SendPacketAsync(packet).Wait();
-			});
-		}
 #else
 	    /// <inheritdoc/>
 		public Task CompleteLocationChecksAsync(params long[] ids)

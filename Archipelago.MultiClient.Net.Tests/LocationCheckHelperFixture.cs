@@ -486,17 +486,10 @@ namespace Archipelago.MultiClient.Net.Tests
 			connectionInfo.Slot.Returns(2);
 
 			var players = Substitute.For<IPlayerHelper>();
-#if NET472
-	        players.Players.Returns(
-		        new Dictionary<int, ReadOnlyCollection<PlayerInfo>> {
-			        { 1, new ReadOnlyCollection<PlayerInfo>(new List<PlayerInfo> { null, null, new PlayerInfo() }) }
-		        });
-#else
 	        players.Players.Returns(new ReadOnlyDictionary<int, ReadOnlyCollection<PlayerInfo>>(
 		        new Dictionary<int, ReadOnlyCollection<PlayerInfo>> {
 			        { 1, new ReadOnlyCollection<PlayerInfo>(new List<PlayerInfo> { null, null, new PlayerInfo() }) }
 				}));
-#endif
 
 			ILocationCheckHelper sut = new LocationCheckHelper(socket, itemInfoResolver, connectionInfo, players);
 

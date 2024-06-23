@@ -215,8 +215,6 @@ namespace Archipelago.MultiClient.Net
         {
 #if NET35
 			const string libVersion = "NET35";
-#elif NET40
-			const string libVersion = "NET40";
 #elif NET45
 			const string libVersion = "NET45";
 #elif NETSTANDARD2_0
@@ -304,13 +302,8 @@ namespace Archipelago.MultiClient.Net
 
         static void SetResultAfterTimeout<T>(TaskCompletionSource<T> task, int timeoutInSeconds, T result)
         {
-#if NET40
-            var timer = new Timer(_ => task.TrySetResult(result));
-            timer.Change(TimeSpan.FromSeconds(timeoutInSeconds), TimeSpan.FromMilliseconds(-1));
-#else
             var tokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(timeoutInSeconds));
             tokenSource.Token.Register(() => task.TrySetResult(result));
-#endif
         }
 #endif
 

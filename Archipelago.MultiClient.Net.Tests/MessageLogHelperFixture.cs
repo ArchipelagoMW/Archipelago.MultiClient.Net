@@ -967,7 +967,7 @@ namespace Archipelago.MultiClient.Net.Tests
 	        Assert.That(logMessage.RemainingSeconds, Is.EqualTo(8));
         }
 
-#if NET471 || NET472
+#if NET471
 	    static Dictionary<int, ReadOnlyCollection<PlayerInfo>> GetPlayerCollection(IList<PlayerInfo> playerInfos) => 
 		    new Dictionary<int, ReadOnlyCollection<PlayerInfo>>(
 #else

@@ -1,4 +1,4 @@
-﻿#if NET35 || NET40
+﻿#if NET35
 using Archipelago.MultiClient.Net.Converters;
 using Archipelago.MultiClient.Net.Exceptions;
 using Archipelago.MultiClient.Net.Extensions;
@@ -6,11 +6,6 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Security.Authentication;
-
-#if !NET35
-using System.Threading.Tasks;
-#endif
-
 using WebSocketSharp;
 
 namespace Archipelago.MultiClient.Net.Helpers
@@ -27,11 +22,6 @@ namespace Archipelago.MultiClient.Net.Helpers
         public event ArchipelagoSocketHelperDelagates.ErrorReceivedHandler ErrorReceived;
         public event ArchipelagoSocketHelperDelagates.SocketClosedHandler SocketClosed;
         public event ArchipelagoSocketHelperDelagates.SocketOpenedHandler SocketOpened;
-
-#if !NET35
-        TaskCompletionSource<bool> connectAsyncTask;
-        TaskCompletionSource<bool> disconnectAsyncTask;
-#endif
 
         /// <summary>
         ///     The URL of the host that the socket is connected to.
@@ -139,7 +129,6 @@ namespace Archipelago.MultiClient.Net.Helpers
                 webSocket.Close();
         }
 
-#if NET35
         /// <summary>
         ///     Disconnect from the host asynchronously.
         ///     Handle the <see cref="SocketClosed"/> event to add a callback.
@@ -149,46 +138,6 @@ namespace Archipelago.MultiClient.Net.Helpers
             if (webSocket != null && webSocket.IsAlive)
                 webSocket.CloseAsync();
         }
-#else
-        /// <summary>
-        ///     Initiates a connection to the host synchronously.
-        /// </summary>
-        public Task ConnectAsync()
-        {
-            connectAsyncTask = new TaskCompletionSource<bool>();
-
-			Task.Factory.StartNew(() =>
-			{
-				try
-				{
-					Connect();
-
-					connectAsyncTask.TrySetResult(true);
-				}
-				catch (Exception e)
-				{
-					connectAsyncTask.TrySetException(e);
-				}
-			});
-
-			return connectAsyncTask.Task;
-        }
-
-        /// <summary>
-        ///     Disconnect from the host synchronously.
-        /// </summary>
-        public Task DisconnectAsync()
-        {
-            disconnectAsyncTask = new TaskCompletionSource<bool>();
-
-            if (webSocket != null && webSocket.IsAlive)
-                webSocket.CloseAsync();
-            else
-                disconnectAsyncTask.TrySetResult(false);
-
-            return disconnectAsyncTask.Task;
-        }
-#endif
 
         /// <summary>
         ///     Send a single <see cref="ArchipelagoPacketBase"/> derived packet.
@@ -243,7 +192,6 @@ namespace Archipelago.MultiClient.Net.Helpers
             }
         }
 
-#if NET35
         /// <summary>
         ///     Send a single <see cref="ArchipelagoPacketBase"/> derived packet asynchronously.
         /// </summary>
@@ -310,87 +258,15 @@ namespace Archipelago.MultiClient.Net.Helpers
                 throw new ArchipelagoSocketClosedException();
             }
         }
-#else
-        /// <summary>
-        ///     Send a single <see cref="ArchipelagoPacketBase"/> derived packet asynchronously.
-        /// </summary>
-        /// <param name="packet">
-        ///     The packet to send to the server.
-        /// </param>
-        /// <exception cref="T:Archipelago.MultiClient.Net.Exceptions.ArchipelagoSocketClosedException">
-        ///     The websocket connection is not alive.
-        /// </exception>
-        public Task SendPacketAsync(ArchipelagoPacketBase packet) => SendMultiplePacketsAsync(new List<ArchipelagoPacketBase> { packet });
-
-        /// <summary>
-        ///     Send a single <see cref="ArchipelagoPacketBase"/> derived packet asynchronously.
-        /// </summary>
-        /// <param name="packets">
-        ///     The packets to send to the server.
-        /// </param>
-        /// <remarks>
-        ///     The packets will be sent in the order they are provided in the list.
-        /// </remarks>
-        /// <exception cref="T:Archipelago.MultiClient.Net.Exceptions.ArchipelagoSocketClosedException">
-        ///     The websocket connection is not alive.
-        /// </exception>
-        public Task SendMultiplePacketsAsync(List<ArchipelagoPacketBase> packets) => SendMultiplePacketsAsync(packets.ToArray());
-
-        /// <summary>
-        ///     Send a single <see cref="ArchipelagoPacketBase"/> derived packet asynchronously.
-        /// </summary>
-        /// <param name="packets">
-        ///     The packets to send to the server.
-        /// </param>
-        /// <remarks>
-        ///     The packets will be sent in the order they are provided as arguments.
-        /// </remarks>
-        /// <exception cref="T:Archipelago.MultiClient.Net.Exceptions.ArchipelagoSocketClosedException">
-        ///     The websocket connection is not alive.
-        /// </exception>
-        public Task SendMultiplePacketsAsync(params ArchipelagoPacketBase[] packets)
-        {
-            var taskCompletionSource = new TaskCompletionSource<bool>();
-
-            if (webSocket != null && webSocket.IsAlive)
-            {
-                var packetAsJson = JsonConvert.SerializeObject(packets);
-                webSocket.SendAsync(packetAsJson, success => {
-                    if (!success)
-                        taskCompletionSource.TrySetException(new Exception("Failed to send packets async"));
-                    else
-                        taskCompletionSource.TrySetResult(true);
-                });
-
-                if (PacketsSent != null)
-                    PacketsSent(packets);
-            }
-            else
-            {
-                taskCompletionSource.TrySetException(new ArchipelagoSocketClosedException());
-            }
-
-            return taskCompletionSource.Task;
-        }
-#endif
 
         void OnOpen(object sender, EventArgs e)
         {
-#if !NET35
-            if (connectAsyncTask != null)
-                connectAsyncTask.TrySetResult(true);
-#endif
-            
             if (SocketOpened != null)
                 SocketOpened();
         }
 
         void OnClose(object sender, CloseEventArgs e)
         {
-#if !NET35
-            if (disconnectAsyncTask != null)
-                disconnectAsyncTask.TrySetResult(true);
-#endif
 			if (Uri.Scheme == "unspecified" && sender == webSocket && webSocket.Url.Scheme == "wss")
 				return; //we ignore the first connection failure for unspecified protocol
 
