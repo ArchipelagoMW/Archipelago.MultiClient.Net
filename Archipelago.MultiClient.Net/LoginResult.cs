@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace Archipelago.MultiClient.Net
 {
-    public abstract class LoginResult
+	public abstract class LoginResult
     {
         public abstract bool Successful { get; }
 

@@ -1,13 +1,19 @@
 ﻿using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Models;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 
+
+#if NET6_0_OR_GREATER
+using JsonProperty = System.Text.Json.Serialization.JsonPropertyNameAttribute;
+#else
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+#endif
+
 namespace Archipelago.MultiClient.Net.Packets
 {
-    public class SetPacket : ArchipelagoPacketBase
+	public class SetPacket : ArchipelagoPacketBase
     {
         public override ArchipelagoPacketType PacketType => ArchipelagoPacketType.Set;
 

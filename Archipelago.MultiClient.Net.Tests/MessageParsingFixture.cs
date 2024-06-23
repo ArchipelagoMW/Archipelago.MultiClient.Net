@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace Archipelago.MultiClient.Net.Tests
 {
-    [TestFixture]
+	[TestFixture]
     class MessageParsingFixture
     {
         static readonly ArchipelagoPacketConverter Converter = new ArchipelagoPacketConverter();

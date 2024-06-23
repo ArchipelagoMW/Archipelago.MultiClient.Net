@@ -1,12 +1,20 @@
 ﻿using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Helpers;
+
+using System.Collections;
+#if !NET35
+using System.Numerics;
+#endif
+
+#if NET6_0_OR_GREATER
+using JsonProperty = System.Text.Json.Serialization.JsonPropertyNameAttribute;
+using System.Text.Json.Serialization;
+using Archipelago.MultiClient.Net.Converters;
+#else
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
-using System.Collections;
-#if !NET35
-using System.Numerics;
 #endif
 
 // ReSharper disable ArrangeObjectCreationWhenTypeEvident
@@ -20,8 +28,12 @@ namespace Archipelago.MultiClient.Net.Models
     {
 		/// <inheritdoc cref="T:Archipelago.MultiClient.Net.Models.OperationType"/>
 		[JsonProperty("operation")]
-        [JsonConverter(typeof(StringEnumConverter), typeof(SnakeCaseNamingStrategy))]
-        public OperationType OperationType;
+#if NET6_0_OR_GREATER
+        [JsonConverter(typeof(JsonSnakeCaseStringEnumConverter))]
+#else
+		[JsonConverter(typeof(StringEnumConverter), typeof(SnakeCaseNamingStrategy))]
+#endif
+		public OperationType OperationType;
 
 		/// <summary>
 		/// The value related to this operation

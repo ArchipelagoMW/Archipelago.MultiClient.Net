@@ -2,6 +2,7 @@
 using Archipelago.MultiClient.Net.Converters;
 using Archipelago.MultiClient.Net.Exceptions;
 using Archipelago.MultiClient.Net.Extensions;
+using Archipelago.MultiClient.Net.Packets;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -15,7 +16,7 @@ using WebSocketSharp;
 
 namespace Archipelago.MultiClient.Net.Helpers
 {
-    public class ArchipelagoSocketHelper : IArchipelagoSocketHelper
+	public class ArchipelagoSocketHelper : IArchipelagoSocketHelper
     {
 	    const SslProtocols Tls13 = (SslProtocols)12288;
 	    const SslProtocols Tls12 = (SslProtocols)3072;

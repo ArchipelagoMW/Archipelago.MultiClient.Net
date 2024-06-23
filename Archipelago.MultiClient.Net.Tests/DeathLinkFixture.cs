@@ -12,7 +12,7 @@ using System.Linq;
 
 namespace Archipelago.MultiClient.Net.Tests
 {
-    [TestFixture]
+	[TestFixture]
     class DeathLinkFixture
     {
         [TestCase(@"[{

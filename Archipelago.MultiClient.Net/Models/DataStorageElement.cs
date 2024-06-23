@@ -4,7 +4,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Newtonsoft.Json.Linq;
+//using Newtonsoft.Json.Linq;
+using System.Text.Json;
 
 #if !NET35
 using System.Threading.Tasks;

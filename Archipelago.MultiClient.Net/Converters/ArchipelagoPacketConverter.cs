@@ -10,7 +10,7 @@ namespace Archipelago.MultiClient.Net.Converters
 	/// <summary>
 	/// Json Converter for archipelago packets
 	/// </summary>
-    public class ArchipelagoPacketConverter : JsonConverter
+	public class ArchipelagoPacketConverter : JsonConverter
     {
         static readonly Dictionary<ArchipelagoPacketType, Func<JObject, ArchipelagoPacketBase>> PacketDeserializationMap = 
 	        new Dictionary<ArchipelagoPacketType, Func<JObject, ArchipelagoPacketBase>>(23)

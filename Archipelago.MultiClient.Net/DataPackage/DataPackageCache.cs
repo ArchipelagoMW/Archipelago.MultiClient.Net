@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace Archipelago.MultiClient.Net.DataPackage
 {
-    class DataPackageCache : IDataPackageCache
+	class DataPackageCache : IDataPackageCache
     {
         readonly IArchipelagoSocketHelper socket;
 

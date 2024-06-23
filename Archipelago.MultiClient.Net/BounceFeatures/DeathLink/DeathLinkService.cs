@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace Archipelago.MultiClient.Net.BounceFeatures.DeathLink
 {
-    public class DeathLinkService
+	public class DeathLinkService
     {
         readonly IArchipelagoSocketHelper socket;
         readonly IConnectionInfoProvider connectionInfoProvider;

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Archipelago.MultiClient.Net.Packets;
+using System;
 using System.Collections.Generic;
 
 #if !NET35
@@ -10,7 +11,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 	/// <summary>
 	/// Delegates for the events that the IArchipelagoSocketHelper can raise
 	/// </summary>
-    public class ArchipelagoSocketHelperDelagates
+	public class ArchipelagoSocketHelperDelagates
     {
         public delegate void PacketReceivedHandler(ArchipelagoPacketBase packet);
         public delegate void PacketsSentHandler(ArchipelagoPacketBase[] packets);

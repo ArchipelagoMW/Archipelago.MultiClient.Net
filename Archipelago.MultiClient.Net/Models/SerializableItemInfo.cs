@@ -1,7 +1,12 @@
 ﻿using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Helpers;
-using Newtonsoft.Json;
 using System.Runtime.Serialization;
+
+#if NET6_0_OR_GREATER
+using System.Text.Json.Serialization;
+#else
+using Newtonsoft.Json;
+#endif
 
 namespace Archipelago.MultiClient.Net.Models
 {

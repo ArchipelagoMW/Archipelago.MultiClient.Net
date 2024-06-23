@@ -11,7 +11,7 @@ using System.Collections.ObjectModel;
 
 namespace Archipelago.MultiClient.Net.Tests
 {
-    [TestFixture]
+	[TestFixture]
     class RoomStateHelperFixture
     {
         public static TestCaseData[] RoomStateHelperTests =>

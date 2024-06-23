@@ -2,6 +2,7 @@
 using Archipelago.MultiClient.Net.Converters;
 using Archipelago.MultiClient.Net.Exceptions;
 using Archipelago.MultiClient.Net.Extensions;
+using Archipelago.MultiClient.Net.Packets;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Concurrent;
@@ -11,6 +12,8 @@ using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Archipelago.MultiClient.Net.Packets;
+
 
 #if NET45
 using System.Net;
@@ -18,7 +21,7 @@ using System.Net;
 
 namespace Archipelago.MultiClient.Net.Helpers
 {
-    public class ArchipelagoSocketHelper : IArchipelagoSocketHelper
+	public class ArchipelagoSocketHelper : IArchipelagoSocketHelper
     {
         static readonly ArchipelagoPacketConverter Converter = new ArchipelagoPacketConverter();
 

@@ -1,13 +1,20 @@
 ﻿using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Models;
+
+
+#if NET6_0_OR_GREATER
+using System.Text.Json.Serialization;
+using JsonProperty = System.Text.Json.Serialization.JsonPropertyNameAttribute;
+#else
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+#endif
 
 #pragma warning disable CS1591
 
 namespace Archipelago.MultiClient.Net.Packets
 {
-    public class PrintJsonPacket : ArchipelagoPacketBase
+	public class PrintJsonPacket : ArchipelagoPacketBase
     {
         public override ArchipelagoPacketType PacketType => ArchipelagoPacketType.PrintJSON;
 
@@ -15,8 +22,12 @@ namespace Archipelago.MultiClient.Net.Packets
         public JsonMessagePart[] Data { get; set; }
 
         [JsonProperty("type")]
-        [JsonConverter(typeof(StringEnumConverter))]
-        public JsonMessageType? MessageType { get; set; }
+#if NET6_0_OR_GREATER
+        [JsonConverter(typeof(JsonStringEnumConverter))]
+#else
+		[JsonConverter(typeof(StringEnumConverter))]
+#endif
+		public JsonMessageType? MessageType { get; set; }
     }
 
     public class ItemPrintJsonPacket : PrintJsonPacket

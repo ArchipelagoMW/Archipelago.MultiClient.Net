@@ -1,15 +1,21 @@
 ﻿using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Models;
-using Newtonsoft.Json;
 using System.Collections.Generic;
+
+
+#if NET6_0_OR_GREATER
+using JsonProperty = System.Text.Json.Serialization.JsonPropertyNameAttribute;
+#else
+using Newtonsoft.Json;
+#endif
 
 namespace Archipelago.MultiClient.Net.Packets
 {
-    /// <summary>
-    /// Sent when there is a need to update information about the present game session,
-    /// All arguments for this packet are nullable, only the properties that are not null contain changes.
-    /// </summary>
-    public class RoomUpdatePacket : ArchipelagoPacketBase
+	/// <summary>
+	/// Sent when there is a need to update information about the present game session,
+	/// All arguments for this packet are nullable, only the properties that are not null contain changes.
+	/// </summary>
+	public class RoomUpdatePacket : ArchipelagoPacketBase
     {
         public override ArchipelagoPacketType PacketType => ArchipelagoPacketType.RoomUpdate;
 
