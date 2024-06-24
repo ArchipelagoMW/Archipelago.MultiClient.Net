@@ -2,12 +2,15 @@
 using Archipelago.MultiClient.Net.Helpers;
 
 using System.Collections;
+using System.Text.Json;
 #if !NET35
 using System.Numerics;
 #endif
 
 #if NET6_0_OR_GREATER
 using JsonProperty = System.Text.Json.Serialization.JsonPropertyNameAttribute;
+using JToken = System.Text.Json.Nodes.JsonNode;
+using JObject = System.Text.Json.Nodes.JsonObject;
 using System.Text.Json.Serialization;
 using Archipelago.MultiClient.Net.Converters;
 #else
@@ -127,7 +130,11 @@ namespace Archipelago.MultiClient.Net.Models
 		/// </summary>
 		/// <param name="dictionary">The dictionary to merge in</param>
 		public static OperationSpecification Update(IDictionary dictionary) =>
+#if NET6_0_OR_GREATER
+		    new OperationSpecification { OperationType = OperationType.Update, Value = JObject.Create(new JsonElement dictionary) };
+#else
 		    new OperationSpecification { OperationType = OperationType.Update, Value = JObject.FromObject(dictionary) };
+#endif
 
 		/// <summary>
 		/// Performs a Math.Floor() on the store its current value
