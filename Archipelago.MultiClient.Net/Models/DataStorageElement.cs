@@ -1,16 +1,23 @@
 ﻿using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Helpers;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-//using Newtonsoft.Json.Linq;
-using System.Text.Json;
 
 #if !NET35
 using System.Threading.Tasks;
 using System.Numerics;
 using System.Globalization;
+#endif
+
+#if NET6_0_OR_GREATER
+using System.Text.Json.Nodes;
+using JToken = System.Text.Json.Nodes.JsonNode; 
+using JArray = System.Text.Json.Nodes.JsonArray;
+#else
+using Newtonsoft.Json.Linq;
 #endif
 
 // ReSharper disable ArrangeObjectCreationWhenTypeEvident
@@ -83,8 +90,8 @@ namespace Archipelago.MultiClient.Net.Models
         public static DataStorageElement operator +(DataStorageElement a, decimal b) => new DataStorageElement(a, OperationType.Add, b);
 		public static DataStorageElement operator +(DataStorageElement a, string b) => new DataStorageElement(a, OperationType.Add, b);
 		public static DataStorageElement operator +(DataStorageElement a, JToken b) => new DataStorageElement(a, OperationType.Add, b);
-		public static DataStorageElement operator +(DataStorageElement a, IEnumerable b) => new DataStorageElement(a, OperationType.Add, JArray.FromObject(b));
-        public static DataStorageElement operator +(DataStorageElement a, OperationSpecification s) => new DataStorageElement(a, s.OperationType, s.Value);
+	    public static DataStorageElement operator +(DataStorageElement a, IEnumerable b) => new DataStorageElement(a, OperationType.Add, CreateFromArray(b));
+		public static DataStorageElement operator +(DataStorageElement a, OperationSpecification s) => new DataStorageElement(a, s.OperationType, s.Value);
         public static DataStorageElement operator +(DataStorageElement a, Callback c) => new DataStorageElement(a, c);
         public static DataStorageElement operator +(DataStorageElement a, AdditionalArgument arg) => new DataStorageElement(a, arg);
 		public static DataStorageElement operator *(DataStorageElement a, int b) => new DataStorageElement(a, OperationType.Mul, b);
@@ -102,34 +109,35 @@ namespace Archipelago.MultiClient.Net.Models
 		public static DataStorageElement operator ^(DataStorageElement a, float b) => new DataStorageElement(a, OperationType.Pow, b);
 		public static DataStorageElement operator ^(DataStorageElement a, double b) => new DataStorageElement(a, OperationType.Pow, b);
 		public static DataStorageElement operator ^(DataStorageElement a, decimal b) => new DataStorageElement(a, OperationType.Pow, b);
-        public static DataStorageElement operator -(DataStorageElement a, int b) => new DataStorageElement(a, OperationType.Add, JToken.FromObject(-b));
-        public static DataStorageElement operator -(DataStorageElement a, long b) => new DataStorageElement(a, OperationType.Add, JToken.FromObject(-b));
-        public static DataStorageElement operator -(DataStorageElement a, float b) => new DataStorageElement(a, OperationType.Add, JToken.FromObject(-b));
-        public static DataStorageElement operator -(DataStorageElement a, double b) => new DataStorageElement(a, OperationType.Add, JToken.FromObject(-b));
-        public static DataStorageElement operator -(DataStorageElement a, decimal b) => new DataStorageElement(a, OperationType.Add, JToken.FromObject(-b));
-        public static DataStorageElement operator /(DataStorageElement a, int b) => new DataStorageElement(a, OperationType.Mul, JToken.FromObject(1m / b));
-        public static DataStorageElement operator /(DataStorageElement a, long b) => new DataStorageElement(a, OperationType.Mul, JToken.FromObject(1m / b));
-        public static DataStorageElement operator /(DataStorageElement a, float b) => new DataStorageElement(a, OperationType.Mul, JToken.FromObject(1d / b));
-        public static DataStorageElement operator /(DataStorageElement a, double b) => new DataStorageElement(a, OperationType.Mul, JToken.FromObject(1d / b));
-        public static DataStorageElement operator /(DataStorageElement a, decimal b) => new DataStorageElement(a, OperationType.Mul, JToken.FromObject(1m / b));
-        
+		public static DataStorageElement operator -(DataStorageElement a, int b) => new DataStorageElement(a, OperationType.Add, CreateFromBasicValue(-b));
+        public static DataStorageElement operator -(DataStorageElement a, long b) => new DataStorageElement(a, OperationType.Add, CreateFromBasicValue(-b));
+        public static DataStorageElement operator -(DataStorageElement a, float b) => new DataStorageElement(a, OperationType.Add, CreateFromBasicValue(-b));
+        public static DataStorageElement operator -(DataStorageElement a, double b) => new DataStorageElement(a, OperationType.Add, CreateFromBasicValue(-b));
+        public static DataStorageElement operator -(DataStorageElement a, decimal b) => new DataStorageElement(a, OperationType.Add, CreateFromBasicValue(-b));
+        public static DataStorageElement operator /(DataStorageElement a, int b) => new DataStorageElement(a, OperationType.Mul, CreateFromBasicValue(1m / b));
+        public static DataStorageElement operator /(DataStorageElement a, long b) => new DataStorageElement(a, OperationType.Mul, CreateFromBasicValue(1m / b));
+        public static DataStorageElement operator /(DataStorageElement a, float b) => new DataStorageElement(a, OperationType.Mul, CreateFromBasicValue(1d / b));
+        public static DataStorageElement operator /(DataStorageElement a, double b) => new DataStorageElement(a, OperationType.Mul, CreateFromBasicValue(1d / b));
+        public static DataStorageElement operator /(DataStorageElement a, decimal b) => new DataStorageElement(a, OperationType.Mul, CreateFromBasicValue(1m / b));
+
+
 		public static implicit operator DataStorageElement(bool b) => new DataStorageElement(OperationType.Replace, b);
 		public static implicit operator DataStorageElement(int i) => new DataStorageElement(OperationType.Replace, i);
 		public static implicit operator DataStorageElement(long l) => new DataStorageElement(OperationType.Replace, l);
 		public static implicit operator DataStorageElement(decimal m) => new DataStorageElement(OperationType.Replace, m);
 		public static implicit operator DataStorageElement(double d) => new DataStorageElement(OperationType.Replace, d);
 		public static implicit operator DataStorageElement(float f) => new DataStorageElement(OperationType.Replace, f);
-		public static implicit operator DataStorageElement(string s) => s == null ? new DataStorageElement(OperationType.Replace, JValue.CreateNull()) : new DataStorageElement(OperationType.Replace, s);
+		public static implicit operator DataStorageElement(string s) => s == null ? new DataStorageElement(OperationType.Replace, CreateNull()) : new DataStorageElement(OperationType.Replace, s);
 		public static implicit operator DataStorageElement(JToken o) => new DataStorageElement(OperationType.Replace, o);
-		public static implicit operator DataStorageElement(Array a) => new DataStorageElement(OperationType.Replace, JArray.FromObject(a));
-		public static implicit operator DataStorageElement(List<bool> l) => new DataStorageElement(OperationType.Replace, JArray.FromObject(l));
-		public static implicit operator DataStorageElement(List<int> l) => new DataStorageElement(OperationType.Replace, JArray.FromObject(l));
-		public static implicit operator DataStorageElement(List<long> l) => new DataStorageElement(OperationType.Replace, JArray.FromObject(l));
-		public static implicit operator DataStorageElement(List<decimal> l) => new DataStorageElement(OperationType.Replace, JArray.FromObject(l));
-		public static implicit operator DataStorageElement(List<double> l) => new DataStorageElement(OperationType.Replace, JArray.FromObject(l));
-		public static implicit operator DataStorageElement(List<float> l) => new DataStorageElement(OperationType.Replace, JArray.FromObject(l));
-		public static implicit operator DataStorageElement(List<string> l) => new DataStorageElement(OperationType.Replace, JArray.FromObject(l));
-		public static implicit operator DataStorageElement(List<object> l) => new DataStorageElement(OperationType.Replace, JArray.FromObject(l));
+		public static implicit operator DataStorageElement(Array a) => new DataStorageElement(OperationType.Replace, CreateFromArray(a));
+		public static implicit operator DataStorageElement(List<bool> l) => new DataStorageElement(OperationType.Replace, CreateFromArray(l));
+		public static implicit operator DataStorageElement(List<int> l) => new DataStorageElement(OperationType.Replace, CreateFromArray(l));
+		public static implicit operator DataStorageElement(List<long> l) => new DataStorageElement(OperationType.Replace, CreateFromArray(l));
+		public static implicit operator DataStorageElement(List<decimal> l) => new DataStorageElement(OperationType.Replace, CreateFromArray(l));
+		public static implicit operator DataStorageElement(List<double> l) => new DataStorageElement(OperationType.Replace, CreateFromArray(l));
+		public static implicit operator DataStorageElement(List<float> l) => new DataStorageElement(OperationType.Replace, CreateFromArray(l));
+		public static implicit operator DataStorageElement(List<string> l) => new DataStorageElement(OperationType.Replace, CreateFromArray(l));
+		public static implicit operator DataStorageElement(List<object> l) => new DataStorageElement(OperationType.Replace, CreateFromArray(l));
 
 		public static implicit operator bool(DataStorageElement e) => RetrieveAndReturnBoolValue<bool>(e);
 		public static implicit operator bool?(DataStorageElement e) => RetrieveAndReturnBoolValue<bool?>(e);
@@ -521,5 +529,29 @@ namespace Archipelago.MultiClient.Net.Models
         string ListOperations() => Operations == null 
 	        ? "none" 
 	        : string.Join(", ", Operations.Select(o => o.ToString()).ToArray());
-    }
+
+#if NET6_0_OR_GREATER
+	    static JToken CreateFromArray(IEnumerable list)
+	    {
+			var node = new JsonArray();
+			foreach (var item in list)
+				node.Add(item);
+			return node;
+	    }
+#else
+	    static JToken CreateFromArray(IEnumerable list) => JArray.FromObject(list);
+#endif
+
+#if NET6_0_OR_GREATER
+	    static JToken CreateFromBasicValue<T>(T value) => JsonValue.Create(value);
+#else
+	    static JToken CreateFromBasicValue<T>(T value) => JToken.FromObject(value);
+#endif
+
+#if NET6_0_OR_GREATER
+	    static JToken CreateNull() => null;
+#else
+		static JToken CreateNull() => JValue.CreateNull();
+#endif
+	}
 }
