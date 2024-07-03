@@ -279,7 +279,6 @@ namespace Archipelago.MultiClient.Net
 
 			if (!roomInfoPacketTask.Task.IsCompleted)
             {
-                loginResultTask = new TaskCompletionSource<LoginResult>();
                 loginResultTask.TrySetResult(new LoginFailure("You are not connected, run ConnectAsync() first"));
                 return loginResultTask.Task;
             }
