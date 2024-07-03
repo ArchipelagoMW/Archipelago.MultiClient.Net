@@ -1,9 +1,14 @@
 ﻿using Archipelago.MultiClient.Net.Helpers;
-using Newtonsoft.Json.Linq;
 using System;
 
 #if !NET35
 using System.Threading.Tasks;
+#endif
+
+#if NET6_0_OR_GREATER
+using JToken = System.Text.Json.Nodes.JsonNode;
+#else
+using Newtonsoft.Json.Linq;
 #endif
 
 namespace Archipelago.MultiClient.Net.Models

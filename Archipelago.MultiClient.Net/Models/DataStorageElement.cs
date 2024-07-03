@@ -1,6 +1,6 @@
 ﻿using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Helpers;
-using Newtonsoft.Json.Linq;
+using Archipelago.MultiClient.Net.Extensions;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -287,7 +287,7 @@ namespace Archipelago.MultiClient.Net.Models
         /// Will not override any existing value, only set the default value if none existed
         /// </summary>
         /// <param name="value">The default value for the key</param>
-        public void Initialize(IEnumerable value) => Context.Initialize(Context.Key, JArray.FromObject(value));
+        public void Initialize(IEnumerable value) => Context.Initialize(Context.Key, CreateFromArray(value));
 
 #if NET35
         /// <summary>
@@ -325,7 +325,7 @@ namespace Archipelago.MultiClient.Net.Models
                 switch (operation.OperationType)
                 {
                     case OperationType.Add:
-                        if (operation.Value.Type != JTokenType.Array)
+                        if (operation.Value.IsArray())
                             throw new InvalidOperationException(
                                 $"Cannot perform operation {OperationType.Add} on Array value, with a non Array value: {operation.Value}");
 
@@ -333,7 +333,7 @@ namespace Archipelago.MultiClient.Net.Models
                         break;
 
                     case OperationType.Replace:
-                        if (operation.Value.Type != JTokenType.Array)
+                        if (operation.Value.IsArray())
                             throw new InvalidOperationException($"Cannot replace Array value, with a non Array value: {operation.Value}");
 
                         value = operation.Value.ToObject<JArray>() ?? new JArray();
@@ -355,7 +355,7 @@ namespace Archipelago.MultiClient.Net.Models
                 return (string)e.cachedValue;
 
 			var yayToken = e.Context.GetData(e.Context.Key);
-			var value = (yayToken.Type == JTokenType.Null)
+			var value = (yayToken.IsNull())
 				? null
 				: yayToken.ToString();
 			
@@ -368,7 +368,7 @@ namespace Archipelago.MultiClient.Net.Models
                         break;
 
                     case OperationType.Mul:
-                        if (operation.Value.Type != JTokenType.Integer)
+                        if (operation.Value.IsNumber())
                             throw new InvalidOperationException($"Cannot perform operation {OperationType.Mul} on string value, with a non interger value: {operation.Value}");
 
                         value = string.Concat(Enumerable.Repeat(value, (int)operation.Value));
@@ -384,7 +384,7 @@ namespace Archipelago.MultiClient.Net.Models
             }
 
 			if (value == null)
-				e.cachedValue = JValue.CreateNull();
+				e.cachedValue = CreateNull();
 			else
 				e.cachedValue = value;
 			

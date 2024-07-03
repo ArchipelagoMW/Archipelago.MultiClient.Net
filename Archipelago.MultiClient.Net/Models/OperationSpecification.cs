@@ -1,8 +1,7 @@
 ﻿using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Helpers;
-
 using System.Collections;
-using System.Text.Json;
+
 #if !NET35
 using System.Numerics;
 #endif
@@ -130,11 +129,7 @@ namespace Archipelago.MultiClient.Net.Models
 		/// </summary>
 		/// <param name="dictionary">The dictionary to merge in</param>
 		public static OperationSpecification Update(IDictionary dictionary) =>
-#if NET6_0_OR_GREATER
-		    new OperationSpecification { OperationType = OperationType.Update, Value = JObject.Create(new JsonElement dictionary) };
-#else
-		    new OperationSpecification { OperationType = OperationType.Update, Value = JObject.FromObject(dictionary) };
-#endif
+		    new OperationSpecification { OperationType = OperationType.Update, Value = CreateFromDictionary(dictionary) };
 
 		/// <summary>
 		/// Performs a Math.Floor() on the store its current value
@@ -147,6 +142,23 @@ namespace Archipelago.MultiClient.Net.Models
 		/// </summary>
 		public static OperationSpecification Ceiling() =>
 			new OperationSpecification { OperationType = OperationType.Ceil, Value = null };
+
+#if NET6_0_OR_GREATER
+		static JToken CreateFromDictionary(IDictionary dictionary)
+		{
+			var obj = new JObject();
+
+			foreach (DictionaryEntry dictionaryEntry in dictionary)
+			{
+				//fix if key isnt a string
+				obj.Add((string)dictionaryEntry.Key, JToken.Create(dictionaryEntry.Value));
+			}
+
+			return obj;
+		}
+#else
+		static JToken CreateFromDictionary(IDictionary dictionary) => JObject.FromObject(dictionary);
+#endif
 	}
 
 	/// <summary>
