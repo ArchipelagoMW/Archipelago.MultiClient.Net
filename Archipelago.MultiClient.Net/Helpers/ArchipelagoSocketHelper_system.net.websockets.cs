@@ -45,26 +45,40 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// </summary>
         public bool Connected => webSocket.State == WebSocketState.Open || webSocket.State == WebSocketState.CloseReceived;
 
-        internal ClientWebSocket webSocket;
+        //internal ClientWebSocket webSocket;
+        internal WebSocket webSocket;
 
-        internal ArchipelagoSocketHelper(Uri hostUri)
+internal ArchipelagoSocketHelper(Uri hostUri)
         {
             Uri = hostUri;
-            webSocket = new ClientWebSocket();
+
 #if NET45
 	        var Tls13 = (SecurityProtocolType)12288;
 	        System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | Tls13;
 #endif
-#if NET6_0
-            webSocket.Options.DangerousDeflateOptions = new WebSocketDeflateOptions();
-#endif
+
+	        webSocket = CreateWebSocket();
+        }
+
+        internal ArchipelagoSocketHelper(WebSocket testWebSocket)
+        {
+	        webSocket = testWebSocket;
 		}
 
-        /// <summary>
-        ///     Initiates a connection to the host asynchronously.
-        ///     Handle the <see cref="SocketOpened"/> event to add a callback.
-        /// </summary>
-        public async Task ConnectAsync()
+        static WebSocket CreateWebSocket()
+        {
+	        var clientWebSocket = new ClientWebSocket();
+#if NET6_0
+			clientWebSocket.Options.DangerousDeflateOptions = new WebSocketDeflateOptions();
+#endif
+	        return clientWebSocket;
+        }
+
+		/// <summary>
+		///     Initiates a connection to the host asynchronously.
+		///     Handle the <see cref="SocketOpened"/> event to add a callback.
+		/// </summary>
+		public async Task ConnectAsync()
         {
 			await ConnectToProvidedUri(Uri);
 
@@ -81,7 +95,10 @@ namespace Archipelago.MultiClient.Net.Helpers
 	        {
 		        try
 		        {
-			        await webSocket.ConnectAsync(uri, CancellationToken.None);
+			        if (webSocket is ClientWebSocket clientWebSocket)
+				        await clientWebSocket.ConnectAsync(uri, CancellationToken.None);
+			        else 
+				        throw new NotSupportedException("supplied websocket does not support connecting");
 		        }
 		        catch (Exception e)
 		        {
@@ -94,7 +111,10 @@ namespace Archipelago.MultiClient.Net.Helpers
 				var errors = new List<Exception>(0);
 				try
 				{
-					await webSocket.ConnectAsync(uri.AsWss(), CancellationToken.None);
+					if (webSocket is ClientWebSocket clientWebSocket)
+						await clientWebSocket.ConnectAsync(uri.AsWss(), CancellationToken.None);
+					else
+						throw new NotSupportedException("supplied websocket does not support connecting");
 
 					if (webSocket.State == WebSocketState.Open)
 						return;
@@ -102,12 +122,15 @@ namespace Archipelago.MultiClient.Net.Helpers
 				catch(Exception e)
 				{
 					errors.Add(e);
-					webSocket = new ClientWebSocket();
+					webSocket = CreateWebSocket();
 				}
 
 				try
 				{
-					await webSocket.ConnectAsync(uri.AsWs(), CancellationToken.None);
+					if (webSocket is ClientWebSocket clientWebSocket)
+						await clientWebSocket.ConnectAsync(uri.AsWs(), CancellationToken.None);
+					else
+						throw new NotSupportedException("supplied websocket does not support connecting");
 				}
 				catch (Exception e)
 				{
@@ -361,7 +384,17 @@ namespace Archipelago.MultiClient.Net.Helpers
             {
                 if (!string.IsNullOrEmpty(message) && PacketReceived != null)
                 {
-                    var packets = JsonConvert.DeserializeObject<List<ArchipelagoPacketBase>>(message, Converter);
+	                List<ArchipelagoPacketBase> packets = null;
+
+					try
+	                {
+		                packets = JsonConvert.DeserializeObject<List<ArchipelagoPacketBase>>(message, Converter);
+					}
+	                catch (Exception exception)
+	                {
+						OnError(exception);
+	                }
+
                     if (packets == null)
                         return;
 
