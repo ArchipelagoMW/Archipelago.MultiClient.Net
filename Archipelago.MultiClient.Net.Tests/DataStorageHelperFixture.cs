@@ -560,7 +560,7 @@ namespace Archipelago.MultiClient.Net.Tests
 
 #if NET471
         [Test]
-        public void Should_retreive_values_async()
+        public void Should_retrieve_values_async()
         {
             var socket = Substitute.For<IArchipelagoSocketHelper>();
             var connectionInfo = Substitute.For<IConnectionInfoProvider>();
@@ -613,7 +613,7 @@ namespace Archipelago.MultiClient.Net.Tests
         }
 #else
         [Test]
-        public async Task Should_retreive_values_async()
+        public async Task Should_retrieve_values_async()
         {
             var socket = Substitute.For<IArchipelagoSocketHelper>();
             var connectionInfo = Substitute.For<IConnectionInfoProvider>();
