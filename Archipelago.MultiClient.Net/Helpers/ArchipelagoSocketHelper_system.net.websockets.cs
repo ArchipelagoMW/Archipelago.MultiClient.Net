@@ -1,14 +1,8 @@
 ﻿#if NET45 || NETSTANDARD2_0 || NET6_0
-using Archipelago.MultiClient.Net.Converters;
-using Archipelago.MultiClient.Net.Exceptions;
 using Archipelago.MultiClient.Net.Extensions;
-using Newtonsoft.Json;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.WebSockets;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -18,59 +12,32 @@ using System.Net;
 
 namespace Archipelago.MultiClient.Net.Helpers
 {
-    public class ArchipelagoSocketHelper : IArchipelagoSocketHelper
+    public class ArchipelagoSocketHelper : BaseArchipelagoSocketHelper<ClientWebSocket>, IArchipelagoSocketHelper
     {
-        static readonly ArchipelagoPacketConverter Converter = new ArchipelagoPacketConverter();
+	    /// <summary>
+	    ///     The URL of the host that the socket is connected to.
+	    /// </summary>
+	    public Uri Uri { get; }
 
-        const int ReceiveChunkSize = 1024;
-        const int SendChunkSize = 1024;
-
-		public event ArchipelagoSocketHelperDelagates.PacketReceivedHandler PacketReceived;
-        public event ArchipelagoSocketHelperDelagates.PacketsSentHandler PacketsSent;
-        public event ArchipelagoSocketHelperDelagates.ErrorReceivedHandler ErrorReceived;
-        public event ArchipelagoSocketHelperDelagates.SocketClosedHandler SocketClosed;
-        public event ArchipelagoSocketHelperDelagates.SocketOpenedHandler SocketOpened;
-
-        readonly BlockingCollection<Tuple<ArchipelagoPacketBase, TaskCompletionSource<bool>>> sendQueue =
-	        new BlockingCollection<Tuple<ArchipelagoPacketBase, TaskCompletionSource<bool>>>();
-
-        /// <summary>
-        ///     The URL of the host that the socket is connected to.
-        /// </summary>
-        public Uri Uri { get; }
-
-        /// <summary>
-        ///     Returns true if the socket believes it is connected to the host.
-        ///     Does not emit a ping to determine if the connection is stable.
-        /// </summary>
-        public bool Connected => webSocket.State == WebSocketState.Open || webSocket.State == WebSocketState.CloseReceived;
-
-        //internal ClientWebSocket webSocket;
-        internal WebSocket webSocket;
-
-internal ArchipelagoSocketHelper(Uri hostUri)
+		internal ArchipelagoSocketHelper(Uri hostUri) : base(CreateWebSocket())
         {
             Uri = hostUri;
 
 #if NET45
+			//this is done on constructor, rather than static constructor override any value set anywhere else in the process
 	        var Tls13 = (SecurityProtocolType)12288;
 	        System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | Tls13;
 #endif
-
-	        webSocket = CreateWebSocket();
         }
 
-        internal ArchipelagoSocketHelper(WebSocket testWebSocket)
-        {
-	        webSocket = testWebSocket;
-		}
-
-        static WebSocket CreateWebSocket()
+        static ClientWebSocket CreateWebSocket()
         {
 	        var clientWebSocket = new ClientWebSocket();
+
 #if NET6_0
 			clientWebSocket.Options.DangerousDeflateOptions = new WebSocketDeflateOptions();
 #endif
+
 	        return clientWebSocket;
         }
 
@@ -82,11 +49,7 @@ internal ArchipelagoSocketHelper(Uri hostUri)
         {
 			await ConnectToProvidedUri(Uri);
 
-            if (SocketOpened != null)
-                SocketOpened();
-
-            _ = Task.Run(PollingLoop);
-            _ = Task.Run(SendLoop);
+            StartPolling();
         }
 
         async Task ConnectToProvidedUri(Uri uri)
@@ -95,10 +58,7 @@ internal ArchipelagoSocketHelper(Uri hostUri)
 	        {
 		        try
 		        {
-			        if (webSocket is ClientWebSocket clientWebSocket)
-				        await clientWebSocket.ConnectAsync(uri, CancellationToken.None);
-			        else 
-				        throw new NotSupportedException("supplied websocket does not support connecting");
+			        await Socket.ConnectAsync(uri, CancellationToken.None);
 		        }
 		        catch (Exception e)
 		        {
@@ -111,26 +71,21 @@ internal ArchipelagoSocketHelper(Uri hostUri)
 				var errors = new List<Exception>(0);
 				try
 				{
-					if (webSocket is ClientWebSocket clientWebSocket)
-						await clientWebSocket.ConnectAsync(uri.AsWss(), CancellationToken.None);
-					else
-						throw new NotSupportedException("supplied websocket does not support connecting");
 
-					if (webSocket.State == WebSocketState.Open)
+					await Socket.ConnectAsync(uri.AsWss(), CancellationToken.None);
+
+					if (Socket.State == WebSocketState.Open)
 						return;
 				}
 				catch(Exception e)
 				{
 					errors.Add(e);
-					webSocket = CreateWebSocket();
+					Socket = CreateWebSocket();
 				}
 
 				try
 				{
-					if (webSocket is ClientWebSocket clientWebSocket)
-						await clientWebSocket.ConnectAsync(uri.AsWs(), CancellationToken.None);
-					else
-						throw new NotSupportedException("supplied websocket does not support connecting");
+					await Socket.ConnectAsync(uri.AsWs(), CancellationToken.None);
 				}
 				catch (Exception e)
 				{
@@ -141,288 +96,7 @@ internal ArchipelagoSocketHelper(Uri hostUri)
 					throw;
 				}
 			}
-		} 
-
-        async Task PollingLoop()
-        {
-            var buffer = new byte[ReceiveChunkSize];
-
-            while (webSocket.State == WebSocketState.Open)
-            {
-                string message = null;
-
-                try
-                {
-                    message = await ReadMessageAsync(buffer);
-                }
-                catch (Exception e)
-                {
-                    OnError(e);
-                }
-
-                OnMessageReceived(message);
-            }
-        }
-
-        async Task SendLoop()
-        {
-            while (webSocket.State == WebSocketState.Open)
-            {
-                try
-                {
-                    await HandleSendBuffer();
-                }
-                catch (Exception e)
-                {
-                    OnError(e);
-                }
-            }
-        }
-
-        async Task<string> ReadMessageAsync(byte[] buffer)
-        {
-            var stringResult = new StringBuilder();
-
-            WebSocketReceiveResult result;
-            do
-            {
-                result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
-
-                if (result.MessageType == WebSocketMessageType.Close)
-                {
-	                try
-	                {
-		                await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, CancellationToken.None);
-	                }
-	                catch
-	                {
-	                }
-					
-					OnSocketClosed();
-                }
-                else
-                {
-                    stringResult.Append(Encoding.UTF8.GetString(buffer, 0, result.Count));
-                }
-            } while (!result.EndOfMessage);
-
-            return stringResult.ToString();
-        }
-
-        /// <summary>
-        ///     Disconnect from the host asynchronously.
-        ///     Handle the <see cref="SocketClosed"/> event to add a callback.
-        /// </summary>
-        public async Task DisconnectAsync()
-        {
-            await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closure requested by client",
-                CancellationToken.None);
-
-            OnSocketClosed();
-        }
-
-        /// <summary>
-        ///     Send a single <see cref="ArchipelagoPacketBase"/> derived packet.
-        /// </summary>
-        /// <param name="packet">
-        ///     The packet to send to the server.
-        /// </param>
-        /// <exception cref="T:Archipelago.MultiClient.Net.Exceptions.ArchipelagoSocketClosedException">
-        ///     The websocket connection is not alive.
-        /// </exception>
-        public void SendPacket(ArchipelagoPacketBase packet) => SendMultiplePackets(new List<ArchipelagoPacketBase> { packet });
-
-        /// <summary>
-        ///     Send multiple <see cref="ArchipelagoPacketBase"/> derived packets.
-        /// </summary>
-        /// <param name="packets">
-        ///     The packets to send to the server.
-        /// </param>
-        /// <remarks>
-        ///     The packets will be sent in the order they are provided in the list.
-        /// </remarks>
-        /// <exception cref="T:Archipelago.MultiClient.Net.Exceptions.ArchipelagoSocketClosedException">
-        ///     The websocket connection is not alive.
-        /// </exception>
-        public void SendMultiplePackets(List<ArchipelagoPacketBase> packets) => SendMultiplePackets(packets.ToArray());
-
-        /// <summary>
-        ///     Send multiple <see cref="ArchipelagoPacketBase"/> derived packets.
-        /// </summary>
-        /// <param name="packets">
-        ///     The packets to send to the server.
-        /// </param>
-        /// <remarks>
-        ///     The packets will be sent in the order they are provided as arguments.
-        /// </remarks>
-        /// <exception cref="T:Archipelago.MultiClient.Net.Exceptions.ArchipelagoSocketClosedException">
-        ///     The websocket connection is not alive.
-        /// </exception>
-        public void SendMultiplePackets(params ArchipelagoPacketBase[] packets) => SendMultiplePacketsAsync(packets).Wait();
-
-        /// <summary>
-        ///     Send a single <see cref="ArchipelagoPacketBase"/> derived packet asynchronously.
-        /// </summary>
-        /// <param name="packet">
-        ///     The packet to send to the server.
-        /// </param>
-        /// <exception cref="T:Archipelago.MultiClient.Net.Exceptions.ArchipelagoSocketClosedException">
-        ///     The websocket connection is not alive.
-        /// </exception>
-        public Task SendPacketAsync(ArchipelagoPacketBase packet) => SendMultiplePacketsAsync(new List<ArchipelagoPacketBase> { packet });
-
-        /// <summary>
-        ///     Send a single <see cref="ArchipelagoPacketBase"/> derived packet asynchronously.
-        /// </summary>
-        /// <param name="packets">
-        ///     The packets to send to the server.
-        /// </param>
-        /// <remarks>
-        ///     The packets will be sent in the order they are provided in the list.
-        /// </remarks>
-        /// <exception cref="T:Archipelago.MultiClient.Net.Exceptions.ArchipelagoSocketClosedException">
-        ///     The websocket connection is not alive.
-        /// </exception>
-        public Task SendMultiplePacketsAsync(List<ArchipelagoPacketBase> packets) => SendMultiplePacketsAsync(packets.ToArray());
-
-        /// <summary>
-        ///     Send a single <see cref="ArchipelagoPacketBase"/> derived packet asynchronously.
-        /// </summary>
-        /// <param name="packets">
-        ///     The packets to send to the server.
-        /// </param>
-        /// <remarks>
-        ///     The packets will be sent in the order they are provided as arguments.
-        /// </remarks>
-        /// <exception cref="T:Archipelago.MultiClient.Net.Exceptions.ArchipelagoSocketClosedException">
-        ///     The websocket connection is not alive.
-        /// </exception>
-        public Task SendMultiplePacketsAsync(params ArchipelagoPacketBase[] packets)
-        {
-            var task = new TaskCompletionSource<bool>();
-
-            foreach (var packet in packets)
-                sendQueue.Add(new Tuple<ArchipelagoPacketBase, TaskCompletionSource<bool>>(packet, task));
-
-            return task.Task;
-        }
-
-        async Task HandleSendBuffer()
-        {
-            var packetList = new List<ArchipelagoPacketBase>();
-            var tasks = new List<TaskCompletionSource<bool>>();
-
-            var firstPacketTuple = sendQueue.Take();
-            packetList.Add(firstPacketTuple.Item1);
-            tasks.Add(firstPacketTuple.Item2);
-            while (sendQueue.TryTake(out var packetTuple))
-            {
-                packetList.Add(packetTuple.Item1);
-                tasks.Add(packetTuple.Item2);
-            }
-
-            if (!packetList.Any())
-                return;
-
-            if (webSocket.State != WebSocketState.Open)
-                throw new ArchipelagoSocketClosedException();
-            
-            var packets = packetList.ToArray();
-            
-            var packetAsJson = JsonConvert.SerializeObject(packets);
-            var messageBuffer = Encoding.UTF8.GetBytes(packetAsJson);
-            var messagesCount = (int)Math.Ceiling((double)messageBuffer.Length / SendChunkSize);
-
-            for (var i = 0; i < messagesCount; i++)
-            {
-                var offset = (SendChunkSize * i);
-                var count = SendChunkSize;
-                var lastMessage = ((i + 1) == messagesCount);
-
-                if ((count * (i + 1)) > messageBuffer.Length)
-                    count = messageBuffer.Length - offset;
-
-                await webSocket.SendAsync(new ArraySegment<byte>(messageBuffer, offset, count), 
-	                WebSocketMessageType.Text, lastMessage, CancellationToken.None);
-            }
-
-            foreach (var task in tasks)
-                task.TrySetResult(true);
-
-            OnPacketSend(packets);
-        }
-
-        void OnPacketSend(ArchipelagoPacketBase[] packets)
-        {
-            try
-            {
-                if (PacketsSent != null)
-                    PacketsSent(packets);
-            }
-            catch (Exception e)
-            {
-                OnError(e);
-            }
-        }
-
-        void OnSocketClosed()
-        {
-            try
-            {
-                if (SocketClosed != null)
-                    SocketClosed("");
-            }
-            catch (Exception e)
-            {
-                OnError(e);
-            }
-        }
-
-        void OnMessageReceived(string message)
-        {
-            try
-            {
-                if (!string.IsNullOrEmpty(message) && PacketReceived != null)
-                {
-	                List<ArchipelagoPacketBase> packets = null;
-
-					try
-	                {
-		                packets = JsonConvert.DeserializeObject<List<ArchipelagoPacketBase>>(message, Converter);
-					}
-	                catch (Exception exception)
-	                {
-						OnError(exception);
-	                }
-
-                    if (packets == null)
-                        return;
-
-                    foreach (var packet in packets)
-                        PacketReceived(packet);
-                }
-            }
-            catch (Exception e)
-            {
-                OnError(e);
-            }
-        }
-
-        void OnError(Exception e)
-        {
-            try
-            {
-                if (ErrorReceived != null)
-                    ErrorReceived(e, e.Message);
-            }
-            catch (Exception innerError)
-            {
-                Console.Out.WriteLine(
-                    $"Error occured during reporting of error" +
-                    $"Outer Errror: {e.Message} {e.StackTrace}" +
-                    $"Inner Errror: {innerError.Message} {innerError.StackTrace}");
-            }
-        }
+		}
     }
 }
 #endif
