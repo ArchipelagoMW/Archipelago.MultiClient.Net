@@ -108,12 +108,12 @@ namespace Archipelago.MultiClient.Net.Helpers
 
         async Task<string> ReadMessageAsync(byte[] buffer)
         {
-            var stringResult = new StringBuilder();
+            var readBytes = new List<byte>(buffer.Length);
 
             WebSocketReceiveResult result;
             do
             {
-                result = await Socket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+	            result = await Socket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
 
                 if (result.MessageType == WebSocketMessageType.Close)
                 {
@@ -130,11 +130,11 @@ namespace Archipelago.MultiClient.Net.Helpers
                 }
                 else
                 {
-                    stringResult.Append(Encoding.UTF8.GetString(buffer, 0, result.Count));
+	                readBytes.AddRange(new ArraySegment<byte>(buffer, 0, result.Count));
                 }
             } while (!result.EndOfMessage);
 
-            return stringResult.ToString();
+            return Encoding.UTF8.GetString(readBytes.ToArray());
         }
 
         /// <summary>

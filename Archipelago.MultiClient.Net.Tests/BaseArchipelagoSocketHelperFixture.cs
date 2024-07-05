@@ -14,11 +14,16 @@ namespace Archipelago.MultiClient.Net.Tests
 	[TestFixture]
 	class BaseArchipelagoSocketHelperFixture
 	{
-		[TestCase(@"[{ ""cmd"":""Say"", ""text"": ""some message"" }]", 100)]
-		[TestCase(@"[{ ""cmd"":""Say"", ""text"": ""some message"" }]", 10)]
-		public async Task should_read_message(string message, int bufferSize)
+		[TestCase("some message", 100, Description = "Buffer bigger than message")]
+		[TestCase("some message", 10, Description = "Buffer smaller than message")]
+		[TestCase("🃁🃂🃃🃄🃅🃆🃇🃈🃉🃊",  10, Description = "UTF8 complex character breaking A")]
+		[TestCase("🃁🃂🃃🃄🃅🃆🃇🃈🃉🃊",  11, Description = "UTF8 complex character breaking B")]
+		[TestCase("🃁🃂🃃🃄🃅🃆🃇🃈🃉🃊",  12, Description = "UTF8 complex character breaking C")]
+		[TestCase("🃁🃂🃃🃄🃅🃆🃇🃈🃉🃊",  13, Description = "UTF8 complex character breaking D")]
+		public async Task Should_read_message_from_websocket_and_parse_archipelago_package(string message, int bufferSize)
 		{
-			var sut = new BaseArchipelagoSocketHelper<TestWebSocket>(new TestWebSocket(message), bufferSize);
+			var sayPacketJson = @"[{ ""cmd"":""Say"", ""text"": ""$MESSAGE"" }]".Replace("$MESSAGE", message);
+			var sut = new BaseArchipelagoSocketHelper<TestWebSocket>(new TestWebSocket(sayPacketJson), bufferSize);
 
 			Exception error = null;
 			ArchipelagoPacketBase receivedPacket = null;
@@ -28,24 +33,41 @@ namespace Archipelago.MultiClient.Net.Tests
 
 			sut.StartPolling();
 
-			int maxRetries = 10;
+			int maxRetries = 100;
 			int retryCount = 0;
 			while (receivedPacket == null && retryCount++ < maxRetries)
-				await Task.Delay(100);
+				await Task.Delay(10);
 
 			var sayPacket = receivedPacket as SayPacket;
 
 			Assert.That(error, Is.Null);
 			Assert.That(sayPacket, Is.Not.Null);
-			Assert.That(sayPacket.Text, Is.EqualTo("some message"));
+			Assert.That(sayPacket.Text, Is.EqualTo(message));
 		}
 
 		[Test]
-		public void should_throw_error_failed_parse()
+		public async Task Should_throw_error_failed_parse()
 		{
-			//var sut = new BaseArchipelagoSocketHelper<TestWebSocket>(new TestWebSocket());
-		}
+			var faultyJson = @"[{ ""cmd"":""Say"": ""text"": ""Incorrect json"" }]";
 
+			var sut = new BaseArchipelagoSocketHelper<TestWebSocket>(new TestWebSocket(faultyJson), 100);
+
+			Exception error = null;
+			ArchipelagoPacketBase receivedPacket = null;
+
+			sut.PacketReceived += packet => receivedPacket = packet;
+			sut.ErrorReceived += (e, _) => error = e;
+
+			sut.StartPolling();
+
+			int maxRetries = 100;
+			int retryCount = 0;
+			while (error == null && retryCount++ < maxRetries)
+				await Task.Delay(10);
+
+			Assert.That(receivedPacket, Is.Null);
+			Assert.That(error, Is.Not.Null);
+		}
 	}
 
 	class TestWebSocket : WebSocket
@@ -69,6 +91,7 @@ namespace Archipelago.MultiClient.Net.Tests
 
 		public override async Task<WebSocketReceiveResult> ReceiveAsync(ArraySegment<byte> outBuffer, CancellationToken cancellationToken)
 		{
+			// ReSharper disable once AssignNullToNotNullAttribute
 			var readCount = await incommingBytes.ReadAsync(outBuffer.Array, 0, outBuffer.Count, cancellationToken);
 
 			return new WebSocketReceiveResult(readCount, WebSocketMessageType.Text, incommingBytes.Position == incommingBytes.Length);
