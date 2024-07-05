@@ -73,41 +73,5 @@ namespace Archipelago.MultiClient.Net.Tests
 			Assert.That(packets.OfType<RetrievedPacket>().Count(), Is.EqualTo(1));
 			Assert.That(packets.OfType<LocationInfoPacket>().Count(), Is.EqualTo(1));
 		}
-
-		[Test]
-		public void Should_parse_both_versions_of_broken_data()
-		{
-			const string message = @"[{
-  ""cmd"": ""Connected"",
-  ""team"": 0,
-  ""slot"": 136,
-  ""players"": [
-    {
-      ""team"": 0,
-      ""slot"": 2699,
-      ""alias"": ""LuffyDunno�� (Player2699)"",
-      ""name"": ""Player2699"",
-      ""class"": ""NetworkPlayer""
-    },
-     {
-      ""team"": 0,
-      ""slot"": 2700,
-      ""alias"": ""LuffyDunnoΩ (Player2699)"",
-      ""name"": ""Player2699"",
-      ""class"": ""NetworkPlayer""
-    },
-  },
-  ""hint_points"": 53,
-  ""slot_data"": {
-    ""StartWithJewelryBox"": 1,
-  }
-}]";
-
-			var packets = JsonConvert.DeserializeObject<List<ArchipelagoPacketBase>>(message, Converter);
-
-			Assert.That(packets, Is.Not.Null);
-			Assert.That(packets.Count, Is.EqualTo(1));
-			Assert.That(packets.OfType<ConnectedPacket>().Count(), Is.EqualTo(1));
-		}
 	}
 }

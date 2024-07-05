@@ -117,7 +117,7 @@ namespace Archipelago.MultiClient.Net.Tests
 		MemoryStream incommingBytes;
 
 		int currentOutIndex;
-		readonly List<List<byte>> outBytes = new List<List<byte>> { new List<byte>() };
+		readonly List<MemoryStream> outBytes = new List<MemoryStream> { new MemoryStream() };
 
 		public List<string> GetWrittenMessages() =>
 			outBytes.Select(bytes => Encoding.UTF8.GetString(bytes.ToArray())).ToList();
@@ -155,11 +155,11 @@ namespace Archipelago.MultiClient.Net.Tests
 			if (messageType != WebSocketMessageType.Text)
 				return;
 
-			outBytes[currentOutIndex].AddRange(buffer);
+			outBytes[currentOutIndex].Write(buffer.Array, buffer.Offset, buffer.Count);
 
 			if (endOfMessage)
 			{
-				outBytes.Add(new List<byte>());
+				outBytes.Add(new MemoryStream());
 				currentOutIndex++;
 			}
 

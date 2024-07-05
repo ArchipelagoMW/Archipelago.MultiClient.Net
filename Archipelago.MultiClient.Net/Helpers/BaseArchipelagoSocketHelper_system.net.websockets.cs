@@ -5,6 +5,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net.WebSockets;
 using System.Text;
@@ -108,33 +109,35 @@ namespace Archipelago.MultiClient.Net.Helpers
 
         async Task<string> ReadMessageAsync(byte[] buffer)
         {
-            var readBytes = new List<byte>(buffer.Length);
-
-            WebSocketReceiveResult result;
-            do
+            using (var readStream = new MemoryStream(buffer.Length))
             {
-	            result = await Socket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+	            WebSocketReceiveResult result;
+	            do
+	            {
+		            result = await Socket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
 
-                if (result.MessageType == WebSocketMessageType.Close)
-                {
-	                try
-	                {
-		                await Socket.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, CancellationToken.None);
-	                }
-	                catch
-	                {
-						// ignore failure to close when a close is requested as the connection might already be dropped
-	                }
-					
-					OnSocketClosed();
-                }
-                else
-                {
-	                readBytes.AddRange(new ArraySegment<byte>(buffer, 0, result.Count));
-                }
-            } while (!result.EndOfMessage);
+		            if (result.MessageType == WebSocketMessageType.Close)
+		            {
+			            try
+			            {
+				            await Socket.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty,
+					            CancellationToken.None);
+			            }
+			            catch
+			            {
+				            // ignore failure to close when a close is requested as the connection might already be dropped
+			            }
 
-            return Encoding.UTF8.GetString(readBytes.ToArray());
+			            OnSocketClosed();
+		            }
+		            else
+		            {
+						readStream.Write(buffer, 0, result.Count);
+		            }
+	            } while (!result.EndOfMessage);
+
+				return Encoding.UTF8.GetString(readStream.ToArray());
+			}
         }
 
         /// <summary>
