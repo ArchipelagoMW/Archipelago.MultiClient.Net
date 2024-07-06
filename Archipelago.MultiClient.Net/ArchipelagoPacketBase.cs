@@ -17,7 +17,7 @@ namespace Archipelago.MultiClient.Net
         public abstract ArchipelagoPacketType PacketType { get; }
 
         /// <summary>
-        /// Retreive the basic jobject that was send by the server.
+        /// Retrieve the basic jobject that was send by the server.
         /// Its not recommended to use this however the JObject allows accessing properties are not available in the library
         /// </summary>
         /// <returns></returns>
