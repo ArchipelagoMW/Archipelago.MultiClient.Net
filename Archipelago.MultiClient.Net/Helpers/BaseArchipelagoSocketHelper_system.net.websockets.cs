@@ -23,10 +23,10 @@ namespace Archipelago.MultiClient.Net.Helpers
 		// ReSharper disable once StaticMemberInGenericType
 		static readonly ArchipelagoPacketConverter Converter = new ArchipelagoPacketConverter();
 
-        /// <summary>
-        /// Handler for recieved and sucsesfully parsed packages
-        /// </summary>
-        public event ArchipelagoSocketHelperDelagates.PacketReceivedHandler PacketReceived;
+		/// <summary>
+		/// Handler for recieved and sucsesfully parsed packages
+		/// </summary>
+		public event ArchipelagoSocketHelperDelagates.PacketReceivedHandler PacketReceived;
 		/// <summary>
 		/// Handler for packets published to the websocket, called before the packet is handled by the server
 		/// </summary>
@@ -89,6 +89,8 @@ namespace Archipelago.MultiClient.Net.Helpers
                 }
 
                 OnMessageReceived(message);
+
+                await Task.Delay(20);
             }
         }
 
@@ -104,7 +106,9 @@ namespace Archipelago.MultiClient.Net.Helpers
                 {
                     OnError(e);
                 }
-            }
+
+                await Task.Delay(20);
+			}
         }
 
         async Task<string> ReadMessageAsync(byte[] buffer)
@@ -120,8 +124,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 		            {
 			            try
 			            {
-				            await Socket.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty,
-					            CancellationToken.None);
+				            await Socket.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, CancellationToken.None);
 			            }
 			            catch
 			            {
