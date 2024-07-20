@@ -2,6 +2,7 @@
 using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
 using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -26,6 +27,11 @@ namespace Archipelago.MultiClient.Net.Helpers
 	    /// A enumerable of PlayerInfo's for all players in the multiworld
 	    /// </summary>
 		IEnumerable<PlayerInfo> AllPlayers { get; }
+
+		/// <summary>
+		/// The player info for the currently connected player
+		/// </summary>
+		PlayerInfo ActivePlayer { get; }
 
 		/// <summary>
 		/// Returns the Alias corresponding to the provided player slot
@@ -88,6 +94,9 @@ namespace Archipelago.MultiClient.Net.Helpers
 
 	    /// <inheritdoc/>
 		public IEnumerable<PlayerInfo> AllPlayers => players.SelectMany(kvp => kvp.Value);
+
+		/// <inheritdoc/>
+		public PlayerInfo ActivePlayer => GetPlayerInfo(connectionInfo.Team, connectionInfo.Slot);
 
 	    /// <inheritdoc/>
 	    public PlayerInfo GetPlayerInfo(int team, int slot) =>
@@ -191,14 +200,15 @@ namespace Archipelago.MultiClient.Net.Helpers
 
 			foreach (var p in networkPlayers)
             {
-	            playerData[p.Team][p.Slot] = new PlayerInfo {
-		            Team = p.Team,
-		            Slot = p.Slot,
-		            Name = p.Name,
-		            Alias = p.Alias,
-		            Game = slotInfos?[p.Slot].Game,
-		            Groups = groups.Where(g => g.GroupMembers.Contains(p.Slot)).ToArray()
-	            };
+				playerData[p.Team][p.Slot] = new PlayerInfo {
+					Team = p.Team,
+					Slot = p.Slot,
+					Name = p.Name,
+					Alias = p.Alias,
+					Game = slotInfos?[p.Slot].Game,
+					Groups = groups.Where(g => g.GroupMembers.Contains(p.Slot)).ToArray(),
+					GroupMembers = slotInfos?[p.Slot].GroupMembers
+				};
             }
 
 			var allPlayers = new Dictionary<int, ReadOnlyCollection<PlayerInfo>>(playerData.Count);
@@ -254,20 +264,61 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// A array of groups this player is part of
         /// </summary>
         public NetworkSlot[] Groups { get; internal set; }
+		/// <summary>
+		/// If the slot is a group, an array of its member slots
+		/// </summary>
+		internal int[] GroupMembers { get; set; }
 
 		/// <summary>
 		/// Checks if the provided team and slot, are sharing any slot groups with this player
 		/// </summary>
 		/// <param name="team">The team to check</param>
 		/// <param name="slot">The slot to check</param>
-		/// <returns></returns>
+		/// <returns>Whether this player has any itemlinks in common with the specified player</returns>
+		[Obsolete]
         public bool IsSharingGroupWith(int team, int slot) => 
 			Team == team && Slot == slot || (Groups != null && Groups.Any(g => g.GroupMembers.Contains(slot)));
+
+		/// <summary>
+		/// If this player is a group, gets its members. Otherwise returns null.
+		/// </summary>
+		public IEnumerable<PlayerInfo> GetGroupMembers(IPlayerHelper playerHelper)
+		{
+			if (GroupMembers == null || GroupMembers.Length == 0)
+			{
+				return null;
+			}
+			return GroupMembers.Select(g => playerHelper.GetPlayerInfo(Team, g));
+		}
 
 		/// <summary>
 		/// Converts the PlayerInfo to the slot
 		/// </summary>
 		public static implicit operator int(PlayerInfo p) => p.Slot;
+
+		/// <inheritdoc/>
+		public static bool operator ==(PlayerInfo left, PlayerInfo right)
+		{
+			return EqualityComparer<PlayerInfo>.Default.Equals(left, right);
+		}
+
+		/// <inheritdoc/>
+		public static bool operator !=(PlayerInfo left, PlayerInfo right)
+		{
+			return !(left == right);
+		}
+
+		/// <inheritdoc/>
+		public override bool Equals(object obj) => obj is PlayerInfo info && Team == info.Team && Slot == info.Slot;
+
+		/// <inheritdoc/>
+		public override int GetHashCode()
+		{
+			var hashCode = -1713739875;
+			hashCode = hashCode * -1521134295 + Team.GetHashCode();
+			hashCode = hashCode * -1521134295 + Slot.GetHashCode();
+			return hashCode;
+		}
 
 		/// <summary>
 		/// Returns the Alias of the player
@@ -289,7 +340,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 		/// <param name="game">The game the player is playing</param>
 		/// <param name="groups">A array of groups this player is part of</param>
 		[JsonConstructor]
-		public PlayerInfo(int team, int slot, string name, string alias, string game, NetworkSlot[] groups)
+		public PlayerInfo(int team, int slot, string name, string alias, string game, NetworkSlot[] groups, int[] groupMembers)
 		{
 			Team = team;
 			Slot = slot;
@@ -297,6 +348,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 			Alias = alias;
 			Game = game;
 			Groups = groups;
+			GroupMembers = groupMembers;
 		}
 	}
 }

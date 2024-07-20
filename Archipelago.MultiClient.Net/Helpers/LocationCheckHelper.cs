@@ -325,7 +325,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 			                    item => item.Location,
 			                    item => {
 				                    var otherPlayer = players.GetPlayerInfo(item.Player) ?? new PlayerInfo();
-									return new ScoutedItemInfo(item, otherPlayer.Game, connectionInfoProvider.Game, itemInfoResolver, otherPlayer);
+									return new ScoutedItemInfo(item, otherPlayer.Game, connectionInfoProvider.Game, itemInfoResolver, players, otherPlayer);
 			                    });
 
 		                    locationInfoPacketCallbackTask.TrySetResult(items);
@@ -435,7 +435,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 		            item => item.Location,
 		            item => {
 			            var otherPlayer = players.GetPlayerInfo(item.Player) ?? new PlayerInfo();
-			            return new ScoutedItemInfo(item, otherPlayer.Game, connectionInfoProvider.Game, itemInfoResolver, otherPlayer);
+			            return new ScoutedItemInfo(item, otherPlayer.Game, connectionInfoProvider.Game, itemInfoResolver, players, otherPlayer);
 		            });
 	            callback?.Invoke(items);
 			};
