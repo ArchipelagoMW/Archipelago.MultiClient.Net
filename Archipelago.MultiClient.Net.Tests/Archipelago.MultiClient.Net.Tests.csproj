@@ -2,6 +2,7 @@
 	<PropertyGroup>
 		<TargetFrameworks>net47;net471;net472;net48</TargetFrameworks>
 		<IsPackable>false</IsPackable>
+		<LangVersion>latest</LangVersion>
 	</PropertyGroup>
 
 	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">

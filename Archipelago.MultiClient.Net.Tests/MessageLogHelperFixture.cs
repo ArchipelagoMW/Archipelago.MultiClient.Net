@@ -304,6 +304,7 @@ namespace Archipelago.MultiClient.Net.Tests
 		{
 			var socket = Substitute.For<IArchipelagoSocketHelper>();
 			var itemInfoResolver = Substitute.For<IItemInfoResolver>();
+			var connectionInfo = Substitute.For<IConnectionInfoProvider>();
 			itemInfoResolver.GetItemName(Arg.Any<long>(), Arg.Any<string>()).Returns(_ => null);
 			itemInfoResolver.GetLocationName(1000L, "Game3").Returns("ItemAtLocation1000InGame3");
 			var players = Substitute.For<IPlayerHelper>();
@@ -316,9 +317,7 @@ namespace Archipelago.MultiClient.Net.Tests
 				new PlayerInfo { Team = 0, Slot = 5, Game = "Game5" }
 			}));
 			players.GetPlayerInfo(Arg.Any<int>(), Arg.Any<int>()).Returns(x => players.Players[x.ArgAt<int>(0)][x.ArgAt<int>(1)]);
-			var connectionInfo = Substitute.For<IConnectionInfoProvider>();
-			connectionInfo.Team.Returns(0);
-			connectionInfo.Slot.Returns(5);
+			players.ActivePlayer.Returns(new PlayerInfo { Team = 0, Slot = 5 });
 
 			var sut = new MessageLogHelper(socket, itemInfoResolver, players, connectionInfo);
 
@@ -352,10 +351,10 @@ namespace Archipelago.MultiClient.Net.Tests
 			Assert.That(logMessage.Receiver.Slot, Is.EqualTo(5));
 			Assert.That(logMessage.Sender.Slot, Is.EqualTo(3));
 
-			Assert.That(logMessage.IsReceiverTheActivePlayer, Is.EqualTo(true));
-			Assert.That(logMessage.IsSenderTheActivePlayer, Is.EqualTo(false));
+			Assert.That(logMessage.IsReceiverTheActivePlayer, Is.True);
+			Assert.That(logMessage.IsSenderTheActivePlayer, Is.False);
 
-			Assert.That(logMessage.IsRelatedToActivePlayer, Is.EqualTo(true));
+			Assert.That(logMessage.IsRelatedToActivePlayer, Is.True);
 		}
 
 		[Test]
@@ -422,6 +421,7 @@ namespace Archipelago.MultiClient.Net.Tests
 		{
 			var socket = Substitute.For<IArchipelagoSocketHelper>();
 			var itemInfoResolver = Substitute.For<IItemInfoResolver>();
+			var connectionInfo = Substitute.For<IConnectionInfoProvider>();
 			itemInfoResolver.GetItemName(100L, "Game2").Returns("Item100FromGame3");
 			itemInfoResolver.GetLocationName(Arg.Any<long>(), Arg.Any<string>()).Returns(_ => null);
 			var players = Substitute.For<IPlayerHelper>();
@@ -434,9 +434,7 @@ namespace Archipelago.MultiClient.Net.Tests
 				new PlayerInfo { Team = 0, Slot = 5, Game = "Game5" }
 			}));
 			players.GetPlayerInfo(Arg.Any<int>(), Arg.Any<int>()).Returns(x => players.Players[x.ArgAt<int>(0)][x.ArgAt<int>(1)]);
-			var connectionInfo = Substitute.For<IConnectionInfoProvider>();
-			connectionInfo.Team.Returns(0);
-			connectionInfo.Slot.Returns(5);
+			players.ActivePlayer.Returns(new PlayerInfo { Team = 0, Slot = 5 });
 
 			var sut = new MessageLogHelper(socket, itemInfoResolver, players, connectionInfo);
 
@@ -471,12 +469,12 @@ namespace Archipelago.MultiClient.Net.Tests
 			Assert.That(logMessage.Receiver.Slot, Is.EqualTo(2));
 			Assert.That(logMessage.Sender.Slot, Is.EqualTo(3));
 
-			Assert.That(logMessage.IsReceiverTheActivePlayer, Is.EqualTo(false));
-			Assert.That(logMessage.IsSenderTheActivePlayer, Is.EqualTo(false));
+			Assert.That(logMessage.IsReceiverTheActivePlayer, Is.False);
+			Assert.That(logMessage.IsSenderTheActivePlayer, Is.False);
 
-			Assert.That(logMessage.IsRelatedToActivePlayer, Is.EqualTo(false));
+			Assert.That(logMessage.IsRelatedToActivePlayer, Is.False);
 
-			Assert.That(logMessage.IsFound, Is.EqualTo(true));
+			Assert.That(logMessage.IsFound, Is.True);
 		}
 
 		[Test]
@@ -484,18 +482,11 @@ namespace Archipelago.MultiClient.Net.Tests
 		{
 			var socket = Substitute.For<IArchipelagoSocketHelper>();
 			var itemInfoResolver = Substitute.For<IItemInfoResolver>();
+			var connectionInfo = Substitute.For<IConnectionInfoProvider>();
 			var players = Substitute.For<IPlayerHelper>();
 			players.GetPlayerAlias(5).Returns("LocalPlayer");
-			players.Players.Returns(GetPlayerCollection(new List<PlayerInfo> {
-				new PlayerInfo { Team = 0, Slot = 1 },
-				new PlayerInfo { Team = 0, Slot = 2 },
-				new PlayerInfo { Team = 0, Slot = 3 },
-				new PlayerInfo { Team = 0, Slot = 4 },
-				new PlayerInfo { Team = 0, Slot = 5 }
-			}));
-			var connectionInfo = Substitute.For<IConnectionInfoProvider>();
-			connectionInfo.Team.Returns(0);
-			connectionInfo.Slot.Returns(5);
+			players.GetPlayerInfo(0, 3).Returns(new PlayerInfo { Team = 0, Slot = 3 });
+			players.ActivePlayer.Returns(new PlayerInfo { Team = 0, Slot = 5 });
 
 			var sut = new MessageLogHelper(socket, itemInfoResolver, players, connectionInfo);
 
@@ -521,9 +512,9 @@ namespace Archipelago.MultiClient.Net.Tests
 
 			Assert.That(logMessage.Tags, Is.EquivalentTo(new[] { "TAG" }));
 
-			Assert.That(logMessage.IsActivePlayer, Is.EqualTo(false));
+			Assert.That(logMessage.IsActivePlayer, Is.False);
 
-			Assert.That(logMessage.IsRelatedToActivePlayer, Is.EqualTo(false));
+			Assert.That(logMessage.IsRelatedToActivePlayer, Is.False);
 		}
 
 		[Test]
@@ -531,18 +522,11 @@ namespace Archipelago.MultiClient.Net.Tests
 		{
 			var socket = Substitute.For<IArchipelagoSocketHelper>();
 			var itemInfoResolver = Substitute.For<IItemInfoResolver>();
+			var connectionInfo = Substitute.For<IConnectionInfoProvider>();
 			var players = Substitute.For<IPlayerHelper>();
 			players.GetPlayerAlias(5).Returns("LocalPlayer");
-			players.Players.Returns(GetPlayerCollection(new List<PlayerInfo> {
-				new PlayerInfo { Team = 0, Slot = 1 },
-				new PlayerInfo { Team = 0, Slot = 2 },
-				new PlayerInfo { Team = 0, Slot = 3 },
-				new PlayerInfo { Team = 0, Slot = 4 },
-				new PlayerInfo { Team = 0, Slot = 5 }
-			}));
-			var connectionInfo = Substitute.For<IConnectionInfoProvider>();
-			connectionInfo.Team.Returns(0);
-			connectionInfo.Slot.Returns(5);
+			players.GetPlayerInfo(0, 5).Returns(new PlayerInfo { Team = 0, Slot = 5 });
+			players.ActivePlayer.Returns(new PlayerInfo { Team = 0, Slot = 5 });
 
 			var sut = new MessageLogHelper(socket, itemInfoResolver, players, connectionInfo);
 
@@ -565,9 +549,9 @@ namespace Archipelago.MultiClient.Net.Tests
 			Assert.That(logMessage.Player.Team, Is.EqualTo(0));
 			Assert.That(logMessage.Player.Slot, Is.EqualTo(5));
 
-			Assert.That(logMessage.IsActivePlayer, Is.EqualTo(true));
+			Assert.That(logMessage.IsActivePlayer, Is.True);
 
-			Assert.That(logMessage.IsRelatedToActivePlayer, Is.EqualTo(true));
+			Assert.That(logMessage.IsRelatedToActivePlayer, Is.True);
 		}
 
 		[Test]
@@ -575,18 +559,19 @@ namespace Archipelago.MultiClient.Net.Tests
 		{
 			var socket = Substitute.For<IArchipelagoSocketHelper>();
 			var itemInfoResolver = Substitute.For<IItemInfoResolver>();
+			var connectionInfo = Substitute.For<IConnectionInfoProvider>();
 			var players = Substitute.For<IPlayerHelper>();
 			players.GetPlayerAlias(5).Returns("LocalPlayer");
-			players.Players.Returns(GetPlayerCollection(new List<PlayerInfo> {
-				new PlayerInfo { Team = 0, Slot = 1, Groups = new []{ new NetworkSlot { GroupMembers = new []{ 2,3,5 } } } },
-				new PlayerInfo { Team = 0, Slot = 2, Groups = new []{ new NetworkSlot { GroupMembers = new []{ 1,3,5 } } } },
-				new PlayerInfo { Team = 0, Slot = 3, Groups = new []{ new NetworkSlot { GroupMembers = new []{ 1,2,5 } } } },
-				new PlayerInfo { Team = 0, Slot = 4 },
-				new PlayerInfo { Team = 0, Slot = 5, Groups = new []{ new NetworkSlot { GroupMembers = new []{ 1,2,3 } } } }
-			}));
-			var connectionInfo = Substitute.For<IConnectionInfoProvider>();
-			connectionInfo.Team.Returns(0);
-			connectionInfo.Slot.Returns(5);
+			players.GetPlayerInfo(0, 2).Returns(new PlayerInfo 
+			{ 
+				Team = 0, Slot = 2, 
+				Groups = [new NetworkSlot { GroupMembers = [1, 3, 5] }] 
+			});
+			players.ActivePlayer.Returns(new PlayerInfo 
+			{ 
+				Team = 0, Slot = 5, 
+				Groups = [new NetworkSlot { GroupMembers = [1, 2, 3] }] 
+			});
 
 			var sut = new MessageLogHelper(socket, itemInfoResolver, players, connectionInfo);
 
@@ -596,7 +581,7 @@ namespace Archipelago.MultiClient.Net.Tests
 
 			var packet = new ChatPrintJsonPacket
 			{
-				Data = new[] { new JsonMessagePart { Text = "" } },
+				Data = [new JsonMessagePart { Text = "" }],
 				Team = 0,
 				Slot = 2,
 				Message = "Silly duplicated data",
@@ -610,9 +595,9 @@ namespace Archipelago.MultiClient.Net.Tests
 			Assert.That(logMessage.Player.Team, Is.EqualTo(0));
 			Assert.That(logMessage.Player.Slot, Is.EqualTo(2));
 
-			Assert.That(logMessage.IsActivePlayer, Is.EqualTo(false));
+			Assert.That(logMessage.IsActivePlayer, Is.False);
 
-			Assert.That(logMessage.IsRelatedToActivePlayer, Is.EqualTo(true));
+			Assert.That(logMessage.IsRelatedToActivePlayer, Is.False);
 
 			Assert.That(logMessage.Message, Is.EqualTo("Silly duplicated data"));
 		}
@@ -695,18 +680,11 @@ namespace Archipelago.MultiClient.Net.Tests
 		{
 			var socket = Substitute.For<IArchipelagoSocketHelper>();
 			var itemInfoResolver = Substitute.For<IItemInfoResolver>();
+			var connectionInfo = Substitute.For<IConnectionInfoProvider>();
 			var players = Substitute.For<IPlayerHelper>();
 			players.GetPlayerAlias(5).Returns("LocalPlayer");
-			players.Players.Returns(GetPlayerCollection(new List<PlayerInfo> {
-				new PlayerInfo { Team = 0, Slot = 1 },
-				new PlayerInfo { Team = 0, Slot = 2 },
-				new PlayerInfo { Team = 0, Slot = 3 },
-				new PlayerInfo { Team = 0, Slot = 4 },
-				new PlayerInfo { Team = 0, Slot = 5 }
-			}));
-			var connectionInfo = Substitute.For<IConnectionInfoProvider>();
-			connectionInfo.Team.Returns(0);
-			connectionInfo.Slot.Returns(5);
+			players.GetPlayerInfo(0, 3).Returns(new PlayerInfo { Team = 0, Slot = 3 });
+			players.ActivePlayer.Returns(new PlayerInfo { Team = 0, Slot = 5 });
 
 			var sut = new MessageLogHelper(socket, itemInfoResolver, players, connectionInfo);
 
@@ -732,9 +710,9 @@ namespace Archipelago.MultiClient.Net.Tests
 
 			Assert.That(logMessage.Tags, Is.EquivalentTo(new[] { "TAG", "TAG2" }));
 
-			Assert.That(logMessage.IsActivePlayer, Is.EqualTo(false));
+			Assert.That(logMessage.IsActivePlayer, Is.False);
 
-			Assert.That(logMessage.IsRelatedToActivePlayer, Is.EqualTo(false));
+			Assert.That(logMessage.IsRelatedToActivePlayer, Is.False);
 		}
 
 		[Test]
@@ -812,18 +790,11 @@ namespace Archipelago.MultiClient.Net.Tests
 		{
 			var socket = Substitute.For<IArchipelagoSocketHelper>();
 			var itemInfoResolver = Substitute.For<IItemInfoResolver>();
+			var connectionInfo = Substitute.For<IConnectionInfoProvider>();
 			var players = Substitute.For<IPlayerHelper>();
 			players.GetPlayerAlias(5).Returns("LocalPlayer");
-			players.Players.Returns(GetPlayerCollection(new List<PlayerInfo> {
-				new PlayerInfo { Team = 0, Slot = 1 },
-				new PlayerInfo { Team = 0, Slot = 2 },
-				new PlayerInfo { Team = 0, Slot = 3 },
-				new PlayerInfo { Team = 0, Slot = 4 },
-				new PlayerInfo { Team = 0, Slot = 5 }
-			}));
-			var connectionInfo = Substitute.For<IConnectionInfoProvider>();
-			connectionInfo.Team.Returns(0);
-			connectionInfo.Slot.Returns(5);
+			players.GetPlayerInfo(0, 3).Returns(new PlayerInfo { Team = 0, Slot = 3 });
+			players.ActivePlayer.Returns(new PlayerInfo { Team = 0, Slot = 5 });
 
 			var sut = new MessageLogHelper(socket, itemInfoResolver, players, connectionInfo);
 
@@ -856,18 +827,11 @@ namespace Archipelago.MultiClient.Net.Tests
 		{
 			var socket = Substitute.For<IArchipelagoSocketHelper>();
 			var itemInfoResolver = Substitute.For<IItemInfoResolver>();
+			var connectionInfo = Substitute.For<IConnectionInfoProvider>();
 			var players = Substitute.For<IPlayerHelper>();
 			players.GetPlayerAlias(5).Returns("LocalPlayer");
-			players.Players.Returns(GetPlayerCollection(new List<PlayerInfo> {
-				new PlayerInfo { Team = 0, Slot = 1 },
-				new PlayerInfo { Team = 0, Slot = 2 },
-				new PlayerInfo { Team = 0, Slot = 3 },
-				new PlayerInfo { Team = 0, Slot = 4 },
-				new PlayerInfo { Team = 0, Slot = 5 }
-			}));
-			var connectionInfo = Substitute.For<IConnectionInfoProvider>();
-			connectionInfo.Team.Returns(0);
-			connectionInfo.Slot.Returns(5);
+			players.GetPlayerInfo(0, 3).Returns(new PlayerInfo { Team = 0, Slot = 3 });
+			players.ActivePlayer.Returns(new PlayerInfo { Team = 0, Slot = 5 });
 
 			var sut = new MessageLogHelper(socket, itemInfoResolver, players, connectionInfo);
 
@@ -890,9 +854,9 @@ namespace Archipelago.MultiClient.Net.Tests
 			Assert.That(logMessage.Player.Team, Is.EqualTo(0));
 			Assert.That(logMessage.Player.Slot, Is.EqualTo(3));
 
-			Assert.That(logMessage.IsActivePlayer, Is.EqualTo(false));
+			Assert.That(logMessage.IsActivePlayer, Is.False);
 
-			Assert.That(logMessage.IsRelatedToActivePlayer, Is.EqualTo(false));
+			Assert.That(logMessage.IsRelatedToActivePlayer, Is.False);
 		}
 
 		[Test]
@@ -900,18 +864,11 @@ namespace Archipelago.MultiClient.Net.Tests
 		{
 			var socket = Substitute.For<IArchipelagoSocketHelper>();
 			var itemInfoResolver = Substitute.For<IItemInfoResolver>();
+			var connectionInfo = Substitute.For<IConnectionInfoProvider>();
 			var players = Substitute.For<IPlayerHelper>();
 			players.GetPlayerAlias(5).Returns("LocalPlayer");
-			players.Players.Returns(GetPlayerCollection(new List<PlayerInfo> {
-				new PlayerInfo { Team = 0, Slot = 1 },
-				new PlayerInfo { Team = 0, Slot = 2 },
-				new PlayerInfo { Team = 0, Slot = 3 },
-				new PlayerInfo { Team = 0, Slot = 4 },
-				new PlayerInfo { Team = 0, Slot = 5 }
-			}));
-			var connectionInfo = Substitute.For<IConnectionInfoProvider>();
-			connectionInfo.Team.Returns(0);
-			connectionInfo.Slot.Returns(5);
+			players.GetPlayerInfo(0, 3).Returns(new PlayerInfo { Team = 0, Slot = 3 });
+			players.ActivePlayer.Returns(new PlayerInfo { Team = 0, Slot = 5 });
 
 			var sut = new MessageLogHelper(socket, itemInfoResolver, players, connectionInfo);
 
@@ -934,9 +891,9 @@ namespace Archipelago.MultiClient.Net.Tests
 			Assert.That(logMessage.Player.Team, Is.EqualTo(0));
 			Assert.That(logMessage.Player.Slot, Is.EqualTo(3));
 
-			Assert.That(logMessage.IsActivePlayer, Is.EqualTo(false));
+			Assert.That(logMessage.IsActivePlayer, Is.False);
 
-			Assert.That(logMessage.IsRelatedToActivePlayer, Is.EqualTo(false));
+			Assert.That(logMessage.IsRelatedToActivePlayer, Is.False);
 		}
 		
 		[Test]
@@ -967,11 +924,116 @@ namespace Archipelago.MultiClient.Net.Tests
 	        Assert.That(logMessage.RemainingSeconds, Is.EqualTo(8));
         }
 
+		[Test]
+		public void PlayerSpecificLogMessage_for_group_should_be_related_to_active_player()
+		{
+			var socket = Substitute.For<IArchipelagoSocketHelper>();
+			var itemInfoResolver = Substitute.For<IItemInfoResolver>();
+			var connectionInfo = Substitute.For<IConnectionInfoProvider>();
+			var players = Substitute.For<IPlayerHelper>();
+			players.ActivePlayer.Returns(new PlayerInfo { Team = 0, Slot = 5 });
+			players.GetPlayerInfo(Arg.Any<int>(), Arg.Any<int>()).Returns(x => new PlayerInfo { Team = x.ArgAt<int>(0), Slot = x.ArgAt<int>(1) });
+			players.GetPlayerInfo(0, 3).Returns(new PlayerInfo { Team = 0, Slot = 3, GroupMembers = [1, 5] });
+
+			var sut = new MessageLogHelper(socket, itemInfoResolver, players, connectionInfo);
+
+			CollectLogMessage logMessage = null;
+			sut.OnMessageReceived += message => logMessage = message as CollectLogMessage;
+
+			var packet = new CollectPrintJsonPacket
+			{
+				Data = [new JsonMessagePart { Text = "" }],
+				Team = 0,
+				Slot = 3,
+				MessageType = JsonMessageType.Collect
+			};
+
+			socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(packet);
+
+			Assert.That(logMessage, Is.Not.Null);
+			Assert.That(logMessage.IsActivePlayer, Is.False);
+			Assert.That(logMessage.IsRelatedToActivePlayer, Is.True);
+		}
+
+		[Test]
+		public void ItemSendLogMessage_for_group_sender_should_be_related_to_active_player()
+		{
+			var socket = Substitute.For<IArchipelagoSocketHelper>();
+			var itemInfoResolver = Substitute.For<IItemInfoResolver>();
+			var connectionInfo = Substitute.For<IConnectionInfoProvider>();
+			var players = Substitute.For<IPlayerHelper>();
+			players.ActivePlayer.Returns(new PlayerInfo { Team = 0, Slot = 5 });
+			players.GetPlayerInfo(Arg.Any<int>(), Arg.Any<int>()).Returns(x => new PlayerInfo { Team = x.ArgAt<int>(0), Slot = x.ArgAt<int>(1) });
+			players.GetPlayerInfo(0, 3).Returns(new PlayerInfo { Team = 0, Slot = 3, GroupMembers = [1, 5] });
+
+			var sut = new MessageLogHelper(socket, itemInfoResolver, players, connectionInfo);
+
+			ItemSendLogMessage logMessage = null;
+			sut.OnMessageReceived += message => logMessage = message as ItemSendLogMessage;
+
+			var packet = new ItemPrintJsonPacket
+			{
+				Data = [new JsonMessagePart { Text = "" }],
+				ReceivingPlayer = 1,
+				Item = new NetworkItem
+				{
+					Player = 3
+				},
+				MessageType = JsonMessageType.ItemSend
+			};
+
+			socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(packet);
+
+			Assert.That(logMessage, Is.Not.Null);
+			Assert.That(logMessage.Sender.Slot, Is.EqualTo(3));
+			Assert.That(logMessage.Receiver.Slot, Is.EqualTo(1));
+			Assert.That(logMessage.IsSenderTheActivePlayer, Is.False);
+			Assert.That(logMessage.IsReceiverTheActivePlayer, Is.False);
+			Assert.That(logMessage.IsRelatedToActivePlayer, Is.True);
+		}
+
+		[Test]
+		public void ItemSendLogMessage_for_group_receiver_should_be_related_to_active_player()
+		{
+			var socket = Substitute.For<IArchipelagoSocketHelper>();
+			var itemInfoResolver = Substitute.For<IItemInfoResolver>();
+			var connectionInfo = Substitute.For<IConnectionInfoProvider>();
+			var players = Substitute.For<IPlayerHelper>();
+			players.ActivePlayer.Returns(new PlayerInfo { Team = 0, Slot = 5 });
+			players.GetPlayerInfo(Arg.Any<int>(), Arg.Any<int>()).Returns(x => new PlayerInfo { Team = x.ArgAt<int>(0), Slot = x.ArgAt<int>(1) });
+			players.GetPlayerInfo(0, 3).Returns(new PlayerInfo { Team = 0, Slot = 3, GroupMembers = [1, 5] });
+
+			var sut = new MessageLogHelper(socket, itemInfoResolver, players, connectionInfo);
+
+			ItemSendLogMessage logMessage = null;
+			sut.OnMessageReceived += message => logMessage = message as ItemSendLogMessage;
+
+			var packet = new ItemPrintJsonPacket
+			{
+				Data = [new JsonMessagePart { Text = "" }],
+				ReceivingPlayer = 3,
+				Item = new NetworkItem
+				{
+					Player = 1
+				},
+				MessageType = JsonMessageType.ItemSend
+			};
+
+			socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(packet);
+
+			Assert.That(logMessage, Is.Not.Null);
+			Assert.That(logMessage.Sender.Slot, Is.EqualTo(1));
+			Assert.That(logMessage.Receiver.Slot, Is.EqualTo(3));
+			Assert.That(logMessage.IsSenderTheActivePlayer, Is.False);
+			Assert.That(logMessage.IsReceiverTheActivePlayer, Is.False);
+			Assert.That(logMessage.IsRelatedToActivePlayer, Is.True);
+		}
+
 #if NET471 || NET472
 	    static Dictionary<int, ReadOnlyCollection<PlayerInfo>> GetPlayerCollection(IList<PlayerInfo> playerInfos) => 
 		    new Dictionary<int, ReadOnlyCollection<PlayerInfo>>(
 #else
-	    static ReadOnlyDictionary<int, ReadOnlyCollection<PlayerInfo>> GetPlayerCollection(IList<PlayerInfo> playerInfos) =>
+		static ReadOnlyDictionary<int, ReadOnlyCollection<PlayerInfo>> GetPlayerCollection(IList<PlayerInfo> playerInfos) =>
 		    new ReadOnlyDictionary<int, ReadOnlyCollection<PlayerInfo>>(
 #endif
 				new Dictionary<int, ReadOnlyCollection<PlayerInfo>> { {

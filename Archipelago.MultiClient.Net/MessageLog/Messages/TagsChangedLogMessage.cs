@@ -16,8 +16,8 @@ namespace Archipelago.MultiClient.Net.MessageLog.Messages
 		public string[] Tags { get; }
 
 		internal TagsChangedLogMessage(MessagePart[] parts,
-			IPlayerHelper players, IConnectionInfoProvider connectionInfo, int team, int slot, string[] tags)
-			: base(parts, players, connectionInfo, team, slot)
+			IPlayerHelper players, int team, int slot, string[] tags)
+			: base(parts, players, team, slot)
 		{
 			Tags = tags;
 		}

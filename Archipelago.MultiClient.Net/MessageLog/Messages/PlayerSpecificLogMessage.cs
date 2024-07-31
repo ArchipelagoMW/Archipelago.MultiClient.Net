@@ -1,5 +1,6 @@
 ﻿using Archipelago.MultiClient.Net.Helpers;
 using Archipelago.MultiClient.Net.MessageLog.Parts;
+using System.Linq;
 
 namespace Archipelago.MultiClient.Net.MessageLog.Messages
 {
@@ -27,18 +28,13 @@ namespace Archipelago.MultiClient.Net.MessageLog.Messages
 		public bool IsRelatedToActivePlayer { get; }
 
 		internal PlayerSpecificLogMessage(MessagePart[] parts, 
-			IPlayerHelper players, IConnectionInfoProvider connectionInfo, int team, int slot)
+			IPlayerHelper players, int team, int slot)
 			: base(parts)
 		{
-			var playerList = players.Players;
-
-			IsActivePlayer = connectionInfo.Team == team && connectionInfo.Slot == slot;
-
-			Player = playerList.Count > team && playerList[team].Count > slot
-				? playerList[team][slot]
-				: new PlayerInfo();
-
-			IsRelatedToActivePlayer = IsActivePlayer || Player.IsSharingGroupWith(connectionInfo.Team, connectionInfo.Slot);
+			Player = players.GetPlayerInfo(team, slot) ?? new PlayerInfo();
+			IsActivePlayer = Player == players.ActivePlayer;
+			IsRelatedToActivePlayer = IsActivePlayer
+				|| (Player?.GetGroupMembers(players)?.Contains(players.ActivePlayer) ?? false);
 		}
 	}
 }
