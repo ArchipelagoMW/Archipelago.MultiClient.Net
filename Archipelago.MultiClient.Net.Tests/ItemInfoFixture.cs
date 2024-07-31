@@ -200,15 +200,16 @@ namespace Archipelago.MultiClient.Net.Tests
 			}
 		}
 
+		[Test]
 		public void Scout_should_be_related_when_player_is_active_player()
 		{
-			PlayerInfo activePlayer = new PlayerInfo(1, 1, "Me", "Myself", "Hollow Knight", [], []);
+			var activePlayer = new PlayerInfo(1, 1, "Me", "Myself", "Hollow Knight", [], []);
 
-			IItemInfoResolver itemInfoResolver = Substitute.For<IItemInfoResolver>();
-			IPlayerHelper playerHelper = Substitute.For<IPlayerHelper>();
+			var itemInfoResolver = Substitute.For<IItemInfoResolver>();
+			var playerHelper = Substitute.For<IPlayerHelper>();
 			playerHelper.ActivePlayer.Returns(activePlayer);
 
-			ScoutedItemInfo scoutedItem = new ScoutedItemInfo(new NetworkItem
+			var scoutedItem = new ScoutedItemInfo(new NetworkItem
 			{
 				Flags = ItemFlags.None,
 				Item = 10,
@@ -219,58 +220,62 @@ namespace Archipelago.MultiClient.Net.Tests
 			Assert.That(scoutedItem.IsRelatedToActivePlayer, Is.True);
 		}
 
+		[Test]
 		public void Scout_should_be_related_when_player_is_relevant_group()
 		{
-			NetworkSlot networkGroup = new NetworkSlot
+			var networkGroup = new NetworkSlot
 			{
 				Game = "Hollow Knight",
 				Name = "Everygrubby",
 				Type = SlotType.Group,
 				GroupMembers = [1, 2]
 			};
-			PlayerInfo activePlayer = new PlayerInfo(1, 1, "Me", "Myself", "Hollow Knight", [networkGroup], []);
-			PlayerInfo group = new PlayerInfo(1, 3, "Everygrubby", "Everygrubby", "Hollow Knight", [], [1, 2]);
+			var activePlayer = new PlayerInfo(1, 1, "Me", "Myself", "Hollow Knight", [networkGroup], []);
+			var group = new PlayerInfo(1, 3, "Everygrubby", "Everygrubby", "Hollow Knight", [], [1, 2]);
 
-			IItemInfoResolver itemInfoResolver = Substitute.For<IItemInfoResolver>();
-			IPlayerHelper playerHelper = Substitute.For<IPlayerHelper>();
+			var itemInfoResolver = Substitute.For<IItemInfoResolver>();
+			var playerHelper = Substitute.For<IPlayerHelper>();
 			playerHelper.ActivePlayer.Returns(activePlayer);
-			playerHelper.GetPlayerInfo(1, 1).Returns(group);
+			playerHelper.GetPlayerInfo(1, 1).Returns(activePlayer);
+			playerHelper.GetPlayerInfo(1, 3).Returns(group);
 
-			ScoutedItemInfo scoutedItem = new ScoutedItemInfo(new NetworkItem
+			var scoutedItem = new ScoutedItemInfo(new NetworkItem
 			{
 				Flags = ItemFlags.None,
 				Item = 10,
 				Location = 20,
-				Player = 1
+				Player = 3
 			}, "Hollow Knight", "Hollow Knight", itemInfoResolver, playerHelper, group);
 
 			Assert.That(scoutedItem.IsRelatedToActivePlayer, Is.True);
 		}
 
+		[Test]
 		public void Scout_should_not_be_related_when_player_is_shared_itemlink()
 		{
-			NetworkSlot networkGroup = new NetworkSlot
+			var networkGroup = new NetworkSlot
 			{
 				Game = "Hollow Knight",
 				Name = "Everygrubby",
 				Type = SlotType.Group,
 				GroupMembers = [1, 2]
 			};
-			PlayerInfo activePlayer = new PlayerInfo(1, 1, "Me", "Myself", "Hollow Knight", [networkGroup], []);
-			PlayerInfo otherPlayer = new PlayerInfo(1, 2, "Other", "Other", "Hollow Knight", [networkGroup], []);
-			PlayerInfo group = new PlayerInfo(1, 3, "Everygrubby", "Everygrubby", "Hollow Knight", [], [1, 2]);
+			var activePlayer = new PlayerInfo(1, 1, "Me", "Myself", "Hollow Knight", [networkGroup], []);
+			var otherPlayer = new PlayerInfo(1, 2, "Other", "Other", "Hollow Knight", [networkGroup], []);
+			var group = new PlayerInfo(1, 3, "Everygrubby", "Everygrubby", "Hollow Knight", [], [1, 2]);
 
-			IItemInfoResolver itemInfoResolver = Substitute.For<IItemInfoResolver>();
-			IPlayerHelper playerHelper = Substitute.For<IPlayerHelper>();
+			var itemInfoResolver = Substitute.For<IItemInfoResolver>();
+			var playerHelper = Substitute.For<IPlayerHelper>();
 			playerHelper.ActivePlayer.Returns(activePlayer);
-			playerHelper.GetPlayerInfo(1, 1).Returns(group);
+			playerHelper.GetPlayerInfo(1, 2).Returns(group);
+			playerHelper.GetPlayerInfo(1, 3).Returns(group);
 
-			ScoutedItemInfo scoutedItem = new ScoutedItemInfo(new NetworkItem
+			var scoutedItem = new ScoutedItemInfo(new NetworkItem
 			{
 				Flags = ItemFlags.None,
 				Item = 10,
 				Location = 20,
-				Player = 1
+				Player = 2
 			}, "Hollow Knight", "Hollow Knight", itemInfoResolver, playerHelper, otherPlayer);
 
 			Assert.That(scoutedItem.IsRelatedToActivePlayer, Is.False);

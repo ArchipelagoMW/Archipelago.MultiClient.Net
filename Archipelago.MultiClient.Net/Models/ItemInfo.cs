@@ -119,7 +119,7 @@ namespace Archipelago.MultiClient.Net.Models
 			IPlayerHelper players, PlayerInfo player) 
 			: base(item, receiverGame, senderGame, itemInfoResolver, player)
 		{
-			PlayerInfo activePlayer = players.ActivePlayer;
+			var activePlayer = players.ActivePlayer;
 			IsRelatedToActivePlayer = player == activePlayer
 				|| (player?.GetGroupMembers(players)?.Contains(activePlayer) ?? false);
 		}

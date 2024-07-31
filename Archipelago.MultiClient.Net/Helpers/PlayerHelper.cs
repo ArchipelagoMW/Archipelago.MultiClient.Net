@@ -238,7 +238,7 @@ namespace Archipelago.MultiClient.Net.Helpers
     /// <summary>
     /// Information about a specific player
     /// </summary>
-    public class PlayerInfo
+    public class PlayerInfo : IEquatable<PlayerInfo>
     {
         /// <summary>
         /// The team of this player
@@ -282,12 +282,12 @@ namespace Archipelago.MultiClient.Net.Helpers
 		/// <summary>
 		/// If this player is a group, gets its members. Otherwise returns null.
 		/// </summary>
+		/// <returns>returns the players info's of members from a group slot, or null if this slot is not a group</returns>
 		public IEnumerable<PlayerInfo> GetGroupMembers(IPlayerHelper playerHelper)
 		{
 			if (GroupMembers == null || GroupMembers.Length == 0)
-			{
 				return null;
-			}
+
 			return GroupMembers.Select(g => playerHelper.GetPlayerInfo(Team, g));
 		}
 
@@ -296,29 +296,11 @@ namespace Archipelago.MultiClient.Net.Helpers
 		/// </summary>
 		public static implicit operator int(PlayerInfo p) => p.Slot;
 
-		/// <inheritdoc/>
-		public static bool operator ==(PlayerInfo left, PlayerInfo right)
-		{
-			return EqualityComparer<PlayerInfo>.Default.Equals(left, right);
-		}
+#pragma warning disable CS1591
+		public static bool operator ==(PlayerInfo lhs, PlayerInfo rhs) => lhs?.Equals(rhs) ?? rhs is null;
 
-		/// <inheritdoc/>
-		public static bool operator !=(PlayerInfo left, PlayerInfo right)
-		{
-			return !(left == right);
-		}
-
-		/// <inheritdoc/>
-		public override bool Equals(object obj) => obj is PlayerInfo info && Team == info.Team && Slot == info.Slot;
-
-		/// <inheritdoc/>
-		public override int GetHashCode()
-		{
-			var hashCode = -1713739875;
-			hashCode = hashCode * -1521134295 + Team.GetHashCode();
-			hashCode = hashCode * -1521134295 + Slot.GetHashCode();
-			return hashCode;
-		}
+		public static bool operator !=(PlayerInfo lhs, PlayerInfo rhs) => !(lhs == rhs);
+#pragma warning restore CS1591
 
 		/// <summary>
 		/// Returns the Alias of the player
@@ -338,7 +320,8 @@ namespace Archipelago.MultiClient.Net.Helpers
 		/// <param name="name">The name of that player</param>
 		/// <param name="alias">The alias of that player</param>
 		/// <param name="game">The game the player is playing</param>
-		/// <param name="groups">A array of groups this player is part of</param>
+		/// <param name="groups">An array of groups this player is part of</param>
+		/// <param name="groupMembers">An array of player slots that are is part of this player if its a group otherwise null</param>
 		[JsonConstructor]
 		public PlayerInfo(int team, int slot, string name, string alias, string game, NetworkSlot[] groups, int[] groupMembers)
 		{
@@ -350,5 +333,40 @@ namespace Archipelago.MultiClient.Net.Helpers
 			Groups = groups;
 			GroupMembers = groupMembers;
 		}
-	}
+
+		/// <summary>
+		/// Compares two PlayerInfo objects based on their team & slot
+		/// </summary>
+		/// <param name="other">a PlayerInfo object or null</param>
+		/// <returns>true if both objects point to the same team & slot, otherwise false</returns>
+		public bool Equals(PlayerInfo other)
+		{
+			if (ReferenceEquals(null, other)) return false;
+			if (ReferenceEquals(this, other)) return true;
+
+			return Team == other.Team && Slot == other.Slot;
+		}
+
+
+		/// <inheritdoc/>
+		public override bool Equals(object obj)
+		{
+			if (ReferenceEquals(null, obj)) return false;
+			if (ReferenceEquals(this, obj)) return true;
+			if (obj.GetType() != GetType()) return false;
+
+			return Equals((PlayerInfo)obj);
+		}
+
+		/// <inheritdoc/>
+		public override int GetHashCode()
+		{
+			unchecked
+			{
+				// ReSharper disable NonReadonlyMemberInGetHashCode
+				return (Team * 397) ^ Slot;
+				// ReSharper restore NonReadonlyMemberInGetHashCode
+			}
+		}
+    }
 }

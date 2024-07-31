@@ -34,7 +34,7 @@ namespace Archipelago.MultiClient.Net.MessageLog.Messages
 			Player = players.GetPlayerInfo(team, slot) ?? new PlayerInfo();
 			IsActivePlayer = Player == players.ActivePlayer;
 			IsRelatedToActivePlayer = IsActivePlayer
-				|| (Player?.GetGroupMembers(players)?.Contains(players.ActivePlayer) ?? false);
+				|| (Player.GetGroupMembers(players)?.Contains(players.ActivePlayer) ?? false);
 		}
 	}
 }
