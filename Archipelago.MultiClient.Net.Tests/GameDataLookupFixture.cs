@@ -36,6 +36,7 @@ namespace Archipelago.MultiClient.Net.Tests
 			Assert.That(sut.Items["Item2"], Is.EqualTo(100));
 			Assert.That(sut.Items["Item3"], Is.EqualTo(102));
 			Assert.That(sut.Items[100], Is.EqualTo("Item2"));
+			Assert.Throws<KeyNotFoundException>(() => _ = sut.Items[101]);
 			Assert.That(sut.Items[102], Is.EqualTo("Item3"));
 
 			Assert.That(sut.Locations["Location1"], Is.EqualTo(1000));
@@ -43,6 +44,7 @@ namespace Archipelago.MultiClient.Net.Tests
 			Assert.That(sut.Locations["Location3"], Is.EqualTo(1001));
 			Assert.That(sut.Locations[1000], Is.EqualTo("Location1"));
 			Assert.That(sut.Locations[1001], Is.EqualTo("Location3"));
+			Assert.Throws<KeyNotFoundException>(() => _ = sut.Locations[1002]);
 		}
 	}
 }
