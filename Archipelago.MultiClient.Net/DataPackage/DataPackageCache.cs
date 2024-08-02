@@ -90,9 +90,9 @@ namespace Archipelago.MultiClient.Net.DataPackage
 	        {
 		        if (packet.DataPackageChecksums != null
 				            && packet.DataPackageChecksums.TryGetValue(game, out var checksum)
-				            && FileSystemDataPackageProvider.TryGetDataPackage(game, checksum, out var gameData)
-				            && gameData.Checksum == checksum)
-					inMemoryCache[game] = new GameDataLookup(gameData);
+				            && FileSystemDataPackageProvider.TryGetDataPackage(game, checksum, out var cachedGameData)
+				            && cachedGameData.Checksum == checksum)
+					inMemoryCache[game] = new GameDataLookup(cachedGameData);
 				else
 			        gamesNeedingUpdating.Add(game);
 	        }
