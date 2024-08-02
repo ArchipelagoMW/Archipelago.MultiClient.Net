@@ -217,7 +217,7 @@ namespace Archipelago.MultiClient.Net.Tests
 				Player = 1
 			}, "Hollow Knight", "Hollow Knight", itemInfoResolver, playerHelper, activePlayer);
 
-			Assert.That(scoutedItem.IsRelatedToActivePlayer, Is.True);
+			Assert.That(scoutedItem.IsReceiverRelatedToActivePlayer, Is.True);
 		}
 
 		[Test]
@@ -247,7 +247,7 @@ namespace Archipelago.MultiClient.Net.Tests
 				Player = 3
 			}, "Hollow Knight", "Hollow Knight", itemInfoResolver, playerHelper, group);
 
-			Assert.That(scoutedItem.IsRelatedToActivePlayer, Is.True);
+			Assert.That(scoutedItem.IsReceiverRelatedToActivePlayer, Is.True);
 		}
 
 		[Test]
@@ -278,7 +278,7 @@ namespace Archipelago.MultiClient.Net.Tests
 				Player = 2
 			}, "Hollow Knight", "Hollow Knight", itemInfoResolver, playerHelper, otherPlayer);
 
-			Assert.That(scoutedItem.IsRelatedToActivePlayer, Is.False);
+			Assert.That(scoutedItem.IsReceiverRelatedToActivePlayer, Is.False);
 		}
 
 		static IArchipelagoSession CreateTestSession(bool scouted, string remotePlayerGame, string myGame, SerializableItemInfo itemInfo)

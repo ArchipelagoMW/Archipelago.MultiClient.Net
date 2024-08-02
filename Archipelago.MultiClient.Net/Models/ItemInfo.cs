@@ -1,7 +1,6 @@
 ﻿using Archipelago.MultiClient.Net.DataPackage;
 using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Helpers;
-using System.Linq;
 
 namespace Archipelago.MultiClient.Net.Models
 {
@@ -108,9 +107,9 @@ namespace Archipelago.MultiClient.Net.Models
 		public new PlayerInfo Player => base.Player;
 
 		/// <summary>
-		/// True if the player this message is concerning any slot groups (e.g. itemlinks) with the current connected player
+		/// True if the receiver is concerning any slot groups (e.g. itemlinks) with the current connected player
 		/// </summary>
-		public bool IsRelatedToActivePlayer { get; }
+		public bool IsReceiverRelatedToActivePlayer { get; }
 
 		/// <summary>
 		/// The constructor what else did you expect it to be
@@ -119,9 +118,7 @@ namespace Archipelago.MultiClient.Net.Models
 			IPlayerHelper players, PlayerInfo player) 
 			: base(item, receiverGame, senderGame, itemInfoResolver, player)
 		{
-			var activePlayer = players.ActivePlayer;
-			IsRelatedToActivePlayer = player == activePlayer
-				|| (player?.GetGroupMembers(players)?.Contains(activePlayer) ?? false);
+			IsReceiverRelatedToActivePlayer = (players.ActivePlayer ?? new PlayerInfo()).IsRelatedTo(player);
 		}
 	}
 }

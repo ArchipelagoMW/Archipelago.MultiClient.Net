@@ -360,17 +360,20 @@ namespace Archipelago.MultiClient.Net.Tests
 		[Test]
 		public void Should_preserve_extra_properties_on_ItemCheatPrintJsonPacket()
 		{
+			var playerColleciton = GetPlayerCollection(new List<PlayerInfo> {
+				new PlayerInfo { Team = 0, Slot = 1, Game = "Game1" },
+				new PlayerInfo { Team = 0, Slot = 2, Game = "Game2" },
+			});
+
 			var socket = Substitute.For<IArchipelagoSocketHelper>();
 			var itemInfoResolver = Substitute.For<IItemInfoResolver>();
 			itemInfoResolver.GetItemName(Arg.Any<long>(), Arg.Any<string>()).Returns(_ => null);
 			itemInfoResolver.GetLocationName(Arg.Any<long>(), Arg.Any<string>()).Returns(_ => null);
 			var players = Substitute.For<IPlayerHelper>();
 			players.GetPlayerAlias(2).Returns("LocalPlayer");
-			players.Players.Returns(GetPlayerCollection(new List<PlayerInfo> {
-				new PlayerInfo { Team = 0, Slot = 1, Game = "Game1" },
-				new PlayerInfo { Team = 0, Slot = 2, Game = "Game2" },
-			}));
+			players.Players.Returns(playerColleciton);
 			players.GetPlayerInfo(Arg.Any<int>(), Arg.Any<int>()).Returns(x => players.Players[x.ArgAt<int>(0)][x.ArgAt<int>(1)]);
+			players.ActivePlayer.Returns(playerColleciton[0][2]);
 			var connectionInfo = Substitute.For<IConnectionInfoProvider>();
 			connectionInfo.Team.Returns(0);
 			connectionInfo.Slot.Returns(2);

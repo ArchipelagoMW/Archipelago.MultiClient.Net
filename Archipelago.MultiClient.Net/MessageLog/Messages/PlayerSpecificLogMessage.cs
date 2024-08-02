@@ -1,6 +1,5 @@
 ﻿using Archipelago.MultiClient.Net.Helpers;
 using Archipelago.MultiClient.Net.MessageLog.Parts;
-using System.Linq;
 
 namespace Archipelago.MultiClient.Net.MessageLog.Messages
 {
@@ -12,6 +11,8 @@ namespace Archipelago.MultiClient.Net.MessageLog.Messages
 	/// </summary>
 	public abstract class PlayerSpecificLogMessage : LogMessage
 	{
+		PlayerInfo ActivePlayer { get; }
+
 		/// <summary>
 		/// The player information about the player this message is concerning
 		/// </summary>
@@ -20,21 +21,19 @@ namespace Archipelago.MultiClient.Net.MessageLog.Messages
 		/// <summary>
 		/// True if the player this message is concerning is the current connected player
 		/// </summary>
-		public bool IsActivePlayer { get; }
+		public bool IsActivePlayer => Player == ActivePlayer;
 
 		/// <summary>
 		/// True if the player this message is concerning any slot groups (e.g. itemlinks) with the current connected player
 		/// </summary>
-		public bool IsRelatedToActivePlayer { get; }
+		public bool IsRelatedToActivePlayer => ActivePlayer.IsRelatedTo(Player);
 
 		internal PlayerSpecificLogMessage(MessagePart[] parts, 
 			IPlayerHelper players, int team, int slot)
 			: base(parts)
 		{
+			ActivePlayer = players.ActivePlayer ?? new PlayerInfo();
 			Player = players.GetPlayerInfo(team, slot) ?? new PlayerInfo();
-			IsActivePlayer = Player == players.ActivePlayer;
-			IsRelatedToActivePlayer = IsActivePlayer
-				|| (Player.GetGroupMembers(players)?.Contains(players.ActivePlayer) ?? false);
 		}
 	}
 }

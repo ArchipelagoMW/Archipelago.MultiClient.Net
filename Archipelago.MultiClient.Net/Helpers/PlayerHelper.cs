@@ -292,6 +292,18 @@ namespace Archipelago.MultiClient.Net.Helpers
 		}
 
 		/// <summary>
+		/// True if this player is the same player, or if either player is a group (e.g. itemlinks) that contains the other player
+		/// </summary>
+		/// <param name="other"></param>
+		/// <returns></returns>
+		public bool IsRelatedTo(PlayerInfo other) => this == other 
+		    || (Team == other.Team 
+		        && (
+					other.GroupMembers != null && other.GroupMembers.Contains(this)
+					|| (GroupMembers != null && GroupMembers.Contains(other))
+				));
+
+		/// <summary>
 		/// Converts the PlayerInfo to the slot
 		/// </summary>
 		public static implicit operator int(PlayerInfo p) => p.Slot;

@@ -2,7 +2,6 @@
 using Archipelago.MultiClient.Net.Helpers;
 using Archipelago.MultiClient.Net.MessageLog.Parts;
 using Archipelago.MultiClient.Net.Models;
-using System.Linq;
 
 namespace Archipelago.MultiClient.Net.MessageLog.Messages
 {
@@ -15,6 +14,8 @@ namespace Archipelago.MultiClient.Net.MessageLog.Messages
 	/// </summary>
 	public class ItemSendLogMessage : LogMessage
 	{
+		PlayerInfo ActivePlayer { get; }
+
 		/// <summary>
 		/// The player who received the item
 		/// </summary>
@@ -28,17 +29,17 @@ namespace Archipelago.MultiClient.Net.MessageLog.Messages
 		/// <summary>
 		/// Checks if the Receiver is the current connected player
 		/// </summary>
-		public bool IsReceiverTheActivePlayer { get; }
+		public bool IsReceiverTheActivePlayer => Receiver == ActivePlayer;
 
 		/// <summary>
 		/// True if the Sender is the current connected player
 		/// </summary>
-		public bool IsSenderTheActivePlayer { get; }
+		public bool IsSenderTheActivePlayer => Sender == ActivePlayer;
 
 		/// <summary>
 		/// True if either the Receiver or Sender share any slot groups (e.g. itemlinks) with the current connected player
 		/// </summary>
-		public bool IsRelatedToActivePlayer { get; }
+		public bool IsRelatedToActivePlayer => ActivePlayer.IsRelatedTo(Receiver) || ActivePlayer.IsRelatedTo(Sender);
 
 		/// <summary>
 		/// The Item that was send
@@ -57,16 +58,10 @@ namespace Archipelago.MultiClient.Net.MessageLog.Messages
 			int receiver, int sender, NetworkItem item, int team,
 			IItemInfoResolver itemInfoResolver) : base(parts)
 		{
+			ActivePlayer = players.ActivePlayer ?? new PlayerInfo();
 			Receiver = players.GetPlayerInfo(team, receiver) ?? new PlayerInfo();
 			Sender = players.GetPlayerInfo(team, sender) ?? new PlayerInfo();
 			var itemPlayer = players.GetPlayerInfo(team, item.Player) ?? new PlayerInfo();
-
-			IsReceiverTheActivePlayer = Receiver == players.ActivePlayer;
-			IsSenderTheActivePlayer = Sender == players.ActivePlayer;
-			
-			IsRelatedToActivePlayer = IsReceiverTheActivePlayer || IsSenderTheActivePlayer
-				|| (Receiver?.GetGroupMembers(players)?.Contains(players.ActivePlayer) ?? false)
-				|| (Sender?.GetGroupMembers(players)?.Contains(players.ActivePlayer) ?? false);
 
 			Item = new ItemInfo(item, Receiver.Game, Sender.Game, itemInfoResolver, itemPlayer);
 		}
