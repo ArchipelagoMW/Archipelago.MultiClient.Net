@@ -203,5 +203,43 @@ namespace Archipelago.MultiClient.Net.Tests
             Assert.That(sut.Players.Count, Is.EqualTo(1));
             Assert.That(sut.Players[0].Count, Is.EqualTo(2));
 		}
+
+        [TestCase(-1, -1, null)]
+        [TestCase(-1, 0, null)]
+        [TestCase(-1, 1, null)]
+        [TestCase(-1, 2, null)]
+		[TestCase(0, -1, null)]
+		[TestCase(0, 0, "Server")]
+        [TestCase(0, 1, "Player 1")]
+		[TestCase(0, 2, null)]
+        [TestCase(1, -1, null)]
+		[TestCase(1, 0, null)]
+        [TestCase(1, 1, null)]
+        [TestCase(1, 2, null)]
+		public void GetPlayerInfo_should_not_crash_on_values_out_of_range(int team, int slot, string expectedPlayerNameOrNull)
+        {
+	        var socket = Substitute.For<IArchipelagoSocketHelper>();
+	        var connectionInfo = Substitute.For<IConnectionInfoProvider>();
+
+	        var sut = new PlayerHelper(socket, connectionInfo);
+
+	        var connectedPacket = new ConnectedPacket
+	        {
+		        Players = new[] {
+			        new NetworkPlayer { Name = "Player 1", Alias = "One", Team = 0, Slot = 1 }
+		        }
+	        };
+
+	        socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(connectedPacket);
+
+	        var player = new PlayerInfo();
+
+			Assert.DoesNotThrow(() => player = sut.GetPlayerInfo(team, slot));
+
+			if (expectedPlayerNameOrNull == null)
+				Assert.That(player, Is.Null);
+			else
+				Assert.That(player.Name, Is.EqualTo(expectedPlayerNameOrNull));
+		}
     }
 }

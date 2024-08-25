@@ -100,7 +100,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 
 	    /// <inheritdoc/>
 	    public PlayerInfo GetPlayerInfo(int team, int slot) =>
-		    players.Count > team && players[team].Count > slot
+		    team >= 0 && slot >= 0 && players.Count > team && players[team].Count > slot
 			    ? players[team][slot]
 			    : null;
 
