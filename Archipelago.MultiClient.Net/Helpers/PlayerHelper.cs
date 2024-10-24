@@ -291,6 +291,17 @@ namespace Archipelago.MultiClient.Net.Helpers
 			return GroupMembers.Select(g => playerHelper.GetPlayerInfo(Team, g));
 		}
 
+  		/// <summary>
+		/// If this player is a group, returns true.
+		/// </summary>
+		/// <returns>Returns whether the player is a group</returns>
+		public bool IsGroup()
+		{
+			if (GroupMembers != null && GroupMembers.Length > 0)
+				return true;
+    			return false;
+		}
+
 		/// <summary>
 		/// True if this player is the same player, or if either player is a group (e.g. itemlinks) that contains the other player
 		/// </summary>
