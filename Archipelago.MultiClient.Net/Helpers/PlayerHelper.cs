@@ -297,9 +297,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 		/// <returns>Returns whether the player is a group</returns>
 		public bool IsGroup()
 		{
-			if (GroupMembers != null && GroupMembers.Length > 0)
-				return true;
-    			return false;
+			return GroupMembers != null && GroupMembers.Length > 0;
 		}
 
 		/// <summary>
