@@ -292,13 +292,9 @@ namespace Archipelago.MultiClient.Net.Helpers
 		}
 
   		/// <summary>
-		/// If this player is a group, returns true.
+		/// Is true if the player is a group.
 		/// </summary>
-		/// <returns>Returns whether the player is a group</returns>
-		public bool IsGroup()
-		{
-			return GroupMembers != null && GroupMembers.Length > 0;
-		}
+		public bool IsGroup => GroupMembers != null && GroupMembers.Length > 0;
 
 		/// <summary>
 		/// True if this player is the same player, or if either player is a group (e.g. itemlinks) that contains the other player
