@@ -11,7 +11,7 @@ namespace Archipelago.MultiClient.Net.Enums
 		/// <summary>
 		/// Nothing special about this item
 		/// </summary>
-        None = 0,
+        	None = 0,
 		/// <summary>
 		/// Indicates the item can unlock logical advancement
 		/// </summary>
@@ -24,5 +24,9 @@ namespace Archipelago.MultiClient.Net.Enums
 		/// Indicates the item is a trap
 		/// </summary>
 		Trap = 1 << 2,
+		/// <summary>
+		/// Indicates an item is important and can unlock logical advancement
+		/// </summary>
+		ProgUseful = 0x3,
     }
 }
