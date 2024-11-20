@@ -1,5 +1,6 @@
 ﻿using Archipelago.MultiClient.Net.Helpers;
 using NUnit.Framework;
+using System;
 
 namespace Archipelago.MultiClient.Net.Tests
 {
@@ -49,6 +50,24 @@ namespace Archipelago.MultiClient.Net.Tests
 			Assert.That(PlayerA, Is.Not.EqualTo(PlayerC));
 			Assert.That(PlayerA, Is.Not.EqualTo(PlayerD));
 			Assert.That((PlayerInfo)null, Is.EqualTo(null));
+		}
+
+		[TestCase(null)]
+		[TestCase(new int[0])]
+		public void IsGroup_should_return_false_for_null_or_empty_group(int[] groupMembers)
+		{
+			var player = new PlayerInfo { GroupMembers = groupMembers };
+
+			Assert.IsFalse(player.IsGroup);
+		}
+
+		[TestCase(new []{1, 2})]
+		[TestCase(new[]{1})]
+		public void IsGroup_should_return_true_when_group_members_are_set(int[] groupMembers)
+		{
+			var player = new PlayerInfo { GroupMembers = groupMembers };
+
+			Assert.IsTrue(player.IsGroup);
 		}
 	}
 }

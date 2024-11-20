@@ -285,7 +285,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 		/// <returns>returns the players info's of members from a group slot, or null if this slot is not a group</returns>
 		public IEnumerable<PlayerInfo> GetGroupMembers(IPlayerHelper playerHelper)
 		{
-			if (GroupMembers == null || GroupMembers.Length == 0)
+			if (!IsGroup)
 				return null;
 
 			return GroupMembers.Select(g => playerHelper.GetPlayerInfo(Team, g));
@@ -330,7 +330,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 		public PlayerInfo() {}
 
 		/// <summary>
-		/// Creates and PlayerInfo object, used by json deserialization
+		/// Creates an PlayerInfo object, used by json deserialization
 		/// </summary>
 		/// <param name="team">The team of this player</param>
 		/// <param name="slot">The slot of this player</param>
