@@ -183,6 +183,20 @@ namespace Archipelago.MultiClient.Net.Helpers
 		/// <param name="team">the team id of the player to request the status for, defaults to the current player's team if left empty</param>
 		void TrackClientStatus(Action<ArchipelagoClientState> onStatusUpdated,
 			bool retrieveCurrentClientStatus = true, int? slot = null, int? team = null);
+
+#if NET35
+		/// <summary>
+		/// Retrieves the server's race mode setting. 0 for disabled, 1 for enabled
+		/// </summary>
+		/// <param name="onRaceModeRetrieved"> the method to call with the retrieved race mode setting</param>
+		void GetRaceModeAsync(Action<int> onRaceModeRetrieved);
+#else
+		/// <summary>
+		/// Retrieves the server's race mode setting. 0 for disabled, 1 for enabled
+		/// </summary>
+		/// <param name="onRaceModeRetrieved"> the method to call with the retrieved race mode setting</param>
+		Task<int> GetRaceModeAsync();
+#endif
 	}
 
 	public partial class DataStorageHelper : IDataStorageWrapper
@@ -197,6 +211,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 			this[Scope.ReadOnly, $"location_name_groups_{game ?? connectionInfoProvider.Game}"];
 		DataStorageElement GetClientStatusElement(int? slot = null, int? team = null) =>
 			this[Scope.ReadOnly, $"client_status_{team ?? connectionInfoProvider.Team}_{slot ?? connectionInfoProvider.Slot}"];
+		DataStorageElement GetRaceModeElement() => this[Scope.ReadOnly, "race_mode"];
 
 		/// <inheritdoc />
 		public Hint[] GetHints(int? slot = null, int? team = null) => 
@@ -302,5 +317,15 @@ namespace Archipelago.MultiClient.Net.Helpers
 				GetClientStatusAsync(slot, team).ContinueWith(t => onStatusUpdated(t.Result));
 #endif
 		}
+		
+#if NET35
+		/// <inheritdoc />
+		public void GetRaceModeAsync(Action<int> onRaceModeRetrieved) =>
+			GetRaceModeElement().GetAsync(t => onRaceModeRetrieved(t.ToObject<int?>() ?? 0));
+#else
+		/// <inheritdoc />
+		public Task<int> GetRaceModeAsync() => GetRaceModeElement().GetAsync<int?>()
+			.ContinueWith(t => t.Result ?? 0);
+#endif
 	}
 }
