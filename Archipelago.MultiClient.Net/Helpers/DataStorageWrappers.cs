@@ -184,18 +184,24 @@ namespace Archipelago.MultiClient.Net.Helpers
 		void TrackClientStatus(Action<ArchipelagoClientState> onStatusUpdated,
 			bool retrieveCurrentClientStatus = true, int? slot = null, int? team = null);
 
+		/// <summary>
+		/// Retrieves the server's race mode setting. false for disabled or unavailable, true for enabled
+		/// </summary>
+		/// <returns>The race mode setting. false for disabled or unavailable, true for enabled</returns>
+		bool GetRaceMode();
+
 #if NET35
 		/// <summary>
-		/// Retrieves the server's race mode setting. 0 for disabled, 1 for enabled
+		/// Retrieves the server's race mode setting. false for disabled or unavailable, true for enabled
 		/// </summary>
 		/// <param name="onRaceModeRetrieved"> the method to call with the retrieved race mode setting</param>
-		void GetRaceModeAsync(Action<int> onRaceModeRetrieved);
+		void GetRaceModeAsync(Action<bool> onRaceModeRetrieved);
 #else
 		/// <summary>
-		/// Retrieves the server's race mode setting. 0 for disabled, 1 for enabled
+		/// Retrieves the server's race mode setting. false for disabled or unavailable, true for enabled
 		/// </summary>
-		/// <param name="onRaceModeRetrieved"> the method to call with the retrieved race mode setting</param>
-		Task<int> GetRaceModeAsync();
+		/// <returns>The race mode setting. false for disabled or unavailable, true for enabled</returns>
+		Task<bool> GetRaceModeAsync();
 #endif
 	}
 
@@ -317,15 +323,18 @@ namespace Archipelago.MultiClient.Net.Helpers
 				GetClientStatusAsync(slot, team).ContinueWith(t => onStatusUpdated(t.Result));
 #endif
 		}
-		
+
+		/// <inheritdoc />
+		public bool GetRaceMode() =>
+			(GetRaceModeElement().To<int?>() ?? 0) > 0;
 #if NET35
 		/// <inheritdoc />
-		public void GetRaceModeAsync(Action<int> onRaceModeRetrieved) =>
-			GetRaceModeElement().GetAsync(t => onRaceModeRetrieved(t.ToObject<int?>() ?? 0));
+		public void GetRaceModeAsync(Action<bool> onRaceModeRetrieved) =>
+			GetRaceModeElement().GetAsync(t => onRaceModeRetrieved((t.ToObject<int?>() ?? 0) > 0));
 #else
 		/// <inheritdoc />
-		public Task<int> GetRaceModeAsync() => GetRaceModeElement().GetAsync<int?>()
-			.ContinueWith(t => t.Result ?? 0);
+		public Task<bool> GetRaceModeAsync() => GetRaceModeElement().GetAsync<int?>()
+			.ContinueWith(t => (t.Result ?? 0) > 0);
 #endif
 	}
 }
