@@ -950,8 +950,6 @@ namespace Archipelago.MultiClient.Net.Tests
 		{
 			var socket = Substitute.For<IArchipelagoSocketHelper>();
 			var connectionInfo = Substitute.For<IConnectionInfoProvider>();
-			//connectionInfo.Slot.Returns(8);
-			//connectionInfo.Team.Returns(2);
 
 			var sut = new DataStorageHelper(socket, connectionInfo);
 
@@ -971,8 +969,6 @@ namespace Archipelago.MultiClient.Net.Tests
 		{
 			var socket = Substitute.For<IArchipelagoSocketHelper>();
 			var connectionInfo = Substitute.For<IConnectionInfoProvider>();
-			//connectionInfo.Slot.Returns(7);
-			//connectionInfo.Team.Returns(3);
 
 			var sut = new DataStorageHelper(socket, connectionInfo);
 
