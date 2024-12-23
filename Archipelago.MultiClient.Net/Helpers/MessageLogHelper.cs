@@ -149,7 +149,8 @@ namespace Archipelago.MultiClient.Net.Helpers
                         Type = part.Type,
                         Color = part.Color,
                         Flags = part.Flags,
-                        Player = part.Player
+                        Player = part.Player,
+						HintStatus = part.HintStatus
                     });
 
                     if (i < (lines.Length -1))
@@ -303,6 +304,8 @@ namespace Archipelago.MultiClient.Net.Helpers
                     return new LocationMessagePart(players, itemInfoResolver, part);
                 case JsonMessagePartType.EntranceName:
                     return new EntranceMessagePart(part);
+				case JsonMessagePartType.HintStatus:
+					return new HintStatusMessagePart(part);
                 default:
                     return new MessagePart(MessagePartType.Text, part);
             }

@@ -73,5 +73,22 @@ namespace Archipelago.MultiClient.Net.Tests
 			Assert.That(packets.OfType<RetrievedPacket>().Count(), Is.EqualTo(1));
 			Assert.That(packets.OfType<LocationInfoPacket>().Count(), Is.EqualTo(1));
 		}
+
+		[Test, Ignore("The lib currently not future compatible as it does not handle new types it does not know")]
+		public void Should_not_throw_on_unknown_message_part_type()
+		{
+			const string message =
+				@"[{""cmd"":""PrintJSON"",""data"":[{""text"":""[Hint]: ""},{""text"":""(some new type of element)"",""new_value"":1337,""type"":""other_type""}],""type"":""Hint"",""receiving"":1,""item"":{""item"":1337116,""location"":1337109,""player"":2,""flags"":1,""class"":""NetworkItem""},""found"":false}]";
+
+			List<ArchipelagoPacketBase> packets = null;
+			Assert.DoesNotThrow(() =>
+			{
+				packets = JsonConvert.DeserializeObject<List<ArchipelagoPacketBase>>(message, Converter);
+			});
+
+			Assert.That(packets, Is.Not.Null);
+			Assert.That(packets.Count, Is.EqualTo(1));
+			Assert.That(packets.OfType<HintPrintJsonPacket>().Count(), Is.EqualTo(1));
+		}
 	}
 }

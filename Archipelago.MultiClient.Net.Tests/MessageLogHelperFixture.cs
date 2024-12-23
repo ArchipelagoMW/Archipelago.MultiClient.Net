@@ -46,13 +46,14 @@ namespace Archipelago.MultiClient.Net.Tests
                     new JsonMessagePart { Type = JsonMessagePartType.LocationName, Text = "Text7" },
                     new JsonMessagePart { Type = JsonMessagePartType.PlayerId, Text = "8" },
                     new JsonMessagePart { Type = JsonMessagePartType.PlayerName, Text = "Text9" },
-                    new JsonMessagePart { Type = JsonMessagePartType.EntranceName, Text = "Text10" }
-                }
+                    new JsonMessagePart { Type = JsonMessagePartType.EntranceName, Text = "Text10" },
+                    new JsonMessagePart { Type = JsonMessagePartType.HintStatus, Text = "Text11", HintStatus = HintStatus.Avoid }
+				}
             };
 
             socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(packet);
 
-            Assert.That(toStringResult, Is.EqualTo("Text1Text2Text3Text4Text5Text6Text7Text8Text9Text10"));
+            Assert.That(toStringResult, Is.EqualTo("Text1Text2Text3Text4Text5Text6Text7Text8Text9Text10Text11"));
         }
 
         [Test]
@@ -86,13 +87,14 @@ namespace Archipelago.MultiClient.Net.Tests
                     new JsonMessagePart { Type = JsonMessagePartType.LocationName, Text = "Text7" },
                     new JsonMessagePart { Type = JsonMessagePartType.PlayerId, Text = "8" },
                     new JsonMessagePart { Type = JsonMessagePartType.PlayerName, Text = "Text9" },
-                    new JsonMessagePart { Type = JsonMessagePartType.EntranceName, Text = "Text10" }
-                }
+                    new JsonMessagePart { Type = JsonMessagePartType.EntranceName, Text = "Text10" },
+                    new JsonMessagePart { Type = JsonMessagePartType.HintStatus, Text = "Text11", HintStatus = HintStatus.Avoid }
+				}
             };
 
             socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(packet);
 
-            Assert.That(parts.Length, Is.EqualTo(10));
+            Assert.That(parts.Length, Is.EqualTo(11));
             Assert.That(parts[0].Text, Is.EqualTo("Text1"));
             Assert.That(parts[0].Color, Is.EqualTo(Color.White));
             Assert.That(parts[0].IsBackgroundColor, Is.EqualTo(false));
@@ -142,7 +144,12 @@ namespace Archipelago.MultiClient.Net.Tests
             Assert.That(parts[9].Color, Is.EqualTo(Color.Blue));
             Assert.That(parts[9].IsBackgroundColor, Is.EqualTo(false));
             Assert.That(parts[9].Type, Is.EqualTo(MessagePartType.Entrance));
-        }
+
+            Assert.That(parts[10].Text, Is.EqualTo("Text11"));
+            Assert.That(parts[10].Color, Is.EqualTo(Color.Salmon));
+            Assert.That(parts[10].IsBackgroundColor, Is.EqualTo(false));
+            Assert.That(parts[10].Type, Is.EqualTo(MessagePartType.HintStatus));
+		}
 
         [Test]
         public void Should_mark_local_player_as_magenta()
@@ -1030,6 +1037,43 @@ namespace Archipelago.MultiClient.Net.Tests
 			Assert.That(logMessage.IsSenderTheActivePlayer, Is.False);
 			Assert.That(logMessage.IsReceiverTheActivePlayer, Is.False);
 			Assert.That(logMessage.IsRelatedToActivePlayer, Is.True);
+		}
+
+		[Test]
+		public void Should_not_crash_on_parsing_unknown_message_type()
+		{
+			var socket = Substitute.For<IArchipelagoSocketHelper>();
+			var itemInfoResolver = Substitute.For<IItemInfoResolver>();
+			var players = Substitute.For<IPlayerHelper>();
+			var connectionInfo = Substitute.For<IConnectionInfoProvider>();
+
+			var sut = new MessageLogHelper(socket, itemInfoResolver, players, connectionInfo);
+
+			ChatLogMessage logMessage = null;
+
+			sut.OnMessageReceived += (message) =>
+				logMessage = message as ChatLogMessage;
+
+
+			var packet = new ChatPrintJsonPacket
+			{
+				Data = new[] {
+					new JsonMessagePart { Type = null, Text = "Some unknown typed text" }, // add invallid type..
+				},
+				Team = 0,
+				Slot = 2,
+				Message = "I dont know",
+				MessageType = JsonMessageType.Chat
+			};
+
+			Assert.DoesNotThrow(() =>
+			{
+				socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(packet);
+
+			});
+
+			Assert.That(logMessage, Is.Not.Null);
+			Assert.That(logMessage.ToString(), Is.EqualTo("Some unknown typed text"));
 		}
 
 #if NET471 || NET472

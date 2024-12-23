@@ -48,6 +48,11 @@
         /// <summary>
         /// Regular text that should be colored. Only type that will contain color data.
         /// </summary>
-        Color
-    }
+        Color,
+
+		/// <summary>
+		/// The HintStatus of the hint
+		/// </summary>
+		HintStatus,
+	}
 }

@@ -23,5 +23,8 @@ namespace Archipelago.MultiClient.Net.Models
 
         [JsonProperty("flags")]
         public ItemFlags? Flags { get; set; }
-    }
+
+        [JsonProperty("hint_status")]
+        public HintStatus? HintStatus { get; set; }
+	}
 }
