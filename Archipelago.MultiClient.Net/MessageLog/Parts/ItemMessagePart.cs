@@ -1,4 +1,5 @@
-﻿using Archipelago.MultiClient.Net.DataPackage;
+﻿using Archipelago.MultiClient.Net.Colors;
+using Archipelago.MultiClient.Net.DataPackage;
 using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Helpers;
 using Archipelago.MultiClient.Net.Models;
@@ -29,7 +30,7 @@ namespace Archipelago.MultiClient.Net.MessageLog.Parts
 		internal ItemMessagePart(IPlayerHelper players, IItemInfoResolver items, JsonMessagePart part) : base(MessagePartType.Item, part)
 		{
 			Flags = part.Flags ?? ItemFlags.None;
-			Color = GetColor(Flags);
+			PaletteColor = ColorUtils.GetItemColor(Flags);
 			Player = part.Player ?? 0;
 
 			var game = (players.GetPlayerInfo(Player) ?? new PlayerInfo()).Game;
@@ -46,24 +47,5 @@ namespace Archipelago.MultiClient.Net.MessageLog.Parts
 					break;
 			}
 		}
-
-		static Color GetColor(ItemFlags flags)
-		{
-			if (HasFlag(flags, ItemFlags.Advancement))
-				return Color.Plum;
-			if (HasFlag(flags, ItemFlags.NeverExclude))
-				return Color.SlateBlue;
-			if (HasFlag(flags, ItemFlags.Trap))
-				return Color.Salmon;
-
-			return Color.Cyan;
-		}
-
-		static bool HasFlag(ItemFlags flags, ItemFlags flag) =>
-#if NET35
-			(flags & flag) > 0;
-#else
-            flags.HasFlag(flag);
-#endif
 	}
 }

@@ -1,4 +1,4 @@
-﻿using Archipelago.MultiClient.Net.Enums;
+﻿using Archipelago.MultiClient.Net.Colors;
 using Archipelago.MultiClient.Net.Models;
 
 namespace Archipelago.MultiClient.Net.MessageLog.Parts
@@ -13,23 +13,9 @@ namespace Archipelago.MultiClient.Net.MessageLog.Parts
 		{
 			Text = messagePart.Text;
 
-			switch (messagePart.HintStatus)
+			if (messagePart.HintStatus.HasValue)
 			{
-				case HintStatus.Found:
-					Color = Color.Green;
-					break;
-				case HintStatus.Unspecified:
-					Color = Color.White;
-					break;
-				case HintStatus.NoPriority:
-					Color = Color.SlateBlue;
-					break;
-				case HintStatus.Avoid:
-					Color = Color.Salmon;
-					break;
-				case HintStatus.Priority:
-					Color = Color.Plum;
-					break;
+				PaletteColor = ColorUtils.GetHintColor(messagePart.HintStatus.Value);
 			}
 		}
 	}
