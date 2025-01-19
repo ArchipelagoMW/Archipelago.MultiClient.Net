@@ -1,10 +1,28 @@
 ﻿using Archipelago.MultiClient.Net.Enums;
+using Archipelago.MultiClient.Net.Helpers;
+using Archipelago.MultiClient.Net.Models;
 
 namespace Archipelago.MultiClient.Net.Colors
 {
+	/// <summary>
+	/// Static utilities for getting the appropriate palette color from various protocol-provided information
+	/// </summary>
 	public static class ColorUtils
 	{
-		public static PaletteColor? GetMessagePartColor(JsonMessagePartColor color)
+		/// <summary>
+		/// The color to be used to represent the currently connected player
+		/// </summary>
+		public const PaletteColor ActivePlayerColor = PaletteColor.Magenta;
+		/// <summary>
+		/// The color to be used to represent any player other the currently connected player
+		/// </summary>
+		public const PaletteColor NonActivePlayerColor = PaletteColor.Yellow;
+
+		/// <summary>
+		/// Gets the palette color corresponding to a JsonMessagePartColor.
+		/// </summary>
+		/// <returns>The corresponding palette color, or null if not specified</returns>
+		public static PaletteColor? GetColor(JsonMessagePartColor color)
 		{
 			switch (color)
 			{
@@ -37,7 +55,11 @@ namespace Archipelago.MultiClient.Net.Colors
 			}
 		}
 
-		public static PaletteColor? GetHintColor(HintStatus status)
+		/// <summary>
+		/// Gets the palette color corresponding to a HintStatus.
+		/// </summary>
+		/// <returns>The corresponding palette color, or null if not specified</returns>
+		public static PaletteColor? GetColor(HintStatus status)
 		{
 			switch (status)
 			{
@@ -54,7 +76,20 @@ namespace Archipelago.MultiClient.Net.Colors
 			}
 		}
 
-		public static PaletteColor GetItemColor(ItemFlags flags)
+		/// <summary>
+		/// Gets the palette color corresponding to a Hint's status.
+		/// </summary>
+		/// <returns>The corresponding palette color, or null if not specified</returns>
+		public static PaletteColor? GetColor(Hint hint)
+		{
+			return GetColor(hint.Status);
+		}
+
+		/// <summary>
+		/// Gets the palette color corresponding to an ItemFlags.
+		/// </summary>
+		/// <returns>The corresponding palette color, or null if not specified</returns>
+		public static PaletteColor? GetColor(ItemFlags flags)
 		{
 			if (HasFlag(flags, ItemFlags.Advancement))
 				return PaletteColor.Plum;
@@ -66,12 +101,23 @@ namespace Archipelago.MultiClient.Net.Colors
 			return PaletteColor.Cyan;
 		}
 
-		public static PaletteColor? GetPlayerColor(bool isActivePlayer)
+		/// <summary>
+		/// Gets the palette color corresponding to an ItemInfo's flags.
+		/// </summary>
+		/// <returns>The corresponding palette color, or null if not specified</returns>
+		public static PaletteColor? GetColor(ItemInfo item)
 		{
-			if (isActivePlayer)
-				return PaletteColor.Magenta;
+			return GetColor(item.Flags);
+		}
 
-			return PaletteColor.Yellow;
+		/// <summary>
+		/// Gets the palette color corresponding to a PlayerInfo.
+		/// </summary>
+		/// <returns>The corresponding palette color, or null if not specified</returns>
+		public static PaletteColor? GetColor(PlayerInfo player, IConnectionInfoProvider connectionInfo)
+		{
+			bool isActivePlayer = player.Slot == connectionInfo.Slot;
+			return isActivePlayer ? ActivePlayerColor : NonActivePlayerColor;
 		}
 
 		static bool HasFlag(ItemFlags flags, ItemFlags flag) =>

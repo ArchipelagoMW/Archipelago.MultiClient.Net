@@ -3,8 +3,14 @@ using System.Collections.Generic;
 
 namespace Archipelago.MultiClient.Net.Colors
 {
+	/// <summary>
+	/// Contains built-in palettes for color handling
+	/// </summary>
 	public static class BuiltInPalettes
 	{
+		/// <summary>
+		/// Default dark palette based on terminal colors
+		/// </summary>
 		public static readonly Palette<Color> Dark = new Palette<Color>(Color.White, new Dictionary<PaletteColor, Color>()
 		{
 			[PaletteColor.White] = Color.White,

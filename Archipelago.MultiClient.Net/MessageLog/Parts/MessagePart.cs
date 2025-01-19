@@ -20,14 +20,17 @@ namespace Archipelago.MultiClient.Net.MessageLog.Parts
 		public MessagePartType Type { get; internal set; }
 
 		/// <summary>
-		/// The specified or default color for this message part
+		/// The color corresponding to <see cref="PaletteColor"/> in the built-in dark palette.
 		/// </summary>
 		public Color Color => GetColor(BuiltInPalettes.Dark);
 
+		/// <summary>
+		/// The specified color for this message part, or null if not specified.
+		/// </summary>
 		public PaletteColor? PaletteColor { get; protected set; }
 
 		/// <summary>
-		/// The specified background color for this message part
+		/// Whether this message part's color is intended to represent a background color
 		/// </summary>
 		public bool IsBackgroundColor { get; internal set; }
 
@@ -42,7 +45,7 @@ namespace Archipelago.MultiClient.Net.MessageLog.Parts
 			}
 			else if (messagePart.Color.HasValue)
 			{
-				PaletteColor = ColorUtils.GetMessagePartColor(messagePart.Color.Value);
+				PaletteColor = ColorUtils.GetColor(messagePart.Color.Value);
 				IsBackgroundColor = messagePart.Color.Value >= JsonMessagePartColor.BlackBg;
 			}
 			else
@@ -51,6 +54,10 @@ namespace Archipelago.MultiClient.Net.MessageLog.Parts
 			}
 		}
 
+		/// <summary>
+		/// Gets the color corresponding to <see cref="PaletteColor"/> in the specified palette.
+		/// </summary>
+		/// <param name="palette">The palette to retrieve the color from</param>
 		public T GetColor<T>(Palette<T> palette) => palette[PaletteColor];
 
 		/// <summary>

@@ -30,7 +30,7 @@ namespace Archipelago.MultiClient.Net.MessageLog.Parts
 					break;
 			}
 
-			PaletteColor = ColorUtils.GetPlayerColor(IsActivePlayer);
+			PaletteColor = IsActivePlayer ? ColorUtils.ActivePlayerColor : ColorUtils.NonActivePlayerColor;
 		}
 	}
 }
