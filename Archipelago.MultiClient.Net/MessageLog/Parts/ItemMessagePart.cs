@@ -30,7 +30,7 @@ namespace Archipelago.MultiClient.Net.MessageLog.Parts
 		internal ItemMessagePart(IPlayerHelper players, IItemInfoResolver items, JsonMessagePart part) : base(MessagePartType.Item, part)
 		{
 			Flags = part.Flags ?? ItemFlags.None;
-			PaletteColor = ColorUtils.GetItemColor(Flags);
+			PaletteColor = ColorUtils.GetColor(Flags);
 			Player = part.Player ?? 0;
 
 			var game = (players.GetPlayerInfo(Player) ?? new PlayerInfo()).Game;

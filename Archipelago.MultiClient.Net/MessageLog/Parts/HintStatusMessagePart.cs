@@ -15,7 +15,7 @@ namespace Archipelago.MultiClient.Net.MessageLog.Parts
 
 			if (messagePart.HintStatus.HasValue)
 			{
-				PaletteColor = ColorUtils.GetHintColor(messagePart.HintStatus.Value);
+				PaletteColor = ColorUtils.GetColor(messagePart.HintStatus.Value);
 			}
 		}
 	}
