@@ -393,7 +393,7 @@ namespace Archipelago.MultiClient.Net
 		        Password = password,
 		        Tags = ConnectionInfo.Tags,
 		        Uuid = ConnectionInfo.Uuid,
-		        Version = version != null ? new NetworkVersion(version) : new NetworkVersion(0, 4, 0),
+		        Version = version != null ? new NetworkVersion(version) : new NetworkVersion(0, 6, 0),
 		        ItemsHandling = ConnectionInfo.ItemsHandlingFlags,
 				RequestSlotData = requestSlotData
 			};

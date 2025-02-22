@@ -8,11 +8,11 @@
 		/// <summary>
 		/// The location has been collected. Status cannot be changed once found.
 		/// </summary>
-		Found = 0,
+		Found = 40,
 		/// <summary>
 		/// The receiving player has not specified any status
 		/// </summary>
-		Unspecified = 1,
+		Unspecified = 0,
 		/// <summary>
 		/// The receiving player has specified that the item is unneeded
 		/// </summary>
