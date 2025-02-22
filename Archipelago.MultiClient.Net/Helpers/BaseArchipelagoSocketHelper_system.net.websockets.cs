@@ -90,7 +90,6 @@ namespace Archipelago.MultiClient.Net.Helpers
 
                 OnMessageReceived(message);
 
-                await Task.Delay(20);
             }
         }
 
