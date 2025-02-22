@@ -28,6 +28,7 @@ namespace Archipelago.MultiClient.Net.Enums
         Set,
         SetReply,
         SetNotify,
-		Unknown
+        UpdateHint,
+        Unknown
     }
 }
