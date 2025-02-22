@@ -22,7 +22,7 @@ namespace Archipelago.MultiClient.Net.MessageLog.Parts
 		public int Player { get; }
 
 		internal LocationMessagePart(IPlayerHelper players, IItemInfoResolver itemInfoResolver, JsonMessagePart part) 
-			: base(MessagePartType.Location, part, Color.Green)
+			: base(MessagePartType.Location, part, Colors.PaletteColor.Green)
 		{
 			Player = part.Player ?? 0;
 

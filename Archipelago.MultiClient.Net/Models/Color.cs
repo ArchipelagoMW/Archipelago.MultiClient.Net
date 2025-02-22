@@ -2,12 +2,14 @@
 
 namespace Archipelago.MultiClient.Net.Models
 {
-    /// <summary>
-    /// Polyfill for System.Drawing.Color for games on runtimes which do not supply a `System.Drawing.dll`.
-    /// Not focused on memory or computation efficiency, we just need something that works reasonably well.
-    /// Transparency/alpha channel is not handled.
-    /// </summary>
-    public struct Color : IEquatable<Color>
+	// todo - move this to colors namespace at the next breaking update
+
+	/// <summary>
+	/// Polyfill for System.Drawing.Color for games on runtimes which do not supply a `System.Drawing.dll`.
+	/// Not focused on memory or computation efficiency, we just need something that works reasonably well.
+	/// Transparency/alpha channel is not handled.
+	/// </summary>
+	public struct Color : IEquatable<Color>
     {
 	    /// <summary>
 	    /// Predefined Archipelago Color Red (used for not found hints)
