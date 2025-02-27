@@ -13,13 +13,13 @@ session.MessageLog     // Interface for the server to push info messages to the 
 
 ## Players
 
-The @"Archipelago.MultiClient.Net.Helpers.IPlayerHelper?text='Player Helper'" provides methods for accessing details
+The @"Archipelago.MultiClient.Net.Helpers.IPlayerHelper?text=Player Helper" provides methods for accessing details
 about the other players currently connected to the Archipelago
 session.
 
 ## Locations
 
-The @"Archipelago.MultiClient.Net.Helpers.ILocationCheckHelper?text='Locations Helper'" provides methods for accessing
+The @"Archipelago.MultiClient.Net.Helpers.ILocationCheckHelper?text=Locations Helper" provides methods for accessing
 information regarding the current player's locations, as well as updating the server on the status of their locations.
 
 ### Report Collected Location(s)
@@ -49,7 +49,7 @@ session.Locations.ScoutLocationsAsync(locationInfoPacket => Console.WriteLine(lo
 
 ## Items
 
-The @"Archipelago.MultiClient.Net.Helpers.IReceivedItemsHelper?text='Received Items Helper'" provides methods for
+The @"Archipelago.MultiClient.Net.Helpers.IReceivedItemsHelper?text=Received Items Helper" provides methods for
 checking the player's current inventory, and receiving items from the server.
 
 ### Received Item Callback Handler (Asynchronous)
@@ -69,7 +69,7 @@ session.Items.ItemReceived += (receivedItemsHelper) => {
 
 ## RoomState
 
-The @"Archipelago.MultiClient.Net.Helpers.IRoomStateHelper?text='RoomState helper'" provides access to values that
+The @"Archipelago.MultiClient.Net.Helpers.IRoomStateHelper?text=RoomState Helper" provides access to values that
 represent the current state of the multiworld room, with information such as the cost of a hint and or your current
 accumulated amount of hint point or the permissions for things like forfeiting.
 
@@ -79,7 +79,7 @@ Console.WriteLine($"You have {session.RoomState.HintPoints}, and need {session.R
 
 ## ConnectionInfo
 
-The @"Archipelago.MultiClient.Net.Helpers.IConnectionInfoProvider?text='ConnectionInfo helper'" provides access to
+The @"Archipelago.MultiClient.Net.Helpers.IConnectionInfoProvider?text=ConnectionInfo Helper" provides access to
 values under which you are currently connected, such as your slot number or your currently used tags and item handling
 flags.
 
@@ -89,7 +89,7 @@ Console.WriteLine($"You are connected on slot {session.ConnectionInfo.Slot}, on 
 
 ## ArchipelagoSocket
 
-The @"Archipelago.MultiClient.Net.Helpers.IConnectionInfoProvider?text='socket helper'" is a lower level API allowing
+The @"Archipelago.MultiClient.Net.Helpers.IConnectionInfoProvider?text=Socket Helper" is a lower level API allowing
 for direct access to the socket which the session object uses to communicate with the Archipelago server. You may use
 this object to hook onto when messages are received, or you may use it to send any packets defined in the library.
 Various events are exposed to allow for receipt of errors or notifying of socket close.
@@ -102,25 +102,27 @@ session.Socket.SendPacket(new SayPacket(){Text = "Woof woof!"});
 
 The Archipelago server can send messages to client to be displayed on screen as a sort of log, this is done by handling
 the `PrintJsonPacket` packets. This library simplifies this process into a
-@"Archipelago.MultiClient.Net.Helpers.IMessageLogHelper?text='single handler'" that can be subscribed to with an
-[event hook](docs/events.md).
-
+@"Archipelago.MultiClient.Net.Helpers.IMessageLogHelper?text=single handler" that can be subscribed to with an
+[event hook](docs/helpers/events.md).
 
 ## DeathLink
 
-DeathLink support is included in the library. You may enable it by using the `CreateDeathLinkService` in the
-`DeathLinkProvider` class, and the `EnableDeathlink` method on the service. Deathlink can be toggled on and off using
-the `EnableDeathlink` and `DisableDeathlink` methods on the service.
+DeathLink support is included in the library. You may enable it by creating a new
+@"Archipelago.MultiClient.Net.BounceFeatures.DeathLink.DeathLinkService?text=DeathLinkService" from the
+@"Archipelago.MultiClient.Net.BounceFeatures.DeathLink.DeathLinkProvider?text=DeathLinkProvider`, and subscribing to the
+`OnDeathLinkReceived` event. Deathlink can then be toggled on and off using the `EnableDeathlink` and `DisableDeathlink`
+methods on the service.
 
 ```csharp
 var session = ArchipelagoSessionFactory.CreateSession("localhost", 38281);
 
-var deathLinkService = session.CreateDeathLinkService().EnableDeathlink();
+var deathLinkService = session.CreateDeathLinkService();
 
 deathLinkService.OnDeathLinkReceived += (deathLinkObject) => {
     // ... Kill your player(s).
 };
 
+deathLinkService.EnableDeathlink();
 // ... On death:
 deathLinkService.SendDeathLink(new DeathLink("Ijwu", "Died to exposure."));
 ```

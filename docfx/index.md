@@ -18,11 +18,11 @@ time.
 
 The @"Archipelago.MultiClient.Net.ArchipelagoSession?text=ArchipelagoSession" is the basis of all operations involved
 with communicating with the Archipelago server. Before any communicating can be executed, a new session must be created,
-and any relevant [event hooks](docs/events.md) should be registered before attempting a connection.
+and any relevant [event hooks](docs/helpers/events.md) should be registered before attempting a connection.
 
 ### Helpers
 
-There exist many [helper classes and methods](docs/helpers.md) to help digest the information received from the server
+There exist many [helper classes and methods](docs/helpers/helpers.md) to help digest the information received from the server
 into specific formats, or to send specific information to the server. If a helper doesn't do what you need, the raw
 server data is also available to do what is needed through the
 @"Archipelago.MultiClient.Net.Helpers.IArchipelagoSocketHelper?text=Session.Socket".
