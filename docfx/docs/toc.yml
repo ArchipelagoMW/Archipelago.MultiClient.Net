@@ -1,10 +1,8 @@
 items:
-  - name: Get Started
-    href: ../index.md
+  - href: gettingStarted.md
   - name: Helpers
     items:
-    - href: ../helpers.md
-    - href: ../events.md
-    - href: ../datastorage.md
-  - name: Packets
-    href: ../packets.md
+    - href: helpers.md
+    - href: events.md
+    - href: datastorage.md
+  - href: packets.md
