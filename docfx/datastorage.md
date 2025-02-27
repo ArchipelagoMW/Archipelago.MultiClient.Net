@@ -1,4 +1,4 @@
-﻿## DataStorage
+﻿# DataStorage
 
 DataStorage support is included in the library. You may save values on the archipelago server in order to share them
 across other player's sessions or to simply keep track of values outside your game's state.
