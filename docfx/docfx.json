@@ -38,6 +38,7 @@
     "globalMetadata": {
       "_appName": "Archipelago.MultiClient.Net",
       "_appTitle": "Archipelago.MultiClient.Net",
+      "_appLogoPath": "https://github.com/ArchipelagoMW/Archipelago/blob/main/WebHostLib/static/static/branding/header-logo.svg",
       "_enableSearch": true,
       "pdf": false
     }

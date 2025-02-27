@@ -5,7 +5,7 @@ items:
     - href: quick-start.md
   - name: Helpers
     items:
-    - href: helpers.md
-    - href: events.md
-    - href: datastore.md
+    - href: helpers/helpers.md
+    - href: helpers/events.md
+    - href: helpers/datastore.md
   - href: packets.md

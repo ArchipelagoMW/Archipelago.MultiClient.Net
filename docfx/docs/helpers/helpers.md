@@ -13,22 +13,14 @@ session.MessageLog     // Interface for the server to push info messages to the 
 
 ## Players
 
-The player helper provides methods for accessing details about the other players currently connected to the Archipelago
+The @"Archipelago.MultiClient.Net.Helpers.IPlayerHelper?text='Player Helper'" provides methods for accessing details
+about the other players currently connected to the Archipelago
 session.
 
-### Get All Player Names
-
-```csharp
-var sortedPlayerNames = session.Players.AllPlayers.Select(x => x.Name).OrderBy(x => x);
-```
-
-### Get Current Player Name
-
-```csharp
-string playerName = session.Players.GetPlayerAliasAndName(session.ConnectionInfo.Slot);
-```
-
 ## Locations
+
+The @"Archipelago.MultiClient.Net.Helpers.ILocationCheckHelper?text='Locations Helper'" provides methods for accessing
+information regarding the current player's locations, as well as updating the server on the status of their locations.
 
 ### Report Collected Location(s)
 
@@ -45,43 +37,20 @@ session.Locations.CompleteLocationChecks(3);
 
 The location ID used is of that defined in the AP world.
 
-### Location ID <--> Name
-
-```csharp
-string locationName = session.Locations.GetLocationNameFromId(42) ?? $"Location: {locationId}";
-long locationId = session.Locations.GetLocationIdFromName(locationName);
-```
-
 ### Scout Location Checks
 
-Scouting means asking the server what is stored in a specific location *without* collecting it:
+Scouting means asking the server what is stored in a specific location *without* collecting it. This can also be
+utilized in order to create a hint, if - for instance - the current player knows what is on the location to inform other
+players of this knowledge.
 
 ```csharp
-session.Locations.ScoutLocationsAsync(locationInfoPacket => Console.WriteLine(locationInfoPacket.Locations.Count));
+session.Locations.ScoutLocationsAsync(locationInfoPacket => Console.WriteLine(locationInfoPacket.Locations.Count), HintCreationPolicy.CreateAndAnnounceOnce, new []{4, 5});
 ```
 
 ## Items
 
-### Item ID --> Name
-
-```csharp
-string itemName = session.Items.GetItemName(88) ?? $"Item: {itemId}";
-```
-
-### Access Received Items
-
-At any time, you can access the current inventory for the active session/slot via the `Items` helper like so:
-
-```csharp
-foreach(NetworkItem item in session.Items.AllItemsReceived)
-{
-    long itemId = item.Item;
-}
-```
-
-*Note: The list of received items will never shrink and the collection is guaranteed to be in the order that the server
-sent the items. Because of this, it is safe to assume that if the size of this collection has changed it's because new
-items were received and appended to the end of the collection.*
+The @"Archipelago.MultiClient.Net.Helpers.IReceivedItemsHelper?text='Received Items Helper'" provides methods for
+checking the player's current inventory, and receiving items from the server.
 
 ### Received Item Callback Handler (Asynchronous)
 
@@ -100,9 +69,9 @@ session.Items.ItemReceived += (receivedItemsHelper) => {
 
 ## RoomState
 
-The RoomState helper provides access to values that represent the current state of the multiworld room, with information
-such as the cost of a hint and or your current accumulated amount of hint point or the permissions for things like
-forfeiting
+The @"Archipelago.MultiClient.Net.Helpers.IRoomStateHelper?text='RoomState helper'" provides access to values that
+represent the current state of the multiworld room, with information such as the cost of a hint and or your current
+accumulated amount of hint point or the permissions for things like forfeiting.
 
 ```csharp
 Console.WriteLine($"You have {session.RoomState.HintPoints}, and need {session.RoomState.HintCost} for a hint");
@@ -110,8 +79,9 @@ Console.WriteLine($"You have {session.RoomState.HintPoints}, and need {session.R
 
 ## ConnectionInfo
 
-The ConnectionInfo helper provides access to values under which you are currently connected, such as your slot number or
-your currently used tags and item handling flags
+The @"Archipelago.MultiClient.Net.Helpers.IConnectionInfoProvider?text='ConnectionInfo helper'" provides access to
+values under which you are currently connected, such as your slot number or your currently used tags and item handling
+flags.
 
 ```csharp
 Console.WriteLine($"You are connected on slot {session.ConnectionInfo.Slot}, on team {session.ConnectionInfo.Team}");
@@ -119,14 +89,22 @@ Console.WriteLine($"You are connected on slot {session.ConnectionInfo.Slot}, on 
 
 ## ArchipelagoSocket
 
-The socket helper is a lower level API allowing for direct access to the socket which the session object uses to
-communicate with the Archipelago server. You may use this object to hook onto when messages are received, or you may use
-it to send any packets defined in the library. Various events are exposed to allow for receipt of errors or notifying of
-socket close.
+The @"Archipelago.MultiClient.Net.Helpers.IConnectionInfoProvider?text='socket helper'" is a lower level API allowing
+for direct access to the socket which the session object uses to communicate with the Archipelago server. You may use
+this object to hook onto when messages are received, or you may use it to send any packets defined in the library.
+Various events are exposed to allow for receipt of errors or notifying of socket close.
 
 ```csharp
 session.Socket.SendPacket(new SayPacket(){Text = "Woof woof!"});
 ```
+
+## MessageLog
+
+The Archipelago server can send messages to client to be displayed on screen as a sort of log, this is done by handling
+the `PrintJsonPacket` packets. This library simplifies this process into a
+@"Archipelago.MultiClient.Net.Helpers.IMessageLogHelper?text='single handler'" that can be subscribed to with an
+[event hook](docs/events.md).
+
 
 ## DeathLink
 
