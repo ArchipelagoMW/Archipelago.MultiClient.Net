@@ -45,7 +45,9 @@ public static void HandleItem(ReceivedItemsHelper itemHandler)
 {
     // The event is fired for every received item. Keep a local index to compare against in the case of continuing
     // an existing session after an earlier disconnection.
-    // The index on this handler is the index of the *next* upcoming item, not the current one.
+    var itemToHandle = itemHandler.DequeueItem();
+    // Since we dequeued the current item already, the index on the handler is the index of the *next* upcoming item,
+    // not the currently processing one.
     if (itemHandler.Index <= MyIndex)
     {
         return;
