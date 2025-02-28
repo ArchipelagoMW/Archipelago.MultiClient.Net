@@ -1,8 +1,5 @@
 ﻿# Event Hooks
 
-If using .net 4.0 or higher, you can use `ConnectAsync` and `LoginAsync` to prevent hitching for injection-based
-implementations like harmony.
-
 ## Message Logging
 
 The Archipelago server can send messages to client to be displayed on screen as a sort of log, this is done by handling

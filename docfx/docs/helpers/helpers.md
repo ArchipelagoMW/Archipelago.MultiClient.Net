@@ -103,7 +103,7 @@ session.Socket.SendPacket(new SayPacket(){Text = "Woof woof!"});
 The Archipelago server can send messages to client to be displayed on screen as a sort of log, this is done by handling
 the `PrintJsonPacket` packets. This library simplifies this process into a
 @"Archipelago.MultiClient.Net.Helpers.IMessageLogHelper?text=single handler" that can be subscribed to with an
-[event hook](docs/helpers/events.md).
+[event hook](events.md).
 
 ## DeathLink
 

@@ -21,24 +21,24 @@ Connect to a server at a specific room slot using the following method:
 
 ```csharp
 LoginResult TryConnectAndLogin(
-        string game, // Name of the game implemented by this client, SHOULD match what is used in the world implementation
-        string name, // Name of the slot to connect as (a.k.a player name)
-        ItemsHandlingFlags itemsHandlingFlags, /* One of the following (see AP docs for details):
-                NoItems
-                RemoteItems
-                IncludeOwnItems
-                IncludeStartingInventory
-                AllItems
-            */
-        Version version = null, // Minimum Archipelago API specification version which this client can successfuly interface with
-        string[] tags = null, /* One of the following (see AP docs for details)
-                "DeathLink"
-                "Tracker"
-                "TextOnly"
-            */
-        string uuid = null, // Unique identifier for this player/client, if null randomly generated
-        string password = null, // Password that was set when the room was created
-        bool requestSlotData = true // If the LoginResult should contain the slot data
+    string game, // Name of the game implemented by this client, SHOULD match what is used in the world implementation
+    string name, // Name of the slot to connect as (a.k.a player name)
+    ItemsHandlingFlags itemsHandlingFlags, /* One of the following (see AP docs for details):
+            NoItems
+            RemoteItems
+            IncludeOwnItems
+            IncludeStartingInventory
+            AllItems
+        */
+    Version version = null, // Minimum Archipelago API specification version which this client can successfuly interface with
+    string[] tags = null, /* One of the following (see AP docs for details)
+            "DeathLink"
+            "Tracker"
+            "TextOnly"
+        */
+    string uuid = null, // Unique identifier for this player/client, if null randomly generated
+    string password = null, // Password that was set when the room was created
+    bool requestSlotData = true // If the LoginResult should contain the slot data
     );
 ```
 
@@ -93,3 +93,6 @@ private static void Connect(string server, string user, string pass)
     var loginSuccess = (LoginSuccessful)result;
 }
 ```
+
+If using .net 4.0 or higher, you can use `ConnectAsync` and `LoginAsync` to prevent hitching for injection-based
+implementations like harmony.
