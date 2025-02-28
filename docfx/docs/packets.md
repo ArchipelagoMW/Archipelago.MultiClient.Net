@@ -7,8 +7,8 @@ document will only cover a few of the main ones and some methods for interacting
 ### Manual Packet Handling
 
 If you have a use case for a packet that isn't exposed, or can be handled through one of the available helpers, you can
-manually subscribe to the socket's @"
-Archipelago.MultiClient.Net.Helpers.ArchipelagoSocketHelperDelagates.PacketReceivedHandler?text=PacketReceivedHandler"
+manually subscribe to the socket's
+@"Archipelago.MultiClient.Net.Helpers.ArchipelagoSocketHelperDelagates.PacketReceivedHandler?text=PacketReceivedHandler"
 and process the packet from there.
 
 ```csharp
@@ -110,7 +110,7 @@ public static void OnGoalCompleted()
 
 ## SayPacket
 
-A @"?text=SayPacket" is used to communicate with other players. This is also the packet to use if you are trying to send a client command to the server such as `!release`.
+A @"Archipelago.MultiClient.Net.Packets.SayPacket?text=SayPacket" is used to communicate with other players. This is also the packet to use if you are trying to send a client command to the server such as `!release`.
 
 ```csharp
 public static void SendReleaseCommand()

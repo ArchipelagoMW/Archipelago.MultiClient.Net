@@ -109,7 +109,7 @@ the `PrintJsonPacket` packets. This library simplifies this process into a
 
 DeathLink support is included in the library. You may enable it by creating a new
 @"Archipelago.MultiClient.Net.BounceFeatures.DeathLink.DeathLinkService?text=DeathLinkService" from the
-@"Archipelago.MultiClient.Net.BounceFeatures.DeathLink.DeathLinkProvider?text=DeathLinkProvider`, and subscribing to the
+@"Archipelago.MultiClient.Net.BounceFeatures.DeathLink.DeathLinkProvider?text=DeathLinkProvider", and subscribing to the
 `OnDeathLinkReceived` event. Deathlink can then be toggled on and off using the `EnableDeathlink` and `DisableDeathlink`
 methods on the service.
 

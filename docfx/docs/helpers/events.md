@@ -15,7 +15,7 @@
 
 ## ReceivedItemsHelper
 
-@"?text=ReceivedItemsHelper", accessible through `Session.Items`.
+@"Archipelago.MultiClient.Net.Helpers.IReceivedItemsHelper?text=ReceivedItemsHelper", accessible through `Session.Items`.
 
 | Event                                                                                            | Call Event                                                                                                                |
 |--------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------|
