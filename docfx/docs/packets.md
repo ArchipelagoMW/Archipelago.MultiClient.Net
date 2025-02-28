@@ -108,6 +108,22 @@ public static void OnGoalCompleted()
 }
 ```
 
+## SayPacket
+
+A @"?text=SayPacket" is used to communicate with other players. This is also the packet to use if you are trying to send a client command to the server such as `!release`.
+
+```csharp
+public static void SendReleaseCommand()
+{
+    SendSayPacket("!release");
+}
+
+public static void SendSayPacket(string text)
+{
+    Session.Socket.SendPacket(new SayPacket { Text = text });
+}
+```
+
 ## BouncePacket
 
 A @"Archipelago.MultiClient.Net.Packets.BouncePacket?text=BouncePacket" is a special type of packet that can be sent
