@@ -117,9 +117,16 @@ A @"Archipelago.MultiClient.Net.Packets.SayPacket?text=SayPacket" is used to com
 ```csharp
 public static void SendReleaseCommand()
 {
+    Session.Say("!release");
+}
+```
+
+or we can do it manually:
+```csharp
+public static void SendReleaseCommand()
+{
     SendSayPacket("!release");
 }
-
 public static void SendSayPacket(string text)
 {
     Session.Socket.SendPacket(new SayPacket { Text = text });
