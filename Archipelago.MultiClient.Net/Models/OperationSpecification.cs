@@ -20,7 +20,7 @@ namespace Archipelago.MultiClient.Net.Models
     {
 		/// <inheritdoc cref="T:Archipelago.MultiClient.Net.Models.OperationType"/>
 		[JsonProperty("operation")]
-        [JsonConverter(typeof(StringEnumConverter), typeof(SnakeCaseNamingStrategy))]
+        [JsonConverter(typeof(AttemptingStringEnumConverter), typeof(SnakeCaseNamingStrategy))]
         public OperationType OperationType;
 
 		/// <summary>
