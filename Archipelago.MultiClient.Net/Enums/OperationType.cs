@@ -6,6 +6,7 @@
     public enum OperationType
     {
 #pragma warning disable CS1591
+	    Unknown = 0,
 		Add,
         Mul,
         Max,

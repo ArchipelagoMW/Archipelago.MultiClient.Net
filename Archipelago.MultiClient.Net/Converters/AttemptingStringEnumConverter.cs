@@ -4,7 +4,11 @@ using System;
 
 public class AttemptingStringEnumConverter : StringEnumConverter
 {
-    public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+	public AttemptingStringEnumConverter() : base() { }
+
+	public AttemptingStringEnumConverter(Type namingStrategyType) : base(namingStrategyType) { }
+
+	public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
     {
         try
         {
@@ -12,7 +16,7 @@ public class AttemptingStringEnumConverter : StringEnumConverter
         }
         catch (JsonSerializationException)
         {
-            return null;
+	        return objectType.IsValueType ? Activator.CreateInstance(objectType) : null;
         }
     }
 }
