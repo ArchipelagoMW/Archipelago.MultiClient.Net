@@ -6,8 +6,6 @@ using System.Collections.Generic;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
-using Archipelago.MultiClient.Net.Packets;
-
 
 #if NET45
 using System.Net;

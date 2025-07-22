@@ -225,7 +225,7 @@ namespace Archipelago.MultiClient.Net
 #else
 			const string libVersion = "OTHER";
 #endif
-            try
+/*            try
             {
 				var assemblyVersion = FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).FileVersion;
 				
@@ -242,7 +242,7 @@ namespace Archipelago.MultiClient.Net
 	        catch
 	        {
 		        // ignored
-	        }
+	        }*/
         }
 
 #if !NET35

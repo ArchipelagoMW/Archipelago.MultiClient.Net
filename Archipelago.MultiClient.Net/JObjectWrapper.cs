@@ -8,6 +8,9 @@ using System.Text.Json.Nodes;
 
 namespace Archipelago.MultiClient.Net
 {
+	
+
+
 	/*
 	static class JObjectExtensionst
 	{
@@ -17,6 +20,16 @@ namespace Archipelago.MultiClient.Net
 		}
 	}
 	*/
+
+	public class JObject
+	{
+
+	}
+
+	public class JToken
+	{
+
+	}
 }
 
 #endif

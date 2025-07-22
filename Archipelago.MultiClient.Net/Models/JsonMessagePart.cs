@@ -15,17 +15,17 @@ namespace Archipelago.MultiClient.Net.Models
     {
         [JsonProperty("type")]
 #if NET6_0_OR_GREATER
-        [JsonConverter(typeof(AttemptingStringEnumConverter))]
+        [JsonConverter(typeof(JsonSnakeCaseStringEnumConverter))]
 #else
-		[JsonConverter(typeof(StringEnumConverter), typeof(SnakeCaseNamingStrategy))]
+		[JsonConverter(typeof(AttemptingStringEnumConverter), typeof(SnakeCaseNamingStrategy))]
 #endif
 		public JsonMessagePartType? Type { get; set; }
 
         [JsonProperty("color")]
 #if NET6_0_OR_GREATER
-        [JsonConverter(typeof(AttemptingStringEnumConverter))]
+        [JsonConverter(typeof(JsonSnakeCaseStringEnumConverter))]
 #else
-		[JsonConverter(typeof(StringEnumConverter), typeof(SnakeCaseNamingStrategy))]
+		[JsonConverter(typeof(AttemptingStringEnumConverter), typeof(SnakeCaseNamingStrategy))]
 #endif
 		public JsonMessagePartColor? Color { get; set; }
 

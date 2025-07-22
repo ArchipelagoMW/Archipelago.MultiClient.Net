@@ -13,7 +13,12 @@ namespace Archipelago.MultiClient.Net.Packets
     {
         public override ArchipelagoPacketType PacketType => ArchipelagoPacketType.ConnectionRefused;
 
+
+#if NET6_0_OR_GREATER
+		[JsonProperty("errors")]
+#else
         [JsonProperty("errors", ItemConverterType = typeof(AttemptingStringEnumConverter))]
-        public ConnectionRefusedError[] Errors { get; set; }
+#endif
+		public ConnectionRefusedError[] Errors { get; set; }
     }
 }

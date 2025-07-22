@@ -1,7 +1,6 @@
 ﻿using Archipelago.MultiClient.Net.Enums;
 using System.Collections.Generic;
 
-
 #if NET6_0_OR_GREATER
 using JsonProperty = System.Text.Json.Serialization.JsonPropertyNameAttribute;
 #else

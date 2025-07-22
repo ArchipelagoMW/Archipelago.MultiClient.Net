@@ -1,9 +1,17 @@
-﻿namespace Archipelago.MultiClient.Net.Enums
+﻿#if NET6_0_OR_GREATER
+using Archipelago.MultiClient.Net.Converters;
+using System.Text.Json.Serialization;
+#endif
+
+namespace Archipelago.MultiClient.Net.Enums
 {
 	/// <summary>
 	/// The possible reasons for a connection to be refused.
 	/// </summary>
-    public enum ConnectionRefusedError
+#if NET6_0_OR_GREATER
+	[JsonConverter(typeof(JsonSnakeCaseStringEnumConverter))]
+#endif
+	public enum ConnectionRefusedError
     {
 	    /// <summary>
 	    /// Indicates that server the server send en error code not known to this library.

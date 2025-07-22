@@ -1,6 +1,7 @@
 ﻿#if NET45 || NETSTANDARD2_0 || NET6_0
 using Archipelago.MultiClient.Net.Converters;
 using Archipelago.MultiClient.Net.Exceptions;
+using Archipelago.MultiClient.Net.Packets;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Concurrent;
