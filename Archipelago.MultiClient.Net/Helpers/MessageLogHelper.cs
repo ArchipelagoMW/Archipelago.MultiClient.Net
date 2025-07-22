@@ -66,29 +66,29 @@ namespace Archipelago.MultiClient.Net.Helpers
                 switch (linePacket)
                 {
 	                case ItemPrintJsonPacket itemPrintJson:
-		                message = new ItemSendLogMessage(parts, players, connectionInfo,
+		                message = new ItemSendLogMessage(parts, players,
 							itemPrintJson.ReceivingPlayer, itemPrintJson.Item.Player, itemPrintJson.Item, itemInfoResolver);
 		                break;
 	                case ItemCheatPrintJsonPacket itemCheatPrintJson:
-		                message = new ItemCheatLogMessage(parts, players, connectionInfo,
+		                message = new ItemCheatLogMessage(parts, players,
 			                itemCheatPrintJson.Team, itemCheatPrintJson.ReceivingPlayer, 
 			                itemCheatPrintJson.Item, itemInfoResolver);
 		                break;
 					case HintPrintJsonPacket hintPrintJson:
-                        message = new HintItemSendLogMessage(parts, players, connectionInfo,
+                        message = new HintItemSendLogMessage(parts, players,
 							hintPrintJson.ReceivingPlayer, hintPrintJson.Item.Player,
                             hintPrintJson.Item, hintPrintJson.Found.HasValue && hintPrintJson.Found.Value, itemInfoResolver);
                         break;
 	                case JoinPrintJsonPacket joinPrintJson:
-		                message = new JoinLogMessage(parts, players, connectionInfo,
+		                message = new JoinLogMessage(parts, players,
 							joinPrintJson.Team, joinPrintJson.Slot, joinPrintJson.Tags);
 		                break;
 	                case LeavePrintJsonPacket leavePrintJson:
-		                message = new LeaveLogMessage(parts, players, connectionInfo,
+		                message = new LeaveLogMessage(parts, players,
 							leavePrintJson.Team, leavePrintJson.Slot);
 		                break;
 	                case ChatPrintJsonPacket chatPrintJson:
-		                message = new ChatLogMessage(parts, players, connectionInfo,
+		                message = new ChatLogMessage(parts, players,
 							chatPrintJson.Team, chatPrintJson.Slot, chatPrintJson.Message);
 		                break;
 	                case ServerChatPrintJsonPacket serverChatPrintJson:
@@ -98,7 +98,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 		                message = new TutorialLogMessage(parts);
 		                break;
 	                case TagsChangedPrintJsonPacket tagsPrintJson:
-		                message = new TagsChangedLogMessage(parts, players, connectionInfo,
+		                message = new TagsChangedLogMessage(parts, players,
 			                tagsPrintJson.Team, tagsPrintJson.Slot, tagsPrintJson.Tags);
 						break;
 	                case CommandResultPrintJsonPacket _:
@@ -108,15 +108,15 @@ namespace Archipelago.MultiClient.Net.Helpers
 		                message = new AdminCommandResultLogMessage(parts);
 		                break;
 	                case GoalPrintJsonPacket goalPrintJsonPacket:
-		                message = new GoalLogMessage(parts, players, connectionInfo,
+		                message = new GoalLogMessage(parts, players,
 			                goalPrintJsonPacket.Team, goalPrintJsonPacket.Slot);
 		                break;
 	                case ReleasePrintJsonPacket releasePrintJsonPacket:
-		                message = new ReleaseLogMessage(parts, players, connectionInfo,
+		                message = new ReleaseLogMessage(parts, players,
 			                releasePrintJsonPacket.Team, releasePrintJsonPacket.Slot);
 		                break;
 	                case CollectPrintJsonPacket collectPrintJsonPacket:
-		                message = new CollectLogMessage(parts, players, connectionInfo,
+		                message = new CollectLogMessage(parts, players,
 			                collectPrintJsonPacket.Team, collectPrintJsonPacket.Slot);
 		                break;
 					case CountdownPrintJsonPacket countdownPrintJson:
@@ -149,7 +149,8 @@ namespace Archipelago.MultiClient.Net.Helpers
                         Type = part.Type,
                         Color = part.Color,
                         Flags = part.Flags,
-                        Player = part.Player
+                        Player = part.Player,
+						HintStatus = part.HintStatus
                     });
 
                     if (i < (lines.Length -1))
@@ -303,6 +304,8 @@ namespace Archipelago.MultiClient.Net.Helpers
                     return new LocationMessagePart(players, itemInfoResolver, part);
                 case JsonMessagePartType.EntranceName:
                     return new EntranceMessagePart(part);
+				case JsonMessagePartType.HintStatus:
+					return new HintStatusMessagePart(part);
                 default:
                     return new MessagePart(MessagePartType.Text, part);
             }

@@ -2,6 +2,7 @@
 using Archipelago.MultiClient.Net.Helpers;
 using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NSubstitute;
 using NUnit.Framework;
@@ -319,6 +320,62 @@ namespace Archipelago.MultiClient.Net.Tests
 
 			Assert.That(slotData["One"], Is.EqualTo(1)); 
 			Assert.That(slotData["Two"], Is.EqualTo(2));
+		}
+
+		class CustomSlotDataModel
+		{
+			public class Options
+			{
+				public bool IsXRandomized { get; set; }
+				public bool IsYRandomized { get; set; }
+			}
+			// ReSharper disable UnusedAutoPropertyAccessor.Local
+			public int One { get; set; }
+			public long Two { get; set; }
+			public uint? Three { get; set; }
+			[JsonProperty("ListOfStuff")]
+			public List<string> Strings { get; set; }
+			public Options SlotOptions { get; set; }
+			// ReSharper restore UnusedAutoPropertyAccessor.Local
+		}
+		[Test]
+		public void GetSlotData_should_deserialize_custom_type_for_current_player_slot()
+		{
+			var socket = Substitute.For<IArchipelagoSocketHelper>();
+			var connectionInfo = Substitute.For<IConnectionInfoProvider>();
+			connectionInfo.Slot.Returns(4);
+
+			CustomSlotDataModel slotData = null;
+
+			var sut = new DataStorageHelper(socket, connectionInfo);
+
+			var serverSlotData = new Dictionary<string, object>
+			{
+				{ "One", 1 },
+				{ "Two", 2 },
+				{ "ListOfStuff", new [] { "A", "B", "C" } },
+				{ "SlotOptions", new CustomSlotDataModel.Options
+				{
+					IsXRandomized = true,
+					IsYRandomized = false
+				} }
+			};
+
+			ExecuteAsyncWithDelay(
+				() => { slotData = sut.GetSlotData<CustomSlotDataModel>(); },
+				() => RaiseRetrieved(socket, "_read_slot_data_4", JObject.FromObject(serverSlotData)));
+
+			socket.Received().SendPacketAsync(Arg.Is<GetPacket>(p => p.Keys.FirstOrDefault() == "_read_slot_data_4"));
+
+			Assert.IsNotNull(slotData);
+
+			Assert.That(slotData.One, Is.EqualTo(1));
+			Assert.That(slotData.Two, Is.EqualTo(2));
+			Assert.That(slotData.Three, Is.Null);
+			Assert.That(slotData.Strings, Is.EquivalentTo(new List<string> { "A", "B", "C" }));
+			Assert.That(slotData.SlotOptions.IsXRandomized, Is.True);
+			Assert.That(slotData.SlotOptions.IsYRandomized, Is.False);
+
 		}
 
 		[Test]
@@ -886,6 +943,60 @@ namespace Archipelago.MultiClient.Net.Tests
 			Assert.That(statusBySlot, Is.EqualTo(ArchipelagoClientState.ClientUnknown));
 			Assert.IsNotNull(statusBySlotAndTeam);
 			Assert.That(statusBySlotAndTeam, Is.EqualTo(ArchipelagoClientState.ClientUnknown));
+		}
+
+		[Test]
+		public void GetRaceMode_should_return_race_mode()
+		{
+			var socket = Substitute.For<IArchipelagoSocketHelper>();
+			var connectionInfo = Substitute.For<IConnectionInfoProvider>();
+
+			var sut = new DataStorageHelper(socket, connectionInfo);
+
+			bool raceMode = false;
+
+			ExecuteAsyncWithDelay(
+				() => { raceMode = sut.GetRaceMode(); },
+				() => RaiseRetrieved(socket, "_read_race_mode", new JValue(true)));
+
+			socket.Received().SendPacketAsync(Arg.Is<GetPacket>(p => p.Keys.FirstOrDefault() == "_read_race_mode"));
+
+			Assert.IsTrue(raceMode);
+		}
+
+		[Test]
+		public void GetRaceModeAsync_should_return_race_mode()
+		{
+			var socket = Substitute.For<IArchipelagoSocketHelper>();
+			var connectionInfo = Substitute.For<IConnectionInfoProvider>();
+
+			var sut = new DataStorageHelper(socket, connectionInfo);
+
+			bool raceMode = false;
+
+#if NET471
+			bool statusCallbackReceived = false;
+
+			ExecuteAsyncWithDelay(
+				() => { 
+					sut.GetRaceModeAsync(t => {
+						statusCallbackReceived = true; 
+						raceMode = t;
+					});
+				},
+				() => RaiseRetrieved(socket, "_read_race_mode", new JValue(true)));
+
+			while (!statusCallbackReceived)
+				Thread.Sleep(10);
+#else
+			ExecuteAsyncWithDelay(
+				() => { raceMode = sut.GetRaceModeAsync().Result; },
+				() => RaiseRetrieved(socket, "_read_race_mode", new JValue(true)));
+#endif
+
+			socket.Received().SendPacketAsync(Arg.Is<GetPacket>(p => p.Keys.FirstOrDefault() == "_read_race_mode"));
+
+			Assert.IsTrue(raceMode);
 		}
 
 		public static void ExecuteAsyncWithDelay(Action retrieve, Action raiseEvent)

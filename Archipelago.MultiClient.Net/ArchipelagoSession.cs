@@ -1,5 +1,4 @@
-﻿using Archipelago.MultiClient.Net.DataPackage;
-using Archipelago.MultiClient.Net.Enums;
+﻿using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Exceptions;
 using Archipelago.MultiClient.Net.Helpers;
 using Archipelago.MultiClient.Net.Models;
@@ -279,7 +278,6 @@ namespace Archipelago.MultiClient.Net
 
 			if (!roomInfoPacketTask.Task.IsCompleted)
             {
-                loginResultTask = new TaskCompletionSource<LoginResult>();
                 loginResultTask.TrySetResult(new LoginFailure("You are not connected, run ConnectAsync() first"));
                 return loginResultTask.Task;
             }
@@ -395,7 +393,7 @@ namespace Archipelago.MultiClient.Net
 		        Password = password,
 		        Tags = ConnectionInfo.Tags,
 		        Uuid = ConnectionInfo.Uuid,
-		        Version = version != null ? new NetworkVersion(version) : new NetworkVersion(0, 4, 0),
+		        Version = version != null ? new NetworkVersion(version) : new NetworkVersion(0, 6, 0),
 		        ItemsHandling = ConnectionInfo.ItemsHandlingFlags,
 				RequestSlotData = requestSlotData
 			};

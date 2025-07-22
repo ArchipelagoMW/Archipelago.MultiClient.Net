@@ -58,6 +58,14 @@ namespace Archipelago.MultiClient.Net.Helpers
 		/// <param name="slot">the slot id of the player to request slot data for, defaults to the current player's slot if left empty</param>
 		/// <returns>An Dictionary with string keys, and custom defined values, the keys and values differ per game</returns>
 		Dictionary<string, object> GetSlotData(int? slot = null);
+		
+		/// <summary>
+		/// Retrieves the custom slot data for the specified slot
+		/// </summary>
+		/// <typeparam name="T">The type to convert the slot data to</typeparam>
+		/// <param name="slot">The slot ID of the player ot request slot data for, defaults to the current player's slot if left empty</param>
+		/// <returns>The slot data, converted to a modeled object of the specified type</returns>
+		T GetSlotData<T>(int? slot = null) where T : class;
 
 #if NET35
 		/// <summary>
@@ -67,6 +75,14 @@ namespace Archipelago.MultiClient.Net.Helpers
 		/// <param name="slot">the slot id of the player to request slot data for, defaults to the current player's slot if left empty</param>
 		/// <returns>An Dictionary with string keys, and custom defined values, the keys and values differ per game</returns>
 		void GetSlotDataAsync(Action<Dictionary<string, object>> onSlotDataRetrieved, int? slot = null);
+		/// <summary>
+		/// Retrieves the custom slot data for the specified slot
+		/// </summary>
+		/// <typeparam name="T">The type to convert the slot data to</typeparam>
+		/// <param name="onSlotDataRetrieved">the method to call with the retrieved slot data</param>
+		/// <param name="slot">the slot id of the player to request slot data for, defaults to the current player's slot if left empty</param>
+		/// <returns>The slot data, converted to a modeled object of the specified type</returns>
+		void GetSlotDataAsync<T>(Action<T> onSlotDataRetrieved, int? slot = null) where T : class;
 #else
 		/// <summary>
 		/// Retrieves the custom slot data for the specified slot
@@ -74,6 +90,13 @@ namespace Archipelago.MultiClient.Net.Helpers
 		/// <param name="slot">the slot id of the player to request slot data for, defaults to the current player's slot if left empty</param>
 		/// <returns>An Dictionary with string keys, and custom defined values, the keys and values differ per game</returns>
 		Task<Dictionary<string, object>> GetSlotDataAsync(int? slot = null);
+		/// <summary>
+		/// Retrieves the custom slot data for the specified slot
+		/// </summary>
+		/// <typeparam name="T">The type to convert the slot data to</typeparam>
+		/// <param name="slot">the slot id of the player to request slot data for, defaults to the current player's slot if left empty</param>
+		/// <returns>The slot data, converted to a modeled object of the specified type</returns>
+		Task<T> GetSlotDataAsync<T>(int? slot = null) where T : class;
 #endif
 
 		/// <summary>
@@ -160,6 +183,26 @@ namespace Archipelago.MultiClient.Net.Helpers
 		/// <param name="team">the team id of the player to request the status for, defaults to the current player's team if left empty</param>
 		void TrackClientStatus(Action<ArchipelagoClientState> onStatusUpdated,
 			bool retrieveCurrentClientStatus = true, int? slot = null, int? team = null);
+
+		/// <summary>
+		/// Retrieves the server's race mode setting. false for disabled or unavailable, true for enabled
+		/// </summary>
+		/// <returns>The race mode setting. false for disabled or unavailable, true for enabled</returns>
+		bool GetRaceMode();
+
+#if NET35
+		/// <summary>
+		/// Retrieves the server's race mode setting. false for disabled or unavailable, true for enabled
+		/// </summary>
+		/// <param name="onRaceModeRetrieved"> the method to call with the retrieved race mode setting</param>
+		void GetRaceModeAsync(Action<bool> onRaceModeRetrieved);
+#else
+		/// <summary>
+		/// Retrieves the server's race mode setting. false for disabled or unavailable, true for enabled
+		/// </summary>
+		/// <returns>The race mode setting. false for disabled or unavailable, true for enabled</returns>
+		Task<bool> GetRaceModeAsync();
+#endif
 	}
 
 	public partial class DataStorageHelper : IDataStorageWrapper
@@ -174,6 +217,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 			this[Scope.ReadOnly, $"location_name_groups_{game ?? connectionInfoProvider.Game}"];
 		DataStorageElement GetClientStatusElement(int? slot = null, int? team = null) =>
 			this[Scope.ReadOnly, $"client_status_{team ?? connectionInfoProvider.Team}_{slot ?? connectionInfoProvider.Slot}"];
+		DataStorageElement GetRaceModeElement() => this[Scope.ReadOnly, "race_mode"];
 
 		/// <inheritdoc />
 		public Hint[] GetHints(int? slot = null, int? team = null) => 
@@ -203,16 +247,25 @@ namespace Archipelago.MultiClient.Net.Helpers
 		}
 
 		/// <inheritdoc />
-		public Dictionary<string, object> GetSlotData(int? slot = null) =>
-			GetSlotDataElement(slot).To<Dictionary<string, object>>();
+		public Dictionary<string, object> GetSlotData(int? slot = null) => 
+			GetSlotData<Dictionary<string, object>>(slot);
+		/// <inheritdoc/>
+		public T GetSlotData<T>(int? slot = null) where T : class =>
+			GetSlotDataElement(slot).To<T>();
 #if NET35
 		/// <inheritdoc />
 		public void GetSlotDataAsync(Action<Dictionary<string, object>> onSlotDataRetrieved, int? slot = null) =>
 			GetSlotDataElement(slot).GetAsync(t => onSlotDataRetrieved(t?.ToObject<Dictionary<string, object>>()));
+		/// <inheritdoc/>
+		public void GetSlotDataAsync<T>(Action<T> onSlotDataRetrieved, int? slot = null) where T : class =>
+			GetSlotDataElement(slot).GetAsync(t => onSlotDataRetrieved(t?.ToObject<T>()));
 #else
 		/// <inheritdoc />
 		public Task<Dictionary<string, object>> GetSlotDataAsync(int? slot = null) =>
-			GetSlotDataElement(slot).GetAsync<Dictionary<string, object>>();
+			GetSlotDataAsync<Dictionary<string, object>>(slot);
+		/// <inheritdoc/>
+		public Task<T> GetSlotDataAsync<T>(int? slot = null) where T : class =>
+			GetSlotDataElement(slot).GetAsync<T>();
 #endif
 
 		/// <inheritdoc />
@@ -270,5 +323,18 @@ namespace Archipelago.MultiClient.Net.Helpers
 				GetClientStatusAsync(slot, team).ContinueWith(t => onStatusUpdated(t.Result));
 #endif
 		}
+
+		/// <inheritdoc />
+		public bool GetRaceMode() =>
+			(GetRaceModeElement().To<int?>() ?? 0) > 0;
+#if NET35
+		/// <inheritdoc />
+		public void GetRaceModeAsync(Action<bool> onRaceModeRetrieved) =>
+			GetRaceModeElement().GetAsync(t => onRaceModeRetrieved((t.ToObject<int?>() ?? 0) > 0));
+#else
+		/// <inheritdoc />
+		public Task<bool> GetRaceModeAsync() => GetRaceModeElement().GetAsync<int?>()
+			.ContinueWith(t => (t.Result ?? 0) > 0);
+#endif
 	}
 }

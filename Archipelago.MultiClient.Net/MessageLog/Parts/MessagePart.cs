@@ -1,4 +1,5 @@
-﻿using Archipelago.MultiClient.Net.Enums;
+﻿using Archipelago.MultiClient.Net.Colors;
+using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Models;
 
 namespace Archipelago.MultiClient.Net.MessageLog.Parts
@@ -19,67 +20,45 @@ namespace Archipelago.MultiClient.Net.MessageLog.Parts
 		public MessagePartType Type { get; internal set; }
 
 		/// <summary>
-		/// The specified or default color for this message part
+		/// The color corresponding to <see cref="PaletteColor"/> in the built-in dark palette.
 		/// </summary>
-		public Color Color { get; internal set; }
+		public Color Color => GetColor(BuiltInPalettes.Dark);
 
 		/// <summary>
-		/// The specified background color for this message part
+		/// The specified color for this message part, or null if not specified.
+		/// </summary>
+		public PaletteColor? PaletteColor { get; protected set; }
+
+		/// <summary>
+		/// Whether this message part's color is intended to represent a background color
 		/// </summary>
 		public bool IsBackgroundColor { get; internal set; }
 
-		internal MessagePart(MessagePartType type, JsonMessagePart messagePart, Color? color = null)
+		internal MessagePart(MessagePartType type, JsonMessagePart messagePart, PaletteColor? color = null)
 		{
 			Type = type;
 			Text = messagePart.Text;
 
 			if (color.HasValue)
 			{
-				Color = color.Value;
+				PaletteColor = color.Value;
 			}
 			else if (messagePart.Color.HasValue)
 			{
-				Color = GetColor(messagePart.Color.Value);
+				PaletteColor = ColorUtils.GetColor(messagePart.Color.Value);
 				IsBackgroundColor = messagePart.Color.Value >= JsonMessagePartColor.BlackBg;
 			}
 			else
 			{
-				Color = Color.White;
+				PaletteColor = null;
 			}
 		}
 
-		static Color GetColor(JsonMessagePartColor color)
-		{
-			switch (color)
-			{
-				case JsonMessagePartColor.Red:
-				case JsonMessagePartColor.RedBg:
-					return Color.Red;
-				case JsonMessagePartColor.Green:
-				case JsonMessagePartColor.GreenBg:
-					return Color.Green;
-				case JsonMessagePartColor.Yellow:
-				case JsonMessagePartColor.YellowBg:
-					return Color.Yellow;
-				case JsonMessagePartColor.Blue:
-				case JsonMessagePartColor.BlueBg:
-					return Color.Blue;
-				case JsonMessagePartColor.Magenta:
-				case JsonMessagePartColor.MagentaBg:
-					return Color.Magenta;
-				case JsonMessagePartColor.Cyan:
-				case JsonMessagePartColor.CyanBg:
-					return Color.Cyan;
-				case JsonMessagePartColor.Black:
-				case JsonMessagePartColor.BlackBg:
-					return Color.Black;
-				case JsonMessagePartColor.White:
-				case JsonMessagePartColor.WhiteBg:
-					return Color.White;
-				default:
-					return Color.White;
-			}
-		}
+		/// <summary>
+		/// Gets the color corresponding to <see cref="PaletteColor"/> in the specified palette.
+		/// </summary>
+		/// <param name="palette">The palette to retrieve the color from</param>
+		public T GetColor<T>(Palette<T> palette) => palette[PaletteColor];
 
 		/// <summary>
 		/// The text to display of this message part

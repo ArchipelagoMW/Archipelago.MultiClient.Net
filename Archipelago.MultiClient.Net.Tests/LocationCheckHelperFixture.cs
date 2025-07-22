@@ -477,7 +477,7 @@ namespace Archipelago.MultiClient.Net.Tests
 
 #if !NET471
 		[Test]
-        public async Task Should_scout_locations_async()
+        public void Should_scout_locations_async_but_only_existing_ones()
         {
 	        var socket = Substitute.For<IArchipelagoSocketHelper>();
 	        var itemInfoResolver = Substitute.For<IItemInfoResolver>();
@@ -497,27 +497,150 @@ namespace Archipelago.MultiClient.Net.Tests
 			        { 1, new ReadOnlyCollection<PlayerInfo>(new List<PlayerInfo> { null, null, new PlayerInfo() }) }
 				}));
 #endif
-
 			ILocationCheckHelper sut = new LocationCheckHelper(socket, itemInfoResolver, connectionInfo, players);
+
+			var connected = new ConnectedPacket
+			{
+				LocationsChecked = new long[0],
+				MissingChecks = new[] { 1L }
+			};
+			socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(connected);
 
 			var locationScoutResponse = new LocationInfoPacket()
             {
                 Locations = new [] { new NetworkItem { Location = 1 } }
             };
 
-            var scoutTask = sut.ScoutLocationsAsync(1);
+            var scoutTask = sut.ScoutLocationsAsync(1, 2);
 
             Assert.That(scoutTask.IsCompleted, Is.False);
 
             socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(locationScoutResponse);
 
-            Assert.That(scoutTask.IsCompleted, Is.True);
+            scoutTask.Wait();
 
-			await scoutTask;
+            socket.Received().SendPacketAsync(Arg.Is<LocationScoutsPacket>(p => p.Locations.Length == 1 && p.Locations[0] == 1));
+
+			Assert.That(scoutTask.IsCompleted, Is.True);
+			Assert.That(scoutTask.Result, Is.Not.Null);
+			Assert.That(scoutTask.Result.Count, Is.EqualTo(1));
+			Assert.That(scoutTask.Result.First().Key, Is.EqualTo(1));
+		}
+
+		[Test]
+		public void Should_scout_locations_should_still_call_callback_if_no_locations_exist()
+		{
+			var socket = Substitute.For<IArchipelagoSocketHelper>();
+			var itemInfoResolver = Substitute.For<IItemInfoResolver>();
+			var connectionInfo = Substitute.For<IConnectionInfoProvider>();
+			connectionInfo.Team.Returns(1);
+			connectionInfo.Slot.Returns(2);
+
+			var players = Substitute.For<IPlayerHelper>();
+#if NET472
+	        players.Players.Returns(
+		        new Dictionary<int, ReadOnlyCollection<PlayerInfo>> {
+			        { 1, new ReadOnlyCollection<PlayerInfo>(new List<PlayerInfo> { null, null, new PlayerInfo() }) }
+		        });
+#else
+			players.Players.Returns(new ReadOnlyDictionary<int, ReadOnlyCollection<PlayerInfo>>(
+				new Dictionary<int, ReadOnlyCollection<PlayerInfo>> {
+					{ 1, new ReadOnlyCollection<PlayerInfo>(new List<PlayerInfo> { null, null, new PlayerInfo() }) }
+				}));
+#endif
+			ILocationCheckHelper sut = new LocationCheckHelper(socket, itemInfoResolver, connectionInfo, players);
+
+			var locationScoutResponse = new LocationInfoPacket()
+			{
+				Locations = new[] { new NetworkItem { Location = 1 } }
+			};
+
+			var scoutTask = sut.ScoutLocationsAsync(1, 2);
+
+			socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(locationScoutResponse);
+
+			scoutTask.Wait();
+
+			socket.DidNotReceive().SendPacketAsync(Arg.Any<LocationScoutsPacket>());
+
+			Assert.That(scoutTask.IsCompleted, Is.True);
+			Assert.That(scoutTask.Result, Is.Not.Null);
+			Assert.That(scoutTask.Result.Count, Is.EqualTo(0));
+		}
+#else
+		[Test]
+        public void Should_scout_locations_async_but_only_existing_ones()
+        {
+	        var socket = Substitute.For<IArchipelagoSocketHelper>();
+	        var itemInfoResolver = Substitute.For<IItemInfoResolver>();
+			var connectionInfo = Substitute.For<IConnectionInfoProvider>();
+			connectionInfo.Team.Returns(1);
+			connectionInfo.Slot.Returns(2);
+
+			var players = Substitute.For<IPlayerHelper>();
+
+	        players.Players.Returns(
+		        new Dictionary<int, ReadOnlyCollection<PlayerInfo>> {
+			        { 1, new ReadOnlyCollection<PlayerInfo>(new List<PlayerInfo> { null, null, new PlayerInfo() }) }
+		        });
+
+			ILocationCheckHelper sut = new LocationCheckHelper(socket, itemInfoResolver, connectionInfo, players);
+			
+			var connected = new ConnectedPacket
+			{
+				LocationsChecked = new long[0], 
+				MissingChecks = new[] { 1L }
+			};
+			socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(connected);
+
+			Dictionary<long, ScoutedItemInfo> scoutedLocations = null;
+
+            sut.ScoutLocationsAsync(scouted => { scoutedLocations = scouted; }, 1, 2);
+
+            var locationScoutResponse = new LocationInfoPacket
+            {
+	            Locations = new[] { new NetworkItem { Location = 1 } }
+            };
+
+            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(locationScoutResponse);
+
+			socket.Received().SendPacketAsync(Arg.Is<LocationScoutsPacket>(p => p.Locations.Length == 1 && p.Locations[0] == 1));
+
+			Assert.That(scoutedLocations, Is.Not.Null);
+            Assert.That(scoutedLocations.Count, Is.EqualTo(1));
+			Assert.That(scoutedLocations.First().Key, Is.EqualTo(1));
+		}
+
+        [Test]
+        public void Should_scout_locations_should_still_call_callback_if_no_locations_exist()
+        {
+	        var socket = Substitute.For<IArchipelagoSocketHelper>();
+	        var itemInfoResolver = Substitute.For<IItemInfoResolver>();
+	        var connectionInfo = Substitute.For<IConnectionInfoProvider>();
+	        connectionInfo.Team.Returns(1);
+	        connectionInfo.Slot.Returns(2);
+
+	        var players = Substitute.For<IPlayerHelper>();
+
+	        players.Players.Returns(
+		        new Dictionary<int, ReadOnlyCollection<PlayerInfo>> {
+			        { 1, new ReadOnlyCollection<PlayerInfo>(new List<PlayerInfo> { null, null, new PlayerInfo() }) }
+		        });
+
+	        ILocationCheckHelper sut = new LocationCheckHelper(socket, itemInfoResolver, connectionInfo, players);
+
+	        Dictionary<long, ScoutedItemInfo> scoutedLocations = null;
+
+	        sut.ScoutLocationsAsync(scouted => { scoutedLocations = scouted; }, 999);
+
+	        socket.DidNotReceive().SendPacketAsync(Arg.Any<LocationScoutsPacket>());
+
+	        Assert.That(scoutedLocations, Is.Not.Null);
+	        Assert.That(scoutedLocations.Count, Is.EqualTo(0));
         }
 #endif
-		
-	    [Test]
+
+		[Test]
 	    public void Should_ignore_non_existing_locations()
 	    {
 		    var socket = Substitute.For<IArchipelagoSocketHelper>();

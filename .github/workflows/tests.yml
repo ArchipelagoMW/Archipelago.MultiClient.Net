@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-     - uses: dorny/test-reporter@v1
+     - uses: dorny/test-reporter@v2
        with:
         artifact: TestResults
         name: NUnit Tests

@@ -14,6 +14,8 @@
 		/// <inheritdoc cref="T:Archipelago.MultiClient.Net.MessageLog.Parts.LocationMessagePart"/>
 		Location,
 		/// <inheritdoc cref="T:Archipelago.MultiClient.Net.MessageLog.Parts.EntranceMessagePart"/>
-		Entrance
+		Entrance,
+		/// <inheritdoc cref="T:Archipelago.MultiClient.Net.MessageLog.Parts.HintStatusMessagePart"/>
+		HintStatus
 	}
 }

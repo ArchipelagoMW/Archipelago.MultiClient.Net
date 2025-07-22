@@ -1,4 +1,5 @@
-﻿using Archipelago.MultiClient.Net.Enums;
+﻿using Archipelago.MultiClient.Net.Colors;
+using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Helpers;
 using Archipelago.MultiClient.Net.Models;
 
@@ -29,15 +30,7 @@ namespace Archipelago.MultiClient.Net.MessageLog.Parts
 					break;
 			}
 
-			Color = GetColor(IsActivePlayer);
-		}
-
-		static Color GetColor(bool isActivePlayer)
-		{
-			if (isActivePlayer)
-				return Color.Magenta;
-
-			return Color.Yellow;
+			PaletteColor = IsActivePlayer ? ColorUtils.ActivePlayerColor : ColorUtils.NonActivePlayerColor;
 		}
 	}
 }

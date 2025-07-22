@@ -11,8 +11,8 @@ namespace Archipelago.MultiClient.Net.MessageLog.Messages
 	public class ReleaseLogMessage : PlayerSpecificLogMessage
 	{
 		internal ReleaseLogMessage(MessagePart[] parts,
-			IPlayerHelper players, IConnectionInfoProvider connectionInfo, int team, int slot)
-			: base(parts, players, connectionInfo, team, slot)
+			IPlayerHelper players, int team, int slot)
+			: base(parts, players, team, slot)
 		{
 		}
 	}

@@ -5,6 +5,11 @@
 	/// </summary>
     public enum ConnectionRefusedError
     {
+	    /// <summary>
+	    /// Indicates that server the server send en error code not known to this library.
+	    /// </summary>
+		UnknownError = 0,
+
         /// <summary>
         /// Indicates that the sent 'name' field did not match any auth entry on the server.
         /// </summary>
