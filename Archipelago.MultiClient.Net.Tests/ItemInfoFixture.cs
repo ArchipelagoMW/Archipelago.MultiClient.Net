@@ -36,12 +36,13 @@ namespace Archipelago.MultiClient.Net.Tests
 				}
 			};
 
+			var playerHelper = Substitute.For<IPlayerHelper>();
 			var itemInfoResolver = Substitute.For<IItemInfoResolver>();
 			itemInfoResolver.GetItemName(networkItem.Item, scouted ? remotePlayerGame : myGame).Returns("ItemToSendName");
 			itemInfoResolver.GetLocationName(networkItem.Location, scouted ? myGame : remotePlayerGame).Returns("LocationOfItemName");
 
 			var sut = scouted
-				? new ScoutedItemInfo(networkItem, remotePlayerGame, myGame, itemInfoResolver, remotePlayer)
+				? new ScoutedItemInfo(networkItem, remotePlayerGame, myGame, itemInfoResolver, playerHelper, remotePlayer)
 				: new ItemInfo(networkItem, myGame, remotePlayerGame, itemInfoResolver, remotePlayer);
 
 			var serializable = sut.ToSerializable();
@@ -197,6 +198,87 @@ namespace Archipelago.MultiClient.Net.Tests
 				Assert.That(deserialized.LocationName, Is.Null);
 				Assert.That(deserialized.LocationDisplayName, Is.EqualTo($"Location: {deserialized.LocationId}"));
 			}
+		}
+
+		[Test]
+		public void Scout_should_be_related_when_player_is_active_player()
+		{
+			var activePlayer = new PlayerInfo(1, 1, "Me", "Myself", "Hollow Knight", [], []);
+
+			var itemInfoResolver = Substitute.For<IItemInfoResolver>();
+			var playerHelper = Substitute.For<IPlayerHelper>();
+			playerHelper.ActivePlayer.Returns(activePlayer);
+
+			var scoutedItem = new ScoutedItemInfo(new NetworkItem
+			{
+				Flags = ItemFlags.None,
+				Item = 10,
+				Location = 20,
+				Player = 1
+			}, "Hollow Knight", "Hollow Knight", itemInfoResolver, playerHelper, activePlayer);
+
+			Assert.That(scoutedItem.IsReceiverRelatedToActivePlayer, Is.True);
+		}
+
+		[Test]
+		public void Scout_should_be_related_when_player_is_relevant_group()
+		{
+			var networkGroup = new NetworkSlot
+			{
+				Game = "Hollow Knight",
+				Name = "Everygrubby",
+				Type = SlotType.Group,
+				GroupMembers = [1, 2]
+			};
+			var activePlayer = new PlayerInfo(1, 1, "Me", "Myself", "Hollow Knight", [networkGroup], []);
+			var group = new PlayerInfo(1, 3, "Everygrubby", "Everygrubby", "Hollow Knight", [], [1, 2]);
+
+			var itemInfoResolver = Substitute.For<IItemInfoResolver>();
+			var playerHelper = Substitute.For<IPlayerHelper>();
+			playerHelper.ActivePlayer.Returns(activePlayer);
+			playerHelper.GetPlayerInfo(1, 1).Returns(activePlayer);
+			playerHelper.GetPlayerInfo(1, 3).Returns(group);
+
+			var scoutedItem = new ScoutedItemInfo(new NetworkItem
+			{
+				Flags = ItemFlags.None,
+				Item = 10,
+				Location = 20,
+				Player = 3
+			}, "Hollow Knight", "Hollow Knight", itemInfoResolver, playerHelper, group);
+
+			Assert.That(scoutedItem.IsReceiverRelatedToActivePlayer, Is.True);
+		}
+
+		[Test]
+		public void Scout_should_not_be_related_when_player_is_shared_itemlink()
+		{
+			var networkGroup = new NetworkSlot
+			{
+				Game = "Hollow Knight",
+				Name = "Everygrubby",
+				Type = SlotType.Group,
+				GroupMembers = [1, 2]
+			};
+			var activePlayer = new PlayerInfo(1, 1, "Me", "Myself", "Hollow Knight", [networkGroup], []);
+			var otherPlayer = new PlayerInfo(1, 2, "Other", "Other", "Hollow Knight", [networkGroup], []);
+			var group = new PlayerInfo(1, 3, "Everygrubby", "Everygrubby", "Hollow Knight", [], [1, 2]);
+
+			var itemInfoResolver = Substitute.For<IItemInfoResolver>();
+			var playerHelper = Substitute.For<IPlayerHelper>();
+			playerHelper.ActivePlayer.Returns(activePlayer);
+			playerHelper.GetPlayerInfo(1, 2).Returns(group);
+			playerHelper.GetPlayerInfo(1, 3).Returns(group);
+
+			var scoutedItem = new ScoutedItemInfo(new NetworkItem
+			{
+				Flags = ItemFlags.None,
+				Item = 10,
+				Location = 20,
+				Player = 2
+			}, "Hollow Knight", "Hollow Knight", itemInfoResolver, playerHelper, otherPlayer);
+
+			Assert.That(scoutedItem.IsReceiverRelatedToActivePlayer, Is.False);
 		}
 
 		static IArchipelagoSession CreateTestSession(bool scouted, string remotePlayerGame, string myGame, SerializableItemInfo itemInfo)

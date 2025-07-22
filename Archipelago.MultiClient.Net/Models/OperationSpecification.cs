@@ -33,7 +33,7 @@ namespace Archipelago.MultiClient.Net.Models
 #if NET6_0_OR_GREATER
         [JsonConverter(typeof(JsonSnakeCaseStringEnumConverter))]
 #else
-		[JsonConverter(typeof(StringEnumConverter), typeof(SnakeCaseNamingStrategy))]
+		[JsonConverter(typeof(AttemptingStringEnumConverter), typeof(SnakeCaseNamingStrategy))]
 #endif
 		public OperationType OperationType;
 

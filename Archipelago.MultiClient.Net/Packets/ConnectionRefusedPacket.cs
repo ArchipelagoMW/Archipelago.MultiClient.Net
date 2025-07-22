@@ -5,7 +5,6 @@
 using JsonProperty = System.Text.Json.Serialization.JsonPropertyNameAttribute;
 #else
 using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 #endif
 
 namespace Archipelago.MultiClient.Net.Packets
@@ -14,7 +13,7 @@ namespace Archipelago.MultiClient.Net.Packets
     {
         public override ArchipelagoPacketType PacketType => ArchipelagoPacketType.ConnectionRefused;
 
-        [JsonProperty("errors", ItemConverterType = typeof(StringEnumConverter))]
+        [JsonProperty("errors", ItemConverterType = typeof(AttemptingStringEnumConverter))]
         public ConnectionRefusedError[] Errors { get; set; }
     }
 }

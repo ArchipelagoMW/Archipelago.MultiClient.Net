@@ -8,7 +8,7 @@ namespace Archipelago.MultiClient.Net.MessageLog.Parts
 	/// <seealso cref="T:Archipelago.MultiClient.Net.MessageLog.Parts.MessagePart"/>
 	public class EntranceMessagePart : MessagePart
 	{
-		internal EntranceMessagePart(JsonMessagePart messagePart) : base(MessagePartType.Entrance, messagePart, Color.Blue)
+		internal EntranceMessagePart(JsonMessagePart messagePart) : base(MessagePartType.Entrance, messagePart, Colors.PaletteColor.Blue)
 		{
 			Text = messagePart.Text;
 		}

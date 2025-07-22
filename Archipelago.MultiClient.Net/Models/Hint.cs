@@ -30,5 +30,8 @@ namespace Archipelago.MultiClient.Net.Models
 
 		[JsonProperty("entrance")]
 		public string Entrance { get; set; }
+
+		[JsonProperty("status")]
+		public HintStatus Status { get; set; }
 	}
 }

@@ -107,11 +107,18 @@ namespace Archipelago.MultiClient.Net.Models
 		public new PlayerInfo Player => base.Player;
 
 		/// <summary>
+		/// True if the receiver is concerning any slot groups (e.g. itemlinks) with the current connected player
+		/// </summary>
+		public bool IsReceiverRelatedToActivePlayer { get; }
+
+		/// <summary>
 		/// The constructor what else did you expect it to be
 		/// </summary>
-		public ScoutedItemInfo(NetworkItem item, string receiverGame, string senderGame, IItemInfoResolver itemInfoResolver, PlayerInfo player) 
+		public ScoutedItemInfo(NetworkItem item, string receiverGame, string senderGame, IItemInfoResolver itemInfoResolver, 
+			IPlayerHelper players, PlayerInfo player) 
 			: base(item, receiverGame, senderGame, itemInfoResolver, player)
 		{
+			IsReceiverRelatedToActivePlayer = (players.ActivePlayer ?? new PlayerInfo()).IsRelatedTo(player);
 		}
 	}
 }

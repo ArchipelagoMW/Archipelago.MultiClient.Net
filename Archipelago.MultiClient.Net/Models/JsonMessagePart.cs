@@ -6,7 +6,6 @@ using System.Text.Json.Serialization;
 using Archipelago.MultiClient.Net.Converters;
 #else
 using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
 #endif
 
@@ -16,7 +15,7 @@ namespace Archipelago.MultiClient.Net.Models
     {
         [JsonProperty("type")]
 #if NET6_0_OR_GREATER
-        [JsonConverter(typeof(JsonSnakeCaseStringEnumConverter))]
+        [JsonConverter(typeof(AttemptingStringEnumConverter))]
 #else
 		[JsonConverter(typeof(StringEnumConverter), typeof(SnakeCaseNamingStrategy))]
 #endif
@@ -24,7 +23,7 @@ namespace Archipelago.MultiClient.Net.Models
 
         [JsonProperty("color")]
 #if NET6_0_OR_GREATER
-        [JsonConverter(typeof(JsonSnakeCaseStringEnumConverter))]
+        [JsonConverter(typeof(AttemptingStringEnumConverter))]
 #else
 		[JsonConverter(typeof(StringEnumConverter), typeof(SnakeCaseNamingStrategy))]
 #endif
@@ -38,5 +37,8 @@ namespace Archipelago.MultiClient.Net.Models
 
         [JsonProperty("flags")]
         public ItemFlags? Flags { get; set; }
-    }
+
+        [JsonProperty("hint_status")]
+        public HintStatus? HintStatus { get; set; }
+	}
 }

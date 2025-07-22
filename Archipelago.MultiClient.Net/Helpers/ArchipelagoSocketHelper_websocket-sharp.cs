@@ -403,10 +403,20 @@ namespace Archipelago.MultiClient.Net.Helpers
         {
 	        if (!e.IsText || PacketReceived == null) return;
 
-	        var packets = JsonConvert.DeserializeObject<List<ArchipelagoPacketBase>>(e.Data, Converter);
+	        List<ArchipelagoPacketBase> packets = null;
 
-	        foreach (var packet in packets)
-		        PacketReceived(packet);
+	        try
+	        {
+		        packets = JsonConvert.DeserializeObject<List<ArchipelagoPacketBase>>(e.Data, Converter);
+	        }
+	        catch (Exception exception)
+	        {
+		        OnError(exception);
+	        }
+			
+			if (packets != null)
+				foreach (var packet in packets)
+			        PacketReceived(packet);
         }
 
         void OnError(object sender, ErrorEventArgs e)

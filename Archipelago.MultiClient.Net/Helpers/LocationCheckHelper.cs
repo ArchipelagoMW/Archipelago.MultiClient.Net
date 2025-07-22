@@ -325,7 +325,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 			                    item => item.Location,
 			                    item => {
 				                    var otherPlayer = players.GetPlayerInfo(item.Player) ?? new PlayerInfo();
-									return new ScoutedItemInfo(item, otherPlayer.Game, connectionInfoProvider.Game, itemInfoResolver, otherPlayer);
+									return new ScoutedItemInfo(item, otherPlayer.Game, connectionInfoProvider.Game, itemInfoResolver, players, otherPlayer);
 			                    });
 
 		                    locationInfoPacketCallbackTask.TrySetResult(items);
@@ -415,10 +415,17 @@ namespace Archipelago.MultiClient.Net.Helpers
 	    /// <inheritdoc/>
 		public void ScoutLocationsAsync(Action<Dictionary<long, ScoutedItemInfo>> callback = null, 
 		    HintCreationPolicy hintCreationPolicy = HintCreationPolicy.None, params long[] ids)
-        {
-            socket.SendPacketAsync(new LocationScoutsPacket
+		{
+			var idsToScout = ids.Where(i => allLocations.Contains(i)).ToArray();
+			if (!idsToScout.Any())
+			{
+				callback?.Invoke(new Dictionary<long, ScoutedItemInfo>());
+				return;
+			}
+
+			socket.SendPacketAsync(new LocationScoutsPacket
             {
-                Locations = ids,
+                Locations = idsToScout,
                 CreateAsHint = (int)hintCreationPolicy
 			});
             awaitingLocationInfoPacket = true;
@@ -428,10 +435,10 @@ namespace Archipelago.MultiClient.Net.Helpers
 		            item => item.Location,
 		            item => {
 			            var otherPlayer = players.GetPlayerInfo(item.Player) ?? new PlayerInfo();
-			            return new ScoutedItemInfo(item, otherPlayer.Game, connectionInfoProvider.Game, itemInfoResolver, otherPlayer);
+			            return new ScoutedItemInfo(item, otherPlayer.Game, connectionInfoProvider.Game, itemInfoResolver, players, otherPlayer);
 		            });
-				callback(items);
-            };
+	            callback?.Invoke(items);
+			};
         }
 
 	    /// <inheritdoc/>
@@ -447,12 +454,24 @@ namespace Archipelago.MultiClient.Net.Helpers
 	    /// <inheritdoc/>
 		public Task<Dictionary<long, ScoutedItemInfo>> ScoutLocationsAsync(HintCreationPolicy hintCreationPolicy, params long[] ids)
         {
-            locationInfoPacketCallbackTask = new TaskCompletionSource<Dictionary<long, ScoutedItemInfo>>();
+	        var idsToScout = ids.Where(i => allLocations.Contains(i)).ToArray();
+	        if (!idsToScout.Any())
+	        {
+#if NET40
+		        var task = new TaskCompletionSource<Dictionary<long, ScoutedItemInfo>>();
+				task.SetResult(new Dictionary<long, ScoutedItemInfo>());
+				return task.Task;
+#else
+		        return Task.FromResult(new Dictionary<long, ScoutedItemInfo>());
+#endif
+			}
+			
+			locationInfoPacketCallbackTask = new TaskCompletionSource<Dictionary<long, ScoutedItemInfo>>();
             awaitingLocationInfoPacket = true;
 
-            socket.SendPacket(new LocationScoutsPacket
+            socket.SendPacketAsync(new LocationScoutsPacket
             {
-                Locations = ids,
+                Locations = idsToScout,
                 CreateAsHint = (int)hintCreationPolicy
 			});
 
