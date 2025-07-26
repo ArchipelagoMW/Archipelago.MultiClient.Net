@@ -15,6 +15,7 @@ namespace Archipelago.MultiClient.Net.Enums
         ConnectUpdate,
         LocationChecks,
         LocationScouts,
+        CreateHints,
         StatusUpdate,
         Say,
         GetDataPackage,

@@ -413,7 +413,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 
 #if NET35
 	    /// <inheritdoc/>
-		public void ScoutLocationsAsync(Action<Dictionary<long, ScoutedItemInfo>> callback = null, 
+		public void ScoutLocationsAsync(Action<Dictionary<long, ScoutedItemInfo>> callback = null,
 		    HintCreationPolicy hintCreationPolicy = HintCreationPolicy.None, params long[] ids)
 		{
 			var idsToScout = ids.Where(i => allLocations.Contains(i)).ToArray();
