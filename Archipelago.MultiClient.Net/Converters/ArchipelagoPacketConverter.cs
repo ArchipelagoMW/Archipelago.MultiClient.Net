@@ -7,13 +7,13 @@ using System.Collections.Generic;
 
 namespace Archipelago.MultiClient.Net.Converters
 {
-	/// <summary>
-	/// Json Converter for archipelago packets
-	/// </summary>
+    /// <summary>
+    /// Json Converter for archipelago packets
+    /// </summary>
     public class ArchipelagoPacketConverter : JsonConverter
     {
         static readonly Dictionary<ArchipelagoPacketType, Func<JObject, ArchipelagoPacketBase>> PacketDeserializationMap = 
-	        new Dictionary<ArchipelagoPacketType, Func<JObject, ArchipelagoPacketBase>>(23)
+            new Dictionary<ArchipelagoPacketType, Func<JObject, ArchipelagoPacketBase>>(23)
         {
             [ArchipelagoPacketType.RoomInfo]          = obj => obj.ToObject<RoomInfoPacket>(),
             [ArchipelagoPacketType.ConnectionRefused] = obj => obj.ToObject<ConnectionRefusedPacket>(),
@@ -26,8 +26,8 @@ namespace Archipelago.MultiClient.Net.Converters
             [ArchipelagoPacketType.ConnectUpdate]     = obj => obj.ToObject<ConnectUpdatePacket>(),
             [ArchipelagoPacketType.LocationChecks]    = obj => obj.ToObject<LocationChecksPacket>(),
             [ArchipelagoPacketType.LocationScouts]    = obj => obj.ToObject<LocationScoutsPacket>(),
-			[ArchipelagoPacketType.CreateHints]		  = obj => obj.ToObject<CreateHintsPacket>(),
-			[ArchipelagoPacketType.StatusUpdate]      = obj => obj.ToObject<StatusUpdatePacket>(),
+            [ArchipelagoPacketType.CreateHints]		  = obj => obj.ToObject<CreateHintsPacket>(),
+            [ArchipelagoPacketType.StatusUpdate]      = obj => obj.ToObject<StatusUpdatePacket>(),
             [ArchipelagoPacketType.Say]               = obj => obj.ToObject<SayPacket>(),
             [ArchipelagoPacketType.GetDataPackage]    = obj => obj.ToObject<GetDataPackagePacket>(),
             [ArchipelagoPacketType.DataPackage]       = obj => obj.ToObject<DataPackagePacket>(),
@@ -42,28 +42,28 @@ namespace Archipelago.MultiClient.Net.Converters
         };
 
         /// <inheritdoc/>
-		public override bool CanWrite => false;
+        public override bool CanWrite => false;
 
         /// <inheritdoc/>
-		public override bool CanConvert(Type objectType) => objectType.IsAssignableFrom(typeof(ArchipelagoPacketBase));
+        public override bool CanConvert(Type objectType) => objectType.IsAssignableFrom(typeof(ArchipelagoPacketBase));
 
         /// <inheritdoc/>
-		public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
             var token = JObject.Load(reader);
 
             var commandType = token["cmd"]?.ToString();
 
             ArchipelagoPacketBase packet;
-			if (EnumTryParse(commandType, out ArchipelagoPacketType packetType) && PacketDeserializationMap.ContainsKey(packetType))
-				packet = PacketDeserializationMap[packetType](token);
-			else
-				packet = new UnknownPacket();
+            if (EnumTryParse(commandType, out ArchipelagoPacketType packetType) && PacketDeserializationMap.ContainsKey(packetType))
+                packet = PacketDeserializationMap[packetType](token);
+            else
+                packet = new UnknownPacket();
 
-	        packet.jobject = token;
+            packet.jobject = token;
 
-	        return packet;
-		}
+            return packet;
+        }
 
         static ArchipelagoPacketBase DeserializePrintJsonPacket(JObject obj)
         {
@@ -73,37 +73,37 @@ namespace Archipelago.MultiClient.Net.Converters
                 {
                     switch (type)
                     {
-	                    case JsonMessageType.ItemSend:
-		                    return obj.ToObject<ItemPrintJsonPacket>();
-	                    case JsonMessageType.ItemCheat:
-		                    return obj.ToObject<ItemCheatPrintJsonPacket>();
-						case JsonMessageType.Hint:
+                        case JsonMessageType.ItemSend:
+                            return obj.ToObject<ItemPrintJsonPacket>();
+                        case JsonMessageType.ItemCheat:
+                            return obj.ToObject<ItemCheatPrintJsonPacket>();
+                        case JsonMessageType.Hint:
                             return obj.ToObject<HintPrintJsonPacket>();
-	                    case JsonMessageType.Join:
-		                    return obj.ToObject<JoinPrintJsonPacket>();
-	                    case JsonMessageType.Part:
-		                    return obj.ToObject<LeavePrintJsonPacket>();
-	                    case JsonMessageType.Chat:
-		                    return obj.ToObject<ChatPrintJsonPacket>();
-	                    case JsonMessageType.ServerChat:
-		                    return obj.ToObject<ServerChatPrintJsonPacket>();
-	                    case JsonMessageType.Tutorial:
-		                    return obj.ToObject<TutorialPrintJsonPacket>();
-	                    case JsonMessageType.TagsChanged:
-		                    return obj.ToObject<TagsChangedPrintJsonPacket>();
-	                    case JsonMessageType.CommandResult:
-		                    return obj.ToObject<CommandResultPrintJsonPacket>();
-	                    case JsonMessageType.AdminCommandResult:
-		                    return obj.ToObject<AdminCommandResultPrintJsonPacket>();
-	                    case JsonMessageType.Goal:
-		                    return obj.ToObject<GoalPrintJsonPacket>();
-	                    case JsonMessageType.Release:
-		                    return obj.ToObject<ReleasePrintJsonPacket>();
-	                    case JsonMessageType.Collect:
-		                    return obj.ToObject<CollectPrintJsonPacket>();
-						case JsonMessageType.Countdown:
-	                        return obj.ToObject<CountdownPrintJsonPacket>();
-					}
+                        case JsonMessageType.Join:
+                            return obj.ToObject<JoinPrintJsonPacket>();
+                        case JsonMessageType.Part:
+                            return obj.ToObject<LeavePrintJsonPacket>();
+                        case JsonMessageType.Chat:
+                            return obj.ToObject<ChatPrintJsonPacket>();
+                        case JsonMessageType.ServerChat:
+                            return obj.ToObject<ServerChatPrintJsonPacket>();
+                        case JsonMessageType.Tutorial:
+                            return obj.ToObject<TutorialPrintJsonPacket>();
+                        case JsonMessageType.TagsChanged:
+                            return obj.ToObject<TagsChangedPrintJsonPacket>();
+                        case JsonMessageType.CommandResult:
+                            return obj.ToObject<CommandResultPrintJsonPacket>();
+                        case JsonMessageType.AdminCommandResult:
+                            return obj.ToObject<AdminCommandResultPrintJsonPacket>();
+                        case JsonMessageType.Goal:
+                            return obj.ToObject<GoalPrintJsonPacket>();
+                        case JsonMessageType.Release:
+                            return obj.ToObject<ReleasePrintJsonPacket>();
+                        case JsonMessageType.Collect:
+                            return obj.ToObject<CollectPrintJsonPacket>();
+                        case JsonMessageType.Countdown:
+                            return obj.ToObject<CountdownPrintJsonPacket>();
+                    }
                 }
 
                 obj["type"] = null;
@@ -116,7 +116,7 @@ namespace Archipelago.MultiClient.Net.Converters
         static bool EnumTryParse<TEnum>(string value, out TEnum result) where TEnum : struct, IConvertible
         {
 #if NET35
-			if (value == null || !Enum.IsDefined(typeof(TEnum), value))
+            if (value == null || !Enum.IsDefined(typeof(TEnum), value))
             {
                 result = default;
                 return false;
@@ -126,12 +126,12 @@ namespace Archipelago.MultiClient.Net.Converters
             return true;
 #else
 #pragma warning disable IDE0022 // Use expression body for methods
-			return Enum.TryParse(value, out result);
+            return Enum.TryParse(value, out result);
 #pragma warning restore IDE0022 // Use expression body for methods
 #endif
-		}
+        }
 
-		/// <inheritdoc/>
-		public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer) => throw new NotImplementedException();
+        /// <inheritdoc/>
+        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer) => throw new NotImplementedException();
     }
 }

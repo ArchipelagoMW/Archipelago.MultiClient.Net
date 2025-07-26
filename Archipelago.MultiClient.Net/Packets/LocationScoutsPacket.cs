@@ -12,5 +12,5 @@ namespace Archipelago.MultiClient.Net.Packets
 
         [JsonProperty("create_as_hint")]
         public int CreateAsHint { get; set; }
-	}
+    }
 }
