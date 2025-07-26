@@ -61,6 +61,9 @@
 	</ItemGroup>
 
 	<ItemGroup Condition="'$(TargetFramework)' == 'net45'">
+		<PackageReference Include="Microsoft.NETCore.Platforms">
+		  <Version>7.0.4</Version>
+		</PackageReference>
 		<Reference Include="Newtonsoft.Json">
 			<HintPath>..\DLLs\net45\Newtonsoft.Json.dll</HintPath>
 		</Reference>
@@ -74,6 +77,29 @@
 
 	<ItemGroup>
 	  <Folder Include="Icon\" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net40" Version="1.0.3">
+	    <PrivateAssets>all</PrivateAssets>
+	    <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+	  </PackageReference>
+	  <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net45" Version="1.0.3">
+	    <PrivateAssets>all</PrivateAssets>
+	    <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+	  </PackageReference>
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+	  <PackageReference Include="Microsoft.NETCore.Platforms">
+	    <Version>7.0.4</Version>
+	  </PackageReference>
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
+	  <PackageReference Include="Microsoft.NETCore.Platforms">
+	    <Version>7.0.4</Version>
+	  </PackageReference>
 	</ItemGroup>
 
 	<Target Name="Copy3rdPartyAssembliesTarget">
