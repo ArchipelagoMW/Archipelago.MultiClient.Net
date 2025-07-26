@@ -169,7 +169,7 @@ namespace Archipelago.MultiClient.Net
                                     ConnectionInfoHelper connectionInfoHelper,
                                     IDataStorageHelper dataStorage,
                                     IMessageLogHelper messageLog,
-									ICreateHintsHelper createHints)
+                                    ICreateHintsHelper createHints)
         {
             Socket = socket;
             Items = items;
@@ -179,7 +179,7 @@ namespace Archipelago.MultiClient.Net
             connectionInfo = connectionInfoHelper;
             DataStorage = dataStorage;
             MessageLog = messageLog;
-			CreateHints = createHints;
+            CreateHints = createHints;
             
             socket.PacketReceived += Socket_PacketReceived;
         }

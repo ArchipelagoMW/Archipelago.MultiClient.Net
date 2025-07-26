@@ -27,7 +27,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// <exception cref="T:Archipelago.MultiClient.Net.Exceptions.ArchipelagoSocketClosedException">
         ///     The websocket connection is not alive.
         /// </exception>
-        void CreateHintsAsync(int player, HintStatus hintStatus = HintStatus.Unspecified, params long[] ids);
+        void CreateHints(int player, HintStatus hintStatus = HintStatus.Unspecified, params long[] ids);
 
         /// <summary>
         ///     Tell the server to create hints for the specified locations.
@@ -44,7 +44,7 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// <exception cref="T:Archipelago.MultiClient.Net.Exceptions.ArchipelagoSocketClosedException">
         ///     The websocket connection is not alive.
         /// </exception>
-        void CreateHintsAsync(HintStatus hintStatus = HintStatus.Unspecified, params long[] ids);
+        void CreateHints(HintStatus hintStatus = HintStatus.Unspecified, params long[] ids);
     }
 
     ///<inheritdoc/>
@@ -66,16 +66,16 @@ namespace Archipelago.MultiClient.Net.Helpers
             this.roomStateHelper = roomStateHelper;
         }
         /// <inheritdoc/>
-        public void CreateHintsAsync(int player, HintStatus hintStatus = HintStatus.Unspecified, params long[] ids)
+        public void CreateHints(int player, HintStatus hintStatus = HintStatus.Unspecified, params long[] ids)
         {
             // The server supports CreateHints after version 0.6.2
             if (roomStateHelper.Version.CompareTo(new Version(0, 6, 2)) <= 0)
             {
-                CreateHintsAsyncFallback(ids);
+                CreateHintsFallback(ids);
             }
             else
             {
-                socket.SendPacketAsync(new CreateHintsPacket
+                socket.SendPacket(new CreateHintsPacket
                 {
                     Locations = ids,
                     Player = player,
@@ -87,18 +87,18 @@ namespace Archipelago.MultiClient.Net.Helpers
 #if NET35
 
         /// <inheritdoc/>
-        public void CreateHintsAsyncFallback(params long[] ids) => locationCheckHelper.ScoutLocationsAsync(null, true, ids);
+        public void CreateHintsFallback(params long[] ids) => locationCheckHelper.ScoutLocationsAsync(null, true, ids);
 #else
         /// <inheritdoc/>
-        public void CreateHintsAsyncFallback(params long[] ids) => locationCheckHelper.ScoutLocationsAsync(true, ids);
+        public void CreateHintsFallback(params long[] ids) => locationCheckHelper.ScoutLocationsAsync(true, ids);
 #endif
 
         /// <inheritdoc/>
-        public void CreateHintsAsync(HintStatus hintStatus = HintStatus.Unspecified, params long[] ids)
+        public void CreateHints(HintStatus hintStatus = HintStatus.Unspecified, params long[] ids)
         {
             // When the player is not included, it defaults to the requesting slot.
             var currentPlayer = players.ActivePlayer.Slot;
-            CreateHintsAsync(currentPlayer, hintStatus, ids);
+            CreateHints(currentPlayer, hintStatus, ids);
         }
     }
 }
