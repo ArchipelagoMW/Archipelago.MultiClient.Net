@@ -18,6 +18,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.md = README.md
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Archipelago.MultiClient.WebSockets", "Archipelago.MultiClient.WebSockets\Archipelago.MultiClient.WebSockets.csproj", "{43EAFDC0-8293-4C45-82C2-C1BC8905230A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -32,6 +34,10 @@ Global
 		{BD1C42B9-FCAF-41FB-8682-65DD4AED3C62}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BD1C42B9-FCAF-41FB-8682-65DD4AED3C62}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BD1C42B9-FCAF-41FB-8682-65DD4AED3C62}.Release|Any CPU.Build.0 = Release|Any CPU
+		{43EAFDC0-8293-4C45-82C2-C1BC8905230A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{43EAFDC0-8293-4C45-82C2-C1BC8905230A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{43EAFDC0-8293-4C45-82C2-C1BC8905230A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{43EAFDC0-8293-4C45-82C2-C1BC8905230A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
