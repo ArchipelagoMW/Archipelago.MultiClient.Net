@@ -1,6 +1,8 @@
 ﻿using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Packets;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Archipelago.MultiClient.Net.Helpers
 {
@@ -87,10 +89,10 @@ namespace Archipelago.MultiClient.Net.Helpers
 #if NET35
 
         /// <inheritdoc/>
-        public void CreateHintsFallback(params long[] ids) => locationCheckHelper.ScoutLocationsAsync(null, true, ids);
+        public void CreateHintsFallback(params long[] ids) => locationCheckHelper.ScoutLocationsAsync(null, createAsHint: true, ids);
 #else
         /// <inheritdoc/>
-        public void CreateHintsFallback(params long[] ids) => locationCheckHelper.ScoutLocationsAsync(true, ids);
+        public void CreateHintsFallback(params long[] ids) => locationCheckHelper.ScoutLocationsAsync(createAsHint: true, ids);
 #endif
 
         /// <inheritdoc/>
