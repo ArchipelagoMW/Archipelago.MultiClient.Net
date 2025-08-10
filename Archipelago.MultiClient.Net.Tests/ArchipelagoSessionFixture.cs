@@ -193,8 +193,9 @@ namespace Archipelago.MultiClient.Net.Tests
 			var roomState = new RoomStateHelper(socket, locations);
 			var dataStorage = new DataStorageHelper(socket, connectionInfo);
 			var messageLog = new MessageLogHelper(socket, itemInfoResolver, players, connectionInfo);
+			var createHints = new CreateHintsHelper(socket, players, locations, roomState);
 
-			return new ArchipelagoSession(socket, items, locations, players, roomState, connectionInfo, dataStorage, messageLog);
+			return new ArchipelagoSession(socket, items, locations, players, roomState, connectionInfo, dataStorage, messageLog, createHints);
 		}
 
 		static void SetupLoginResultPacket(IArchipelagoSocketHelper socket, ArchipelagoPacketBase loginResultPacket) =>

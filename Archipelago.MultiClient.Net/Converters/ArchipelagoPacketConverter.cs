@@ -26,6 +26,7 @@ namespace Archipelago.MultiClient.Net.Converters
             [ArchipelagoPacketType.ConnectUpdate]     = obj => obj.ToObject<ConnectUpdatePacket>(),
             [ArchipelagoPacketType.LocationChecks]    = obj => obj.ToObject<LocationChecksPacket>(),
             [ArchipelagoPacketType.LocationScouts]    = obj => obj.ToObject<LocationScoutsPacket>(),
+            [ArchipelagoPacketType.CreateHints]       = obj => obj.ToObject<CreateHintsPacket>(),
             [ArchipelagoPacketType.StatusUpdate]      = obj => obj.ToObject<StatusUpdatePacket>(),
             [ArchipelagoPacketType.Say]               = obj => obj.ToObject<SayPacket>(),
             [ArchipelagoPacketType.GetDataPackage]    = obj => obj.ToObject<GetDataPackagePacket>(),
