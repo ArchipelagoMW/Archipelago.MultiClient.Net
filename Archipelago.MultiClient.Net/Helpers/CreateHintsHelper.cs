@@ -67,6 +67,7 @@ namespace Archipelago.MultiClient.Net.Helpers
             this.locationCheckHelper = locationCheckHelper;
             this.roomStateHelper = roomStateHelper;
         }
+
         /// <inheritdoc/>
         public void CreateHints(int player, HintStatus hintStatus = HintStatus.Unspecified, params long[] ids)
         {
