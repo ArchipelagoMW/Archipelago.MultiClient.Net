@@ -1,7 +1,6 @@
 ﻿using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Models;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 
 #pragma warning disable CS1591
 
@@ -15,7 +14,7 @@ namespace Archipelago.MultiClient.Net.Packets
         public JsonMessagePart[] Data { get; set; }
 
         [JsonProperty("type")]
-        [JsonConverter(typeof(StringEnumConverter))]
+        [JsonConverter(typeof(AttemptingStringEnumConverter))]
         public JsonMessageType? MessageType { get; set; }
     }
 

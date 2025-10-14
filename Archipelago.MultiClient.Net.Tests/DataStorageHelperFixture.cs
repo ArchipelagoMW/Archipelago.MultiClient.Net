@@ -758,7 +758,7 @@ namespace Archipelago.MultiClient.Net.Tests
                 Key = "DP1",
                 Value = 120,
                 OriginalValue = 70,
-                AdditionalArguments = new Dictionary<string, JToken> { { "Reference", callback1Reference } }
+                AdditionalArguments = new Dictionary<string, JToken> { { "Reference", callback1Reference.ToString("N") } }
             };
             var setReplyPacketC = new SetReplyPacket()
             {
@@ -766,7 +766,7 @@ namespace Archipelago.MultiClient.Net.Tests
                 Value = 0m,
                 OriginalValue = 10.36m,
                 AdditionalArguments = new Dictionary<string, JToken> {
-	                { "Reference", callback2Reference },
+	                { "Reference", callback2Reference.ToString("N") },
 					{ "yarg", 10 }
                 }
             };

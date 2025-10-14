@@ -1,10 +1,10 @@
 ﻿using Archipelago.MultiClient.Net.Enums;
+using Archipelago.MultiClient.Net.Extensions;
 using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 
 #if NET35
 using System.Threading;
@@ -98,12 +98,13 @@ namespace Archipelago.MultiClient.Net.Helpers
                 case SetReplyPacket setReplyPacket:
                     if (setReplyPacket.AdditionalArguments != null 
                         && setReplyPacket.AdditionalArguments.ContainsKey("Reference")
-                        && setReplyPacket.AdditionalArguments["Reference"].Type == JTokenType.Guid
-                        && operationSpecificCallbacks.TryGetValue((Guid)setReplyPacket.AdditionalArguments["Reference"], out var operationCallback))
+                        && setReplyPacket.AdditionalArguments["Reference"].Type == JTokenType.String
+						&& ((string)setReplyPacket.AdditionalArguments["Reference"]).TryParseNGuid(out var guid)
+                        && operationSpecificCallbacks.TryGetValue(guid, out var operationCallback))
                     {
 						operationCallback(setReplyPacket.OriginalValue, setReplyPacket.Value, setReplyPacket.AdditionalArguments);
 
-                        operationSpecificCallbacks.Remove((Guid)setReplyPacket.AdditionalArguments["Reference"]);
+                        operationSpecificCallbacks.Remove(guid);
                     }
 
                     if (onValueChangedEventHandlers.TryGetValue(setReplyPacket.Key, out var handler))
@@ -228,7 +229,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 
                 operationSpecificCallbacks[guid] = e.Callbacks;
 
-                additionalArguments["Reference"] = JToken.FromObject(guid);
+                additionalArguments["Reference"] = guid.ToString("N");
 				
 				socket.SendPacketAsync(new SetPacket
                 {
