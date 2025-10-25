@@ -145,6 +145,9 @@ namespace Archipelago.MultiClient.Net
 		/// <inheritdoc/>
 		public IMessageLogHelper MessageLog { get; }
 
+		/// <inheritdoc/>
+		public ICreateHintsHelper CreateHints { get; }
+
 #if NET35
 	    volatile bool awaitingRoomInfo;
 		volatile bool expectingLoginResult;
@@ -161,7 +164,8 @@ namespace Archipelago.MultiClient.Net
                                     IRoomStateHelper roomState,
                                     ConnectionInfoHelper connectionInfoHelper,
                                     IDataStorageHelper dataStorage,
-                                    IMessageLogHelper messageLog)
+                                    IMessageLogHelper messageLog,
+                                    ICreateHintsHelper createHints)
         {
             Socket = socket;
             Items = items;
@@ -171,6 +175,7 @@ namespace Archipelago.MultiClient.Net
             connectionInfo = connectionInfoHelper;
             DataStorage = dataStorage;
             MessageLog = messageLog;
+            CreateHints = createHints;
             
             socket.PacketReceived += Socket_PacketReceived;
         }
