@@ -13,7 +13,7 @@ namespace Archipelago.MultiClient.Net.Converters
     public class ArchipelagoPacketConverter : JsonConverter
     {
         static readonly Dictionary<ArchipelagoPacketType, Func<JObject, ArchipelagoPacketBase>> PacketDeserializationMap = 
-	        new Dictionary<ArchipelagoPacketType, Func<JObject, ArchipelagoPacketBase>>(23)
+	        new Dictionary<ArchipelagoPacketType, Func<JObject, ArchipelagoPacketBase>>(25)
         {
             [ArchipelagoPacketType.RoomInfo]          = obj => obj.ToObject<RoomInfoPacket>(),
             [ArchipelagoPacketType.ConnectionRefused] = obj => obj.ToObject<ConnectionRefusedPacket>(),
@@ -31,15 +31,18 @@ namespace Archipelago.MultiClient.Net.Converters
             [ArchipelagoPacketType.Say]               = obj => obj.ToObject<SayPacket>(),
             [ArchipelagoPacketType.GetDataPackage]    = obj => obj.ToObject<GetDataPackagePacket>(),
             [ArchipelagoPacketType.DataPackage]       = obj => obj.ToObject<DataPackagePacket>(),
-            [ArchipelagoPacketType.Bounce]            = obj => obj.ToObject<BouncePacket>(),
-            [ArchipelagoPacketType.Bounced]           = obj => obj.ToObject<BouncedPacket>(),
-            [ArchipelagoPacketType.InvalidPacket]     = obj => obj.ToObject<InvalidPacketPacket>(),
+	        [ArchipelagoPacketType.Sync]              = obj => obj.ToObject<SyncPacket>(),
+	        [ArchipelagoPacketType.Bounced]           = obj => obj.ToObject<BouncedPacket>(),
+			[ArchipelagoPacketType.Bounce]            = obj => obj.ToObject<BouncePacket>(),
+			[ArchipelagoPacketType.InvalidPacket]     = obj => obj.ToObject<InvalidPacketPacket>(),
             [ArchipelagoPacketType.Get]               = obj => obj.ToObject<GetPacket>(),
             [ArchipelagoPacketType.Retrieved]         = obj => obj.ToObject<RetrievedPacket>(),
             [ArchipelagoPacketType.Set]               = obj => obj.ToObject<SetPacket>(),
             [ArchipelagoPacketType.SetNotify]         = obj => obj.ToObject<SetNotifyPacket>(),
             [ArchipelagoPacketType.SetReply]          = obj => obj.ToObject<SetReplyPacket>(),
-        };
+			[ArchipelagoPacketType.SetNotify]         = obj => obj.ToObject<SetNotifyPacket>(),
+			[ArchipelagoPacketType.UpdateHint]        = obj => obj.ToObject<UpdateHintPacket>(),
+		};
 
         /// <inheritdoc/>
 		public override bool CanWrite => false;
@@ -111,8 +114,7 @@ namespace Archipelago.MultiClient.Net.Converters
 
             return obj.ToObject<PrintJsonPacket>();
         }
-
-
+		
         static bool EnumTryParse<TEnum>(string value, out TEnum result) where TEnum : struct, IConvertible
         {
 #if NET35

@@ -57,6 +57,11 @@ namespace Archipelago.MultiClient.Net
 		/// </summary>
 		IMessageLogHelper MessageLog { get; }
 
+		/// <summary>
+		/// Provides methods to interact with the hints system
+		/// </summary>
+		IHintsHelper Hints { get; }
+
 #if !NET35
 		/// <summary>
 		/// Connect the websocket to the server
@@ -146,7 +151,7 @@ namespace Archipelago.MultiClient.Net
 		public IMessageLogHelper MessageLog { get; }
 
 		/// <inheritdoc/>
-		public ICreateHintsHelper CreateHints { get; }
+		public IHintsHelper Hints { get; }
 
 #if NET35
 	    volatile bool awaitingRoomInfo;
@@ -165,7 +170,7 @@ namespace Archipelago.MultiClient.Net
                                     ConnectionInfoHelper connectionInfoHelper,
                                     IDataStorageHelper dataStorage,
                                     IMessageLogHelper messageLog,
-                                    ICreateHintsHelper createHints)
+                                    IHintsHelper createHints)
         {
             Socket = socket;
             Items = items;
@@ -175,7 +180,7 @@ namespace Archipelago.MultiClient.Net
             connectionInfo = connectionInfoHelper;
             DataStorage = dataStorage;
             MessageLog = messageLog;
-            CreateHints = createHints;
+            Hints = createHints;
             
             socket.PacketReceived += Socket_PacketReceived;
         }

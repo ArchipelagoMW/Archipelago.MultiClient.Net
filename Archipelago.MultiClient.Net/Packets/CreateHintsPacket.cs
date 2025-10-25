@@ -14,6 +14,6 @@ namespace Archipelago.MultiClient.Net.Packets
         public int Player { get; set; }
 
         [JsonProperty("status")]
-        public int Status { get; set; }
+        public HintStatus Status { get; set; }
     }
 }
