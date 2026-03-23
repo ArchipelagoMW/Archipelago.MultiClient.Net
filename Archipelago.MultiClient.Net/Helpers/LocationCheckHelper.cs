@@ -444,7 +444,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 	    /// <inheritdoc/>
 	    public void ScoutLocationsAsync(Action<Dictionary<long, ScoutedItemInfo>> callback = null, bool createAsHint = false, params long[] ids) =>
 		    // Maintain backwards compatibility if createAsHint parameter is not specified.
-		    ScoutLocationsAsync(callback, createAsHint ? HintCreationPolicy.CreateAndAnnounce : HintCreationPolicy.None, ids);
+		    ScoutLocationsAsync(callback, createAsHint ? HintCreationPolicy.CreateAndAnnounceOnce : HintCreationPolicy.None, ids);
 
 		/// <inheritdoc/>
 		public void ScoutLocationsAsync(Action<Dictionary<long, ScoutedItemInfo>> callback = null, params long[] ids) =>
@@ -480,7 +480,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 
 	    /// <inheritdoc/>
 	    public Task<Dictionary<long, ScoutedItemInfo>> ScoutLocationsAsync(bool createAsHint, params long[] ids) =>
-			ScoutLocationsAsync(createAsHint ? HintCreationPolicy.CreateAndAnnounce : HintCreationPolicy.None, ids);
+			ScoutLocationsAsync(createAsHint ? HintCreationPolicy.CreateAndAnnounceOnce : HintCreationPolicy.None, ids);
 
 		/// <inheritdoc/>
 		public Task<Dictionary<long, ScoutedItemInfo>> ScoutLocationsAsync(params long[] ids) =>
