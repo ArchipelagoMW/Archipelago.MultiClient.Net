@@ -31,6 +31,11 @@ namespace Archipelago.MultiClient.Net.DataPackage
 			{
 				var fileText = File.ReadAllText(filePath);
 				gameData = JsonConvert.DeserializeObject<GameData>(fileText);
+
+				// Updating the file's last modified time to let the automatic data package cleanup routine in CommonClient
+				// know this file was recently used
+				File.SetLastWriteTime(filePath, DateTime.Now);
+
 				return true;
 			}
 			catch
