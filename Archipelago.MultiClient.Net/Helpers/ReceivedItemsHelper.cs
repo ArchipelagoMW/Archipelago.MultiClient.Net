@@ -32,6 +32,20 @@ namespace Archipelago.MultiClient.Net.Helpers
 		string GetItemName(long id, string game = null);
 
 		/// <summary>
+		///     Perform a lookup using the DataPackage sent as a source of truth to lookup a particular item name for a particular game.
+		/// </summary>
+		/// <param name="name">
+		///     Name of the item to lookup.
+		/// </param>
+		/// <param name="game">
+		///     The game to lookup the item name for, if null will look in the game the local player is connected to.
+		/// </param>
+		/// <returns>
+		///     The id of the item as a string, or -1 if no such item is found.
+		/// </returns>
+		long GetItemId(string name, string game = null);
+
+		/// <summary>
 		/// Total number of items received
 		/// </summary>
 		int Index { get; }
@@ -140,6 +154,9 @@ namespace Archipelago.MultiClient.Net.Helpers
 
 		/// <inheritdoc/>
         public string GetItemName(long id, string game = null) => itemInfoResolver.GetItemName(id, game);
+
+        /// <inheritdoc/>
+        public long GetItemId(string name, string game = null) => itemInfoResolver.GetItemId(name, game);
 
 		void Socket_PacketReceived(ArchipelagoPacketBase packet)
         {

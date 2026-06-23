@@ -23,6 +23,20 @@ namespace Archipelago.MultiClient.Net.DataPackage
 		string GetItemName(long itemId, string game = null);
 
 		/// <summary>
+		///     Perform a lookup using the DataPackage sent as a source of truth to lookup a particular item name for a particular game.
+		/// </summary>
+		/// <param name="itemName">
+		///     Name of the item to lookup.
+		/// </param>
+		/// <param name="game">
+		///     The game to lookup the item name for, if null will look in the game the local player is connected to.
+		/// </param>
+		/// <returns>
+		///     The id of the item as a long, or -1 if no such item is found.
+		/// </returns>
+		long GetItemId(string itemName, string game = null);
+
+		/// <summary>
 		///     Get the name of a location from its id. Useful when receiving a packet and it is necessary to find the name of the location.
 		/// </summary>
 		/// <param name="locationId">
@@ -79,6 +93,23 @@ namespace Archipelago.MultiClient.Net.DataPackage
 			return dataPackage.Items.TryGetValue(itemId, out var itemName)
 				? itemName
 				: null;
+		}
+
+		/// <inheritdoc/>
+		public long GetItemId(string itemName, string game = null)
+		{
+			if (game == null)
+				game = connectionInfoProvider.Game ?? "Archipelago";
+
+			if (string.IsNullOrEmpty(itemName))
+				return -1;
+
+			if (!cache.TryGetGameDataFromCache(game, out var dataPackage))
+				return -1;
+
+			return dataPackage.Items.TryGetValue(itemName, out var itemId)
+				? itemId
+				: -1;
 		}
 
 		/// <inheritdoc/>
