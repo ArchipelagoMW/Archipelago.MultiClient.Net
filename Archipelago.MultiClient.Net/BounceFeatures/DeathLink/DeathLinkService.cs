@@ -12,6 +12,7 @@ namespace Archipelago.MultiClient.Net.BounceFeatures.DeathLink
     {
         readonly IArchipelagoSocketHelper socket;
         readonly IConnectionInfoProvider connectionInfoProvider;
+        readonly string tag;
 
         DeathLink lastSendDeathLink;
 
@@ -26,10 +27,12 @@ namespace Archipelago.MultiClient.Net.BounceFeatures.DeathLink
         /// </summary>
         public event DeathLinkReceivedHandler OnDeathLinkReceived;
 
-        internal DeathLinkService(IArchipelagoSocketHelper socket, IConnectionInfoProvider connectionInfoProvider)
+        internal DeathLinkService(IArchipelagoSocketHelper socket, IConnectionInfoProvider connectionInfoProvider,
+            string group = null)
         {
             this.socket = socket;
             this.connectionInfoProvider = connectionInfoProvider;
+            this.tag = "DeathLink" + (group ?? "");
 
             socket.PacketReceived += OnPacketReceived;
         }
@@ -38,7 +41,7 @@ namespace Archipelago.MultiClient.Net.BounceFeatures.DeathLink
         {
             switch (packet)
             {
-                case BouncedPacket bouncedPacket when bouncedPacket.Tags.Contains("DeathLink"):
+                case BouncedPacket bouncedPacket when bouncedPacket.Tags.Contains(tag):
                     if (DeathLink.TryParse(bouncedPacket.Data, out var deathLink))
                     {
                         if (lastSendDeathLink != null && lastSendDeathLink == deathLink)
@@ -66,7 +69,7 @@ namespace Archipelago.MultiClient.Net.BounceFeatures.DeathLink
         {
             var bouncePacket = new BouncePacket
             {
-                Tags = new List<string> { "DeathLink" },
+                Tags = new List<string> { tag },
                 Data = new Dictionary<string, JToken> {
                     {"time", deathLink.Timestamp.ToUnixTimeStamp()},
                     {"source", deathLink.Source},
@@ -82,27 +85,29 @@ namespace Archipelago.MultiClient.Net.BounceFeatures.DeathLink
         }
 
         /// <summary>
-        /// Adds "DeathLink" to your <see cref="ArchipelagoSession"/>'s tags and opts you in to receiving
+        /// Adds the DeathLink tag (suffixed with the group name, if any) to your
+        /// <see cref="ArchipelagoSession"/>'s tags and opts you in to receiving
         /// <see cref="OnDeathLinkReceived"/> events
         /// </summary>
         public void EnableDeathLink()
         {
-            if (Array.IndexOf(connectionInfoProvider.Tags, "DeathLink") == -1)
+            if (Array.IndexOf(connectionInfoProvider.Tags, tag) == -1)
                 connectionInfoProvider.UpdateConnectionOptions(
-                    connectionInfoProvider.Tags.Concat(new[] { "DeathLink" }).ToArray());
+                    connectionInfoProvider.Tags.Concat(new[] { tag }).ToArray());
         }
 
         /// <summary>
-        /// Removes the "DeathLink" tag from your <see cref="ArchipelagoSession"/> and opts out of further
+        /// Removes the DeathLink tag (suffixed with the group name, if any) from your
+        /// <see cref="ArchipelagoSession"/> and opts out of further
         /// <see cref="OnDeathLinkReceived"/> events
         /// </summary>
         public void DisableDeathLink()
         {
-            if (Array.IndexOf(connectionInfoProvider.Tags, "DeathLink") == -1)
+            if (Array.IndexOf(connectionInfoProvider.Tags, tag) == -1)
                 return;
 
             connectionInfoProvider.UpdateConnectionOptions(
-                connectionInfoProvider.Tags.Where(t => t != "DeathLink").ToArray());
+                connectionInfoProvider.Tags.Where(t => t != tag).ToArray());
         }
     }
 }

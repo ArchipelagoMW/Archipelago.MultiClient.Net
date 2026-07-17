@@ -201,5 +201,104 @@ namespace Archipelago.MultiClient.Net.Tests
             Assert.That(connectionInfo.Tags.Length, Is.EqualTo(1));
             Assert.That(connectionInfo.Tags[0], Is.EqualTo("SomeTag"));
         }
+
+        [Test]
+        public void Should_enable_death_link_with_group_tag()
+        {
+            var socket = Substitute.For<IArchipelagoSocketHelper>();
+            var connectionInfo = new ConnectionInfoHelper(socket) { Tags = Array.Empty<string>() };
+
+            var sut = new DeathLinkService(socket, connectionInfo, "MyGroup");
+
+            sut.EnableDeathLink();
+
+            socket.Received().SendPacket(Arg.Is<ConnectUpdatePacket>(p => p.Tags.Length == 1 && p.Tags[0] == "DeathLinkMyGroup"));
+
+            Assert.That(connectionInfo.Tags.Length, Is.EqualTo(1));
+            Assert.That(connectionInfo.Tags[0], Is.EqualTo("DeathLinkMyGroup"));
+        }
+
+        [Test]
+        public void Should_send_death_link_with_group_tag()
+        {
+            var socket = Substitute.For<IArchipelagoSocketHelper>();
+            var connectionInfo = Substitute.For<IConnectionInfoProvider>();
+
+            var sut = new DeathLinkService(socket, connectionInfo, "MyGroup");
+
+            sut.SendDeathLink(new DeathLink("TestPlayer", "Died"));
+
+            socket.Received().SendPacketAsync(Arg.Is<BouncePacket>(p => p.Tags.Count == 1 && p.Tags[0] == "DeathLinkMyGroup"));
+        }
+
+        [Test]
+        public void Should_receive_death_link_with_matching_group_tag()
+        {
+            var socket = Substitute.For<IArchipelagoSocketHelper>();
+            var connectionInfo = Substitute.For<IConnectionInfoProvider>();
+
+            var sut = new DeathLinkService(socket, connectionInfo, "MyGroup");
+
+            DeathLink receivedDeathLink = null;
+            sut.OnDeathLinkReceived += dl => receivedDeathLink = dl;
+
+            var death = new DeathLink("SomeoneElse", "Died");
+            var bouncePacket = new BouncedPacket {
+                Tags = new List<string> { "DeathLinkMyGroup" },
+                Data = new Dictionary<string, JToken> {
+                    { "source", death.Source },
+                    { "time", death.Timestamp.ToUnixTimeStamp() },
+                    { "cause", death.Cause }
+                }
+            };
+
+            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(bouncePacket);
+
+            Assert.That(receivedDeathLink, Is.Not.Null);
+        }
+
+        [Test]
+        public void Should_not_receive_death_link_from_a_different_group()
+        {
+            var socket = Substitute.For<IArchipelagoSocketHelper>();
+            var connectionInfo = Substitute.For<IConnectionInfoProvider>();
+
+            var sut = new DeathLinkService(socket, connectionInfo, "MyGroup");
+
+            DeathLink receivedDeathLink = null;
+            sut.OnDeathLinkReceived += dl => receivedDeathLink = dl;
+
+            // A fully-valid death in the default pool ("DeathLink") must not reach a grouped client.
+            var death = new DeathLink("SomeoneElse", "Died");
+            var bouncePacket = new BouncedPacket {
+                Tags = new List<string> { "DeathLink" },
+                Data = new Dictionary<string, JToken> {
+                    { "source", death.Source },
+                    { "time", death.Timestamp.ToUnixTimeStamp() },
+                    { "cause", death.Cause }
+                }
+            };
+
+            socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(bouncePacket);
+
+            Assert.That(receivedDeathLink, Is.Null);
+        }
+
+        [Test]
+        public void Should_use_default_tag_for_blank_group()
+        {
+            var socket = Substitute.For<IArchipelagoSocketHelper>();
+            var connectionInfo = new ConnectionInfoHelper(socket) { Tags = Array.Empty<string>() };
+
+            // Blank group is wire-identical to standard DeathLink (default pool).
+            var sut = new DeathLinkService(socket, connectionInfo, "");
+
+            sut.EnableDeathLink();
+
+            socket.Received().SendPacket(Arg.Is<ConnectUpdatePacket>(p => p.Tags.Length == 1 && p.Tags[0] == "DeathLink"));
+
+            Assert.That(connectionInfo.Tags.Length, Is.EqualTo(1));
+            Assert.That(connectionInfo.Tags[0], Is.EqualTo("DeathLink"));
+        }
     }
 }
