@@ -394,7 +394,7 @@ namespace Archipelago.MultiClient.Net.Tests
         }
 
 		[Test]
-        public void Should_re_send_location_checks_already_checked_but_not_confirmed_by_server()
+		public void Should_not_re_send_location_checks_while_waiting_for_server_confirmation()
 		{
 			var socket = Substitute.For<IArchipelagoSocketHelper>();
 			var itemInfoResolver = Substitute.For<IItemInfoResolver>();
@@ -416,12 +416,46 @@ namespace Archipelago.MultiClient.Net.Tests
 			socket.Received().SendPacket(Arg.Is<LocationChecksPacket>(p => p.Locations.Length == 2));
 
 			sut.CompleteLocationChecks(4);
-			
-			socket.Received().SendPacket(Arg.Is<LocationChecksPacket>(p => p.Locations.Length == 3));
 
-			sut.CompleteLocationChecks(5, 6);
+			socket.Received().SendPacket(Arg.Is<LocationChecksPacket>(p => p.Locations.Length == 1 && p.Locations[0] == 4));
 
-			socket.Received().SendPacket(Arg.Is<LocationChecksPacket>(p => p.Locations.Length == 5));
+			sut.CompleteLocationChecks(2, 3, 4);
+
+			socket.Received(2).SendPacket(Arg.Any<LocationChecksPacket>());
+
+			var updatePacket = new RoomUpdatePacket { CheckedLocations = new long[] { 2, 3 } };
+			socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(updatePacket);
+
+			sut.CompleteLocationChecks(2, 3, 5, 6);
+
+			socket.Received().SendPacket(Arg.Is<LocationChecksPacket>(p =>
+				p.Locations.Length == 2 && p.Locations.Contains(5) && p.Locations.Contains(6)));
+		}
+
+		[Test]
+		public void Should_clear_pending_location_checks_when_connected()
+		{
+			var socket = Substitute.For<IArchipelagoSocketHelper>();
+			var itemInfoResolver = Substitute.For<IItemInfoResolver>();
+			var connectionInfo = Substitute.For<IConnectionInfoProvider>();
+			var players = Substitute.For<IPlayerHelper>();
+
+			ILocationCheckHelper sut = new LocationCheckHelper(socket, itemInfoResolver, connectionInfo, players);
+
+			var connectedPacket = new ConnectedPacket
+			{
+				LocationsChecked = new long[0],
+				MissingChecks = new long[] { 1 }
+			};
+
+			socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(connectedPacket);
+			sut.CompleteLocationChecks(1);
+
+			socket.PacketReceived += Raise.Event<ArchipelagoSocketHelperDelagates.PacketReceivedHandler>(connectedPacket);
+			sut.CompleteLocationChecks(1);
+
+			socket.Received(2).SendPacket(Arg.Is<LocationChecksPacket>(p =>
+				p.Locations.Length == 1 && p.Locations[0] == 1));
 		}
 
         [Test]

@@ -24,7 +24,23 @@ namespace Archipelago.MultiClient.Net.ConcurrentCollection
                 return false;
             }
         }
-        
+
+        public bool TryRemove(T item)
+        {
+            lock (lockObject)
+            {
+                return set.Remove(item);
+            }
+        }
+
+        public void Clear()
+        {
+            lock (lockObject)
+            {
+                set.Clear();
+            }
+        }
+
         public bool Contains(T item)
         {
             lock (lockObject)

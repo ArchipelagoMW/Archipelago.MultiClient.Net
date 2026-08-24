@@ -12,6 +12,10 @@ namespace Archipelago.MultiClient.Net.ConcurrentCollection
 
         public bool TryAdd(T item) => set.TryAdd(item, 0);
 
+        public bool TryRemove(T item) => set.TryRemove(item, out _);
+
+        public void Clear() => set.Clear();
+
         public bool Contains(T item) => set.ContainsKey(item);
 
         public void UnionWith(T[] otherSet)

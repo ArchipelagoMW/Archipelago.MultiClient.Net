@@ -245,6 +245,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 		readonly IConcurrentHashSet<long> allLocations = new ConcurrentHashSet<long>();
         readonly IConcurrentHashSet<long> locationsChecked = new ConcurrentHashSet<long>();
         readonly IConcurrentHashSet<long> serverConfirmedChecks = new ConcurrentHashSet<long>();
+		readonly IConcurrentHashSet<long> pendingLocationChecks = new ConcurrentHashSet<long>();
 		ReadOnlyCollection<long> missingLocations = new ReadOnlyCollection<long>(new long[0]);
 
         readonly IArchipelagoSocketHelper socket;
@@ -281,6 +282,7 @@ namespace Archipelago.MultiClient.Net.Helpers
             switch (packet)
             {
                 case ConnectedPacket connectedPacket:
+					pendingLocationChecks.Clear();
                     allLocations.UnionWith(connectedPacket.LocationsChecked);
                     allLocations.UnionWith(connectedPacket.MissingChecks);
                     serverConfirmedChecks.UnionWith(connectedPacket.LocationsChecked);
@@ -293,7 +295,11 @@ namespace Archipelago.MultiClient.Net.Helpers
                     CheckLocations(updatePacket.CheckedLocations);
 
 					if (updatePacket.CheckedLocations != null)
+					{
 						serverConfirmedChecks.UnionWith(updatePacket.CheckedLocations);
+						foreach (var locationId in updatePacket.CheckedLocations)
+							pendingLocationChecks.TryRemove(locationId);
+					}
 					break;
 #if NET35
                 case LocationInfoPacket locationInfoPacket:
@@ -371,7 +377,7 @@ namespace Archipelago.MultiClient.Net.Helpers
             var packet = GetLocationChecksPacket();
 
             if (packet.Locations.Any())
-				socket.SendPacketAsync(GetLocationChecksPacket(), onComplete);
+				socket.SendPacketAsync(packet, onComplete);
 		}
 #elif NET40
 	    /// <inheritdoc/>
@@ -403,13 +409,15 @@ namespace Archipelago.MultiClient.Net.Helpers
 		}
 #endif
 
-		LocationChecksPacket GetLocationChecksPacket() =>
-		    new LocationChecksPacket
-		    {
-			    Locations = locationsChecked
-				    .AsToReadOnlyCollectionExcept(serverConfirmedChecks)
-				    .ToArray()
-		    };
+		LocationChecksPacket GetLocationChecksPacket()
+		{
+			var locations = locationsChecked
+				.AsToReadOnlyCollectionExcept(serverConfirmedChecks)
+				.Where(pendingLocationChecks.TryAdd)
+				.ToArray();
+
+			return new LocationChecksPacket { Locations = locations };
+		}
 
 #if NET35
 	    /// <inheritdoc/>
