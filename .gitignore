@@ -16,6 +16,9 @@
 # Mono auto generated files
 mono_crash.*
 
+# My own files I want to ignore
+*.code-workspace
+
 # Build results
 [Dd]ebug/
 [Dd]ebugPublic/

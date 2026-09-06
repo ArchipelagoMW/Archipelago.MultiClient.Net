@@ -1,4 +1,4 @@
-﻿#if NET35 || NET40
+﻿#if NET35 || NET40 || NETSTANDARD2_0 || NET45
 using Archipelago.MultiClient.Net.Converters;
 using Archipelago.MultiClient.Net.Exceptions;
 using Archipelago.MultiClient.Net.Extensions;
@@ -63,6 +63,8 @@ namespace Archipelago.MultiClient.Net.Helpers
 	        socket.OnError += OnError;
 	        socket.OnClose += OnClose;
 	        socket.OnOpen += OnOpen;
+            socket.Compression = CompressionMethod.Deflate; // This enables the permessage-deflate compression now needed for Archipelago servers and clients. 
+            // This now uses @TylerJG92's websocket-sharp fork which has been updated to fix a bug that was preventing support for permessage-deflate compression.
 
 	        return socket;
         }
