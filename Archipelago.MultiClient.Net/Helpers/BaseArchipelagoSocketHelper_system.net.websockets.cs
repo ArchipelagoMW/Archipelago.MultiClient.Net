@@ -56,6 +56,17 @@ namespace Archipelago.MultiClient.Net.Helpers
         internal T Socket;
         readonly int bufferSize;
 
+        /// <summary>
+        ///     Signals both background loops to stop. Cancelled by <see cref="DisconnectAsync"/>.
+        /// </summary>
+        /// <remarks>
+        ///     Without it neither loop can ever end, and both keep the whole session graph
+        ///     alive: an async state machine that is awaiting is rooted by the runtime, and
+        ///     through the socket helper it references the session's helpers, the session
+        ///     itself, and its copy of the data package.
+        /// </remarks>
+        readonly CancellationTokenSource shutdown = new CancellationTokenSource();
+
         internal BaseArchipelagoSocketHelper(T socket, int bufferSize = 1024)
         {
 	        Socket = socket;
@@ -75,13 +86,19 @@ namespace Archipelago.MultiClient.Net.Helpers
         {
             var buffer = new byte[bufferSize];
 
-            while (Socket.State == WebSocketState.Open)
+            while (Socket.State == WebSocketState.Open && !shutdown.IsCancellationRequested)
             {
                 string message = null;
 
                 try
                 {
-                    message = await ReadMessageAsync(buffer);
+                    message = await ReadMessageAsync(buffer, shutdown.Token);
+                }
+                catch (OperationCanceledException)
+                {
+                    // DisconnectAsync asked us to stop. This is the expected way out, not an
+                    // error: reporting it would surface a failure on every clean disconnect.
+                    return;
                 }
                 catch (Exception e)
                 {
@@ -95,11 +112,16 @@ namespace Archipelago.MultiClient.Net.Helpers
 
         async Task SendLoop()
         {
-            while (Socket.State == WebSocketState.Open)
+            while (Socket.State == WebSocketState.Open && !shutdown.IsCancellationRequested)
             {
                 try
                 {
-                    await HandleSendBuffer();
+                    await HandleSendBuffer(shutdown.Token);
+                }
+                catch (OperationCanceledException)
+                {
+                    // The send queue was completed by DisconnectAsync: nothing left to send.
+                    return;
                 }
                 catch (Exception e)
                 {
@@ -110,14 +132,14 @@ namespace Archipelago.MultiClient.Net.Helpers
 			}
         }
 
-        async Task<string> ReadMessageAsync(byte[] buffer)
+        async Task<string> ReadMessageAsync(byte[] buffer, CancellationToken cancellationToken)
         {
             using (var readStream = new MemoryStream(buffer.Length))
             {
 	            WebSocketReceiveResult result;
 	            do
 	            {
-		            result = await Socket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+		            result = await Socket.ReceiveAsync(new ArraySegment<byte>(buffer), cancellationToken);
 
 		            if (result.MessageType == WebSocketMessageType.Close)
 		            {
@@ -148,8 +170,32 @@ namespace Archipelago.MultiClient.Net.Helpers
         /// </summary>
         public async Task DisconnectAsync()
         {
-            await Socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closure requested by client",
-                CancellationToken.None);
+            if (shutdown.IsCancellationRequested)
+                return;
+
+            try
+            {
+                if (Socket.State == WebSocketState.Open)
+                {
+                    // Bounded: CloseAsync waits for the server's close frame, and a server
+                    // that never answers would otherwise hang this call forever.
+                    using (var closing = new CancellationTokenSource(TimeSpan.FromSeconds(5)))
+                        await Socket.CloseAsync(WebSocketCloseStatus.NormalClosure,
+                            "Closure requested by client", closing.Token);
+                }
+            }
+            catch
+            {
+                // Best effort. The connection may already be gone, and a failure to say
+                // goodbye must not stop us from releasing everything below.
+            }
+
+            // Order matters: the loops are released first, then the socket, then listeners
+            // are told. Disposing before cancelling would make the pending read fail with a
+            // disposal error rather than end quietly.
+            shutdown.Cancel();
+            sendQueue.CompleteAdding();
+            Socket.Dispose();
 
             OnSocketClosed();
         }
@@ -240,12 +286,16 @@ namespace Archipelago.MultiClient.Net.Helpers
             return task.Task;
         }
 
-        async Task HandleSendBuffer()
+        async Task HandleSendBuffer(CancellationToken cancellationToken)
         {
             var packetList = new List<ArchipelagoPacketBase>();
             var tasks = new List<TaskCompletionSource<bool>>();
 
-            var firstPacketTuple = sendQueue.Take();
+            // Take() blocks the calling thread while the queue is empty. Without a token it
+            // never returns, because the queue is only ever completed by DisconnectAsync:
+            // every socket that is opened and left alone costs one thread pool thread for
+            // the lifetime of the process.
+            var firstPacketTuple = sendQueue.Take(cancellationToken);
             packetList.Add(firstPacketTuple.Item1);
             tasks.Add(firstPacketTuple.Item2);
             while (sendQueue.TryTake(out var packetTuple))

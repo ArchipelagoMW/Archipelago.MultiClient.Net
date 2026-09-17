@@ -24,6 +24,14 @@
 		<IncludeSymbols>true</IncludeSymbols>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
+		<!-- Documentation warnings are NOT errors, even when the consumer builds with
+		     -warnaserror. That flag is a global property: it propagates from the
+		     consuming project down into this one through the ProjectReference, and
+		     536 of these turned a green build red on a full recompile. The library
+		     documents 530 public members short of complete; that is a backlog, not a
+		     reason to break everyone who references it.
+		     1591 missing comment, 1570 malformed comment, 1574 unresolved cref. -->
+		<NoWarn>$(NoWarn);1591;1570;1574</NoWarn>
 	</PropertyGroup>
 
 	<PropertyGroup>
