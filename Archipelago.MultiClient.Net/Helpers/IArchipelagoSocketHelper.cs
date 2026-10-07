@@ -69,6 +69,14 @@ namespace Archipelago.MultiClient.Net.Helpers
 
         bool Connected { get; }
 
+        /// <summary>
+        ///     The most bytes one message from the server may hold; 0 (the default) for no limit.
+        ///     A larger message closes the connection (close status 1009, message too big) and reports an
+        ///     <see cref="Exceptions.ArchipelagoMessageTooLargeException"/> through <see cref="ErrorReceived"/>.
+        ///     Where the socket delivers a message in parts, reading stops at the limit, so the rest is never held in memory.
+        /// </summary>
+        long MaxMessageSize { get; set; }
+
         void SendPacket(ArchipelagoPacketBase packet);
         void SendMultiplePackets(List<ArchipelagoPacketBase> packets);
         void SendMultiplePackets(params ArchipelagoPacketBase[] packets);

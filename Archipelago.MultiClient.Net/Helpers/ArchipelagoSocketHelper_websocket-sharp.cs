@@ -45,6 +45,10 @@ namespace Archipelago.MultiClient.Net.Helpers
         public bool Connected => webSocket != null &&
 	        (webSocket.ReadyState == WebSocketState.Open || webSocket.ReadyState == WebSocketState.Closing);
 
+        /// <inheritdoc cref="IArchipelagoSocketHelper.MaxMessageSize"/>
+        /// <remarks>websocket-sharp hands over whole messages, so a larger one is already in memory when it's dropped.</remarks>
+        public long MaxMessageSize { get; set; }
+
         internal WebSocket webSocket;
 
         internal ArchipelagoSocketHelper(Uri hostUrl)
@@ -400,6 +404,18 @@ namespace Archipelago.MultiClient.Net.Helpers
 
         void OnMessageReceived(object sender, MessageEventArgs e)
         {
+	        if (MaxMessageSize > 0 && e.RawData != null && e.RawData.LongLength > MaxMessageSize)
+	        {
+		        if (ErrorReceived != null)
+		        {
+			        var tooLarge = new ArchipelagoMessageTooLargeException(MaxMessageSize);
+			        ErrorReceived(tooLarge, tooLarge.Message);
+		        }
+
+		        webSocket.Close(CloseStatusCode.TooBig, "Message too large");
+		        return;
+	        }
+
 	        if (!e.IsText || PacketReceived == null) return;
 
 	        List<ArchipelagoPacketBase> packets = null;

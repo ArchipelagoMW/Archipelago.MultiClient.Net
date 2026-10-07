@@ -56,6 +56,9 @@ namespace Archipelago.MultiClient.Net.Helpers
         internal T Socket;
         readonly int bufferSize;
 
+        /// <inheritdoc cref="IArchipelagoSocketHelper.MaxMessageSize"/>
+        public long MaxMessageSize { get; set; }
+
         internal BaseArchipelagoSocketHelper(T socket, int bufferSize = 1024)
         {
 	        Socket = socket;
@@ -134,12 +137,33 @@ namespace Archipelago.MultiClient.Net.Helpers
 		            }
 		            else
 		            {
+			            if (MaxMessageSize > 0 && readStream.Length + result.Count > MaxMessageSize)
+			            {
+				            // Stop reading here, before the rest of the message is held in memory.
+				            await CloseMessageTooLargeAsync();
+				            throw new ArchipelagoMessageTooLargeException(MaxMessageSize);
+			            }
+
 						readStream.Write(buffer, 0, result.Count);
 		            }
 	            } while (!result.EndOfMessage);
 
 				return Encoding.UTF8.GetString(readStream.ToArray());
 			}
+        }
+
+        async Task CloseMessageTooLargeAsync()
+        {
+	        try
+	        {
+		        await Socket.CloseAsync(WebSocketCloseStatus.MessageTooBig, "Message too large", CancellationToken.None);
+	        }
+	        catch
+	        {
+		        // ignore failure to close as the connection might already be dropped
+	        }
+
+	        OnSocketClosed();
         }
 
         /// <summary>
