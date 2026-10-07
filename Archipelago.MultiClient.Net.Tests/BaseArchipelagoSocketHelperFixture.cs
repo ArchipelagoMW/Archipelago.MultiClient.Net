@@ -1,4 +1,5 @@
 ﻿#if NET47 || NET48 || NET6_0
+using Archipelago.MultiClient.Net.Exceptions;
 using Archipelago.MultiClient.Net.Helpers;
 using Archipelago.MultiClient.Net.Packets;
 using Newtonsoft.Json;
@@ -73,6 +74,58 @@ namespace Archipelago.MultiClient.Net.Tests
 			Assert.That(error, Is.TypeOf(typeof(JsonReaderException)));
 		}
 
+		[Test]
+		public async Task Should_close_and_report_a_message_larger_than_the_limit()
+		{
+			var bigJson = @"[{ ""cmd"":""Say"", ""text"": """ + new string('a', 5000) + @""" }]";
+			var socket = new TestWebSocket(bigJson);
+			var sut = new BaseArchipelagoSocketHelper<TestWebSocket>(socket, 100) { MaxMessageSize = 1000 };
+
+			Exception error = null;
+			ArchipelagoPacketBase receivedPacket = null;
+			var closed = false;
+
+			sut.PacketReceived += packet => receivedPacket = packet;
+			sut.ErrorReceived += (e, _) => error = e;
+			sut.SocketClosed += _ => closed = true;
+
+			sut.StartPolling();
+
+			int maxRetries = 100;
+			int retryCount = 0;
+			while (error == null && retryCount++ < maxRetries)
+				await Task.Delay(10);
+
+			Assert.That(receivedPacket, Is.Null);
+			Assert.That(error, Is.TypeOf(typeof(ArchipelagoMessageTooLargeException)));
+			Assert.That(closed, Is.True);
+			Assert.That(socket.CloseStatus, Is.EqualTo(WebSocketCloseStatus.MessageTooBig));
+			Assert.That(socket.BytesRead, Is.LessThanOrEqualTo(1100), "reading should stop at the limit, not take the whole message");
+		}
+
+		[Test]
+		public async Task Should_read_a_message_within_the_limit()
+		{
+			var sayPacketJson = @"[{ ""cmd"":""Say"", ""text"": ""some message"" }]";
+			var sut = new BaseArchipelagoSocketHelper<TestWebSocket>(new TestWebSocket(sayPacketJson), 10) { MaxMessageSize = 1000 };
+
+			Exception error = null;
+			ArchipelagoPacketBase receivedPacket = null;
+
+			sut.PacketReceived += packet => receivedPacket = packet;
+			sut.ErrorReceived += (e, _) => error = e;
+
+			sut.StartPolling();
+
+			int maxRetries = 100;
+			int retryCount = 0;
+			while (receivedPacket == null && retryCount++ < maxRetries)
+				await Task.Delay(10);
+
+			Assert.That(error, Is.Null);
+			Assert.That(receivedPacket, Is.TypeOf(typeof(SayPacket)));
+		}
+
 		[TestCase("some message", 100, Description = "Buffer bigger than message")]
 		[TestCase("some message", 10, Description = "Buffer smaller than message")]
 		[TestCase("🃁🃂🃃🃄🃅🃆🃇🃈🃉🃊", 10, Description = "UTF8 complex character breaking A")]
@@ -131,10 +184,17 @@ namespace Archipelago.MultiClient.Net.Tests
 			incommingBytes = new MemoryStream(Encoding.UTF8.GetBytes(inMessage));
 		}
 
+		public long BytesRead => incommingBytes.Position;
+
+		WebSocketCloseStatus? closedWith;
+
 		public override void Abort() { }
 
-		public override Task CloseAsync(WebSocketCloseStatus closeStatus, string statusDescription, CancellationToken cancellationToken) 
-			=> Task.CompletedTask;
+		public override Task CloseAsync(WebSocketCloseStatus closeStatus, string statusDescription, CancellationToken cancellationToken)
+		{
+			closedWith = closeStatus;
+			return Task.CompletedTask;
+		}
 
 		public override Task CloseOutputAsync(WebSocketCloseStatus closeStatus, string statusDescription, CancellationToken cancellationToken) 
 			=> Task.CompletedTask;
@@ -166,10 +226,10 @@ namespace Archipelago.MultiClient.Net.Tests
 			await Task.CompletedTask;
 		}
 
-		public override WebSocketCloseStatus? CloseStatus => null;
+		public override WebSocketCloseStatus? CloseStatus => closedWith;
 		public override string CloseStatusDescription => null;
 		public override string SubProtocol => null;
-		public override WebSocketState State => WebSocketState.Open;
+		public override WebSocketState State => closedWith.HasValue ? WebSocketState.Closed : WebSocketState.Open;
 	}
 }
 #endif
