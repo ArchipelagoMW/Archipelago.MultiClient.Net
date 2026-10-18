@@ -41,7 +41,6 @@ namespace Archipelago.MultiClient.Net.Helpers
 			clientWebSocket.Options.SetBuffer(bufferSize, bufferSize);
 	        return clientWebSocket;
         }
-
 		/// <summary>
 		///     Initiates a connection to the host asynchronously.
 		///     Handle the <see cref="SocketOpened"/> event to add a callback.
