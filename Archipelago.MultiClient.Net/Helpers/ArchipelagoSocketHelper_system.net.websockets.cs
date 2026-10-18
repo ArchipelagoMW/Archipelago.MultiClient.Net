@@ -19,7 +19,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 	    /// </summary>
 	    public Uri Uri { get; }
 
-		internal ArchipelagoSocketHelper(Uri hostUri) : base(CreateWebSocket())
+		internal ArchipelagoSocketHelper(Uri hostUri, int bufferSize = 1024 * 50) : base(CreateWebSocket(bufferSize), bufferSize)
         {
             Uri = hostUri;
 
@@ -30,7 +30,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 #endif
         }
 
-        static ClientWebSocket CreateWebSocket()
+        static ClientWebSocket CreateWebSocket(int bufferSize = 1024 * 50)
         {
 	        var clientWebSocket = new ClientWebSocket();
 
@@ -38,6 +38,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 			clientWebSocket.Options.DangerousDeflateOptions = new WebSocketDeflateOptions();
 #endif
 
+			clientWebSocket.Options.SetBuffer(bufferSize, bufferSize);
 	        return clientWebSocket;
         }
 
