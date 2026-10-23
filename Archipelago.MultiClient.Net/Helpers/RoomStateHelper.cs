@@ -42,7 +42,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 		Version GeneratorVersion { get; }
 
 		/// <summary>
-		/// Denoted whether a password is required to join this room.
+		/// Denotes whether a password is required to join this room.
 		/// </summary>
 		bool HasPassword { get; }
 
@@ -73,7 +73,7 @@ namespace Archipelago.MultiClient.Net.Helpers
 		string Seed { get; }
 
 		/// <summary>
-		/// Time stamp of we first connected to the server, and the server send us the RoomInfoPacker.
+		/// Time stamp of when we first connected to the server, and the server sent us the RoomInfoPacket.
 		/// Send for time synchronization if wanted for things like the DeathLink Bounce.
 		/// </summary>
 		DateTime RoomInfoSendTime { get; }
