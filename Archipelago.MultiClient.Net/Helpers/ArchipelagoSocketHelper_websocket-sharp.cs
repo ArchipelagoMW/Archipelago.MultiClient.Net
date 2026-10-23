@@ -1,4 +1,4 @@
-﻿#if NET35 || NET40
+﻿#if NET35 || NET40 || NETSTANDARD2_0 || NET45
 using Archipelago.MultiClient.Net.Converters;
 using Archipelago.MultiClient.Net.Exceptions;
 using Archipelago.MultiClient.Net.Extensions;
@@ -63,6 +63,10 @@ namespace Archipelago.MultiClient.Net.Helpers
 	        socket.OnError += OnError;
 	        socket.OnClose += OnClose;
 	        socket.OnOpen += OnOpen;
+
+        #if NETSTANDARD2_0 || NET45
+            socket.Compression = CompressionMethod.Deflate;
+        #endif
 
 	        return socket;
         }

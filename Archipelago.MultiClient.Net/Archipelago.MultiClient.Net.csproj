@@ -47,7 +47,7 @@
 			<HintPath>..\DLLs\net35\Newtonsoft.Json.dll</HintPath>
 		</Reference>
 		<Reference Include="websocket-sharp">
-			<HintPath>..\DLLs\websocket-sharp.dll</HintPath>
+			<HintPath>..\DLLs\net35\websocket-sharp.dll</HintPath>
 		</Reference>
 	</ItemGroup>
 
@@ -56,13 +56,22 @@
 			<HintPath>..\DLLs\net40\Newtonsoft.Json.dll</HintPath>
 		</Reference>
 		<Reference Include="websocket-sharp">
-			<HintPath>..\DLLs\websocket-sharp.dll</HintPath>
+			<HintPath>..\DLLs\net35\websocket-sharp.dll</HintPath> <!-- NOTE: `net40` uses the same websocket-sharp.dll as `net35`, this is INTENTIONAL-->
 		</Reference>
 	</ItemGroup>
 
 	<ItemGroup Condition="'$(TargetFramework)' == 'net45'">
 		<Reference Include="Newtonsoft.Json">
 			<HintPath>..\DLLs\net45\Newtonsoft.Json.dll</HintPath>
+		</Reference>
+		<Reference Include="websocket-sharp">
+			<HintPath>..\DLLs\net45\websocket-sharp.dll</HintPath>
+		</Reference>
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+		<Reference Include="websocket-sharp">
+			<HintPath>..\DLLs\netstandard2.0\websocket-sharp.dll</HintPath>
 		</Reference>
 	</ItemGroup>
 
@@ -81,7 +90,7 @@
 			<TfmSpecificPackageFile Include="bin\$(Configuration)\$(TargetFramework)\Newtonsoft.Json.dll">
 				<PackagePath>lib\$(TargetFramework)\Newtonsoft.Json.dll</PackagePath>
 			</TfmSpecificPackageFile>
-			<TfmSpecificPackageFile Include="bin\$(Configuration)\$(TargetFramework)\websocket-sharp.dll" Condition="'$(TargetFramework)' == 'net35' Or '$(TargetFramework)' == 'net40'">
+			<TfmSpecificPackageFile Include="bin\$(Configuration)\$(TargetFramework)\websocket-sharp.dll" Condition="'$(TargetFramework)' != 'net6.0'">
 				<PackagePath>lib\$(TargetFramework)\websocket-sharp.dll</PackagePath>
 			</TfmSpecificPackageFile>
 		</ItemGroup>

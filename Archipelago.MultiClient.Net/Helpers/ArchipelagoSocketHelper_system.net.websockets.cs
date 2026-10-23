@@ -1,4 +1,4 @@
-﻿#if NET45 || NETSTANDARD2_0 || NET6_0
+﻿#if NET6_0 //TODO cleanup NET45 remnants in code if it works in websocket-sharp helper
 using Archipelago.MultiClient.Net.Extensions;
 using System;
 using System.Collections.Generic;
